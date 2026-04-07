@@ -714,7 +714,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 </head>
 <body>
 <!-- AUTH OVERLAY -->
-<div id="auth-overlay" style="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--forest) 0%,#0f1f0f 100%);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;">
+<div id="auth-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--forest) 0%,#0f1f0f 100%);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;">
   
   <!-- Logo -->
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
@@ -5503,6 +5503,9 @@ function getSupabase() {
 
 // ── AUTH STATE ──────────────────────────────────
 async function initAuth() {
+  // Hide overlay immediately - show only if no session found
+  hideAuthScreen();
+  
   const sb = getSupabase();
 
   // Handle email confirmation / magic link token in URL hash
@@ -5597,12 +5600,22 @@ async function loadUserProfile() {
 // ── SHOW / HIDE AUTH SCREEN ──────────────────────
 function showAuthScreen() {
   var overlay = document.getElementById('auth-overlay');
-  if (overlay) overlay.style.display = 'flex';
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.style.visibility = 'visible';
+    overlay.style.pointerEvents = 'all';
+    overlay.style.zIndex = '9999';
+  }
 }
 
 function hideAuthScreen() {
   var overlay = document.getElementById('auth-overlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.style.visibility = 'hidden';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '-1';
+  }
 }
 
 // ── SIGN UP ─────────────────────────────────────
