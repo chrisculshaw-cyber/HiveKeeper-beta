@@ -23,7 +23,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
 
-#app{width:100%;max-width:480px;height:100dvh;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,.5)}
+#app{width:100%;height:100dvh;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;}
 .screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream)}
 .screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:16px}
@@ -710,17 +710,10 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 #app-container, 
 
 
-@media (min-width: 768px) {
-  #app { max-width: 100%; box-shadow: none; }
-  #app-container { background: var(--forest); }
-}
 
 
-@media (min-width: 768px) {
-  .scroll-area > * { max-width: 800px; margin-left: auto; margin-right: auto; }
-  .app-header { max-width: 800px; margin: 0 auto; }
-  .stats-grid { max-width: 800px; margin: 0 auto; padding-bottom: 16px; }
-}
+
+
 
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
