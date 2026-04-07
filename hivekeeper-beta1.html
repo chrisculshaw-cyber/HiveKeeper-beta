@@ -337,6 +337,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-header-toggle { color: rgba(255,255,255,.6); font-size: 14px; flex-shrink: 0; transition: transform .2s; }
 .ah-header-toggle.open { transform: rotate(180deg); }
 .ah-
+.ah-body { display: none; }
 .ah-body.open { display: block; }
 .ah-status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--wax); }
 .ah-status-icon { font-size: 28px; flex-shrink: 0; }
@@ -712,6 +713,13 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 @media (min-width: 768px) {
   #app { max-width: 100%; box-shadow: none; }
   #app-container { background: var(--forest); }
+}
+
+
+@media (min-width: 768px) {
+  .scroll-area > * { max-width: 800px; margin-left: auto; margin-right: auto; }
+  .app-header { max-width: 800px; margin: 0 auto; }
+  .stats-grid { max-width: 800px; margin: 0 auto; padding-bottom: 16px; }
 }
 
 </style>
