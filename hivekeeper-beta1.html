@@ -5559,30 +5559,11 @@ async function initAuth() {
 function onAuthSuccess() {
   hideAuthScreen();
   loadUserProfile();
-  // Mark welcome as seen
-  // Small delay to ensure DOM is ready
   setTimeout(function() {
-    // beta1: no demo seed — users add their own hives
-    try { applySettings(); } catch(e){ console.error('applySettings error:',e); }
-    try { 
-      if(typeof initCurrentApiary==='function') initCurrentApiary(); 
-      if(dbg) dbg.textContent += 'Apiary init done. Hives: '+loadHives().length+'. ';
-    } catch(e){ console.error('initCurrentApiary error:',e); if(dbg) dbg.textContent += 'Apiary FAILED: '+e.message; }
-    try { 
-      renderDashboard(); 
-      if(dbg) dbg.textContent += 'Dashboard rendered. ';
-    } catch(e){ console.error('renderDashboard error:',e); if(dbg) dbg.textContent += 'Render FAILED: '+e.message; }
-    try {
-      var hour = new Date().getHours();
-      var el = document.getElementById('dash-greeting');
-      if(el) el.textContent = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
-    } catch(e){}
-    try { initLiveData(); } catch(e){}
-    // Navigate to home properly - triggers renderDashboard via goTo
-    try {
-      goTo('s-home');
-      if(dbg) dbg.textContent += 'goTo done.';
-    } catch(e){ console.error('goTo s-home error:',e); if(dbg) dbg.textContent += 'goTo FAILED: '+e.message; }
+    applySettings();
+    if(typeof initCurrentApiary === 'function') initCurrentApiary();
+    goTo('s-home');
+    try { initLiveData(); } catch(e) {}
   }, 200);
 }
 
