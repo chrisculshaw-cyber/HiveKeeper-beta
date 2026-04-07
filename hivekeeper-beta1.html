@@ -261,7 +261,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .insp-card-header{padding:12px 14px;background:var(--forest);display:flex;align-items:center;gap:8px}
 .insp-card-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:white;flex:1}
 .insp-card-by{font-size:10px;color:rgba(255,255,255,.55)}
-.insp-card-body{padding:12px 14px}
+.insp-card-
 .insp-data-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .insp-chip{background:var(--warm);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-m)}
 .insp-chip.red{background:#FDECEA;color:var(--red)}.insp-chip.green{background:#EAFAF1;color:var(--green)}.insp-chip.amber{background:var(--honey-pale);color:var(--honey)}
@@ -562,7 +562,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .market-card-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:3px; }
 .market-card-type { font-size:10px; font-weight:700; color:var(--honey); text-transform:uppercase; letter-spacing:.06em; }
 .market-card-price { font-size:16px; font-weight:800; color:var(--forest); font-family:'Cormorant Garamond',serif; margin-top:4px; }
-.market-card-body { padding:0 14px 12px; font-size:12px; color:var(--text-m); line-height:1.55; }
+.market-card-
 .market-card-footer { padding:10px 14px; background:var(--light); border-top:1px solid var(--wax);
   display:flex; align-items:center; justify-content:space-between; }
 .market-card-loc { font-size:11px; color:var(--text-l); }
@@ -1588,15 +1588,14 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
         <div id="settings-user-email" style="font-size:11px;color:var(--text-l);margin-bottom:8px;text-align:center;"></div>
         <button onclick="signOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
       </div>
-      <div style="margin-top:8px;">
-        <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
-      </div>
+      
       <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wax);">
         <div style="font-size:11px;color:var(--text-l);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Data</div>
         <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
         <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
       </div>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
+      
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
