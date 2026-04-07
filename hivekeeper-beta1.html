@@ -22,7 +22,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--forest)}
-body{font-family:'Syne',sans-serif;color:var(--text);display:flex;justify-content:center;align-items:center}
+
 #app{width:100%;max-width:430px;height:100dvh;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(0,0,0,.5)}
 .screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream)}
 .screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
@@ -336,7 +336,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-header-sub { font-size: 10px; color: rgba(255,255,255,.65); margin-top: 2px; }
 .ah-header-toggle { color: rgba(255,255,255,.6); font-size: 14px; flex-shrink: 0; transition: transform .2s; }
 .ah-header-toggle.open { transform: rotate(180deg); }
-.ah-body { background: var(--white); padding: 14px; display: none; }
+.ah-
 .ah-body.open { display: block; }
 .ah-status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--wax); }
 .ah-status-icon { font-size: 28px; flex-shrink: 0; }
@@ -403,13 +403,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .tip-badge-red { background: #FDECEA; color: var(--red); }
 .tip-badge-amber { background: var(--honey-pale); color: var(--honey); }
 .tip-badge-blue { background: #E8F4FD; color: #1565C0; }
-.tip-card-body {
-  padding: 0 14px 12px;
-  font-size: 13px; color: var(--text-m); line-height: 1.6;
-  display: none;
-  border-top: 1px solid var(--wax);
-  padding-top: 10px;
-}
+.tip-card-
 .tip-card-body.open { display: block; }
 .tip-card.red { border-left: 3px solid var(--red); }
 .tip-card.amber { border-left: 3px solid var(--honey); }
@@ -763,10 +757,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 
 <div class="screen active" id="s-home">
   <div class="scroll-area">
-    <!-- TEST: if you see this yellow bar the screen is rendering -->
-    <div id="home-test-bar" style="background:yellow;color:black;padding:16px;font-size:16px;font-weight:900;text-align:center;position:relative;z-index:1;">
-      HOME SCREEN IS RENDERING ✓ — tap Apiary to add hives
-    </div>
+
     <!-- DASHBOARD HEADER -->
     <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);">
       <div class="app-header">
@@ -1848,7 +1839,7 @@ function runAlertEngine(){
 // NAVIGATION
 // ═══════════════════════════════════════════════
 
-let currentScreen = 's-dashboard';
+let currentScreen = 's-home';
 let screenHistory = ['s-dashboard'];
 let currentHiveId = null;
 let currentRowFilter = 'all';
