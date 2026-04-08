@@ -6529,7 +6529,6 @@ async function renderShareList() {
   if (nameEl) nameEl.textContent = apiary.name;
   if (!list) return;
 
-  // Show loading state
   list.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>';
 
   // Load from Supabase
@@ -6544,29 +6543,34 @@ async function renderShareList() {
 
     if (!error && data) {
       shares = data;
-      // Also sync to localStorage for offline use
       var localShares = shares.map(function(s) {
-        return {
-          id: s.id, email: s.invited_email,
-          name: s.invited_name || s.invited_email.split('@')[0],
-          role: s.role, status: s.status,
-          invitedAt: new Date(s.created_at).getTime(), token: s.token
-        };
+        return { id: s.id, email: s.invited_email, name: s.invited_name || s.invited_email.split('@')[0], role: s.role, status: s.status, invitedAt: new Date(s.created_at).getTime(), token: s.token };
       });
       localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(localShares));
     }
   } catch(e) {
-    // Fall back to localStorage
     shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]')
       .map(function(s) { return { id: s.id, invited_email: s.email, invited_name: s.name, role: s.role, status: s.status }; });
   }
 
+  // Always show owner at top
+  var ownerEmail = _currentUser ? _currentUser.email : '';
+  var ownerName = (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name)
+    ? _currentUser.user_metadata.full_name : ownerEmail.split('@')[0];
+
+  var ownerRow = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wax);">' +
+    '<div>' +
+      '<div style="font-size:13px;font-weight:700;color:var(--text);">' + ownerName + ' <span style="color:var(--forest);font-size:10px;font-weight:700;">👑 Owner</span></div>' +
+      '<div style="font-size:11px;color:var(--text-l);">' + ownerEmail + ' · Full access</div>' +
+    '</div>' +
+  '</div>';
+
   if (!shares.length) {
-    list.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">No one else has access yet</div>';
+    list.innerHTML = ownerRow + '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">No one else has access yet</div>';
     return;
   }
 
-  list.innerHTML = shares.map(function(s) {
+  var shareRows = shares.map(function(s) {
     var email = s.invited_email || s.email || '';
     var name = s.invited_name || s.name || email.split('@')[0];
     var status = s.status || 'pending';
@@ -6581,6 +6585,8 @@ async function renderShareList() {
       '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;font-weight:700;cursor:pointer;">Remove</button>' +
     '</div>';
   }).join('');
+
+  list.innerHTML = ownerRow + shareRows;
 }
 
 async function inviteToApiary() {
