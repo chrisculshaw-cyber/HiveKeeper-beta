@@ -6059,33 +6059,32 @@ async function authResetPassword() {
 
 // ── UI HELPERS ───────────────────────────────────
 function showSignUp() {
-  document.getElementById('auth-signup-fields').style.display = 'block';
-  document.getElementById('auth-title').textContent = 'Create your account';
-  document.getElementById('auth-submit-btn').textContent = 'Create account';
-  document.getElementById('auth-submit-btn').dataset.label = 'Create account';
-  document.getElementById('auth-submit-btn').onclick = authSignUp;
-  document.getElementById('auth-toggle-link').textContent = 'Already have an account? Sign in';
-  document.getElementById('auth-toggle-link').onclick = showSignIn;
-  document.getElementById('auth-magic-link').style.display = 'none';
-  document.getElementById('auth-reset-link').style.display = 'none';
+  // Switch to signup tab
+  var signinTab = document.getElementById('auth-tab-signin');
+  var signupTab = document.getElementById('auth-tab-signup');
+  var signinPanel = document.getElementById('auth-signin');
+  var signupPanel = document.getElementById('auth-signup');
+  if (signinTab) signinTab.classList.remove('active');
+  if (signupTab) signupTab.classList.add('active');
+  if (signinPanel) signinPanel.style.display = 'none';
+  if (signupPanel) signupPanel.style.display = 'block';
   var remRow = document.getElementById('auth-remember-row');
-  if(remRow) remRow.style.display = 'none';
-  clearAuthError();
+  if (remRow) remRow.style.display = 'none';
+  if (typeof clearAuthError === 'function') clearAuthError();
 }
 
 function showSignIn() {
-  document.getElementById('auth-signup-fields').style.display = 'none';
-  document.getElementById('auth-title').textContent = 'Sign in to HiveKeeper';
-  document.getElementById('auth-submit-btn').textContent = 'Sign in';
-  document.getElementById('auth-submit-btn').dataset.label = 'Sign in';
-  document.getElementById('auth-submit-btn').onclick = authSignIn;
-  document.getElementById('auth-toggle-link').textContent = 'New to HiveKeeper? Create account';
-  document.getElementById('auth-toggle-link').onclick = showSignUp;
-  document.getElementById('auth-magic-link').style.display = 'block';
-  document.getElementById('auth-reset-link').style.display = 'block';
+  var signinTab = document.getElementById('auth-tab-signin');
+  var signupTab = document.getElementById('auth-tab-signup');
+  var signinPanel = document.getElementById('auth-signin');
+  var signupPanel = document.getElementById('auth-signup');
+  if (signinTab) signinTab.classList.add('active');
+  if (signupTab) signupTab.classList.remove('active');
+  if (signinPanel) signinPanel.style.display = 'block';
+  if (signupPanel) signupPanel.style.display = 'none';
   var remRow = document.getElementById('auth-remember-row');
-  if(remRow) remRow.style.display = 'flex';
-  clearAuthError();
+  if (remRow) remRow.style.display = 'flex';
+  if (typeof clearAuthError === 'function') clearAuthError();
 }
 
 function authError(msg) {
