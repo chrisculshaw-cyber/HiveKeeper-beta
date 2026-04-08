@@ -1,4 +1,4 @@
-<!-- Copyright 2026 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
+<!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1779,6 +1779,7 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
 
       <!-- HELP & CLOSE -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;margin-top:8px;">❓ Help &amp; guide</button>
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
@@ -5433,6 +5434,7 @@ function openApiarySwitcher() {
     + '<div class="modal-title">Your apiaries</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-apiary-switcher');
