@@ -4627,10 +4627,10 @@ function updateDashTipTeaser() {
     var o={red:0,amber:1,blue:2}; return (o[a.urgency]||2)-(o[b.urgency]||2);
   });
   var top = sorted[0];
-  var titleEl = document.getElementById('dash-tip-title');
+  var titleEl = document.getElementById('dash-tip-text');
   var iconEl = document.getElementById('dash-tip-icon');
   if (titleEl) titleEl.textContent = top.title;
-  if (iconEl) iconEl.textContent = top.icon;
+  if (iconEl) iconEl.textContent = top.icon || '🌻';
 }
 
 // ═══════════════════════════════════════════════
