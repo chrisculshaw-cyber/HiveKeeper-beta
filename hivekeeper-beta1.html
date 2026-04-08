@@ -917,7 +917,7 @@ html.large-text { font-size: 112%; }
           <div class="dash-name" id="apiary-name-display" onclick="openApiarySwitcher()" style="cursor:pointer;" title="Tap to switch apiary">Meadowbrook Apiary <span style="font-size:14px;opacity:.6;">⌄</span></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
-          <div onclick="openModalEl('modal-settings');addSignOutToSettings();" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">&#x2699;&#xFE0F;</div>
+          <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">&#x2699;&#xFE0F;</div>
           <div class="avatar" onclick="openModalEl('modal-help')" title="Help">&#x1F9D1;&#x200D;&#x1F33E;</div>
         </div>
       </div>
@@ -1875,6 +1875,13 @@ html.large-text { font-size: 112%; }
 
       <!-- ACCOUNT -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
+      <div id="settings-plan-badge" style="background:var(--cream,#F5F0E8);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
+          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest,#2D5016);margin-top:2px;">Beta</div>
+        </div>
+        <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);text-align:right;">Unlimited during beta</div>
+      </div>
       <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
 
       <!-- DATA -->
@@ -5646,6 +5653,11 @@ function openApiarySwitcher() {
 }
 
 function addNewApiary() {
+  // Paywall: Free tier = 1 apiary
+  if (!canAddApiary()) {
+    showUpgradeModal('apiary');
+    return;
+  }
   var name = prompt('New apiary name:', 'My Second Apiary');
   if (!name || !name.trim()) return;
   var apiaries = loadApiaries();
@@ -5995,6 +6007,11 @@ async function loadUserProfile() {
   if (!_currentUser) return;
   const sb = getSupabase();
   const { data } = await sb.from('profiles').select('name, tier, is_subscribed').eq('id', _currentUser.id).single();
+  if (data) {
+    // Store tier for paywall checks
+    if (data.tier) _userTier = data.tier;
+    updatePlanBadge();
+  }
   if (data && data.name) {
     // Update any name displays
     var nameEls = document.querySelectorAll('.user-display-name');
@@ -6588,6 +6605,11 @@ function loadSwarmCatches(hiveId) {
 // ═══════════════════════════════════════════════
 
 async function openShareApiary() {
+  // Paywall: sharing is Pro/Commercial only
+  if (!canShareApiary()) {
+    showUpgradeModal('share');
+    return;
+  }
   var modal = document.getElementById('modal-share-apiary');
   if (!modal) return;
   openModalEl('modal-share-apiary');
@@ -7554,6 +7576,76 @@ function marketBannerClick() {
   if (_currentMarketAd && _currentMarketAd.url) {
     window.open(_currentMarketAd.url, '_blank');
   }
+}
+
+// ── SUBSCRIPTION TIERS ───────────────────────────────────
+// Tier is stored on profiles.tier: null = beta (unlimited), 'free', 'pro', 'commercial'
+var _userTier = null; // loaded from Supabase on auth
+
+var TIER_LIMITS = {
+  free:       { apiaries: 1, hives: 5, sharing: false },
+  pro:        { apiaries: 99, hives: 999, sharing: true },
+  commercial: { apiaries: 999, hives: 9999, sharing: true },
+  beta:       { apiaries: 999, hives: 9999, sharing: true }
+};
+
+function getUserTier() {
+  // During beta all accounts default to unlimited unless explicitly set to 'free'
+  return _userTier || 'beta';
+}
+
+function getTierLimits() {
+  return TIER_LIMITS[getUserTier()] || TIER_LIMITS.beta;
+}
+
+function isFreeTier() {
+  return getUserTier() === 'free';
+}
+
+function canAddApiary() {
+  var limits = getTierLimits();
+  var count = loadApiaries().length;
+  return count < limits.apiaries;
+}
+
+function canAddHive() {
+  var limits = getTierLimits();
+  var count = loadHives().length;
+  return count < limits.hives;
+}
+
+function canShareApiary() {
+  return getTierLimits().sharing;
+}
+
+function showUpgradeModal(reason) {
+  var messages = {
+    apiary: 'The Free plan includes 1 apiary.\n\nUpgrade to Pro to manage unlimited apiaries.',
+    hive:   'The Free plan includes up to 5 hives.\n\nUpgrade to Pro to add unlimited hives.',
+    share:  'Apiary sharing is available on Pro and Commercial plans.\n\nUpgrade to collaborate with other beekeepers.'
+  };
+  var msg = messages[reason] || 'Upgrade your plan to unlock this feature.';
+  // For now show a native confirm — will become a proper modal in a later build
+  if (confirm(msg + '\n\nTap OK to learn more about upgrading.')) {
+    showToast('Upgrade coming soon — contact chris@culshaw.consulting');
+  }
+}
+
+// ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
+function updatePlanBadge() {
+  var nameEl = document.getElementById('settings-plan-name');
+  var limitsEl = document.getElementById('settings-plan-limits');
+  if (!nameEl) return;
+  var tier = getUserTier();
+  var labels = {
+    beta: { name: 'Beta (unlimited)', limits: 'All features unlocked' },
+    free: { name: 'Free', limits: '1 apiary · 5 hives' },
+    pro: { name: 'Pro', limits: 'Unlimited hives & apiaries' },
+    commercial: { name: 'Commercial', limits: 'Full access · ad-free' }
+  };
+  var label = labels[tier] || labels.beta;
+  nameEl.textContent = label.name;
+  if (limitsEl) limitsEl.textContent = label.limits;
 }
 
 </script>
