@@ -1875,12 +1875,15 @@ html.large-text { font-size: 112%; }
 
       <!-- ACCOUNT -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
-      <div id="settings-plan-badge" style="background:var(--cream,#F5F0E8);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">
+      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream,#F5F0E8);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
           <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest,#2D5016);margin-top:2px;">Beta</div>
         </div>
-        <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);text-align:right;">Unlimited during beta</div>
+        <div style="text-align:right;">
+          <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
+          <div style="font-size:11px;font-weight:700;color:var(--honey,#C8730A);margin-top:2px;">View plans →</div>
+        </div>
       </div>
       <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
 
@@ -7619,16 +7622,7 @@ function canShareApiary() {
 }
 
 function showUpgradeModal(reason) {
-  var messages = {
-    apiary: 'The Free plan includes 1 apiary.\n\nUpgrade to Pro to manage unlimited apiaries.',
-    hive:   'The Free plan includes up to 5 hives.\n\nUpgrade to Pro to add unlimited hives.',
-    share:  'Apiary sharing is available on Pro and Commercial plans.\n\nUpgrade to collaborate with other beekeepers.'
-  };
-  var msg = messages[reason] || 'Upgrade your plan to unlock this feature.';
-  // For now show a native confirm — will become a proper modal in a later build
-  if (confirm(msg + '\n\nTap OK to learn more about upgrading.')) {
-    showToast('Upgrade coming soon — contact chris@culshaw.consulting');
-  }
+  openPricingModal(reason);
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
@@ -7648,6 +7642,123 @@ function updatePlanBadge() {
   if (limitsEl) limitsEl.textContent = label.limits;
 }
 
+// ── PRICING / UPGRADE MODAL ───────────────────────────────
+function openPricingModal(highlightTier) {
+  // Update current plan badges
+  var tier = getUserTier();
+  ['free','pro','commercial','beta'].forEach(function(t) {
+    var badge = document.getElementById('plan-badge-' + t);
+    if (badge) badge.style.display = 'none';
+  });
+  var currentBadge = document.getElementById('plan-badge-' + tier);
+  if (currentBadge) currentBadge.style.display = 'block';
+
+  // Hide upgrade buttons for current/lower tiers
+  var tierOrder = ['free','pro','commercial'];
+  var currentIdx = tierOrder.indexOf(tier);
+  tierOrder.forEach(function(t, i) {
+    var btn = document.getElementById('btn-upgrade-' + t);
+    if (!btn) return;
+    if (i <= currentIdx) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = 'block';
+    }
+  });
+
+  openModalEl('modal-pricing');
+}
+
+function handleUpgrade(targetTier) {
+  // Stripe integration placeholder — will be replaced with real payment link
+  var prices = {
+    pro: '£3.99/month or £39.99/year',
+    commercial: '£19.99/month or £199.99/year'
+  };
+  var tierNames = { pro: 'Pro', commercial: 'Commercial' };
+  showToast('Stripe payments coming soon!');
+  // For now direct to email
+  var subject = encodeURIComponent('HiveKeeper ' + tierNames[targetTier] + ' upgrade');
+  var body = encodeURIComponent('Hi Chris,\n\nI would like to upgrade my HiveKeeper account to the ' + tierNames[targetTier] + ' plan (' + prices[targetTier] + ').\n\nMy account email is: ' + (_currentUser ? _currentUser.email : '') + '\n\nThanks');
+  window.open('mailto:chris@culshaw.consulting?subject=' + subject + '&body=' + body, '_blank');
+}
+
 </script>
+
+  <!-- MODAL: PRICING / UPGRADE -->
+  <div class="modal-overlay" id="modal-pricing" onclick="closeModal(event,'modal-pricing')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title" style="color:var(--forest);">Choose your plan</div>
+      <div style="font-size:12px;color:var(--text-m);text-align:center;margin:-8px 0 16px;">All plans include a free beta period</div>
+
+      <!-- FREE TIER -->
+      <div id="plan-card-free" style="border:1.5px solid var(--wax);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text);">Free</div>
+            <div style="font-size:22px;font-weight:700;color:var(--forest);margin-top:2px;">£0<span style="font-size:12px;font-weight:400;color:var(--text-m);">/month</span></div>
+          </div>
+          <div id="plan-badge-free" style="display:none;background:var(--cream);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--forest);">Current plan</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.8;">
+          ✓ &nbsp;1 apiary<br>
+          ✓ &nbsp;Up to 5 hives<br>
+          ✓ &nbsp;Inspections, varroa & harvest logging<br>
+          ✓ &nbsp;Asian Hornet Watch<br>
+          ✓ &nbsp;Seasonal tips & weather<br>
+          ✗ &nbsp;<span style="color:var(--text-l);">Apiary sharing</span><br>
+          ✗ &nbsp;<span style="color:var(--text-l);">Multiple apiaries</span>
+        </div>
+      </div>
+
+      <!-- PRO TIER -->
+      <div id="plan-card-pro" style="border:2px solid var(--honey);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;background:var(--cream);">
+        <div style="background:var(--honey);color:white;font-size:10px;font-weight:700;border-radius:20px;padding:3px 10px;display:inline-block;margin-bottom:8px;">MOST POPULAR</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text);">Pro</div>
+            <div style="font-size:22px;font-weight:700;color:var(--forest);margin-top:2px;">£3.99<span style="font-size:12px;font-weight:400;color:var(--text-m);">/month</span></div>
+            <div style="font-size:11px;color:var(--text-m);">or £39.99/year — save 2 months</div>
+          </div>
+          <div id="plan-badge-pro" style="display:none;background:var(--honey);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:white;">Current plan</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.8;">
+          ✓ &nbsp;Unlimited apiaries<br>
+          ✓ &nbsp;Unlimited hives<br>
+          ✓ &nbsp;Inspections, varroa & harvest logging<br>
+          ✓ &nbsp;Asian Hornet Watch<br>
+          ✓ &nbsp;Seasonal tips & weather<br>
+          ✓ &nbsp;<strong style="color:var(--forest);">Apiary sharing & collaboration</strong><br>
+          ✓ &nbsp;<strong style="color:var(--forest);">BeeBase / CSV import & export</strong>
+        </div>
+        <button onclick="handleUpgrade('pro')" id="btn-upgrade-pro" style="width:100%;margin-top:12px;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Upgrade to Pro — £3.99/month</button>
+      </div>
+
+      <!-- COMMERCIAL TIER -->
+      <div id="plan-card-commercial" style="border:1.5px solid var(--forest);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-size:16px;font-weight:700;color:var(--text);">Commercial</div>
+            <div style="font-size:22px;font-weight:700;color:var(--forest);margin-top:2px;">£19.99<span style="font-size:12px;font-weight:400;color:var(--text-m);">/month</span></div>
+            <div style="font-size:11px;color:var(--text-m);">or £199.99/year — save 2 months</div>
+          </div>
+          <div id="plan-badge-commercial" style="display:none;background:var(--forest);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:white;">Current plan</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.8;">
+          ✓ &nbsp;Everything in Pro<br>
+          ✓ &nbsp;<strong style="color:var(--forest);">Ad-free experience</strong><br>
+          ✓ &nbsp;<strong style="color:var(--forest);">Priority support</strong><br>
+          ✓ &nbsp;<strong style="color:var(--forest);">Commercial honey operation features</strong><br>
+          ✓ &nbsp;Suitable for associations & professionals
+        </div>
+        <button onclick="handleUpgrade('commercial')" id="btn-upgrade-commercial" style="width:100%;margin-top:12px;background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Upgrade to Commercial — £19.99/month</button>
+      </div>
+
+      <div style="font-size:11px;color:var(--text-l);text-align:center;margin:8px 0 4px;">Secure payment via Stripe &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; No hidden fees</div>
+      <button onclick="closeModalEl('modal-pricing')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text-m);cursor:pointer;">Maybe later</button>
+    </div>
+  </div>
+
 </body>
 </html>
