@@ -1554,7 +1554,7 @@ html.large-text { font-size: 112%; }
           <option value="inspector">Inspector — can add inspections</option>
           <option value="manager">Manager — full access</option>
         </select>
-        <div style="font-size:11px;color:var(--text-l);margin-bottom:12px;">Pro: up to 3 collaborators per apiary. Invites are sent by email from noreply@gethivekeeper.com.</div>
+        <div style="font-size:11px;color:var(--text-l);margin-bottom:12px;">Pro: up to 3 collaborators per apiary. Invites are sent by email from <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c6a8a9b4a3b6aabf86a1a3b2aeafb0a3ada3a3b6a3b4e8a5a9ab">[email&#160;protected]</a>.</div>
         <button onclick="inviteToApiary()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Send invite</button>
       </div>
 
@@ -1916,7 +1916,7 @@ html.large-text { font-size: 112%; }
     </div>
   </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 
 
 // ═══════════════════════════════════════════════
@@ -2564,7 +2564,18 @@ const SAMPLE_TRANSCRIPTS = [
 
 function openInspectionForCurrentHive(){ goTo('s-inspect'); }
 function startFreshInspection(){
-  if(!currentHiveId){ const h=loadHives().find(hv=>hv.status==='active'); if(h)currentHiveId=h.id; else{ showToast('No active hives to inspect'); return; } }
+  if(!currentHiveId){
+    var h = loadHives().find(function(hv){ return hv.status==='active'; });
+    if (h) {
+      currentHiveId = h.id;
+    } else {
+      // No hives yet - prompt to add one first
+      if (confirm('You have no hives set up yet.\n\nTap OK to go to your apiary and add your first hive.')) {
+        goTo('s-apiary');
+      }
+      return;
+    }
+  }
   goTo('s-inspect');
 }
 
@@ -2690,7 +2701,15 @@ function addPhoto(){
 }
 
 function saveInspection(){
-  if(!currentHiveId){ showToast('No hive selected'); return; }
+  if(!currentHiveId){
+    var hives = loadHives();
+    if (!hives.length) {
+      showToast('Add a hive first in your Apiary');
+    } else {
+      showToast('Please select a hive first');
+    }
+    return;
+  }
   const hive=loadHives().find(h=>h.id===currentHiveId);
   if(!hive) return;
   const notes=document.getElementById('inspect-notes').value;
@@ -7346,12 +7365,4 @@ async function processInviteToken(token) {
 
 async function syncUserDisplayName() {
   if (!_currentUser) return;
-  var googleName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name));
-  if (!googleName) return;
-  var sb = getSupabase();
-  await sb.from('profiles').update({ name: googleName }).eq('id', _currentUser.id);
-}
-</script>
-</div><!-- end app-container -->
-</body>
-</html>
+  var googleName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name 
