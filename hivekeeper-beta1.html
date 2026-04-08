@@ -867,6 +867,12 @@ html.large-text { font-size: 112%; }
       <label onclick="toggleRemember()" style="font-size:13px;color:rgba(255,255,255,.8);cursor:pointer;font-weight:600;">Keep me signed in</label>
       <input type="checkbox" id="auth-remember" checked style="display:none;">
     </div>
+
+    <!-- Credit -->
+    <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.15);">
+      <div style="font-size:12px;color:rgba(255,255,255,.5);font-weight:600;">Designed &amp; built by Chris Culshaw</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px;">&copy; 2026 HiveKeeper &middot; All rights reserved</div>
+    </div>
     <button id="signin-btn" onclick="handleSignIn()" style="width:100%;padding:15px;background:var(--honey);border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;">Sign in</button>
   </div>
 
@@ -890,7 +896,7 @@ html.large-text { font-size: 112%; }
 
 
 <div class="screen active" id="s-home">
-  <div class="scroll-area" style="max-width:680px;margin:0 auto;width:100%;">
+  <div class="scroll-area">
 
     <!-- DASHBOARD HEADER -->
     <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);width:100%;">
