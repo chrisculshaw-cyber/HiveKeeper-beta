@@ -927,6 +927,33 @@ html.large-text { font-size: 112%; }
     <!-- WEATHER STRIP -->
     <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:12px;">
       <div style="font-size:28px;" id="weather-icon">📡</div>
+
+    <!-- SEASONAL TIP TEASER -->
+    <div class="nectar-strip" id="dash-tip-teaser" onclick="goTo('s-calendar')" style="margin:10px 20px 0;background:var(--forest);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <div style="font-size:22px;" id="dash-tip-icon">🌻</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.04em;">THIS MONTH IN THE APIARY</div>
+        <div style="font-size:13px;font-weight:700;color:white;margin-top:2px;" id="dash-tip-text">Loading seasonal tip...</div>
+      </div>
+      <div style="color:rgba(255,255,255,.4);font-size:16px;">›</div>
+    </div>
+
+    <!-- ASIAN HORNET WATCH -->
+    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;border:1px solid rgba(184,50,40,.3);box-shadow:var(--shadow);">
+      <div class="ah-header" onclick="toggleAHPanel()">
+        <div class="ah-header-icon">🐝</div>
+        <div class="ah-header-text">
+          <div class="ah-header-title">Asian Hornet Watch</div>
+          <div class="ah-header-sub" id="ah-header-sub">Loading nearest sightings...</div>
+        </div>
+        <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
+      </div>
+      <div class="ah-body" id="ah-body" style="display:none;">
+        <div id="ah-content">
+          <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
+        </div>
+      </div>
+    </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
         <div style="font-size:11px;color:var(--text-m);margin-top:2px;" id="weather-desc">Open with signal to refresh</div>
@@ -2948,6 +2975,8 @@ function renderNectarCalendar() {
 
 function initLiveData() {
   try { renderNectarCalendar(); } catch(e) { console.log('nectar err',e); }
+  try { initAsianHornetWatch(); } catch(e) { console.log('ah err',e); }
+  try { updateDashTipTeaser(); } catch(e) { console.log('tip err',e); }
   fetchWeather();
 }
 initLiveData();
@@ -4075,6 +4104,10 @@ window.addEventListener('load', function() {
 });
 
 function renderAsianHornetWatch(lat, lng) {
+  var _ahContent = document.getElementById('ah-content');
+  var _ahSub = document.getElementById('ah-header-sub');
+  if (!_ahContent && !_ahSub) return; // AH banner not in DOM yet
+
   // Calculate distance to all sightings and sort
   var withDist = AH_SIGHTINGS.map(function(s) {
     return Object.assign({}, s, {distKm: haversineKm(lat, lng, s.lat, s.lng)});
@@ -5822,7 +5855,6 @@ async function initAuth() {
 
 function onAuthSuccess() {
   hideAuthScreen();
-  loadUserProfile();
   setTimeout(function() {
     applySettings();
     if(typeof initCurrentApiary === 'function') initCurrentApiary();
@@ -6862,12 +6894,14 @@ async function initCloudSync() {
   }
 }
 
-// Periodic background sync every 5 minutes
+// Periodic background sync every 10 minutes (only if data changed)
+var _lastPushAt = 0;
 setInterval(function() {
-  if (getUserId() && !_syncInProgress) {
+  if (getUserId() && !_syncInProgress && (Date.now() - _lastPushAt) > 10 * 60 * 1000) {
     pushAllToSupabase();
+    _lastPushAt = Date.now();
   }
-}, 5 * 60 * 1000);
+}, 10 * 60 * 1000);
 
 async function saveSettingsToCloud() {
   if (!getUserId()) return;
