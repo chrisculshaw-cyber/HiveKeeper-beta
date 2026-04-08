@@ -932,6 +932,13 @@ html.large-text { font-size: 112%; }
     <!-- WEATHER STRIP -->
     <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:12px;">
       <div style="font-size:28px;" id="weather-icon">📡</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
+        <div style="font-size:11px;color:var(--text-m);margin-top:2px;" id="weather-desc">Open with signal to refresh</div>
+        <div style="font-size:10px;color:var(--text-l);margin-top:2px;" id="weather-updated"></div>
+      </div>
+      <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;">CACHED</div>
+    </div>
 
     <!-- SEASONAL TIP TEASER -->
     <div class="nectar-strip" id="dash-tip-teaser" onclick="goTo('s-calendar')" style="margin:10px 20px 0;background:var(--forest);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
@@ -959,14 +966,6 @@ html.large-text { font-size: 112%; }
         </div>
       </div>
     </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
-        <div style="font-size:11px;color:var(--text-m);margin-top:2px;" id="weather-desc">Open with signal to refresh</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:2px;" id="weather-updated"></div>
-      </div>
-      <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;">CACHED</div>
-    </div>
-
 
     <div class="section-head"><div class="section-title">Priority alerts</div><button class="section-action" onclick="goTo('s-apiary')">All hives →</button></div>
     <div id="alerts-container"></div>
@@ -2959,6 +2958,7 @@ const UK_NECTAR = {
 };
 
 function renderNectarCalendar() {
+  if (!document.getElementById('nectar-calendar')) return;
   const month = new Date().getMonth() + 1;
   const monthName = new Date().toLocaleString('en-GB',{month:'long'});
   const sources = UK_NECTAR[month] || [];
@@ -4529,6 +4529,10 @@ function showAllTips() {
 }
 
 function updateDashTipTeaser() {
+  // Guard: elements may not be in DOM yet on cached pages
+  var _tipEl = document.getElementById('dash-tip-text');
+  var _tipIcon = document.getElementById('dash-tip-icon');
+  if (!_tipEl) return;
   var now = new Date();
   var month = now.getMonth() + 1;
   var tips = UK_SEASONAL_TIPS[month] || [];
