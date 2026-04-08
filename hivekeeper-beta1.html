@@ -6513,11 +6513,11 @@ function loadSwarmCatches(hiveId) {
 // APIARY SHARING
 // ═══════════════════════════════════════════════
 
-function openShareApiary() {
+async function openShareApiary() {
   var modal = document.getElementById('modal-share-apiary');
   if (!modal) return;
-  renderShareList();
   openModalEl('modal-share-apiary');
+  await renderShareList();
 }
 
 async function renderShareList() {
