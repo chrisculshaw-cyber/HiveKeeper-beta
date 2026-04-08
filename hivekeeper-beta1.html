@@ -1164,6 +1164,8 @@ html.large-text { font-size: 112%; }
       <div class="data-grid" id="data-grid"></div>
     </div>
     <div style="margin:10px 20px 0;">
+      <label>Inspection date</label>
+      <input type="date" id="inspect-date" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:12px;">
       <label>Additional notes</label>
       <textarea id="inspect-notes" rows="3" placeholder="Add any additional notes here…"></textarea>
     </div>
@@ -2023,7 +2025,7 @@ function seedRealData(){
 // ═══════════════════════════════════════════════
 
 function getApiarySummary(){
-  const hives = loadHives();
+  var hives = loadHives();
   const active = hives.filter(h => h.status === 'active').length;
   const dead = hives.filter(h => h.status === 'dead').length;
   const unclear = hives.filter(h => h.status === 'unclear').length;
@@ -2066,7 +2068,7 @@ function getHiveIcon(hive){
 // ═══════════════════════════════════════════════
 
 function runAlertEngine(){
-  const hives = loadHives();
+  var hives = loadHives();
   const alerts = [];
 
   // Wax moth — immediate
@@ -2252,7 +2254,7 @@ function renderApiary(){
 
   const allHives = loadHives();
   const hivesToShow = _showHidden ? allHivesIncHidden : allHives;
-  const hives = currentRowFilter === 'all' ? hivesToShow : hivesToShow.filter(h => h.row === currentRowFilter);
+  var hives = currentRowFilter === 'all' ? hivesToShow : hivesToShow.filter(h => h.row === currentRowFilter);
 
   document.getElementById('hive-list-container').innerHTML = hives.map(h => {
     const badge = getBadge(h);
@@ -2348,7 +2350,7 @@ function renderMap(){
   });
 
   // Hives
-  const hives = loadHives();
+  var hives = loadHives();
   canvas._hivePositions = [];
   const hiveMargin = MAP_W * 0.05;
 
@@ -2748,7 +2750,7 @@ function saveInspection(){
   inspections.unshift(insp);
   saveInspections(inspections);
   // Update hive status fields if previously unclear/dead
-  const hives=loadHives();
+  var hives=loadHives();
   const hi=hives.findIndex(h=>h.id===currentHiveId);
   if(hi>=0 && hives[hi].status!=='active'){
     hives[hi].status=insp.queenSeen?'active':'unclear';
@@ -2773,7 +2775,7 @@ function saveNewHive(){
   try {
     const name=document.getElementById('new-hive-name').value.trim();
     if(!name){ showToast('Enter a hive name'); return; }
-    const hives=loadHives();
+    var hives=loadHives();
     const row=document.getElementById('new-hive-row').value;
     const rowHives=hives.filter(function(h){ return h.row===row; });
     const newHive={
@@ -3175,7 +3177,7 @@ function renderCalendar() {
     }
 
     if (hasInsp) {
-      const hives = inspDates[dateKey];
+      var hives = inspDates[dateKey];
       dots = '<div class="cal-dot-row">' + hives.slice(0,3).map(() => '<div class="cal-dot" style="background:var(--honey-l)"></div>').join('') + '</div>';
     }
 
@@ -3197,7 +3199,7 @@ function renderCalendar() {
 
 function calDayTap(dateKey, hivesStr) {
   const inspections = loadInspections();
-  const hives = loadHives();
+  var hives = loadHives();
   const [y, m, d] = dateKey.split('-').map(Number);
 
   // Find all inspections on this date
@@ -3234,7 +3236,7 @@ function openInspectionSummary(dateKey, inspections, isMarch31) {
   const [y, m, d] = dateKey.split('-').map(Number);
   const dateObj = new Date(y, m-1, d);
   const dateStr = dateObj.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-  const hives = loadHives();
+  var hives = loadHives();
 
   document.getElementById('insp-summary-title').textContent = 'Inspection summary';
   document.getElementById('insp-summary-date').textContent = dateStr;
@@ -3347,7 +3349,7 @@ function buildMarch31Cards() {
 }
 
 function renderDueHives() {
-  const hives = loadHives().filter(h => h.status === 'active');
+  var hives = loadHives().filter(h => h.status === 'active');
   const inspections = loadInspections();
   const today = new Date();
   const month = today.getMonth() + 1;
@@ -7384,6 +7386,52 @@ async function processInviteToken(token) {
   if (typeof initCloudSync === 'function') initCloudSync();
 }
 
+
 async function syncUserDisplayName() {
   if (!_currentUser) return;
-  var googleName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name 
+  var googleName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name));
+  if (!googleName) return;
+  var sb = getSupabase();
+  await sb.from('profiles').update({ name: googleName }).eq('id', _currentUser.id);
+}
+
+// ── WEATHER LOCATION SETTING ─────────────────────────────
+function openLocationSetting() {
+  var current = USER_LOCATION_NAME || 'Brigstock';
+  var input = prompt('Enter your location name (e.g. Guildford, Surrey):\nThis is used for weather and seasonal tips.', current);
+  if (!input || !input.trim()) return;
+  var locationName = input.trim();
+  if (navigator.geolocation) {
+    showToast('Getting your location...');
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        USER_LAT = pos.coords.latitude;
+        USER_LNG = pos.coords.longitude;
+        USER_LOCATION_NAME = locationName;
+        localStorage.setItem('hk_user_lat', USER_LAT);
+        localStorage.setItem('hk_user_lng', USER_LNG);
+        localStorage.setItem('hk_user_location_name', USER_LOCATION_NAME);
+        localStorage.removeItem('hk_weather_v1');
+        fetchWeather();
+        showToast('Location updated to ' + locationName);
+      },
+      function(err) {
+        USER_LOCATION_NAME = locationName;
+        localStorage.setItem('hk_user_location_name', USER_LOCATION_NAME);
+        localStorage.removeItem('hk_weather_v1');
+        fetchWeather();
+        showToast('Location name updated. Enable location access for accurate weather.');
+      }
+    );
+  } else {
+    USER_LOCATION_NAME = locationName;
+    localStorage.setItem('hk_user_location_name', USER_LOCATION_NAME);
+    fetchWeather();
+    showToast('Location name updated');
+  }
+}
+
+
+</script>
+</body>
+</html>
