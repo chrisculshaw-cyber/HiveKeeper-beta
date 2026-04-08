@@ -557,16 +557,16 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .market-card { background:var(--white); border-radius:var(--r); border:1px solid var(--wax);
   box-shadow:var(--shadow); margin:0 20px 12px; overflow:hidden; cursor:pointer; transition:transform .15s; }
 .market-card:active { transform:scale(.98); }
-.market-card-header { padding:14px 14px 10px; display:flex; align-items:flex-start; gap:12px; }
-.market-card-icon { font-size:28px; flex-shrink:0; }
-.market-card-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:3px; }
-.market-card-type { font-size:10px; font-weight:700; color:var(--honey); text-transform:uppercase; letter-spacing:.06em; }
+.market-card-header { padding:14px 14px 10px; display:flex; align-items:flex-start; gap:12px;  font-family:'Syne',sans-serif; }
+.market-card-icon { font-size:28px; flex-shrink:0;  font-family:'Syne',sans-serif; }
+.market-card-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:3px; font-family:'Syne',sans-serif; }
+.market-card-type { font-size:10px; font-weight:700; color:var(--honey); text-transform:uppercase; letter-spacing:.06em;  font-family:'Syne',sans-serif; }
 .market-card-price { font-size:16px; font-weight:800; color:var(--forest); font-family:'Syne',sans-serif; margin-top:4px; }
 .market-card-
 .market-card-footer { padding:10px 14px; background:var(--light); border-top:1px solid var(--wax);
-  display:flex; align-items:center; justify-content:space-between; }
-.market-card-loc { font-size:11px; color:var(--text-l); }
-.market-card-dist { font-size:11px; font-weight:700; color:var(--honey); }
+  display:flex; align-items:center; justify-content:space-between;  font-family:'Syne',sans-serif; }
+.market-card-loc { font-size:11px; color:var(--text-l);  font-family:'Syne',sans-serif; }
+.market-card-dist { font-size:11px; font-weight:700; color:var(--honey);  font-family:'Syne',sans-serif; }
 .market-verified { display:inline-flex; align-items:center; gap:4px; background:var(--honey-pale);
   border:1px solid rgba(200,115,10,.2); border-radius:20px; padding:3px 8px;
   font-size:10px; font-weight:700; color:var(--honey); margin-top:6px; }
@@ -825,7 +825,7 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
           </div>
           <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
         </div>
-        <div class="ah-body" id="ah-body" style="display:none;">
+        <div class="ah-body" id="ah-body">
           <div id="ah-content">
             <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
           </div>
@@ -3832,14 +3832,15 @@ function toggleAHPanel() {
   var arrow = document.getElementById('ah-toggle-arrow');
   if (!body) return;
   AH_PANEL_OPEN = !AH_PANEL_OPEN;
-  if (AH_PANEL_OPEN) {
-    body.style.display = 'block';
-    if(arrow) arrow.style.transform = 'rotate(180deg)';
-  } else {
-    body.style.display = 'none';
-    if(arrow) arrow.style.transform = 'rotate(0deg)';
-  }
+  body.style.display = AH_PANEL_OPEN ? 'block' : 'none';
+  if(arrow) arrow.style.transform = AH_PANEL_OPEN ? 'rotate(180deg)' : 'rotate(0deg)';
 }
+
+// Ensure AH body is closed on load
+window.addEventListener('load', function() {
+  var ahBody = document.getElementById('ah-body');
+  if (ahBody) ahBody.style.display = 'none';
+});
 
 function renderAsianHornetWatch(lat, lng) {
   // Calculate distance to all sightings and sort
