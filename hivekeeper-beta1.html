@@ -4217,6 +4217,8 @@ function renderAsianHornetWatch(lat, lng) {
 // Hornet watch initialises when dashboard renders
 // (piggybacks on existing renderDashboard patch via setTimeout)
 document.addEventListener('DOMContentLoaded', function() {
+  // Check for invite token in URL
+  checkInviteToken();
   setTimeout(initAsianHornetWatch, 500);
 });
 
@@ -5907,6 +5909,9 @@ function onAuthSuccess() {
     // Cloud sync in background - don't block initial render
     setTimeout(function() {
       if(typeof initCloudSync === 'function') initCloudSync();
+      // Check for pending invite token
+      var pendingInvite = sessionStorage.getItem('hk_pending_invite');
+      if (pendingInvite) processInviteToken(pendingInvite);
     }, 1500);
   }, 200);
 }
@@ -6541,32 +6546,82 @@ function renderShareList() {
   }).join('');
 }
 
-function inviteToApiary() {
+async function inviteToApiary() {
   var email = document.getElementById('share-email').value.trim();
   var role = document.getElementById('share-role').value;
   var name = email.split('@')[0];
-  
+
   if (!email || !email.includes('@')) { showToast('Enter a valid email'); return; }
-  
+
   var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
-  
-  if (shares.length >= 3) { showToast('Free tier: max 3 collaborators per apiary'); return; }
-  if (shares.find(function(s){ return s.email === email; })) { showToast('Already shared with this person'); return; }
-  
-  shares.push({
-    id: 'share_' + Date.now(),
-    email: email,
-    name: name,
-    role: role,
-    invitedAt: Date.now(),
-    status: 'pending'
-  });
-  
-  localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
-  document.getElementById('share-email').value = '';
-  renderShareList();
-  showToast('Invite sent to ' + email);
-  // Note: actual email sending requires Supabase backend - flagged for cloud sync phase
+  if (shares.length >= 3) { showToast('Free tier: max 3 collaborators'); return; }
+  if (shares.find(function(s){ return s.email === email; })) { showToast('Already invited'); return; }
+
+  // Generate a unique token
+  var token = 'inv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+  // Get current apiary and user name
+  var apiary = getCurrentApiary();
+  var apiaryName = apiary ? apiary.name : 'My Apiary';
+  var inviterName = (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name)
+    ? _currentUser.user_metadata.full_name
+    : (_currentUser ? _currentUser.email.split('@')[0] : 'A beekeeper');
+
+  // Show sending state
+  var btn = document.querySelector('#modal-share button[onclick*="inviteToApiary"]') ||
+            document.querySelector('button[onclick="inviteToApiary()"]');
+  if (btn) { btn.textContent = 'Sending...'; btn.disabled = true; }
+
+  try {
+    // Get auth token
+    var sb = getSupabase();
+    var { data: { session } } = await sb.auth.getSession();
+    var authToken = session ? session.access_token : '';
+
+    var res = await fetch('https://hknauovhcfsfszyilnrw.supabase.co/functions/v1/send-invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + authToken,
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk'
+      },
+      body: JSON.stringify({
+        apiaryId: currentApiaryId,
+        apiaryName: apiaryName,
+        invitedEmail: email,
+        inviterName: inviterName,
+        role: role,
+        token: token
+      })
+    });
+
+    var data = await res.json();
+
+    if (res.ok && data.success) {
+      // Save locally
+      shares.push({
+        id: 'share_' + token,
+        email: email,
+        name: name,
+        role: role,
+        invitedAt: Date.now(),
+        status: 'pending',
+        token: token
+      });
+      localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+      document.getElementById('share-email').value = '';
+      renderShareList();
+      showToast('Invite sent to ' + email + ' ✓');
+    } else {
+      showToast('Failed to send invite — check your connection');
+      console.warn('Invite error:', data);
+    }
+  } catch(e) {
+    showToast('Failed to send invite');
+    console.warn('Invite error:', e);
+  } finally {
+    if (btn) { btn.textContent = 'Send invite'; btn.disabled = false; }
+  }
 }
 
 function removeShare(shareId) {
@@ -7136,6 +7191,82 @@ function confirmImport(data) {
   showToast('Imported ' + newHives.length + ' hives and ' + newInspections.length + ' inspections');
   renderDashboard();
   if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
+}
+
+// ── INVITE ACCEPT FLOW ──────────────────────────────────────
+async function checkInviteToken() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('invite');
+  if (!token) return;
+
+  // Store token for after auth
+  sessionStorage.setItem('hk_pending_invite', token);
+
+  // If already logged in, process now
+  if (_currentUser) {
+    processInviteToken(token);
+  } else {
+    // Show auth screen with invite message
+    var authTitle = document.getElementById('auth-title') || document.querySelector('.auth-title');
+    if (authTitle) authTitle.textContent = 'Sign in to accept your invitation';
+    showToast('Sign in to accept your apiary invitation');
+  }
+}
+
+async function processInviteToken(token) {
+  if (!token) return;
+  var sb = getSupabase();
+
+  // Look up the invite
+  var { data: invite, error } = await sb
+    .from('apiary_shares')
+    .select('*')
+    .eq('token', token)
+    .eq('status', 'pending')
+    .single();
+
+  if (error || !invite) {
+    showToast('Invite not found or already used');
+    sessionStorage.removeItem('hk_pending_invite');
+    return;
+  }
+
+  // Check email matches
+  if (_currentUser.email.toLowerCase() !== invite.invited_email.toLowerCase()) {
+    showToast('This invite was sent to ' + invite.invited_email);
+    sessionStorage.removeItem('hk_pending_invite');
+    return;
+  }
+
+  // Accept the invite
+  await sb.from('apiary_shares').update({
+    status: 'accepted',
+    accepted_at: new Date().toISOString(),
+    accepted_by: _currentUser.id
+  }).eq('token', token);
+
+  // Add the apiary to this user's list
+  var apiaries = loadApiaries();
+  var alreadyHave = apiaries.find(function(a){ return a.id === invite.apiary_id; });
+  if (!alreadyHave) {
+    apiaries.push({
+      id: invite.apiary_id,
+      name: invite.apiary_id, // will be overwritten on sync
+      sharedWith: true,
+      role: invite.role,
+      ownerId: invite.owner_id
+    });
+    localStorage.setItem('hk_apiaries_v1', JSON.stringify(apiaries));
+  }
+
+  sessionStorage.removeItem('hk_pending_invite');
+  showToast('You\'ve joined the apiary! ✓');
+
+  // Clean URL
+  window.history.replaceState({}, '', window.location.pathname);
+  
+  // Reload data
+  if (typeof initCloudSync === 'function') initCloudSync();
 }
 
 </script>
