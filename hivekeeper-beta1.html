@@ -1554,7 +1554,7 @@ html.large-text { font-size: 112%; }
           <option value="inspector">Inspector — can add inspections</option>
           <option value="manager">Manager — full access</option>
         </select>
-        <div style="font-size:11px;color:var(--text-l);margin-bottom:12px;">Pro: up to 3 collaborators per apiary. Email invites will be sent once cloud sync is live.</div>
+        <div style="font-size:11px;color:var(--text-l);margin-bottom:12px;">Pro: up to 3 collaborators per apiary. Invites are sent by email from noreply@gethivekeeper.com.</div>
         <button onclick="inviteToApiary()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Send invite</button>
       </div>
 
@@ -5909,6 +5909,7 @@ function onAuthSuccess() {
     // Cloud sync in background - don't block initial render
     setTimeout(function() {
       if(typeof initCloudSync === 'function') initCloudSync();
+      if(typeof syncUserDisplayName === 'function') syncUserDisplayName();
       // Check for pending invite token
       var pendingInvite = sessionStorage.getItem('hk_pending_invite');
       if (pendingInvite) processInviteToken(pendingInvite);
@@ -6556,7 +6557,14 @@ async function renderShareList() {
   // Always show owner at top
   var ownerEmail = _currentUser ? _currentUser.email : '';
   var ownerName = (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name)
-    ? _currentUser.user_metadata.full_name : ownerEmail.split('@')[0];
+    ? _currentUser.user_metadata.full_name
+    : (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.name)
+    ? _currentUser.user_metadata.name
+    : ownerEmail.split('@')[0];
+  // Capitalise first letter if it's an email prefix
+  if (ownerName === ownerEmail.split('@')[0]) {
+    ownerName = ownerName.charAt(0).toUpperCase() + ownerName.slice(1);
+  }
 
   var ownerRow = '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wax);">' +
     '<div>' +
@@ -7337,6 +7345,13 @@ async function processInviteToken(token) {
   if (typeof initCloudSync === 'function') initCloudSync();
 }
 
+async function syncUserDisplayName() {
+  if (!_currentUser) return;
+  var googleName = (_currentUser.user_metadata && (_currentUser.user_metadata.full_name || _currentUser.user_metadata.name));
+  if (!googleName) return;
+  var sb = getSupabase();
+  await sb.from('profiles').update({ name: googleName }).eq('id', _currentUser.id);
+}
 </script>
 </div><!-- end app-container -->
 </body>
