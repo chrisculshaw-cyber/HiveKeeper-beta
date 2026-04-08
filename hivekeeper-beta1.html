@@ -5853,12 +5853,13 @@ function onAuthSuccess() {
   setTimeout(function() {
     applySettings();
     if(typeof initCurrentApiary === 'function') initCurrentApiary();
+    // Render home immediately from local data
     goTo('s-home');
     try { initLiveData(); } catch(e) {}
-    // Cloud sync - pull latest data then push any local changes
+    // Cloud sync in background - don't block initial render
     setTimeout(function() {
       if(typeof initCloudSync === 'function') initCloudSync();
-    }, 500);
+    }, 1500);
   }, 200);
 }
 
@@ -6874,9 +6875,15 @@ async function initCloudSync() {
   
   if (pulled) {
     showSyncStatus('Synced ✓');
-    if (typeof renderDashboard === 'function') renderDashboard();
-    if (typeof renderApiary === 'function' && currentScreen === 's-apiary') renderApiary();
+    // Re-render current screen with fresh cloud data
+    if (currentScreen === 's-home' || currentScreen === 's-dashboard') {
+      if (typeof renderDashboard === 'function') renderDashboard();
+    } else if (currentScreen === 's-apiary') {
+      if (typeof renderApiary === 'function') renderApiary();
+      if (typeof renderMap === 'function') renderMap();
+    }
   } else {
+    // No cloud data yet - push everything up
     showSyncStatus('Uploading your data...');
     await pushAllToSupabase();
   }
