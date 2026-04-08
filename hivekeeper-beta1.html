@@ -4,8 +4,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
+<meta property="og:title" content="HiveKeeper">
+<meta property="og:description" content="Smart beekeeping management with voice inspections and AI-powered alerts">
+<meta property="og:url" content="https://gethivekeeper.com">
+<link rel="canonical" href="https://gethivekeeper.com">
 <meta name="theme-color" content="#162B1F">
-<title>HiveKeeper Beta 1</title>
+<title>HiveKeeper — gethivekeeper.com</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -876,7 +881,7 @@ html.large-text { font-size: 112%; }
     <!-- Credit -->
     <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.15);">
       <div style="font-size:12px;color:rgba(255,255,255,.5);font-weight:600;">Designed &amp; built by Chris Culshaw</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px;">&copy; 2026 HiveKeeper &middot; All rights reserved</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px;">&copy; 2026 HiveKeeper &middot; gethivekeeper.com</div>
     </div>
     <button id="signin-btn" onclick="handleSignIn()" style="width:100%;padding:15px;background:var(--honey);border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;">Sign in</button>
   </div>
@@ -1450,6 +1455,34 @@ html.large-text { font-size: 112%; }
       <div class="nav-label" style="color:#C62828;font-weight:800;">SOS</div>
     </button>
   </nav>
+  <!-- MODAL: IMPORT -->
+  <div class="modal-overlay" id="modal-import" onclick="closeModal(event,'modal-import')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📥 Import hive data</div>
+
+      <div style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.5;">
+        Import from a BeeBase/NBU CSV file or a HiveKeeper CSV export. Existing hives with the same name will be matched automatically.
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Select CSV file</label>
+        <input type="file" accept=".csv,.txt" onchange="handleImportFile(event)" 
+          style="width:100%;padding:12px;border:2px dashed var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;box-sizing:border-box;background:var(--cream);">
+      </div>
+
+      <div id="import-preview" style="margin-bottom:16px;max-height:200px;overflow-y:auto;"></div>
+
+      <button id="import-confirm-btn" onclick="" 
+        style="display:none;width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">
+        Import data
+      </button>
+      <button onclick="closeModalEl('modal-import')" 
+        style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">
+        Cancel
+      </button>
+    </div>
+  </div>
   <!-- MODAL: SWARM CATCH -->
   <div class="modal-overlay" id="modal-swarm-catch" onclick="closeModal(event,'modal-swarm-catch')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
@@ -1833,7 +1866,8 @@ html.large-text { font-size: 112%; }
       <!-- DATA -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
       <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud now</button>
-      <button onclick="exportToCSV()"  style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
+      <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
+        <button onclick="exportToCSV()"   style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
       <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
 
       <!-- HELP & CLOSE -->
@@ -6937,6 +6971,171 @@ async function loadSettingsFromCloud() {
       } catch(e) {}
     }
   }
+}
+
+// ═══════════════════════════════════════════════
+// BEEBASE / CSV IMPORT
+// ═══════════════════════════════════════════════
+
+function openImportModal() {
+  openModalEl('modal-import');
+}
+
+function handleImportFile(evt) {
+  var file = evt.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var result = parseImportCSV(text);
+    document.getElementById('import-preview').innerHTML = result.previewHtml;
+    document.getElementById('import-confirm-btn').style.display = result.rows > 0 ? 'block' : 'none';
+    document.getElementById('import-confirm-btn').onclick = function() { confirmImport(result.data); };
+  };
+  reader.readAsText(file);
+}
+
+function parseImportCSV(text) {
+  var lines = text.trim().split('\n').map(function(l){ return l.trim(); });
+  if (lines.length < 2) return { rows: 0, previewHtml: '<p style="color:var(--red)">File appears empty</p>', data: [] };
+
+  var headers = parseCSVLine(lines[0]).map(function(h){ return h.toLowerCase().trim(); });
+  
+  // Detect format: BeeBase or HiveKeeper CSV
+  var isBeeBase = headers.includes('hive reference') || headers.includes('apiary name');
+  var isHiveKeeper = headers.includes('hive name') || headers.includes('inspected by');
+  
+  if (!isBeeBase && !isHiveKeeper) {
+    return { rows: 0, previewHtml: '<p style="color:var(--red)">Unrecognised format. Expected BeeBase or HiveKeeper CSV.</p>', data: [] };
+  }
+
+  var data = [];
+  for (var i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    var cols = parseCSVLine(lines[i]);
+    var row = {};
+    headers.forEach(function(h, idx) { row[h] = (cols[idx] || '').trim(); });
+    data.push(row);
+  }
+
+  // Group by hive name and count
+  var hiveNames = {};
+  data.forEach(function(row) {
+    var name = row['hive reference'] || row['hive name'] || 'Unknown';
+    hiveNames[name] = (hiveNames[name] || 0) + 1;
+  });
+
+  var hiveList = Object.keys(hiveNames).map(function(n) {
+    return '<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--wax);">' +
+      '<b>' + n + '</b> — ' + hiveNames[n] + ' inspection' + (hiveNames[n]>1?'s':'') + '</div>';
+  }).join('');
+
+  var html = '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Found ' + 
+    data.length + ' records across ' + Object.keys(hiveNames).length + ' hives:</div>' + hiveList;
+
+  return { rows: data.length, previewHtml: html, data: data, isBeeBase: isBeeBase };
+}
+
+function parseCSVLine(line) {
+  var result = [], current = '', inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current); current = '';
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function confirmImport(data) {
+  if (!data || !data.length) return;
+
+  var existingHives = loadHives(true);
+  var existingInspections = loadInspections();
+  var newHives = [];
+  var newInspections = [];
+  var hiveMap = {}; // name -> id
+
+  // Build map of existing hives by name
+  existingHives.forEach(function(h){ hiveMap[h.name.toLowerCase()] = h.id; });
+
+  data.forEach(function(row) {
+    var hiveName = row['hive reference'] || row['hive name'] || 'Imported Hive';
+    var key = hiveName.toLowerCase();
+
+    // Create hive if it doesn't exist
+    if (!hiveMap[key]) {
+      var newHive = {
+        id: 'hive_import_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+        name: hiveName,
+        status: 'active',
+        hiveType: 'national',
+        boxType: 'brood',
+        broodBoxes: 1,
+        supers: 0,
+        queenStatus: '',
+        storesLevel: '',
+        varroaLevel: '',
+        healthScore: null,
+        mapX: 50 + newHives.length * 80,
+        mapY: 100,
+        apiaryId: currentApiaryId,
+        isHidden: false,
+        notes: 'Imported from CSV'
+      };
+      newHives.push(newHive);
+      hiveMap[key] = newHive.id;
+      existingHives.push(newHive);
+    }
+
+    // Parse date - handle DD/MM/YYYY and YYYY-MM-DD
+    var dateStr = row['inspection date'] || row['date'] || '';
+    var inspDate = null;
+    if (dateStr) {
+      if (dateStr.includes('/')) {
+        var parts = dateStr.split('/');
+        if (parts.length === 3) inspDate = new Date(parts[2], parts[1]-1, parts[0]);
+      } else if (dateStr.includes('-')) {
+        inspDate = new Date(dateStr);
+      }
+    }
+    if (!inspDate || isNaN(inspDate)) inspDate = new Date();
+
+    // Only add if we have meaningful data
+    var notes = row['notes'] || row['notes'] || '';
+    var queenRaw = (row['queen present'] || '').toLowerCase();
+
+    newInspections.push({
+      id: 'insp_import_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+      hiveId: hiveMap[key],
+      inspectedAt: inspDate.getTime(),
+      inspectedBy: row['inspector name'] || row['inspected by'] || 'Import',
+      queenSeen: queenRaw === 'yes' ? true : queenRaw === 'no' ? false : null,
+      broodPattern: row['brood pattern'] || '',
+      storesLevel: row['stores'] || row['stores level'] || '',
+      temper: row['temper'] || '',
+      notes: notes,
+      swarmRisk: '',
+      varroaLevel: '',
+      healthScore: null
+    });
+  });
+
+  // Save everything
+  if (newHives.length) saveHives(existingHives);
+  var allInspections = existingInspections.concat(newInspections);
+  saveInspections(allInspections);
+
+  closeModalEl('modal-import');
+  showToast('Imported ' + newHives.length + ' hives and ' + newInspections.length + ' inspections');
+  renderDashboard();
+  if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
 }
 
 </script>
