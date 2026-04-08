@@ -2201,7 +2201,8 @@ function renderDashboard(){
 
   // Empty state for new users
   if (s.total === 0) {
-    document.getElementById('dash-stats').innerHTML = '<div style="color:rgba(255,255,255,.6);font-size:13px;padding:16px 20px;text-align:center;">Welcome! Tap <b style=\"color:white\">Apiary</b> on the right to add your first hive 🐝</div>';
+    var dashStatsEl = document.getElementById('dash-stats');
+    if (dashStatsEl) dashStatsEl.innerHTML = '<div style="color:rgba(255,255,255,.6);font-size:13px;padding:16px 20px;text-align:center;">Welcome! Tap <b style=\"color:white\">Apiary</b> on the right to add your first hive 🐝</div>';
     var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
     var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
     var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
@@ -2275,7 +2276,8 @@ function renderApiary(){
   var nameEl = document.getElementById('apiary-screen-title');
   if(nameEl && apiary) nameEl.textContent = apiary.name;
   const s = getApiarySummary();
-  document.getElementById('apiary-sub').textContent = `${s.active} active · ${s.dead} lost · ${s.unclear} unclear`;
+  var apiarySubEl = document.getElementById('apiary-sub');
+  if (apiarySubEl) apiarySubEl.textContent = `${s.active} active · ${s.dead} lost · ${s.unclear} unclear`;
   // Add show hidden toggle if there are hidden hives
   var allHivesIncHidden = loadHives(true);
   var hiddenCount = allHivesIncHidden.filter(function(h){ return h.isHidden; }).length;
@@ -2309,7 +2311,9 @@ function renderApiary(){
 
 function renderMap(){
   const canvas = document.getElementById('map-canvas');
+  if (!canvas) return;
   const wrap = canvas.parentElement;
+  if (!wrap) return;
   const W = wrap.clientWidth || 350;
   const H = 300;
   canvas.width = W;
