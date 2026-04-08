@@ -336,7 +336,6 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-header-sub { font-size: 10px; color: rgba(255,255,255,.65); margin-top: 2px; }
 .ah-header-toggle { color: rgba(255,255,255,.6); font-size: 14px; flex-shrink: 0; transition: transform .2s; }
 .ah-header-toggle.open { transform: rotate(180deg); }
-.ah-
 .ah-body { display: none; }
 .ah-body.open { display: block; }
 .ah-status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--wax); }
@@ -768,10 +767,10 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 
 
 <div class="screen active" id="s-home">
-  <div class="scroll-area">
+  <div class="scroll-area" style="max-width:680px;margin:0 auto;width:100%;">
 
     <!-- DASHBOARD HEADER -->
-    <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);">
+    <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);width:100%;">
       <div class="app-header">
         <div>
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
@@ -826,7 +825,7 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
           </div>
           <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
         </div>
-        <div class="ah-body" id="ah-body">
+        <div class="ah-body" id="ah-body" style="display:none;">
           <div id="ah-content">
             <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
           </div>
@@ -3815,11 +3814,17 @@ function initAsianHornetWatch() {
 }
 
 function toggleAHPanel() {
-  AH_PANEL_OPEN = !AH_PANEL_OPEN;
   var body = document.getElementById('ah-body');
   var arrow = document.getElementById('ah-toggle-arrow');
-  if(body) body.classList.toggle('open', AH_PANEL_OPEN);
-  if(arrow) arrow.classList.toggle('open', AH_PANEL_OPEN);
+  if (!body) return;
+  AH_PANEL_OPEN = !AH_PANEL_OPEN;
+  if (AH_PANEL_OPEN) {
+    body.style.display = 'block';
+    if(arrow) arrow.style.transform = 'rotate(180deg)';
+  } else {
+    body.style.display = 'none';
+    if(arrow) arrow.style.transform = 'rotate(0deg)';
+  }
 }
 
 function renderAsianHornetWatch(lat, lng) {
