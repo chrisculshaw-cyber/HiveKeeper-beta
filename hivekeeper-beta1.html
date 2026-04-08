@@ -1898,6 +1898,17 @@ html.large-text { font-size: 112%; }
       <div class="screen-title" style="color:white;">Marketplace</div>
       <div class="screen-sub" style="color:rgba(255,255,255,.65);">Buy and sell nucs, queens &amp; equipment</div>
     </div>
+    <!-- MARKETPLACE BANNER AD — full width, shown on all tiers -->
+    <div id="market-banner" onclick="marketBannerClick()" style="width:100%;background:var(--honey);padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;box-sizing:border-box;">
+      <div id="market-banner-logo" style="font-size:22px;flex-shrink:0;">🏠</div>
+      <div style="flex:1;min-width:0;">
+        <div id="market-banner-headline" style="font-size:13px;font-weight:700;color:white;line-height:1.2;">HiveKeeper Partner</div>
+        <div id="market-banner-tagline" style="font-size:11px;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Supporting UK beekeepers</div>
+      </div>
+      <div id="market-banner-cta" style="font-size:11px;font-weight:700;color:white;background:rgba(0,0,0,.2);padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;">Shop now →</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.5);flex-shrink:0;align-self:flex-start;">Ad</div>
+    </div>
+
     <div class="market-tab-row" id="market-tabs">
       <div class="market-tab active" onclick="filterMarket('all')">All</div>
       <div class="market-tab" onclick="filterMarket('nuc')">&#x1F41D; Nucs</div>
@@ -2143,6 +2154,7 @@ function goTo(id){
   if(id==='s-apiary'){ renderApiary(); renderMap(); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
+  if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
 }
 
 function goBack(){
@@ -3077,6 +3089,7 @@ function initLiveData() {
   try { initAsianHornetWatch(); } catch(e) { console.log('ah err',e); }
   try { updateDashTipTeaser(); } catch(e) { console.log('tip err',e); }
   try { renderAdCard(); } catch(e) { console.log('ad err',e); }
+  try { renderMarketBanner(); } catch(e) { console.log('market banner err',e); }
   fetchWeather();
 }
 initLiveData();
@@ -7513,6 +7526,33 @@ function renderAdCard() {
 function adCardClick() {
   if (_currentAd && _currentAd.url) {
     window.open(_currentAd.url, '_blank');
+  }
+}
+
+// ── MARKETPLACE BANNER AD ────────────────────────────────
+var _currentMarketAd = null;
+
+function renderMarketBanner() {
+  var banner = document.getElementById('market-banner');
+  if (!banner) return;
+  // Pick different ad from current home ad if possible
+  var available = HK_ADS.filter(function(a){ return a !== _currentMarketAd; });
+  if (!available.length) available = HK_ADS;
+  _currentMarketAd = available[Math.floor(Math.random() * available.length)];
+  var ad = _currentMarketAd;
+  var logoEl = document.getElementById('market-banner-logo');
+  var headlineEl = document.getElementById('market-banner-headline');
+  var taglineEl = document.getElementById('market-banner-tagline');
+  var ctaEl = document.getElementById('market-banner-cta');
+  if (logoEl) logoEl.textContent = ad.icon;
+  if (headlineEl) headlineEl.textContent = ad.headline;
+  if (taglineEl) taglineEl.textContent = ad.tagline;
+  if (ctaEl) ctaEl.textContent = ad.cta;
+}
+
+function marketBannerClick() {
+  if (_currentMarketAd && _currentMarketAd.url) {
+    window.open(_currentMarketAd.url, '_blank');
   }
 }
 
