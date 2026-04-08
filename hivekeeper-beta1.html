@@ -792,6 +792,51 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
   margin-left: auto;
 }
 
+
+/* Large text mode */
+.large-text body,
+.large-text .tl-card,
+.large-text .tip-card-body,
+.large-text .market-card-body,
+.large-text .ah-sighting-loc,
+.large-text .alert-title,
+.large-text .alert-sub,
+.large-text .section-title,
+html.large-text { font-size: 112%; }
+.large-text .stat-val { font-size: 26px; }
+.large-text .stat-label { font-size: 12px; }
+.large-text .hive-name { font-size: 15px; }
+.large-text .nav-label { font-size: 12px; }
+.large-text .tl-date { font-size: 13px; }
+.large-text .tl-notes { font-size: 13px; }
+.large-text .modal-title { font-size: 22px; }
+.large-text .settings-label { font-size: 16px; }
+.large-text .settings-sub { font-size: 13px; }
+
+
+/* Settings toggles */
+.settings-toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  background: var(--wax); position: relative;
+  cursor: pointer; flex-shrink: 0; transition: background .2s;
+}
+.settings-toggle::after {
+  content: ''; position: absolute;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: white; top: 2px; left: 2px;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.settings-toggle.on { background: var(--honey); }
+.settings-toggle.on::after { transform: translateX(20px); }
+
+/* Settings rows */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--wax); cursor: pointer;
+}
+.settings-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.settings-sub { font-size: 11px; color: var(--text-l); margin-top: 2px; }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 </head>
@@ -874,8 +919,15 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
     </div>
 
     <!-- WEATHER STRIP -->
-    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;" id="weather-icon">&#x1F4E1;</div>
+    <<div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:12px;">
+      <div style="font-size:28px;" id="weather-icon">📡</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
+        <div style="font-size:11px;color:var(--text-m);margin-top:2px;" id="weather-desc">Open with signal to refresh</div>
+        <div style="font-size:10px;color:var(--text-l);margin-top:2px;" id="weather-updated"></div>
+      </div>
+      <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;">CACHED</div>
+    </div>
       <div style="flex:1;">
         <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
         <div style="font-size:11px;color:var(--text-l);" id="weather-sub">Open with signal to refresh</div>
@@ -2824,6 +2876,18 @@ async function fetchWeather() {
     localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ts:Date.now(), data}));
     renderWeather(data);
   } catch(e) {
+    // Try to show cached data first
+    try {
+      var _stale = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY));
+      if (_stale && _stale.data) {
+        renderWeather(_stale.data);
+        var badge = document.getElementById('weather-offline-badge');
+        if (badge) badge.style.display = 'block';
+        var updEl2 = document.getElementById('weather-updated');
+        if (updEl2) { var ageMin2 = Math.round((Date.now()-_stale.ts)/60000); updEl2.textContent = (ageMin2 < 60 ? ageMin2 + 'min' : Math.round(ageMin2/60) + 'hr') + ' ago · offline'; }
+        return;
+      }
+    } catch(e2) {}
     var _wi = document.getElementById('weather-icon');
     var _wm = document.getElementById('weather-main') || document.getElementById('weather-temp');
     var _ws = document.getElementById('weather-sub')  || document.getElementById('weather-desc');
@@ -2858,7 +2922,16 @@ function renderWeather(data) {
   var updEl    = document.getElementById('weather-updated');
   if(tempEl) tempEl.textContent = temp + '°C · Brigstock · ' + windMph + 'mph wind';
   if(descEl) descEl.textContent = wmo.desc + (flying ? ' · ' + flying : '');
-  if(updEl)  updEl.textContent  = 'Updated ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  // Show cache age
+  var cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || '{}');
+  var badge = document.getElementById('weather-offline-badge');
+  if (cached && cached.ts) {
+    var ageMin = Math.round((Date.now() - cached.ts) / 60000);
+    var ageStr = ageMin < 2 ? 'Just updated' : ageMin < 60 ? ageMin + 'min ago' : Math.round(ageMin/60) + 'hr ago';
+    if(updEl) updEl.textContent = ageStr;
+    // Show CACHED badge if more than 10 minutes old
+    if(badge) badge.style.display = ageMin > 10 ? 'block' : 'none';
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -4632,16 +4705,19 @@ var USE_24H = localStorage.getItem('hk_24h') === '1';
 var USE_LARGE_TEXT = localStorage.getItem('hk_large_text') === '1';
 
 function applySettings() {
-  // 24h clock
+  // 24h clock toggle indicator
   var t24 = document.getElementById('toggle-24h');
   if (t24) t24.classList.toggle('on', USE_24H);
-  // Large text
-  var tlt = document.getElementById('toggle-large-text');
+  // Large text toggle indicator - ID is toggle-large in HTML
+  var tlt = document.getElementById('toggle-large') || document.getElementById('toggle-large-text');
   if (tlt) tlt.classList.toggle('on', USE_LARGE_TEXT);
+  // Apply large text via body class
   if (USE_LARGE_TEXT) {
-    document.documentElement.style.fontSize = '115%';
+    document.body.classList.add('large-text');
+    document.documentElement.classList.add('large-text');
   } else {
-    document.documentElement.style.fontSize = '';
+    document.body.classList.remove('large-text');
+    document.documentElement.classList.remove('large-text');
   }
 }
 
@@ -4651,6 +4727,7 @@ function toggle24h() {
   applySettings();
   renderDashboard();
   showToast(USE_24H ? '24-hour clock on' : '12-hour clock on');
+  saveSettingsToCloud().catch(function(){});
 }
 
 function toggleLargeText() {
@@ -4658,6 +4735,7 @@ function toggleLargeText() {
   localStorage.setItem('hk_large_text', USE_LARGE_TEXT ? '1' : '0');
   applySettings();
   showToast(USE_LARGE_TEXT ? 'Larger text on' : 'Normal text');
+  saveSettingsToCloud().catch(function(){});
 }
 
 function formatTime(ts) {
@@ -5905,7 +5983,9 @@ async function authSignOut() {
     closeModalEl('modal-settings');
     const sb = getSupabase();
     await sb.auth.signOut();
-    Object.keys(localStorage).filter(function(k){ return k.startsWith('hk_'); }).forEach(function(k){ localStorage.removeItem(k); });
+    Object.keys(localStorage).filter(function(k){ 
+      return k.startsWith('hk_') && k !== 'hk_24h' && k !== 'hk_large_text' && k !== 'hk_sos_contact';
+    }).forEach(function(k){ localStorage.removeItem(k); });
   } catch(e) {
     console.error('Sign out error:', e);
   } finally {
@@ -6069,7 +6149,9 @@ function handleSignUp() {
 function confirmResetAndSignOut() {
   if (!confirm('Start fresh?\n\nThis will clear all your local hive data and sign you out. Your account will remain — just sign back in to start with a clean apiary.\n\nThis cannot be undone.')) return;
   // Clear all HiveKeeper localStorage
-  Object.keys(localStorage).filter(function(k){ return k.startsWith('hk_'); }).forEach(function(k){ localStorage.removeItem(k); });
+  Object.keys(localStorage).filter(function(k){ 
+      return k.startsWith('hk_') && k !== 'hk_24h' && k !== 'hk_large_text' && k !== 'hk_sos_contact';
+    }).forEach(function(k){ localStorage.removeItem(k); });
   showToast('Data cleared — signing out...');
   setTimeout(function(){ authSignOut(); }, 1000);
 }
@@ -6784,16 +6866,17 @@ async function initCloudSync() {
   if (!getUserId()) return;
   showSyncStatus('Loading your data...');
   
-  // Pull first (get latest from cloud)
+  // Load settings first
+  await loadSettingsFromCloud().catch(function(){});
+  
+  // Pull data
   var pulled = await pullFromSupabase();
   
   if (pulled) {
-    showSyncStatus('Data loaded ✓');
-    // Re-render with fresh data
+    showSyncStatus('Synced ✓');
     if (typeof renderDashboard === 'function') renderDashboard();
     if (typeof renderApiary === 'function' && currentScreen === 's-apiary') renderApiary();
   } else {
-    // Nothing in cloud yet - push local data up
     showSyncStatus('Uploading your data...');
     await pushAllToSupabase();
   }
@@ -6805,6 +6888,33 @@ setInterval(function() {
     pushAllToSupabase();
   }
 }, 5 * 60 * 1000);
+
+async function saveSettingsToCloud() {
+  if (!getUserId()) return;
+  var sb = getSupabase();
+  await sb.from('profiles').update({
+    settings: JSON.stringify({ use24h: USE_24H, useLargeText: USE_LARGE_TEXT })
+  }).eq('id', getUserId());
+}
+
+async function loadSettingsFromCloud() {
+  if (!getUserId()) return;
+  var sb = getSupabase();
+  var { data } = await sb.from('profiles').select('settings, name').eq('id', getUserId()).single();
+  if (data) {
+    if (data.name) {
+      var nameEls = document.querySelectorAll('.user-display-name, #apiary-name-display');
+    }
+    if (data.settings) {
+      try {
+        var s = JSON.parse(data.settings);
+        if (s.use24h !== undefined) { USE_24H = s.use24h; localStorage.setItem('hk_24h', USE_24H ? '1' : '0'); }
+        if (s.useLargeText !== undefined) { USE_LARGE_TEXT = s.useLargeText; localStorage.setItem('hk_large_text', USE_LARGE_TEXT ? '1' : '0'); }
+        applySettings();
+      } catch(e) {}
+    }
+  }
+}
 
 </script>
 </div><!-- end app-container -->
