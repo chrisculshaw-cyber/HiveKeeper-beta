@@ -2808,6 +2808,12 @@ function saveNewHive(){
   try {
     const name=document.getElementById('new-hive-name').value.trim();
     if(!name){ showToast('Enter a hive name'); return; }
+    // Paywall: Free tier = 5 hives
+    if (!canAddHive()) {
+      closeModalEl('modal-add-hive');
+      showUpgradeModal('hive');
+      return;
+    }
     var hives=loadHives();
     const row=document.getElementById('new-hive-row').value;
     const rowHives=hives.filter(function(h){ return h.row===row; });
