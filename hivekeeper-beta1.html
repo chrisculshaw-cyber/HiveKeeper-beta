@@ -615,16 +615,24 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   top: 40%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 8px;
-  background: rgba(22,43,31,0.92);
-  border-radius: 20px 0 0 20px;
-  box-shadow: -3px 0 16px rgba(0,0,0,0.25);
+  gap: 8px;
+  padding: 8px 6px;
+  background: rgba(22,43,31,0.55);
+  border-radius: 16px 0 0 16px;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
   z-index: 900;
   backdrop-filter: blur(4px);
   touch-action: none;
-  cursor: grab;
-  user-select: none;
+  transition: opacity 0.2s;
+}
+#side-rail:hover, #side-rail:active {
+  background: rgba(22,43,31,0.92);
+}
+#side-rail.collapsed .side-rail-btn {
+  display: none;
+}
+#side-rail.collapsed {
+  padding: 6px;
 }
 #side-rail:active { cursor: grabbing; }
 #side-rail-handle {
@@ -1298,6 +1306,9 @@ html.large-text { font-size: 112%; }
         <option value="swarm_prime">Prime swarm</option>
         <option value="swarm_cast">Cast swarm</option>
         <option value="split">Split / artificial swarm</option>
+        <option value="commercial">Commercial operation</option>
+        <option value="mating">Mating hive</option>
+        <option value="empty">Empty — ready for bees</option>
       </select>
     </div>
     <div class="form-row">
@@ -1614,7 +1625,8 @@ html.large-text { font-size: 112%; }
 
   <!-- SIDE RAIL -->
   <div id="side-rail">
-    <div id="side-rail-handle"></div>
+    <div id="side-rail-handle" title="Drag to move"></div>
+    <button onclick="toggleSideRail()" style="background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:10px;cursor:pointer;padding:2px;width:100%;text-align:center;" title="Hide/show">⬡</button>
     <button class="side-rail-btn" id="rail-apiary" onclick="goTo('s-apiary')">
       <div class="side-rail-icon">🗺️</div>
       <div class="side-rail-label">Apiary</div>
@@ -4333,7 +4345,8 @@ var STATUS_LABELS = {
   dead:         'Colony lost',
   unclear:      'Unclear — needs investigation',
   mating:       'Mating hive',
-  nuc_factory:  'Nuc brood factory'
+  nuc_factory:  'Nuc brood factory',
+  commercial:   'Commercial operation'
 };
 
 var STATUS_TO_HIVE_STATUS = {
@@ -4346,7 +4359,8 @@ var STATUS_TO_HIVE_STATUS = {
   dead: 'dead',
   unclear: 'unclear',
   mating: 'active',
-  nuc_factory: 'active'
+  nuc_factory: 'active',
+  commercial:  'active'
 };
 
 function openHiveStatusModal(hiveId) {
@@ -7714,6 +7728,22 @@ function handleUpgrade(targetTier) {
   var body = encodeURIComponent('Hi Chris,\n\nI would like to upgrade my HiveKeeper account to the ' + tierNames[targetTier] + ' plan (' + prices[targetTier] + ').\n\nMy account email is: ' + (_currentUser ? _currentUser.email : '') + '\n\nThanks');
   window.open('mailto:chris@culshaw.consulting?subject=' + subject + '&body=' + body, '_blank');
 }
+
+// ── SIDE RAIL TOGGLE ─────────────────────────────
+function toggleSideRail() {
+  var rail = document.getElementById('side-rail');
+  if (!rail) return;
+  rail.classList.toggle('collapsed');
+  localStorage.setItem('hk_rail_collapsed', rail.classList.contains('collapsed') ? '1' : '0');
+}
+
+// Restore rail state on load
+window.addEventListener('load', function() {
+  if (localStorage.getItem('hk_rail_collapsed') === '1') {
+    var rail = document.getElementById('side-rail');
+    if (rail) rail.classList.add('collapsed');
+  }
+});
 
 </script>
 
