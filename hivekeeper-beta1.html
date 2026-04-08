@@ -943,6 +943,7 @@ html.large-text { font-size: 112%; }
         <div style="font-size:10px;color:var(--text-l);margin-top:2px;" id="weather-updated"></div>
       </div>
       <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;">CACHED</div>
+      <div onclick="openLocationSetting()" style="padding:4px;cursor:pointer;opacity:.5;font-size:14px;" title="Change location">📍</div>
     </div>
 
     <!-- SEASONAL TIP TEASER -->
@@ -2564,6 +2565,11 @@ const SAMPLE_TRANSCRIPTS = [
 
 function openInspectionForCurrentHive(){ goTo('s-inspect'); }
 function startFreshInspection(){
+  // Set today's date as default
+  setTimeout(function() {
+    var d = document.getElementById('inspect-date');
+    if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
+  }, 100);
   if(!currentHiveId){
     var h = loadHives().find(function(hv){ return hv.status==='active'; });
     if (h) {
@@ -2714,7 +2720,13 @@ function saveInspection(){
   if(!hive) return;
   const notes=document.getElementById('inspect-notes').value;
   const insp={
-    id:uid(), hiveId:currentHiveId, inspectedAt:Date.now(), inspectedBy:'Chris',
+    id:uid(), hiveId:currentHiveId,
+    inspectedAt:(function(){
+      var d = document.getElementById('inspect-date');
+      if (d && d.value) return new Date(d.value).getTime();
+      return Date.now();
+    })(),
+    inspectedBy:'Chris',
     transcript:currentInspData.transcript||notes||'Manual inspection',
     notes, queenSeen:currentInspData.queenSeen===true ? true : currentInspData.queenSeen===false ? false : null, queenFrame:currentInspData.queenFrame||null,
     broodFrames:currentInspData.broodFrames||null, broodPattern:currentInspData.broodPattern||null,
@@ -2758,28 +2770,37 @@ function openAddHive(){
 }
 
 function saveNewHive(){
-  const name=document.getElementById('new-hive-name').value.trim();
-  if(!name){ showToast('Enter a hive name'); return; }
-  const hives=loadHives();
-  const row=document.getElementById('new-hive-row').value;
-  const rowHives=hives.filter(h=>h.row===row);
-  const newHive={
-    id:uid(), name, row, num:rowHives.length+1,
-    type:document.getElementById('new-hive-type').value,
-    box:document.getElementById('new-hive-box').value,
-    established:document.getElementById('new-hive-date').value,
-    queenStatus:document.getElementById('new-hive-queen').value,
-    queenMarked:false, queenYear:new Date().getFullYear(),
-    location:row, notes:document.getElementById('new-hive-notes').value,
-    status:'active', storesLevel:'unknown',
-    mapX:.15+Math.random()*.7, mapY:.05+Math.random()*.85,
-    active:true, createdAt:Date.now()
-  };
-  hives.push(newHive);
-  saveHives(hives);
-  closeModalEl('modal-add-hive');
-  showToast(`✓ ${name} added`);
-  renderApiary(); renderMap(); renderDashboard();
+  try {
+    const name=document.getElementById('new-hive-name').value.trim();
+    if(!name){ showToast('Enter a hive name'); return; }
+    const hives=loadHives();
+    const row=document.getElementById('new-hive-row').value;
+    const rowHives=hives.filter(function(h){ return h.row===row; });
+    const newHive={
+      id:uid(), name:name, row:row, num:rowHives.length+1,
+      hiveType:document.getElementById('new-hive-type').value,
+      boxType:document.getElementById('new-hive-box').value,
+      established:document.getElementById('new-hive-date').value,
+      queenStatus:document.getElementById('new-hive-queen').value,
+      queenMarked:false, queenYear:new Date().getFullYear(),
+      location:row, notes:document.getElementById('new-hive-notes').value,
+      status:'active', storesLevel:'unknown',
+      varroaLevel:'', temper:'', healthScore:null,
+      mapX:.15+Math.random()*.7, mapY:.05+Math.random()*.85,
+      apiaryId:currentApiaryId, isHidden:false,
+      active:true, createdAt:Date.now()
+    };
+    hives.push(newHive);
+    saveHives(hives);
+    closeModalEl('modal-add-hive');
+    showToast('✓ ' + name + ' added');
+    try { renderApiary(); } catch(e) { console.warn('renderApiary err',e); }
+    try { renderMap(); } catch(e) { console.warn('renderMap err',e); }
+    try { renderDashboard(); } catch(e) { console.warn('renderDashboard err',e); }
+  } catch(e) {
+    console.error('saveNewHive error:', e);
+    showToast('Error saving hive — please try again');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -2970,14 +2991,14 @@ function renderWeather(data) {
   const subEl  = document.getElementById('weather-sub');
 
   if(iconEl) iconEl.textContent = wmo.icon;
-  if(mainEl) mainEl.textContent = temp + '°C · Brigstock · ' + windMph + 'mph wind';
+  if(mainEl) mainEl.textContent = temp + '°C · ' + USER_LOCATION_NAME + ' · ' + windMph + 'mph wind';
   if(subEl)  subEl.textContent  = wmo.desc + (flying ? ' · ' + flying : '') + (pollen.level ? ' · ' + pollen.emoji + ' ' + pollen.level + ' pollen' : '');
 
   // Also update legacy IDs if they exist
   var tempEl   = document.getElementById('weather-temp');
   var descEl   = document.getElementById('weather-desc');
   var updEl    = document.getElementById('weather-updated');
-  if(tempEl) tempEl.textContent = temp + '°C · Brigstock · ' + windMph + 'mph wind';
+  if(tempEl) tempEl.textContent = temp + '°C · ' + USER_LOCATION_NAME + ' · ' + windMph + 'mph wind';
   if(descEl) descEl.textContent = wmo.desc + (flying ? ' · ' + flying : '');
   // Show cache age
   var cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || '{}');
