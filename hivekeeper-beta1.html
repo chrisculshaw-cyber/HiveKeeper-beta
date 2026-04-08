@@ -973,6 +973,17 @@ html.large-text { font-size: 112%; }
       </div>
     </div>
 
+    <!-- PARTNER AD CARD — shown on all tiers, rotates per load -->
+    <div id="ad-card" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px dashed var(--honey);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="adCardClick()">
+      <div id="ad-logo" style="width:40px;height:40px;background:var(--cream);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🍯</div>
+      <div style="flex:1;min-width:0;">
+        <div id="ad-headline" style="font-size:12px;font-weight:700;color:var(--text);">HiveKeeper Partner</div>
+        <div id="ad-tagline" style="font-size:11px;color:var(--text-m);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Supporting UK beekeepers</div>
+        <div id="ad-cta" style="font-size:10px;font-weight:700;color:var(--honey);margin-top:2px;">Find out more →</div>
+      </div>
+      <div style="font-size:9px;color:var(--text-l);flex-shrink:0;align-self:flex-start;">Ad</div>
+    </div>
+
     <div class="section-head"><div class="section-title">Priority alerts</div><button class="section-action" onclick="goTo('s-apiary')">All hives →</button></div>
     <div id="alerts-container"></div>
     <div class="section-head" style="margin-top:4px;"><div class="section-title">Active hives</div><button class="section-action" onclick="goTo('s-apiary')">Map →</button></div>
@@ -3065,6 +3076,7 @@ function initLiveData() {
   try { renderNectarCalendar(); } catch(e) { console.log('nectar err',e); }
   try { initAsianHornetWatch(); } catch(e) { console.log('ah err',e); }
   try { updateDashTipTeaser(); } catch(e) { console.log('tip err',e); }
+  try { renderAdCard(); } catch(e) { console.log('ad err',e); }
   fetchWeather();
 }
 initLiveData();
@@ -7438,6 +7450,71 @@ function openLocationSetting() {
   }
 }
 
+
+// ── PARTNER ADS ──────────────────────────────────────────
+var HK_ADS = [
+  {
+    icon: '🏠',
+    headline: 'E.H. Thorne — Spring Sale',
+    tagline: '15% off National hives this April',
+    cta: 'Shop now →',
+    url: 'https://www.thornes.co.uk'
+  },
+  {
+    icon: '🐝',
+    headline: 'Maisemore Apiaries',
+    tagline: 'Quality hives, frames & foundation',
+    cta: 'Visit store →',
+    url: 'https://www.bees-online.co.uk'
+  },
+  {
+    icon: '🦺',
+    headline: 'B.J. Sherriff Bee Suits',
+    tagline: 'British-made suits since 1967',
+    cta: 'View range →',
+    url: 'https://www.bjsherriff.com'
+  },
+  {
+    icon: '💊',
+    headline: 'Vita Europe — Varroa Control',
+    tagline: 'Apiguard & Api-Bioxal treatments',
+    cta: 'Learn more →',
+    url: 'https://www.vita-europe.com'
+  },
+  {
+    icon: '📦',
+    headline: 'National Bee Supplies',
+    tagline: 'Everything for the UK beekeeper',
+    cta: 'Shop now →',
+    url: 'https://www.beekeeping.co.uk'
+  }
+];
+
+var _currentAd = null;
+
+function renderAdCard() {
+  var card = document.getElementById('ad-card');
+  if (!card) return;
+  // Pick a random ad, different from last time
+  var available = HK_ADS.filter(function(a){ return a !== _currentAd; });
+  _currentAd = available[Math.floor(Math.random() * available.length)];
+  var ad = _currentAd;
+  var logoEl = document.getElementById('ad-logo');
+  var headlineEl = document.getElementById('ad-headline');
+  var taglineEl = document.getElementById('ad-tagline');
+  var ctaEl = document.getElementById('ad-cta');
+  if (logoEl) logoEl.textContent = ad.icon;
+  if (headlineEl) headlineEl.textContent = ad.headline;
+  if (taglineEl) taglineEl.textContent = ad.tagline;
+  if (ctaEl) ctaEl.textContent = ad.cta;
+  card.style.display = 'flex';
+}
+
+function adCardClick() {
+  if (_currentAd && _currentAd.url) {
+    window.open(_currentAd.url, '_blank');
+  }
+}
 
 </script>
 </body>
