@@ -2943,6 +2943,9 @@ function pollenLevel(month) {
 }
 
 async function fetchWeather() {
+  if (typeof USER_LAT === 'undefined') { window.USER_LAT = parseFloat(localStorage.getItem('hk_user_lat') || 52.4397); }
+  if (typeof USER_LNG === 'undefined') { window.USER_LNG = parseFloat(localStorage.getItem('hk_user_lng') || -0.5432); }
+  if (typeof USER_LOCATION_NAME === 'undefined') { window.USER_LOCATION_NAME = localStorage.getItem('hk_user_location_name') || 'My Location'; }
   try {
     const cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY));
     if (cached && Date.now() - cached.ts < WEATHER_CACHE_MINS * 60000) {
@@ -2978,6 +2981,10 @@ async function fetchWeather() {
 }
 
 function renderWeather(data) {
+  // Guard: USER_LOCATION_NAME may not exist in cached page versions
+  if (typeof USER_LOCATION_NAME === 'undefined') { window.USER_LOCATION_NAME = localStorage.getItem('hk_user_location_name') || 'My Location'; }
+  if (typeof USER_LAT === 'undefined') { window.USER_LAT = parseFloat(localStorage.getItem('hk_user_lat') || 52.4397); }
+  if (typeof USER_LNG === 'undefined') { window.USER_LNG = parseFloat(localStorage.getItem('hk_user_lng') || -0.5432); }
   const c = data.current;
   const temp = Math.round(c.temperature_2m);
   const wind = Math.round(c.windspeed_10m);
