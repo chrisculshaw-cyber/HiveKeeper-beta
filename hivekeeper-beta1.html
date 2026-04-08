@@ -7143,15 +7143,15 @@ async function pushAllToSupabase() {
 // ── AUTO SYNC HOOKS ──────────────────────────────────────────────
 // Wrap the existing save functions to auto-push after local save
 
-var _origSaveHives = saveHives;
+var _origSaveHivesSync = saveHives;
 saveHives = function(hives) {
-  _origSaveHives(hives);
+  _origSaveHivesSync(hives);
   if (getUserId()) pushHives().catch(function(){});
 };
 
-var _origSaveInspections = saveInspections;
+var _origSaveInspectionsSync = saveInspections;
 saveInspections = function(inspections) {
-  _origSaveInspections(inspections);
+  _origSaveInspectionsSync(inspections);
   if (getUserId()) pushInspections().catch(function(){});
 };
 
