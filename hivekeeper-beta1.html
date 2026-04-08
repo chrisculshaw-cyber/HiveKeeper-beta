@@ -932,7 +932,9 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div><div class="screen-title" id="apiary-screen-title">Meadowbrook Apiary</div><div class="screen-sub" id="apiary-sub">Meadowbrook Farm, Northamptonshire, Brigstock</div></div>
         <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px;">👁 Hidden</button>
-        <button id="edit-layout-btn" onclick="toggleEditLayout()"  style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;margin-top:4px;flex-shrink:0;">Edit layout</button>
+        <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px;">🐝 Swarm catch</button>
+        <button onclick="openShareApiary()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;margin-right:6px;">👥 Share</button>
+        <button id="edit-layout-btn" onclick="toggleEditLayout()"   style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 14px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;margin-top:4px;flex-shrink:0;">Edit layout</button>
       </div>
     </div>
     <div class="map-canvas-wrap">
@@ -1391,6 +1393,84 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       <div class="nav-label" style="color:#C62828;font-weight:800;">SOS</div>
     </button>
   </nav>
+  <!-- MODAL: SWARM CATCH -->
+  <div class="modal-overlay" id="modal-swarm-catch" onclick="closeModal(event,'modal-swarm-catch')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🐝 Log swarm catch</div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Date caught</label>
+        <input type="date" id="swarm-date" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Location / where caught</label>
+        <input type="text" id="swarm-location" placeholder="e.g. bottom of orchard, neighbour's garden" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Swarm source</label>
+        <select id="swarm-source" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;">
+          <option value="own">My own hive</option>
+          <option value="neighbour">Neighbour / local</option>
+          <option value="wild">Wild / unknown</option>
+          <option value="collected">Collected for someone else</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Hive to put in</label>
+        <select id="swarm-hive-select" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;">
+          <option value="">-- Create new hive automatically --</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Approximate frames of bees</label>
+        <input type="number" id="swarm-frames" placeholder="e.g. 4" min="0" max="20" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="swarm-queen" style="width:18px;height:18px;accent-color:var(--honey);">
+        <label for="swarm-queen" style="font-size:13px;color:var(--text);cursor:pointer;font-weight:600;">Queen seen</label>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Notes</label>
+        <textarea id="swarm-notes" placeholder="Any additional observations…" rows="2" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;resize:none;"></textarea>
+      </div>
+
+      <button onclick="saveSwarmCatch()" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:15px;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Log swarm catch</button>
+      <button onclick="closeModalEl('modal-swarm-catch')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+  <!-- MODAL: SHARE APIARY -->
+  <div class="modal-overlay" id="modal-share-apiary" onclick="closeModal(event,'modal-share-apiary')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Share apiary</div>
+      <div id="share-apiary-name" style="font-size:13px;color:var(--text-l);margin-top:-8px;margin-bottom:16px;"></div>
+
+      <!-- Current shares -->
+      <div id="share-list" style="margin-bottom:16px;"></div>
+
+      <!-- Invite new -->
+      <div style="padding-top:12px;border-top:1px solid var(--wax);">
+        <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">Invite someone</div>
+        <input type="email" id="share-email" placeholder="their@email.com" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
+        <select id="share-role" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;margin-bottom:12px;">
+          <option value="viewer">Viewer — can see hives and inspections</option>
+          <option value="inspector">Inspector — can add inspections</option>
+          <option value="manager">Manager — full access</option>
+        </select>
+        <div style="font-size:11px;color:var(--text-l);margin-bottom:12px;">Pro: up to 3 collaborators per apiary. Email invites will be sent once cloud sync is live.</div>
+        <button onclick="inviteToApiary()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Send invite</button>
+      </div>
+
+      <button onclick="closeModalEl('modal-share-apiary')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Close</button>
+    </div>
+  </div>
   <!-- MODAL: HELP -->
   <div class="modal-overlay" id="modal-help" onclick="closeModal(event,'modal-help')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
@@ -2244,7 +2324,7 @@ function renderHiveDetail(){
       ${HIVE_TYPE_ICONS[hive.boxType||'National']||'&#x1F41D;'} ${hive.boxType||'National'}
     </div>
     <div class="hive-status-chip" onclick="openHiveComponentsModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);">
-      &#x1F4E6; ${hive.broodBoxes||1} brood · ${hive.supers||0} supers
+      &#x1F4E6; ${hive.broodBoxes||1} brood · ${hive.supers||0} supers${getHoneyTotal(hive.id) > 0 ? " · 🍯 " + getHoneyTotal(hive.id) + "kg honey" : ""}
     </div>
     <div class="hive-status-chip" style="color:var(--text-l);border-color:var(--wax);cursor:pointer;" onclick="hideHive('${hive.id}')">
       👁 Hide
@@ -2313,7 +2393,31 @@ function renderHiveDetail(){
     return;
   }
   const dotCls = hive.status==='dead'?'grey':hive.status==='unclear'?'':latest&&latest.healthScore>75?'green':'';
-  tlEl.innerHTML = inspections.map((insp,idx)=>`
+  // Merge swarm catches into timeline
+  var swarmCatches = loadSwarmCatches(hive.id);
+  var tlItems = [
+    ...inspections.map(function(insp){ return { type: 'inspection', date: insp.inspectedAt, data: insp }; }),
+    ...swarmCatches.map(function(s){ return { type: 'swarm', date: new Date(s.date).getTime(), data: s }; })
+  ].sort(function(a,b){ return b.date - a.date; });
+  
+  tlEl.innerHTML = tlItems.map((item,idx)=>{
+    if (item.type === 'swarm') {
+      var s = item.data;
+      return '<div class="tl-entry">' +
+        '<div class="tl-dot-col"><div class="tl-dot" style="background:var(--honey);"></div>' +
+        (idx<tlItems.length-1?'<div class="tl-line"></div>':'') + '</div>' +
+        '<div class="tl-card">' +
+          '<div class="tl-date">🐝 Swarm catch · ' + new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + '</div>' +
+          '<div class="tl-row"><span class="tl-label">Location</span><span>' + (s.location||'Not noted') + '</span></div>' +
+          '<div class="tl-row"><span class="tl-label">Source</span><span>' + (s.source||'Unknown') + '</span></div>' +
+          '<div class="tl-row"><span class="tl-label">Frames</span><span>' + (s.frames||'?') + '</span></div>' +
+          '<div class="tl-row"><span class="tl-label">Queen</span><span>' + (s.queenSeen?'Seen':'Not seen') + '</span></div>' +
+          (s.notes?'<div class="tl-notes">'+s.notes+'</div>':'') +
+        '</div></div>';
+    }
+    var insp = item.data;
+    var idx2 = inspections.indexOf(insp);
+    return `
     <div class="tl-entry">
       <div class="tl-dot-col">
         <div class="tl-dot ${dotCls}"></div>
@@ -2330,7 +2434,8 @@ function renderHiveDetail(){
         <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}</div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function generateAdvice(hive){
@@ -5788,9 +5893,16 @@ async function authMagicLink() {
 
 // ── SIGN OUT ─────────────────────────────────────
 async function authSignOut() {
-  const sb = getSupabase();
-  await sb.auth.signOut();
-  showToast('Signed out');
+  try {
+    closeModalEl('modal-settings');
+    const sb = getSupabase();
+    await sb.auth.signOut();
+    Object.keys(localStorage).filter(function(k){ return k.startsWith('hk_'); }).forEach(function(k){ localStorage.removeItem(k); });
+  } catch(e) {
+    console.error('Sign out error:', e);
+  } finally {
+    window.location.href = window.location.href.split('?')[0].split('#')[0] + '?signout=' + Date.now();
+  }
 }
 
 // ── RESET PASSWORD ───────────────────────────────
@@ -6144,6 +6256,187 @@ function toggleRemember() {
   }
 }
 
+
+function getHoneyTotal(hiveId) {
+  var harvests = loadHarvests ? loadHarvests() : [];
+  var hiveHarvests = harvests.filter(function(h){ return h.hiveId === hiveId; });
+  var total = hiveHarvests.reduce(function(sum, h) {
+    var kg = parseFloat(h.weightKg || h.weight || 0);
+    // Convert lbs to kg if needed
+    if (h.unit === 'lb') kg = kg * 0.453592;
+    return sum + kg;
+  }, 0);
+  return Math.round(total * 10) / 10; // 1 decimal place
+}
+
+// ═══════════════════════════════════════════════
+// SWARM CATCH LOGGING
+// ═══════════════════════════════════════════════
+
+function openSwarmCatchModal() {
+  var hives = loadHives();
+  var hiveOptions = hives.map(function(h){
+    return '<option value="' + h.id + '">' + h.name + '</option>';
+  }).join('');
+  
+  var modal = document.getElementById('modal-swarm-catch');
+  if (!modal) return;
+  
+  document.getElementById('swarm-hive-select').innerHTML = '<option value="">-- New hive (create on catch) --</option>' + hiveOptions;
+  document.getElementById('swarm-date').value = new Date().toISOString().split('T')[0];
+  openModalEl('modal-swarm-catch');
+}
+
+function saveSwarmCatch() {
+  var date = document.getElementById('swarm-date').value;
+  var location = document.getElementById('swarm-location').value.trim();
+  var hiveId = document.getElementById('swarm-hive-select').value;
+  var frames = document.getElementById('swarm-frames').value;
+  var queenSeen = document.getElementById('swarm-queen').checked;
+  var notes = document.getElementById('swarm-notes').value.trim();
+  var source = document.getElementById('swarm-source').value;
+
+  if (!date) { showToast('Please set a date'); return; }
+
+  var swarms = JSON.parse(localStorage.getItem('hk_swarm_catches') || '[]');
+  
+  // If no hive selected, create a new one
+  if (!hiveId) {
+    var newHive = {
+      id: 'hive_swarm_' + Date.now(),
+      name: 'Swarm catch ' + new Date(date).toLocaleDateString('en-GB', {day:'numeric',month:'short'}),
+      status: 'active',
+      hiveType: 'national',
+      boxType: 'brood',
+      broodBoxes: 1,
+      supers: 0,
+      queenStatus: queenSeen ? 'queen present' : 'unknown',
+      storesLevel: 'low',
+      apiaryId: currentApiaryId,
+      createdAt: Date.now(),
+      isHidden: false
+    };
+    var hives = loadHives(true);
+    hives.push(newHive);
+    saveHives(hives);
+    hiveId = newHive.id;
+    showToast('New hive created for swarm catch');
+  }
+
+  var catch_ = {
+    id: 'swarm_' + Date.now(),
+    hiveId: hiveId,
+    date: date,
+    location: location,
+    frames: parseInt(frames) || 0,
+    queenSeen: queenSeen,
+    source: source,
+    notes: notes,
+    loggedAt: Date.now()
+  };
+  
+  swarms.push(catch_);
+  localStorage.setItem('hk_swarm_catches', JSON.stringify(swarms));
+  
+  // Log as an inspection note too
+  var inspections = loadInspections();
+  inspections.push({
+    id: 'insp_swarm_' + Date.now(),
+    hiveId: hiveId,
+    inspectedAt: new Date(date).getTime(),
+    inspectedBy: 'HiveKeeper',
+    notes: 'Swarm caught. Location: ' + (location || 'not noted') + '. Frames: ' + (frames || '?') + '. Queen ' + (queenSeen ? 'seen' : 'not seen') + '. Source: ' + (source || 'unknown') + (notes ? '. ' + notes : ''),
+    queenSeen: queenSeen,
+    broodFrames: parseInt(frames) || 0,
+    storesLevel: 'low',
+    swarmRisk: 'low',
+    healthScore: 60
+  });
+  saveInspections(inspections);
+  
+  closeModalEl('modal-swarm-catch');
+  showToast('🐝 Swarm catch logged');
+  renderDashboard();
+  renderApiary();
+}
+
+function loadSwarmCatches(hiveId) {
+  var swarms = JSON.parse(localStorage.getItem('hk_swarm_catches') || '[]');
+  return hiveId ? swarms.filter(function(s){ return s.hiveId === hiveId; }) : swarms;
+}
+
+// ═══════════════════════════════════════════════
+// APIARY SHARING
+// ═══════════════════════════════════════════════
+
+function openShareApiary() {
+  var modal = document.getElementById('modal-share-apiary');
+  if (!modal) return;
+  renderShareList();
+  openModalEl('modal-share-apiary');
+}
+
+function renderShareList() {
+  var apiary = getCurrentApiary ? getCurrentApiary() : null;
+  if (!apiary) return;
+  
+  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+  var list = document.getElementById('share-list');
+  
+  document.getElementById('share-apiary-name').textContent = apiary.name;
+  
+  if (!list) return;
+  if (shares.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">No one else has access yet</div>';
+    return;
+  }
+  
+  list.innerHTML = shares.map(function(s) {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wax);">' +
+      '<div>' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text);">' + s.name + '</div>' +
+        '<div style="font-size:11px;color:var(--text-l);">' + s.email + ' · ' + s.role + '</div>' +
+      '</div>' +
+      '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;font-weight:700;cursor:pointer;">Remove</button>' +
+    '</div>';
+  }).join('');
+}
+
+function inviteToApiary() {
+  var email = document.getElementById('share-email').value.trim();
+  var role = document.getElementById('share-role').value;
+  var name = email.split('@')[0];
+  
+  if (!email || !email.includes('@')) { showToast('Enter a valid email'); return; }
+  
+  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+  
+  if (shares.length >= 3) { showToast('Free tier: max 3 collaborators per apiary'); return; }
+  if (shares.find(function(s){ return s.email === email; })) { showToast('Already shared with this person'); return; }
+  
+  shares.push({
+    id: 'share_' + Date.now(),
+    email: email,
+    name: name,
+    role: role,
+    invitedAt: Date.now(),
+    status: 'pending'
+  });
+  
+  localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+  document.getElementById('share-email').value = '';
+  renderShareList();
+  showToast('Invite sent to ' + email);
+  // Note: actual email sending requires Supabase backend - flagged for cloud sync phase
+}
+
+function removeShare(shareId) {
+  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+  shares = shares.filter(function(s){ return s.id !== shareId; });
+  localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+  renderShareList();
+  showToast('Access removed');
+}
 
 </script>
 </div><!-- end app-container -->
