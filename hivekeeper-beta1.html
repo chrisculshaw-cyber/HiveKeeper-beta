@@ -6520,26 +6520,63 @@ function openShareApiary() {
   openModalEl('modal-share-apiary');
 }
 
-function renderShareList() {
+async function renderShareList() {
   var apiary = getCurrentApiary ? getCurrentApiary() : null;
   if (!apiary) return;
-  
-  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+
   var list = document.getElementById('share-list');
-  
-  document.getElementById('share-apiary-name').textContent = apiary.name;
-  
+  var nameEl = document.getElementById('share-apiary-name');
+  if (nameEl) nameEl.textContent = apiary.name;
   if (!list) return;
-  if (shares.length === 0) {
+
+  // Show loading state
+  list.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>';
+
+  // Load from Supabase
+  var shares = [];
+  try {
+    var sb = getSupabase();
+    var { data, error } = await sb
+      .from('apiary_shares')
+      .select('*')
+      .eq('apiary_id', currentApiaryId)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      shares = data;
+      // Also sync to localStorage for offline use
+      var localShares = shares.map(function(s) {
+        return {
+          id: s.id, email: s.invited_email,
+          name: s.invited_name || s.invited_email.split('@')[0],
+          role: s.role, status: s.status,
+          invitedAt: new Date(s.created_at).getTime(), token: s.token
+        };
+      });
+      localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(localShares));
+    }
+  } catch(e) {
+    // Fall back to localStorage
+    shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]')
+      .map(function(s) { return { id: s.id, invited_email: s.email, invited_name: s.name, role: s.role, status: s.status }; });
+  }
+
+  if (!shares.length) {
     list.innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">No one else has access yet</div>';
     return;
   }
-  
+
   list.innerHTML = shares.map(function(s) {
+    var email = s.invited_email || s.email || '';
+    var name = s.invited_name || s.name || email.split('@')[0];
+    var status = s.status || 'pending';
+    var statusBadge = status === 'accepted'
+      ? '<span style="color:var(--forest);font-size:10px;font-weight:700;">✓ Accepted</span>'
+      : '<span style="color:var(--honey);font-size:10px;font-weight:700;">⏳ Pending</span>';
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wax);">' +
       '<div>' +
-        '<div style="font-size:13px;font-weight:700;color:var(--text);">' + s.name + '</div>' +
-        '<div style="font-size:11px;color:var(--text-l);">' + s.email + ' · ' + s.role + '</div>' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text);">' + name + ' ' + statusBadge + '</div>' +
+        '<div style="font-size:11px;color:var(--text-l);">' + email + ' · ' + s.role + '</div>' +
       '</div>' +
       '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;font-weight:700;cursor:pointer;">Remove</button>' +
     '</div>';
@@ -6624,10 +6661,22 @@ async function inviteToApiary() {
   }
 }
 
-function removeShare(shareId) {
+async function removeShare(shareId) {
+  if (!confirm('Remove this person\'s access?')) return;
+
+  // Remove from Supabase
+  try {
+    var sb = getSupabase();
+    await sb.from('apiary_shares').delete().eq('id', shareId);
+  } catch(e) {
+    console.warn('Failed to remove from Supabase:', e);
+  }
+
+  // Remove from localStorage
   var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
   shares = shares.filter(function(s){ return s.id !== shareId; });
   localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+
   renderShareList();
   showToast('Access removed');
 }
@@ -7206,10 +7255,22 @@ async function checkInviteToken() {
   if (_currentUser) {
     processInviteToken(token);
   } else {
-    // Show auth screen with invite message
+    // Not logged in - show auth screen with invite context
     var authTitle = document.getElementById('auth-title') || document.querySelector('.auth-title');
     if (authTitle) authTitle.textContent = 'Sign in to accept your invitation';
-    showToast('Sign in to accept your apiary invitation');
+    // Switch to sign up view for new users
+    var toggleLink = document.getElementById('auth-toggle-link');
+    var authOverlay = document.getElementById('auth-overlay');
+    if (authOverlay) authOverlay.style.display = 'flex';
+    // Add a banner explaining the invite
+    var existingBanner = document.getElementById('invite-banner');
+    if (!existingBanner) {
+      var banner = document.createElement('div');
+      banner.id = 'invite-banner';
+      banner.style.cssText = 'background:#2D5016;color:white;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;';
+      banner.innerHTML = '🐝 You have been invited to join an apiary — sign in or create an account to accept';
+      document.body.insertBefore(banner, document.body.firstChild);
+    }
   }
 }
 
@@ -7231,11 +7292,12 @@ async function processInviteToken(token) {
     return;
   }
 
-  // Check email matches
+  // Check email matches - warn but still allow if they confirm
   if (_currentUser.email.toLowerCase() !== invite.invited_email.toLowerCase()) {
-    showToast('This invite was sent to ' + invite.invited_email);
-    sessionStorage.removeItem('hk_pending_invite');
-    return;
+    if (!confirm('This invite was sent to ' + invite.invited_email + '.\n\nYou are signed in as ' + _currentUser.email + '.\n\nAccept anyway?')) {
+      sessionStorage.removeItem('hk_pending_invite');
+      return;
+    }
   }
 
   // Accept the invite
