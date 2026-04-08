@@ -1318,16 +1318,36 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div class="modal-title">🐝 HiveKeeper guide</div>
-      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Getting started</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Apiary</b> on the side rail to add your first hive. Give it a name, set its type and status, then place it on your map.</div></div>
-      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recording an inspection</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Inspect</b> on the side rail. Select your hive, tap the microphone and speak naturally — the app extracts queen status, stores, swarm risk and more automatically.</div></div>
-      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Home screen</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Shows apiary summary, priority alerts, active hives, weather, seasonal tips and the nectar calendar. Tap the apiary name to switch between apiaries.</div></div>
-      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">SOS emergency</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The red SOS button sends a pre-written SMS with your GPS location to a saved emergency contact. Set your contact in ⚙️ Settings first.</div></div>
-      <div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Varroa monitoring</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Log counts in the Varroa tab on any hive. Treatment-free beekeepers can use the visual assessment option — mite levels, uncapping behaviour and exoskeleton damage.</div></div>
-      <div style="margin-bottom:20px;"><div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Exporting data</div><div style="font-size:13px;color:var(--text);line-height:1.6;">In ⚙️ Settings — export all data to CSV, or export in BeeBase/NBU format for compliance reporting.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Getting started</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Apiary</b> on the side rail to add your first hive. Give it a name, set its type (National, Langstroth, WBC etc), status, and number of brood boxes and supers. Drag hives to arrange them on your apiary map.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recording an inspection</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Inspect</b> on the side rail. Select your hive, then tap the 🎤 microphone and speak naturally — "queen seen on frame four, six frames of brood, stores adequate, no swarm cells". The AI extracts queen status, brood frames, stores, swarm risk, temper and health score automatically. You can also fill in the form manually.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Home screen</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Shows your apiary summary (active hives, lost colonies, unclear status), priority alerts, live weather for your apiary location, seasonal tip, Asian Hornet Watch, and your active hives scroll. Tap the apiary name to switch between multiple apiaries.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hive detail</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap any hive in the Apiary screen to open its detail page. Tabs show: inspection timeline, brood nest chart, frame tracker, varroa counts, harvests, and treatments. Tap any inspection to edit it. Queen heritage tracks breeding lineage.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Alerts</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The alert engine automatically flags: swarm risk, overdue inspections, low stores, queen issues, varroa levels, Asian hornet risk periods, and seasonal actions. Alerts appear on the home screen ranked by severity.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Varroa monitoring</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Log natural mite drop counts and wash counts in the Varroa tab on any hive. Treatment-free beekeepers can use the visual assessment option — mite levels on bees, uncapping behaviour, and exoskeleton damage indicators.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hiding hives</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>👁 Hide</b> on any hive to remove it from the active view without deleting it — useful for equipment being cleaned or colonies on loan. Hidden hives don't count toward your hive limit. Tap <b>👁 Show hidden</b> in the Apiary screen to reveal and unhide them.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Multiple apiaries</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap the apiary name on the home screen to add a second location. Each apiary has its own hives, map layout and inspection history. Switch between them with a single tap.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">QR &amp; NFC labels</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Open any hive and tap the QR code icon to generate a scannable label. Attach it to your hive — scanning it opens straight to that hive's inspection screen.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Calendar</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The calendar tab shows inspection history, a 5-day weather forecast, and seasonal tips for the current month — swarm prevention, feeding, treatment windows, and harvest timing.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">SOS emergency</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The red <b>SOS</b> button sends a pre-written SMS with your GPS location to a saved emergency contact. Set your contact first in ⚙️ Settings → Set emergency contact.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Marketplace</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Browse and list bees, equipment and honey for sale. Listings marked HiveKeeper Verified include live hive health data from the seller's inspection records.</div></div>
+
+      <div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Exporting data</div><div style="font-size:13px;color:var(--text);line-height:1.6;">In ⚙️ Settings: <b>Export all data to CSV</b> downloads everything. <b>Export to BeeBase/NBU format</b> produces the exact column structure needed for Regional Bee Inspector compliance reporting.</div></div>
+
       <button onclick="closeModalEl('modal-help')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
     </div>
   </div>
-
 
 
   <!-- SIDE RAIL -->
@@ -1575,39 +1595,33 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
       <div class="modal-title">Settings</div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">24-hour clock</div>
-          <div class="settings-sub">Show times as 14:30 instead of 2:30 PM</div>
-        </div>
-        <div class="toggle-switch" id="toggle-24h" onclick="toggle24h()"></div>
+
+      <!-- PREFERENCES -->
+      <div class="settings-row" onclick="toggle24h()">
+        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">Show times as 14:30 instead of 2:30 PM</div></div>
+        <div class="settings-toggle" id="toggle-24h"></div>
       </div>
-      <div class="settings-row">
-        <div>
-          <div class="settings-label">Larger text</div>
-          <div class="settings-sub">Increase font size throughout the app</div>
-        </div>
-        <div class="toggle-switch" id="toggle-large-text" onclick="toggleLargeText()"></div>
+      <div class="settings-row" onclick="toggleLargeText()">
+        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout the app</div></div>
+        <div class="settings-toggle" id="toggle-large"></div>
       </div>
-      <div style="height:8px;"></div>
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wax);">
-        <div style="font-size:11px;color:var(--text-l);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Emergency</div>
-        <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #C62828;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">🆘 Set emergency contact</button>
-        <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
-      </div>
-      <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--wax);">
-        <div id="settings-user-email" style="font-size:11px;color:var(--text-l);margin-bottom:8px;text-align:center;"></div>
-        <button onclick="signOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
-      </div>
-      
-      <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wax);">
-        <div style="font-size:11px;color:var(--text-l);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Data</div>
-        <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
-        <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
-      </div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
-      
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
+
+      <!-- EMERGENCY -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #C62828;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">🆘 Set emergency contact</button>
+      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
+
+      <!-- ACCOUNT -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
+      <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
+
+      <!-- DATA -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
+      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
+      <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
+
+      <!-- HELP & CLOSE -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;margin-top:8px;">❓ Help &amp; guide</button>
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
