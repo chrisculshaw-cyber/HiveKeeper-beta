@@ -852,6 +852,7 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
       <div class="app-header">
         <div>
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
+          <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
           <div class="dash-name" id="apiary-name-display" onclick="openApiarySwitcher()" style="cursor:pointer;" title="Tap to switch apiary">Meadowbrook Apiary <span style="font-size:14px;opacity:.6;">⌄</span></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -1775,7 +1776,8 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 
       <!-- DATA -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
-      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
+      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud now</button>
+      <button onclick="exportToCSV()"  style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
       <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
 
       <!-- HELP & CLOSE -->
@@ -5775,6 +5777,10 @@ function onAuthSuccess() {
     if(typeof initCurrentApiary === 'function') initCurrentApiary();
     goTo('s-home');
     try { initLiveData(); } catch(e) {}
+    // Cloud sync - pull latest data then push any local changes
+    setTimeout(function() {
+      if(typeof initCloudSync === 'function') initCloudSync();
+    }, 500);
   }, 200);
 }
 
@@ -6439,6 +6445,366 @@ function removeShare(shareId) {
   renderShareList();
   showToast('Access removed');
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// HIVEKEEPER CLOUD SYNC — Supabase bidirectional sync
+// Strategy: local-first, sync on action, pull on load
+// ═══════════════════════════════════════════════════════════════════
+
+var _syncInProgress = false;
+var _lastSyncAt = 0;
+
+// ── SYNC STATUS UI ───────────────────────────────────────────────
+function showSyncStatus(msg, isError) {
+  var el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? '#e53935' : 'rgba(255,255,255,.5)';
+  el.style.display = 'block';
+  if (!isError) setTimeout(function(){ if(el) el.style.display = 'none'; }, 3000);
+}
+
+// ── USER ID HELPER ───────────────────────────────────────────────
+function getUserId() {
+  return _currentUser ? _currentUser.id : null;
+}
+
+// ── PUSH: Save to Supabase ───────────────────────────────────────
+
+async function pushApiaries() {
+  var uid = getUserId(); if (!uid) return;
+  var apiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
+  if (!apiaries.length) return;
+  var sb = getSupabase();
+  var rows = apiaries.map(function(a) {
+    return { id: a.id, user_id: uid, name: a.name, location: a.location || '', created_at: new Date(a.createdAt || Date.now()).toISOString() };
+  });
+  var { error } = await sb.from('apiaries').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Apiary push error:', error.message);
+}
+
+async function pushHives() {
+  var uid = getUserId(); if (!uid) return;
+  var hives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
+  if (!hives.length) return;
+  var sb = getSupabase();
+  var rows = hives.map(function(h) {
+    return {
+      id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
+      name: h.name, row: h.row || '', status: h.status || 'active',
+      hive_type: h.hiveType || 'national', box_type: h.boxType || 'brood',
+      brood_boxes: h.broodBoxes || 1, supers: h.supers || 0,
+      queen_status: h.queenStatus || '', stores_level: h.storesLevel || '',
+      varroa_level: h.varroaLevel || '', health_score: h.healthScore || null,
+      map_x: h.mapX || 0, map_y: h.mapY || 0,
+      is_hidden: h.isHidden || false, notes: h.notes || '',
+      wax_moth: h.waxMoth || false, temper: h.temper || ''
+    };
+  });
+  var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Hive push error:', error.message);
+}
+
+async function pushInspections() {
+  var uid = getUserId(); if (!uid) return;
+  var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+  if (!inspections.length) return;
+  var sb = getSupabase();
+  var rows = inspections.map(function(i) {
+    return {
+      id: i.id, user_id: uid, hive_id: i.hiveId,
+      inspected_at: new Date(i.inspectedAt || Date.now()).toISOString(),
+      inspected_by: i.inspectedBy || '',
+      queen_seen: i.queenSeen !== undefined ? i.queenSeen : null,
+      queen_frame: i.queenFrame || null,
+      brood_frames: i.broodFrames || null,
+      stores_level: i.storesLevel || '',
+      swarm_risk: i.swarmRisk || '',
+      varroa_level: i.varroaLevel || '',
+      temper: i.temper || '',
+      health_score: i.healthScore || null,
+      notes: i.notes || '',
+      transcript: i.transcript || ''
+    };
+  });
+  var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Inspection push error:', error.message);
+}
+
+async function pushHarvests() {
+  var uid = getUserId(); if (!uid) return;
+  var harvests = JSON.parse(localStorage.getItem('hk_harvest_v1') || '[]');
+  if (!harvests.length) return;
+  var sb = getSupabase();
+  var rows = harvests.map(function(h) {
+    return {
+      id: h.id, user_id: uid, hive_id: h.hiveId,
+      harvested_at: new Date(h.date || h.createdAt || Date.now()).toISOString(),
+      weight_kg: parseFloat(h.kg || h.weightKg || 0),
+      supers_removed: h.supers || 0,
+      notes: h.notes || ''
+    };
+  });
+  var { error } = await sb.from('harvests').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Harvest push error:', error.message);
+}
+
+async function pushTreatments() {
+  var uid = getUserId(); if (!uid) return;
+  var treatments = JSON.parse(localStorage.getItem('hk_treatment_v1') || '[]');
+  if (!treatments.length) return;
+  var sb = getSupabase();
+  var rows = treatments.map(function(t) {
+    return {
+      id: t.id, user_id: uid, hive_id: t.hiveId,
+      treated_at: new Date(t.date || t.createdAt || Date.now()).toISOString(),
+      product: t.product || '', dose: t.dose || '',
+      next_treatment_date: t.nextDate ? new Date(t.nextDate).toISOString() : null,
+      notes: t.notes || ''
+    };
+  });
+  var { error } = await sb.from('treatments').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Treatment push error:', error.message);
+}
+
+async function pushVarroa() {
+  var uid = getUserId(); if (!uid) return;
+  var varroa = JSON.parse(localStorage.getItem('hk_varroa_v1') || '[]');
+  if (!varroa.length) return;
+  var sb = getSupabase();
+  var rows = varroa.map(function(v) {
+    return {
+      id: v.id, user_id: uid, hive_id: v.hiveId,
+      counted_at: new Date(v.date || v.createdAt || Date.now()).toISOString(),
+      method: v.method || 'natural_drop',
+      mite_count: parseInt(v.count || 0),
+      notes: v.notes || ''
+    };
+  });
+  var { error } = await sb.from('varroa_counts').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Varroa push error:', error.message);
+}
+
+async function pushSwarmCatches() {
+  var uid = getUserId(); if (!uid) return;
+  var swarms = JSON.parse(localStorage.getItem('hk_swarm_catches') || '[]');
+  if (!swarms.length) return;
+  var sb = getSupabase();
+  var rows = swarms.map(function(s) {
+    return {
+      id: s.id, user_id: uid, hive_id: s.hiveId, apiary_id: currentApiaryId,
+      date: s.date,
+      location: s.location || '',
+      source: s.source || 'unknown',
+      frames_of_bees: parseInt(s.frames || 0),
+      queen_seen: s.queenSeen || false,
+      notes: s.notes || '',
+      logged_at: new Date(s.loggedAt || Date.now()).toISOString()
+    };
+  });
+  var { error } = await sb.from('swarm_catches').upsert(rows, { onConflict: 'id' });
+  if (error) console.warn('Swarm push error:', error.message);
+}
+
+// ── PULL: Load from Supabase ─────────────────────────────────────
+
+async function pullFromSupabase() {
+  var uid = getUserId(); if (!uid) return false;
+  var sb = getSupabase();
+  
+  try {
+    // Pull apiaries
+    var { data: apiaries, error: ae } = await sb.from('apiaries').select('*').eq('user_id', uid);
+    if (!ae && apiaries && apiaries.length) {
+      var mapped = apiaries.map(function(a) {
+        return { id: a.id, name: a.name, location: a.location, createdAt: new Date(a.created_at).getTime() };
+      });
+      localStorage.setItem('hk_apiaries_v1', JSON.stringify(mapped));
+    }
+
+    // Pull hives
+    var { data: hives, error: he } = await sb.from('hives').select('*').eq('user_id', uid);
+    if (!he && hives && hives.length) {
+      var mapped = hives.map(function(h) {
+        return {
+          id: h.id, name: h.name, row: h.row, status: h.status,
+          hiveType: h.hive_type, boxType: h.box_type,
+          broodBoxes: h.brood_boxes, supers: h.supers,
+          queenStatus: h.queen_status, storesLevel: h.stores_level,
+          varroaLevel: h.varroa_level, healthScore: h.health_score,
+          mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
+          isHidden: h.is_hidden, notes: h.notes,
+          waxMoth: h.wax_moth, temper: h.temper
+        };
+      });
+      localStorage.setItem('hk_hives_v2', JSON.stringify(mapped));
+    }
+
+    // Pull inspections
+    var { data: inspections, error: ie } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at', { ascending: false }).limit(500);
+    if (!ie && inspections && inspections.length) {
+      var mapped = inspections.map(function(i) {
+        return {
+          id: i.id, hiveId: i.hive_id,
+          inspectedAt: new Date(i.inspected_at).getTime(),
+          inspectedBy: i.inspected_by, queenSeen: i.queen_seen,
+          queenFrame: i.queen_frame, broodFrames: i.brood_frames,
+          storesLevel: i.stores_level, swarmRisk: i.swarm_risk,
+          varroaLevel: i.varroa_level, temper: i.temper,
+          healthScore: i.health_score, notes: i.notes, transcript: i.transcript
+        };
+      });
+      localStorage.setItem('hk_inspections_v2', JSON.stringify(mapped));
+    }
+
+    // Pull harvests
+    var { data: harvests, error: hve } = await sb.from('harvests').select('*').eq('user_id', uid);
+    if (!hve && harvests && harvests.length) {
+      var mapped = harvests.map(function(h) {
+        return {
+          id: h.id, hiveId: h.hive_id,
+          date: h.harvested_at.split('T')[0],
+          kg: h.weight_kg, supers: h.supers_removed,
+          notes: h.notes, createdAt: new Date(h.harvested_at).getTime()
+        };
+      });
+      localStorage.setItem('hk_harvest_v1', JSON.stringify(mapped));
+    }
+
+    // Pull treatments
+    var { data: treatments, error: te } = await sb.from('treatments').select('*').eq('user_id', uid);
+    if (!te && treatments && treatments.length) {
+      var mapped = treatments.map(function(t) {
+        return {
+          id: t.id, hiveId: t.hive_id,
+          date: t.treated_at.split('T')[0],
+          product: t.product, dose: t.dose,
+          nextDate: t.next_treatment_date ? t.next_treatment_date.split('T')[0] : '',
+          notes: t.notes, createdAt: new Date(t.treated_at).getTime()
+        };
+      });
+      localStorage.setItem('hk_treatment_v1', JSON.stringify(mapped));
+    }
+
+    // Pull varroa
+    var { data: varroa, error: ve } = await sb.from('varroa_counts').select('*').eq('user_id', uid);
+    if (!ve && varroa && varroa.length) {
+      var mapped = varroa.map(function(v) {
+        return {
+          id: v.id, hiveId: v.hive_id,
+          date: v.counted_at.split('T')[0],
+          method: v.method, count: v.mite_count,
+          notes: v.notes, createdAt: new Date(v.counted_at).getTime()
+        };
+      });
+      localStorage.setItem('hk_varroa_v1', JSON.stringify(mapped));
+    }
+
+    // Pull swarm catches
+    var { data: swarms, error: se } = await sb.from('swarm_catches').select('*').eq('user_id', uid);
+    if (!se && swarms && swarms.length) {
+      var mapped = swarms.map(function(s) {
+        return {
+          id: s.id, hiveId: s.hive_id, apiaryId: s.apiary_id,
+          date: s.date, location: s.location, source: s.source,
+          frames: s.frames_of_bees, queenSeen: s.queen_seen,
+          notes: s.notes, loggedAt: new Date(s.logged_at).getTime()
+        };
+      });
+      localStorage.setItem('hk_swarm_catches', JSON.stringify(mapped));
+    }
+
+    _lastSyncAt = Date.now();
+    return true;
+
+  } catch(e) {
+    console.warn('Pull error:', e.message);
+    return false;
+  }
+}
+
+// ── FULL PUSH ────────────────────────────────────────────────────
+
+async function pushAllToSupabase() {
+  if (_syncInProgress) return;
+  _syncInProgress = true;
+  showSyncStatus('Syncing...');
+  try {
+    await pushApiaries();
+    await pushHives();
+    await pushInspections();
+    await pushHarvests();
+    await pushTreatments();
+    await pushVarroa();
+    await pushSwarmCatches();
+    _lastSyncAt = Date.now();
+    showSyncStatus('Synced ✓');
+  } catch(e) {
+    showSyncStatus('Sync error', true);
+    console.warn('Push error:', e);
+  } finally {
+    _syncInProgress = false;
+  }
+}
+
+// ── AUTO SYNC HOOKS ──────────────────────────────────────────────
+// Wrap the existing save functions to auto-push after local save
+
+var _origSaveHives = saveHives;
+saveHives = function(hives) {
+  _origSaveHives(hives);
+  if (getUserId()) pushHives().catch(function(){});
+};
+
+var _origSaveInspections = saveInspections;
+saveInspections = function(inspections) {
+  _origSaveInspections(inspections);
+  if (getUserId()) pushInspections().catch(function(){});
+};
+
+var _origSaveHarvest = saveHarvest;
+if (typeof saveHarvest === 'function') {
+  saveHarvest = function() {
+    _origSaveHarvest.apply(this, arguments);
+    if (getUserId()) pushHarvests().catch(function(){});
+  };
+}
+
+var _origSaveTreatment = saveTreatment;
+if (typeof saveTreatment === 'function') {
+  saveTreatment = function() {
+    _origSaveTreatment.apply(this, arguments);
+    if (getUserId()) pushTreatments().catch(function(){});
+  };
+}
+
+// ── INIT SYNC ON LOGIN ───────────────────────────────────────────
+
+async function initCloudSync() {
+  if (!getUserId()) return;
+  showSyncStatus('Loading your data...');
+  
+  // Pull first (get latest from cloud)
+  var pulled = await pullFromSupabase();
+  
+  if (pulled) {
+    showSyncStatus('Data loaded ✓');
+    // Re-render with fresh data
+    if (typeof renderDashboard === 'function') renderDashboard();
+    if (typeof renderApiary === 'function' && currentScreen === 's-apiary') renderApiary();
+  } else {
+    // Nothing in cloud yet - push local data up
+    showSyncStatus('Uploading your data...');
+    await pushAllToSupabase();
+  }
+}
+
+// Periodic background sync every 5 minutes
+setInterval(function() {
+  if (getUserId() && !_syncInProgress) {
+    pushAllToSupabase();
+  }
+}, 5 * 60 * 1000);
 
 </script>
 </div><!-- end app-container -->
