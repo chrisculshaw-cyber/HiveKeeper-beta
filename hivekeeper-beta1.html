@@ -1871,7 +1871,6 @@ html.large-text { font-size: 112%; }
       <!-- EMERGENCY -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
       <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #C62828;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">🆘 Set emergency contact</button>
-      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
 
       <!-- ACCOUNT -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
@@ -1892,6 +1891,7 @@ html.large-text { font-size: 112%; }
       <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud now</button>
       <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
         <button onclick="exportToCSV()"   style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
+      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
       <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
 
       <!-- HELP & CLOSE -->
@@ -6294,14 +6294,36 @@ function handleSignUp() {
     });
 }
 
-function confirmResetAndSignOut() {
-  if (!confirm('Start fresh?\n\nThis will clear all your local hive data and sign you out. Your account will remain — just sign back in to start with a clean apiary.\n\nThis cannot be undone.')) return;
-  // Clear all HiveKeeper localStorage
-  Object.keys(localStorage).filter(function(k){ 
-      return k.startsWith('hk_') && k !== 'hk_24h' && k !== 'hk_large_text' && k !== 'hk_sos_contact';
+async function confirmResetAndSignOut() {
+  if (!confirm('Start fresh?\n\nThis will clear all your hive data — both on this device and in the cloud. Your account will remain — just sign back in to start with a clean apiary.\n\nThis cannot be undone.')) return;
+
+  showToast('Clearing data...');
+
+  // Clear Supabase cloud data for this user
+  if (_currentUser) {
+    try {
+      var sb = getSupabase();
+      var uid = _currentUser.id;
+      await sb.from('hives').delete().eq('user_id', uid);
+      await sb.from('inspections').delete().eq('user_id', uid);
+      await sb.from('harvests').delete().eq('user_id', uid);
+      await sb.from('treatments').delete().eq('user_id', uid);
+      await sb.from('varroa_checks').delete().eq('user_id', uid);
+      await sb.from('swarm_catches').delete().eq('user_id', uid);
+      await sb.from('apiaries').delete().eq('user_id', uid);
+    } catch(e) {
+      console.warn('Cloud clear error:', e);
+      // Continue with local clear regardless
+    }
+  }
+
+  // Clear all HiveKeeper localStorage (keep preferences)
+  Object.keys(localStorage).filter(function(k){
+      return k.startsWith('hk_') && k !== 'hk_24h' && k !== 'hk_large_text' && k !== 'hk_sos_contact' && k !== 'hk_user_lat' && k !== 'hk_user_lng' && k !== 'hk_user_location_name' && k !== 'hk_seeded_beta';
     }).forEach(function(k){ localStorage.removeItem(k); });
+
   showToast('Data cleared — signing out...');
-  setTimeout(function(){ authSignOut(); }, 1000);
+  setTimeout(function(){ authSignOut(); }, 1200);
 }
 
 // ═══════════════════════════════════════════════
