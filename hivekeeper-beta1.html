@@ -1226,11 +1226,16 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
         <div style="padding:12px 14px;">
           <div id="inspect-last-notes" style="font-size:12px;color:var(--text-m);line-height:1.6;margin-bottom:4px;overflow:hidden;max-height:0;transition:max-height .3s ease;"></div>
-          <div id="inspect-last-expand-btn" onclick="toggleLastInspNotes()" style="font-size:11px;color:var(--honey);font-weight:700;cursor:pointer;margin-bottom:8px;">▼ Show notes</div>
+          <button id="inspect-last-expand-btn" onclick="toggleLastInspNotes()" style="width:100%;margin-top:8px;margin-bottom:4px;padding:12px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;font-family:'Syne',sans-serif;">▼ Show notes</button>
           <div style="display:flex;flex-wrap:wrap;gap:6px;" id="inspect-last-stats"></div>
         </div>
         <div style="padding:8px 14px;border-top:1px solid var(--wax);background:var(--light);font-size:10px;color:var(--text-l);font-style:italic;">Tap Apiary → hive for full inspection history</div>
       </div>
+    <!-- WHAT TO LOOK FOR THIS INSPECTION -->
+    <div id="inspect-tips-section" style="margin:10px 20px 0;background:#FFF8E7;border:1px solid #FAEEDA;border-radius:var(--rs);padding:12px 14px;">
+      <div style="font-size:10px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">🔍 What to look for this inspection</div>
+      <div id="inspect-tip-text" style="font-size:13px;color:#633806;line-height:1.5;"></div>
+    </div>
     <div class="voice-recorder">
       <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
       <div class="waveform">
@@ -3187,7 +3192,7 @@ async function analyseFramePhoto(thumbEl) {
     // Sanitise before storing
     currentInspData.frameAnalysis = (analysis || '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
     showFrameAnalysisResult(currentInspData.frameAnalysis, thumbEl);
-    if (aibtn) { aibtn.textContent = '✓'; aibtn.style.background = 'var(--green)'; }
+    if (aibtn) { aibtn.textContent = '✓'; aibtn.style.background = '#2D5016'; btn.style.color = '#ffffff'; }
 
   } catch(e) {
     console.warn('Frame analysis error:', e);
@@ -4581,6 +4586,16 @@ function updateInspectMeta(){
   var hive=loadHives().find(function(h){return h.id===currentHiveId;});
   if(!hive){el.textContent='Choose a hive above';return;}
   el.textContent=hive.row+' - '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  // Show seasonal tip
+  var tipEl = document.getElementById('inspect-tip-text');
+  if (tipEl && typeof getSeasonalTip === 'function') {
+    var tip = getSeasonalTip();
+    tipEl.textContent = tip ? tip.tip || tip.text || tip : 'Check brood pattern, stores and signs of queen cells.';
+  } else if (tipEl) {
+    var month = new Date().getMonth();
+    var tips = ['Check colony cluster and stores — do not disturb unless necessary','Check stores and cluster — winter still possible','Look for first brood and queen activity','Swarm season beginning — check for queen cells weekly','Check for queen cells — swarm risk at its highest','Peak swarm season — inspect every 7 days without fail','Supers filling — check for space and swarm cells','Harvest check — are supers capped? Begin varroa treatment after harvest','Start autumn varroa treatment — colony prep for winter begins','Final inspections — check queen, stores and reduce entrance','Fit mouse guards — hive should be closed up for winter','Check heft and weight — feed fondant if light'];
+    tipEl.textContent = tips[month] || 'Check brood pattern, stores and signs of queen cells.';
+  }
 }
 function openRenameHive(hiveId){
   renamingHiveId=hiveId;
@@ -9879,6 +9894,9 @@ function updateAnalyseButton() {
     if (btn) {
       var count = photos.length;
       btn.textContent = '🤖 Analyse ' + count + ' frame photo' + (count > 1 ? 's' : '') + ' with AI';
+      btn.style.background = '#C8730A';
+      btn.style.color = '#ffffff';
+      btn.disabled = false;
     }
   }
 }
@@ -9924,7 +9942,7 @@ async function analyseAllFrames() {
     }
   }
 
-  if (btn) { btn.textContent = '🤖 Analysis complete ✓'; btn.disabled = false; btn.style.background = 'var(--green)'; }
+  if (btn) { btn.textContent = '🤖 Analysis complete ✓'; btn.disabled = false; btn.style.background = '#2D5016'; btn.style.color = '#ffffff'; }
 
   if (allAnalyses.length) {
     var combined = allAnalyses.join('\n\n---\n\n');
@@ -9936,7 +9954,7 @@ async function analyseAllFrames() {
     showToast('Analysis added to notes ✓');
   } else {
     showToast('Analysis failed — check connection');
-    if (btn) { btn.textContent = '🤖 Analyse frames with AI'; btn.style.background = ''; }
+    if (btn) { btn.textContent = '🤖 Analyse frames with AI'; btn.style.background = '#C8730A'; btn.style.color = '#ffffff'; }
   }
 }
 
