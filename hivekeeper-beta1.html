@@ -1093,12 +1093,15 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="section-title">Filter by row</div>
       <button class="section-action" onclick="openAddHive()">+ Add hive</button>
     </div>
-    <div class="row-tabs" id="row-tabs">
+    <div style="display:flex;align-items:center;padding:0 20px 0 0;gap:0;">
+      <div class="row-tabs" id="row-tabs">
       <div class="row-tab active" onclick="filterRow('all',this)">All 24</div>
       <div class="row-tab" onclick="filterRow('Row 1',this)">Row 1</div>
       <div class="row-tab" onclick="filterRow('Row 2',this)">Row 2</div>
       <div class="row-tab" onclick="filterRow('Row 3',this)">Row 3</div>
       <div class="row-tab" onclick="filterRow('Row 4',this)">Row 4</div>
+    </div>
+      <button onclick="openRowEditor()" style="flex-shrink:0;background:transparent;border:1px solid var(--wax);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--text-l);cursor:pointer;white-space:nowrap;margin-left:8px;">&#9998; Rows</button>
     </div>
     <div id="hive-list-container" style="margin-top:8px;"></div>
     <div style="padding:12px 16px 4px;">
@@ -2959,6 +2962,16 @@ function renderInspectHeader(){
   var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.remove('recording');
   document.getElementById('rec-time').textContent='00:00';
   recSeconds=0; recording=false;
+  // Clear last inspection display
+  var _ld=document.getElementById('inspect-last-date'); if(_ld) _ld.textContent='';
+  var _ln=document.getElementById('inspect-last-notes'); if(_ln) _ln.textContent='';
+  var _ls=document.getElementById('inspect-last-stats'); if(_ls) _ls.textContent='';
+  var _lsec=document.getElementById('inspect-last-section'); if(_lsec) _lsec.style.display='none';
+  // Reset analyse button
+  var _abw=document.getElementById('analyse-btn-wrap'); if(_abw) _abw.style.display='none';
+  var _ab=document.getElementById('analyse-all-btn'); if(_ab){_ab.textContent='Analyse frame photo with AI';_ab.disabled=false;_ab.style.background='';}
+  // Reset toggle buttons
+  document.querySelectorAll('#s-inspect .toggle-btn').forEach(function(b){ b.classList.remove('active'); });
   document.getElementById('photo-strip').innerHTML='<div class="photo-add" onclick="addPhoto()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">📷<span style="font-size:8px;color:var(--text-l);font-weight:700;">AI</span></div>';
 }
 
@@ -4497,6 +4510,11 @@ function changeInspectHive(hiveId){
   document.querySelectorAll('#s-inspect .toggle-btn').forEach(function(b){ b.classList.remove('active'); });
   // Reset date to today
   var dd=document.getElementById('inspect-date'); if(dd) dd.value=new Date().toISOString().split('T')[0];
+  // Clear last inspection display
+  var ld=document.getElementById('inspect-last-date'); if(ld) ld.textContent='';
+  var ln=document.getElementById('inspect-last-notes'); if(ln) ln.textContent='';
+  var ls=document.getElementById('inspect-last-stats'); if(ls) ls.textContent='';
+  var lsec=document.getElementById('inspect-last-section'); if(lsec) lsec.style.display='none';
   updateInspectMeta();
   showToast(getHiveName(hiveId)+' selected');
 }
