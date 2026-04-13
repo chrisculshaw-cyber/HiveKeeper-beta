@@ -1973,6 +1973,11 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
 
+      <!-- CALENDAR -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Calendar</div>
+      <button onclick="subscribeToCalendar()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:4px;">&#x1F4C5; Subscribe to HiveKeeper calendar</button>
+      <div style="font-size:10px;color:var(--text-l);text-align:center;margin-bottom:8px;">Inspection reminders &amp; seasonal events in Apple / Google Calendar</div>
+
       <!-- COMMUNITY -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Community</div>
       <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">💬 Join WhatsApp Community</button>
@@ -3620,6 +3625,63 @@ function mergePhotoUrlsFromCloud(cloudInspections) {
     }
   });
   if (updated) saveInspections(local);
+}
+
+
+
+// ── Calendar subscription ──────────────────────────────────
+function generateCalendarToken() {
+  var arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+
+async function getOrCreateCalendarToken() {
+  var uid = getUserId();
+  if (!uid) return null;
+  var sb = getSupabase();
+  var { data: profile } = await sb.from('profiles').select('calendar_token').eq('id', uid).maybeSingle();
+  if (profile && profile.calendar_token) return profile.calendar_token;
+  var token = generateCalendarToken();
+  await sb.from('profiles').update({ calendar_token: token }).eq('id', uid);
+  return token;
+}
+
+async function subscribeToCalendar() {
+  showToast('Generating your calendar link…');
+  var token = await getOrCreateCalendarToken();
+  if (!token) { showToast('Sign in to get your calendar link'); return; }
+  var calUrl = 'https://flat-bird-f269.chris-culshaw.workers.dev/calendar/' + token;
+  var webcalUrl = 'webcal://flat-bird-f269.chris-culshaw.workers.dev/calendar/' + token;
+  var existing = document.getElementById('cal-share-sheet');
+  if (existing) existing.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'cal-share-sheet';
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 24px rgba(0,0,0,.25);max-width:480px;margin:0 auto;';
+  var inner = document.createElement('div');
+  inner.innerHTML = '<div style="width:40px;height:4px;background:#E0E0E0;border-radius:2px;margin:0 auto 16px;"></div>'
+    + '<div style="font-size:20px;text-align:center;margin-bottom:6px;">&#x1F4C5;</div>'
+    + '<div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:6px;font-family:Syne,sans-serif;color:var(--text);">Subscribe to your HiveKeeper calendar</div>'
+    + '<div style="font-size:12px;color:var(--text-l);text-align:center;margin-bottom:16px;">Adds inspection reminders, treatment dates and seasonal events to Apple Calendar, Google Calendar or Outlook. Updates automatically.</div>'
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:10px 12px;font-size:11px;color:var(--text);word-break:break-all;margin-bottom:14px;font-family:monospace;">' + calUrl + '</div>'
+    + '<button id="cal-copy-btn" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;font-family:Syne,sans-serif;">&#x1F4CB; Copy calendar link</button>'
+    + '<button id="cal-open-btn" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:12px;font-family:Syne,sans-serif;">&#x1F4C5; Open in calendar app</button>'
+    + '<div style="font-size:11px;color:var(--text-l);text-align:center;margin-bottom:10px;">Keep this link private — anyone with it can view your calendar</div>'
+    + '<button id="cal-close-btn" style="width:100%;background:transparent;border:none;padding:8px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Close</button>';
+  sheet.appendChild(inner);
+  document.body.appendChild(sheet);
+  document.getElementById('cal-copy-btn').addEventListener('click', function() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(calUrl).then(function(){ showToast('Calendar link copied!'); }).catch(function(){});
+    } else {
+      var el = document.createElement('textarea');
+      el.value = calUrl; document.body.appendChild(el); el.select();
+      document.execCommand('copy'); document.body.removeChild(el);
+      showToast('Calendar link copied!');
+    }
+  });
+  document.getElementById('cal-open-btn').addEventListener('click', function(){ window.open(webcalUrl); });
+  document.getElementById('cal-close-btn').addEventListener('click', function(){ sheet.remove(); });
 }
 
 
