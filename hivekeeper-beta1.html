@@ -7999,24 +7999,7 @@ async function pushApiaries() {
     return { id: a.id, user_id: uid, name: a.name, location: a.location || '', lat: a.lat || null, lng: a.lng || null, created_at: new Date(a.createdAt || Date.now()).toISOString() };
   });
   var { error } = await sb.from('apiaries').upsert(rows, { onConflict: 'id' });
-  if (error) {
-    console.warn('Apiary push error:', error.message);
-    if (error.message && error.message.includes('row-level security')) {
-      // RLS failure — likely a stale apiary row with wrong user_id
-      // Try delete + reinsert for each apiary owned by current user
-      console.log('RLS error on apiaries upsert — attempting delete + reinsert');
-      for (var ri = 0; ri < rows.length; ri++) {
-        var row = rows[ri];
-        // Delete the old row (may fail if doesn't exist, that's fine)
-        await sb.from('apiaries').delete().eq('id', row.id);
-        // Reinsert with correct user_id
-        var { error: insertErr } = await sb.from('apiaries').insert(row);
-        if (insertErr) console.warn('Apiary reinsert failed:', insertErr.message);
-      }
-    } else {
-      showToast('⚠️ Sync error (apiaries): ' + error.message);
-    }
-  }
+  if (error) { console.warn('Apiary push error:', error.message); showToast('⚠️ Sync error (apiaries): ' + error.message); }
 }
 
 async function pushHives() {
@@ -10714,7 +10697,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 8:53pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 8:22pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
