@@ -2977,7 +2977,7 @@ function renderHiveDetail(){
         <div class="tl-type">📋 Inspection · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
         <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}</div>
-        ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var lbl = decodeURIComponent(url.split('/').pop().replace(/\.jpg$|\.png$/,'').replace(/^\d+_/,'').replace(/_\d+$/,'').replace(/_/g,' ')); return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
+        ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
       </div>
     </div>
   `;
@@ -3310,19 +3310,21 @@ function addPhotoToStrip(dataUrl, photoIndex, label) {
   currentInspData.photos.push({ dataUrl: dataUrl, analysed: false, url: null, label: label });
   updateAnalyseButton();
 
-  // Upload immediately
-  if (getUserId() && currentHiveId) {
-    uploadSinglePhoto(dataUrl, currentHiveId, photoIndex, label).then(function(url) {
+  // Upload immediately — use currentHiveId or unassigned folder
+  var uploadHiveId = currentHiveId || 'unassigned';
+  if (getUserId()) {
+    uploadSinglePhoto(dataUrl, uploadHiveId, photoIndex, label).then(function(url) {
       var statusEl = document.getElementById('photo-status-' + photoIndex);
       if (url) {
         currentInspData.photos[photoIndex].url = url;
-        currentInspData.photos[photoIndex].dataUrl = null; // free memory after upload
+        currentInspData.photos[photoIndex].hiveId = uploadHiveId;
         if (statusEl) statusEl.textContent = '☁️';
         thumb.onclick = function(){ window.open(url); };
       } else {
         if (statusEl) statusEl.textContent = label.substring(0,8);
       }
-    }).catch(function() {
+    }).catch(function(e) {
+      console.warn('Photo upload error:', e);
       var statusEl = document.getElementById('photo-status-' + photoIndex);
       if (statusEl) statusEl.textContent = label.substring(0,8);
     });
@@ -3579,22 +3581,42 @@ function saveInspection(){
     if(insp.status && ['dead','lost','unclear'].includes(insp.status)) hives[hi].status=insp.status;
     saveHives(hives);
   }
-  showToast('✓ Saved — ' + hive.name);
-  // Collect already-uploaded photo URLs (uploaded immediately when added)
-  if (currentInspData.photos && currentInspData.photos.length) {
-    var uploadedUrls = currentInspData.photos
-      .map(function(p){ return p.url; })
-      .filter(function(u){ return !!u; });
-    if (uploadedUrls.length) {
-      insp.photoUrls = uploadedUrls;
-      // Re-save with URLs included
-      var allInsp = loadInspections();
-      var existingIdx = allInsp.findIndex(function(i){ return i.id === insp.id; });
-      if (existingIdx > -1) allInsp[existingIdx] = insp;
+  // Toast handled by _finaliseAndNavigate
+  // Wait for all photo uploads to complete before navigating
+  var _pendingPhotos = (currentInspData.photos || []).filter(function(p){ return p.dataUrl && !p.url; });
+  var _allPhotos = currentInspData.photos || [];
+
+  function _finaliseAndNavigate() {
+    var uploadedUrls = _allPhotos.map(function(p){ return p.url; }).filter(Boolean);
+    var photoLabels = _allPhotos.map(function(p){ return p.label || ''; });
+    var allInsp = loadInspections();
+    var rec = allInsp.find(function(i){ return i.id === insp.id; });
+    if (rec) {
+      rec.photoUrls = uploadedUrls;
+      rec.photoLabels = photoLabels;
       saveInspections(allInsp);
-      pushInspections().catch(function(){});
+      if (uploadedUrls.length) pushInspections().catch(function(){});
     }
+    showToast('✓ Saved — ' + hive.name + (uploadedUrls.length ? ' · ' + uploadedUrls.length + ' photo' + (uploadedUrls.length > 1 ? 's' : '') + ' ☁️' : ''));
+    setTimeout(function(){ viewHive(currentHiveId); }, 800);
   }
+
+  if (_pendingPhotos.length > 0) {
+    // Photos still uploading — wait up to 10s then navigate anyway
+    showToast('⏫ Uploading ' + _pendingPhotos.length + ' photo' + (_pendingPhotos.length > 1 ? 's' : '') + '...');
+    var _waited = 0;
+    var _waitInterval = setInterval(function() {
+      _waited += 500;
+      var stillPending = _allPhotos.filter(function(p){ return p.dataUrl && !p.url; }).length;
+      if (stillPending === 0 || _waited >= 10000) {
+        clearInterval(_waitInterval);
+        _finaliseAndNavigate();
+      }
+    }, 500);
+  } else {
+    _finaliseAndNavigate();
+  }
+
   setTimeout(function(){ viewHive(currentHiveId); }, 1200);
   } catch(e) {
     console.error('saveInspection error:', e);
@@ -10538,7 +10560,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 4:46pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 5:00pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
