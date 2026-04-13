@@ -3640,10 +3640,13 @@ async function getOrCreateCalendarToken() {
   var uid = getUserId();
   if (!uid) return null;
   var sb = getSupabase();
-  var { data: profile } = await sb.from('profiles').select('calendar_token').eq('id', uid).maybeSingle();
-  if (profile && profile.calendar_token) return profile.calendar_token;
+  // Always fetch fresh from Supabase to get current token
+  var { data: profile, error } = await sb.from('profiles').select('calendar_token').eq('id', uid).maybeSingle();
+  if (!error && profile && profile.calendar_token) return profile.calendar_token;
+  // Generate new token and save
   var token = generateCalendarToken();
-  await sb.from('profiles').update({ calendar_token: token }).eq('id', uid);
+  var { error: updateErr } = await sb.from('profiles').update({ calendar_token: token }).eq('id', uid);
+  if (updateErr) { console.warn('Calendar token save failed:', updateErr.message); return null; }
   return token;
 }
 
@@ -3667,10 +3670,11 @@ async function subscribeToCalendar() {
     + '<div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:6px;font-family:Syne,sans-serif;color:var(--text);">Subscribe to your HiveKeeper calendar</div>'
     + '<div style="font-size:12px;color:var(--text-l);text-align:center;margin-bottom:14px;">Inspection reminders, treatment dates and UK seasonal events. Updates automatically.</div>'
     + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:8px 12px;font-size:10px;color:var(--text);word-break:break-all;margin-bottom:14px;font-family:monospace;">' + calUrl + '</div>'
-    + '<button id="cal-copy-btn" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F4CB; Copy link (Outlook / manual)</button>'
+    + '<button id="cal-copy-btn" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F4CB; Copy link</button>'
     + (isIOS ? '<button id="cal-open-btn" style="width:100%;background:#000;border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F34E; Open in Apple Calendar</button>' : '')
     + (isAndroid ? '<button id="cal-google-btn" style="width:100%;background:#4285F4;border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F4C6; Open in Google Calendar</button>' : '')
     + (!isIOS && !isAndroid ? '<button id="cal-google-btn" style="width:100%;background:#4285F4;border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F4C6; Open in Google Calendar</button>' : '')
+    + '<button id="cal-ical-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;font-family:Syne,sans-serif;">&#x1F4E5; Download .ics file</button>'
     + '<div style="font-size:10px;color:var(--text-l);text-align:center;margin-bottom:10px;">Keep this link private — anyone with it can view your calendar</div>'
     + '<button id="cal-close-btn" style="width:100%;background:transparent;border:none;padding:8px;font-size:12px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Close</button>';
   sheet.appendChild(inner);
@@ -3689,6 +3693,8 @@ async function subscribeToCalendar() {
   if (openBtn) openBtn.addEventListener('click', function(){ window.location.href = webcalUrl; });
   var googleBtn = document.getElementById('cal-google-btn');
   if (googleBtn) googleBtn.addEventListener('click', function(){ window.open(googleCalUrl); });
+  var icalBtn = document.getElementById('cal-ical-btn');
+  if (icalBtn) icalBtn.addEventListener('click', function(){ window.open(calUrl); });
   document.getElementById('cal-close-btn').addEventListener('click', function(){ sheet.remove(); });
 }
 
@@ -10767,7 +10773,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 10:51pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 11:00pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
