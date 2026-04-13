@@ -3089,11 +3089,40 @@ function editChip(key,label,val){ editingChipKey=key; document.getElementById('e
 function saveChipEdit(){ if(editingChipKey){ currentInspData[editingChipKey]=document.getElementById('edit-chip-input').value; showExtractedData(currentInspData); } closeModalEl('modal-edit-chip'); }
 
 function addPhoto(){
-  // Real camera capture
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    // On mobile — show choice: camera or gallery
+    openPhotoSourceSheet();
+    return;
+  }
+  // On desktop — go straight to file picker
+  triggerPhotoPicker(null);
+}
+
+function openPhotoSourceSheet() {
+  // Show a simple bottom sheet with two options
+  var existing = document.getElementById('photo-source-sheet');
+  if (existing) existing.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'photo-source-sheet';
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:20px;box-shadow:0 -4px 20px rgba(0,0,0,.2);max-width:480px;margin:0 auto;';
+  sheet.innerHTML = '<div style="width:40px;height:4px;background:#E0E0E0;border-radius:2px;margin:0 auto 16px;"></div>' +
+    '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;text-align:center;">Add frame photo</div>' +
+    '<button onclick="triggerPhotoPicker(\"environment\");var s=document.getElementById(\"photo-source-sheet\");if(s)s.remove();" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;">&#x1F4F7; Take photo</button>' +
+    '<button onclick="triggerPhotoPicker(null);var s=document.getElementById(\"photo-source-sheet\");if(s)s.remove();" style="width:100%;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:10px;">&#x1F5BC; Upload from gallery</button>' +
+    '<button onclick="var s=document.getElementById(\"photo-source-sheet\");if(s)s.remove();" style="width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
+  // Close on backdrop tap
+  document.addEventListener('touchstart', function closeSheet(e) {
+    if (!sheet.contains(e.target)) { sheet.remove(); document.removeEventListener('touchstart', closeSheet); }
+  });
+  document.body.appendChild(sheet);
+}
+
+function triggerPhotoPicker(capture) {
   var input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  // No capture attribute — lets user choose camera OR upload from gallery/files
+  if (capture) input.capture = capture;
   input.style.display = 'none';
   document.body.appendChild(input);
   input.onchange = function(e) {
@@ -10152,7 +10181,7 @@ function setHiveRow(hiveId, rowName) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 12:46pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 12:55pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
