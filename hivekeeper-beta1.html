@@ -10663,20 +10663,6 @@ function setHiveRow(hiveId, rowName) {
   showToast(rowName ? 'Moved to ' + rowName + ' ✓' : 'Row removed ✓');
 }
 
-function addPhotoToStrip(dataUrl) {
-  var strip = document.getElementById('photo-strip');
-  if (!strip) return;
-  var thumb = document.createElement('div');
-  thumb.className = 'photo-thumb';
-  thumb.style.cssText = 'position:relative;cursor:pointer;';
-  thumb.innerHTML = '<img src="' + dataUrl + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;">' +
-    '<div style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);border-radius:8px;padding:2px 5px;font-size:8px;font-weight:700;color:white;">Frame</div>';
-  strip.insertBefore(thumb, strip.querySelector('.photo-add'));
-  if (!currentInspData.photos) currentInspData.photos = [];
-  currentInspData.photos.push({ dataUrl: dataUrl, analysed: false });
-  showToast('Frame photo added ✓');
-  updateAnalyseButton();
-}
 
 function goToApiaryAlerts() {
   goTo('s-apiary');
@@ -10708,7 +10694,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 7:26pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 7:41pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
