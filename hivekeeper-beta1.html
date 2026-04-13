@@ -1232,8 +1232,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="photo-add" onclick="addPhoto()">&#x1F4F7;</div>
     </div>
     <div id="analyse-btn-wrap" style="display:none;padding:8px 20px 0;">
-      <button id="analyse-all-btn" onclick="analyseAllFrames()" style="width:100%;background:#C8730A;border:none;border-radius:var(--rs);padding:12px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;">&#x1F916; Analyse frame photo with AI</button>
-      <div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:4px;">AI will check brood, queen cells, stores, disease and varroa</div>
+      <div style="font-size:11px;color:var(--text-l);text-align:center;margin-bottom:6px;">&#x2601;&#xFE0F; Photos saved to cloud &#x2014; AI analysis is optional</div>
+      <button id="analyse-all-btn" onclick="analyseAllFrames()" style="width:100%;background:#C8730A;border:none;border-radius:var(--rs);padding:12px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;">&#x1F916; Analyse frames with AI (optional)</button>
+      <div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:4px;">Checks brood, queen cells, stores, disease and varroa</div>
     </div>
     <div class="nbu-note">
       <strong>&#x1F1EC;&#x1F1E7; NBU / BeeBase</strong>
@@ -2530,7 +2531,13 @@ function renderApiary(){
           <div class="hive-list-meta">${metaText}</div>
           ${alertsHTML}
         </div>
-        <div class="hive-list-right">
+        <div class="hive-list-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          ${(function(){
+            var hiveInsps = loadInspections().filter(function(i){ return i.hiveId === h.id && i.photoUrls && i.photoUrls.length; }).sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
+            if (!hiveInsps.length) return '';
+            var url = hiveInsps[0].photoUrls[0];
+            return '<img src="' + url + '" onclick="event.stopPropagation();window.open(\'' + url + '\')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--wax);cursor:pointer;" title="Latest frame photo">';
+          })()}
           <div class="badge ${badge.cls}">${badge.text}</div>
         </div>
       </div>
@@ -10555,7 +10562,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 4:02pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 4:19pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
