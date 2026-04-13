@@ -1103,6 +1103,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
     <!-- Hive list -->
     <div id="hive-list-container" style="margin-top:4px;"></div>
+    <!-- Seasonal alerts below hive list -->
+    <div id="apiary-alerts-container" style="margin:8px 16px 0;"></div>
     <div style="padding:12px 16px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS &mdash; Send emergency alert</button>
     </div>
@@ -2534,6 +2536,23 @@ function renderApiary(){
       </div>
     `;
   }).join('');
+  // Seasonal & hive alerts below hive list
+  var apiaryAlertsEl = document.getElementById('apiary-alerts-container');
+  if (apiaryAlertsEl) {
+    var apiaryAlerts = runAlertEngine().filter(function(a){ return a.severity !== 'green'; });
+    if (apiaryAlerts.length) {
+      apiaryAlertsEl.innerHTML = '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;padding:0 4px;">Alerts & tips</div>' +
+        apiaryAlerts.map(function(a) {
+          return '<div class="alert-item ' + a.severity + '" onclick="' + (a.hiveId ? "viewHive('" + a.hiveId + "')" : "showToast('Seasonal alert')") + '" style="margin-bottom:6px;">' +
+            '<div class="alert-icon">' + a.icon + '</div>' +
+            '<div style="flex:1;min-width:0;"><div class="alert-title">' + a.title + '</div><div class="alert-sub">' + a.sub + '</div></div>' +
+            '<div class="alert-arrow">›</div></div>';
+        }).join('');
+    } else {
+      apiaryAlertsEl.innerHTML = '';
+    }
+  }
+
 }
 
 function renderMap(){
@@ -10333,7 +10352,7 @@ function addPhotoToStrip(dataUrl) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 2:50pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 3:02pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
