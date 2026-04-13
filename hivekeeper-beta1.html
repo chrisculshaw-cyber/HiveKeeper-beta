@@ -10130,23 +10130,27 @@ function loadLastInspectionForHive(hiveId) {
   }
 
   var last = sorted[0]; // most recent for date/stats
-  // Prefer most recent inspection with real notes (not just AI frame analysis)
-  var lastWithNotes = sorted.find(function(i){ return i.notes && i.notes.trim() && !i.notes.trim().startsWith('AI Frame Analysis'); })
-    || sorted.find(function(i){ return i.notes && i.notes.trim(); })
-    || last;
+  // Most recent inspection that has any notes or transcript
+  var lastWithNotes = sorted.find(function(i){
+    return (i.notes && i.notes.trim()) || (i.transcript && i.transcript.trim());
+  }) || last;
 
   if (panel) panel.style.display = 'block';
 
   var notesEl = document.getElementById('inspect-last-notes');
   var expandBtn = document.getElementById('inspect-last-expand-btn');
   if (notesEl) {
-    notesEl.textContent = lastWithNotes.notes || 'No notes recorded';
+    // Show notes if available, otherwise transcript
+    var _n = (lastWithNotes.notes||'').trim();
+    var _t = (lastWithNotes.transcript||'').trim();
+    var _display = _n || _t || '';
+    notesEl.textContent = _display || 'No notes recorded';
     notesEl.style.display = 'none';
     notesEl.style.overflow = 'hidden';
     notesEl.style.maxHeight = '0';
   }
   if (expandBtn) {
-    expandBtn.style.display = lastWithNotes.notes ? 'block' : 'none';
+    expandBtn.style.display = _display ? 'block' : 'none';
     expandBtn.textContent = '▼ Show notes';
   }
 
@@ -10329,7 +10333,7 @@ function addPhotoToStrip(dataUrl) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 2:45pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 2:50pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
