@@ -3202,11 +3202,12 @@ function triggerFilePicker() {
 function triggerPhotoPicker(capture) {
   var input = document.createElement('input');
   input.type = 'file';
-  input.accept = 'image/*';
   if (capture) {
-    input.capture = capture; // camera
+    input.accept = 'image/*';
+    input.capture = capture; // camera - restrict to images
   } else {
-    input.removeAttribute('capture'); // file explorer / gallery
+    input.accept = 'image/*,.jpg,.jpeg,.png,.heic,.webp'; // gallery/files - broader accept
+    input.removeAttribute('capture'); // open file explorer / local storage
   }
   input.style.display = 'none';
   document.body.appendChild(input);
@@ -10077,31 +10078,31 @@ async function analyseAllFrames() {
 }
 
 function loadLastInspectionForHive(hiveId) {
-  var inspections = loadInspections()
+  var sorted = loadInspections()
     .filter(function(i){ return i.hiveId === hiveId; })
     .sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
 
   var panel = document.getElementById('inspect-history-panel');
-  if (!inspections.length) {
+  if (!sorted.length) {
     if (panel) panel.style.display = 'none';
     return;
   }
 
-  var last = inspections[0];
+  var last = sorted[0]; // most recent for date/stats
+  var lastWithNotes = sorted.find(function(i){ return i.notes && i.notes.trim(); }) || last; // most recent with notes
+
   if (panel) panel.style.display = 'block';
 
-  // Reset notes to collapsed state
   var notesEl = document.getElementById('inspect-last-notes');
   var expandBtn = document.getElementById('inspect-last-expand-btn');
   if (notesEl) {
-    notesEl.textContent = last.notes || 'No notes recorded';
+    notesEl.textContent = lastWithNotes.notes || 'No notes recorded';
     notesEl.style.display = 'none';
-    notesEl.style.webkitLineClamp = '';
-    notesEl.style.webkitBoxOrient = '';
-    notesEl.style.overflow = '';
+    notesEl.style.overflow = 'hidden';
+    notesEl.style.maxHeight = '0';
   }
   if (expandBtn) {
-    expandBtn.style.display = last.notes ? 'block' : 'none';
+    expandBtn.style.display = lastWithNotes.notes ? 'block' : 'none';
     expandBtn.textContent = '▼ Show notes';
   }
 
@@ -10118,7 +10119,7 @@ function loadLastInspectionForHive(hiveId) {
     ].filter(Boolean).join('');
   }
 
-  // Pre-populate toggles
+  // Pre-populate toggles from last inspection
   ['storesLevel','varroaLevel','temper','swarmRisk'].forEach(function(field) {
     if (!last[field]) return;
     var btn = document.querySelector('#s-inspect .toggle-btn[data-field="' + field + '"][data-value="' + last[field] + '"]');
@@ -10284,7 +10285,7 @@ function addPhotoToStrip(dataUrl) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 1:45pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 1:50pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
