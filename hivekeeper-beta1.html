@@ -2362,7 +2362,11 @@ function renderDashboard(){
   // Loss banner - show only if significant losses
   var lossBanner = document.getElementById('loss-banner');
   var lossStatsEl = document.getElementById('loss-stats');
-  if (lossBanner) lossBanner.style.display = (s.dead > 0 || (s.empty||0) > 0) ? 'block' : 'none';
+  // Winter loss report — shown Nov–Mar only (UK winter cluster period)
+  var _month = new Date().getMonth() + 1; // 1=Jan
+  var _isWinterPeriod = _month >= 11 || _month <= 3;
+  var _hasLosses = s.dead > 0 || (s.empty||0) > 0;
+  if (lossBanner) lossBanner.style.display = (_isWinterPeriod && _hasLosses) ? 'block' : 'none';
   if (lossStatsEl) lossStatsEl.innerHTML = `
     <div class="loss-stat"><div class="loss-stat-val">${lossRate}%</div><div class="loss-stat-label">Colony loss rate</div></div>
     <div class="loss-stat"><div class="loss-stat-val">${s.dead}</div><div class="loss-stat-label">Lost colonies</div></div>
@@ -10390,7 +10394,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 3:07pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 3:15pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
