@@ -2183,6 +2183,7 @@ function getApiarySummary(){
   var hives = loadHives();
   const active = hives.filter(h => h.status === 'active').length;
   const dead = hives.filter(h => h.status === 'dead').length;
+  const empty = hives.filter(h => h.status === 'empty').length;
   const unclear = hives.filter(h => h.status === 'unclear').length;
   const waxMoth = hives.filter(h => h.waxMoth).length;
   const withStores = hives.filter(h => h.status !== 'active' && (h.storesLevel === 'full' || h.storesLevel === 'adequate')).length;
@@ -2191,7 +2192,7 @@ function getApiarySummary(){
 
 function getMapColor(hive){
   var cb = isColourBlindMode();
-  if(hive.status === 'dead') return '#9E9E9E';
+  if(hive.status === 'dead' || hive.status === 'empty') return '#9E9E9E';
   if(hive.status === 'unclear') return cb ? '#F57C00' : '#1565C0';
   if(hive.swarmRisk === 'high' || hive.robbing || hive.waxMoth) return '#B83228';
   if(hive.feedNeeded || hive.checkStores || hive.blocked) return cb ? '#F57C00' : '#C8730A';
@@ -2200,6 +2201,7 @@ function getMapColor(hive){
 
 function getBadge(hive){
   if(hive.waxMoth) return { cls:'badge-alert', text:'🦋 Wax moth' };
+  if(hive.status === 'empty') return { cls:'badge-dead', text:'📦 Empty' };
   if(hive.status === 'dead') return { cls:'badge-dead', text:'💀 Colony lost' };
   if(hive.status === 'unclear' && hive.robbing) return { cls:'badge-alert', text:'⚠️ Robbing' };
   if(hive.status === 'unclear' && hive.blocked) return { cls:'badge-warn', text:'🔒 Inspect needed' };
@@ -2668,6 +2670,7 @@ function renderMap(){
     // Status letter overlay for colour blind accessibility
     var statusLetter = '';
     if (hive.status === 'active') statusLetter = '';
+    else if (hive.status === 'empty') statusLetter = 'E';
     else if (hive.status === 'dead') statusLetter = 'L';
     else if (hive.status === 'unclear') statusLetter = '?';
     else if (hive.status === 'empty') statusLetter = 'E';
@@ -3200,7 +3203,11 @@ function triggerPhotoPicker(capture) {
   var input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  if (capture) input.capture = capture;
+  if (capture) {
+    input.capture = capture; // camera
+  } else {
+    input.removeAttribute('capture'); // file explorer / gallery
+  }
   input.style.display = 'none';
   document.body.appendChild(input);
   input.onchange = function(e) {
@@ -4998,7 +5005,7 @@ var STATUS_LABELS = {
 };
 
 var STATUS_TO_HIVE_STATUS = {
-  empty: 'dead',        // shows as grey on map, no inspections expected
+  empty: 'empty',       // grey on map, no inspections expected, distinct from dead
   nuc: 'active',
   swarm_prime: 'active',
   swarm_cast: 'active',
@@ -10277,7 +10284,7 @@ function addPhotoToStrip(dataUrl) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 1:30pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 1:45pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
