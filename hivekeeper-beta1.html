@@ -2354,7 +2354,7 @@ function renderDashboard(){
     <div class="stat-box"><div class="stat-val">${s.active}</div><div class="stat-label">Active hives</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#EF9A9A;">${s.dead}</div><div class="stat-label">Lost colonies</div></div>
     <div class="stat-box"><div class="stat-val" style="color:#FFE082;">${s.unclear}</div><div class="stat-label">Unclear</div></div>
-    <div class="stat-box"><div class="stat-val" style="color:#A5D6A7;">${s.withStores}</div><div class="stat-label">With stores</div></div>
+    <div class="stat-box"><div class="stat-val" style="color:#BDBDBD;">${s.empty||0}</div><div class="stat-label">Empty boxes</div></div>
   `;
 
   // Loss banner - show only if significant losses
@@ -2454,6 +2454,8 @@ function renderDashboard(){
   }
   document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
   if (typeof renderFoundingBadge === 'function') renderFoundingBadge();
+  // Update seasonal tip
+  if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser();
 }
 
 // ═══════════════════════════════════════════════
@@ -2513,7 +2515,11 @@ function renderApiary(){
         const alertsHTML = alerts.length ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">' + alerts.map(a =>
       '<span style="font-size:10px;padding:2px 6px;background:' + a.colour + '15;border:1px solid ' + a.colour + '40;border-radius:20px;color:' + a.colour + ';font-weight:600;">' + a.icon + ' ' + a.label + '</span>'
     ).join('') + '</div>' : '';
-    const metaText = h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : '');
+    var statusMeta = '';
+    if (h.status === 'empty') statusMeta = '📦 Empty — ready to receive bees';
+    else if (h.status === 'dead') statusMeta = '💀 Colony lost';
+    else if (h.status === 'unclear') statusMeta = '❓ Status unclear';
+    metaText = statusMeta || (h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : ''));
     return `
       <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
         <div class="hive-list-icon">${getHiveIcon(h)}</div>
@@ -10270,7 +10276,7 @@ function addPhotoToStrip(dataUrl) {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 2:08pm  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 13 April 2026 at 2:20pm  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
