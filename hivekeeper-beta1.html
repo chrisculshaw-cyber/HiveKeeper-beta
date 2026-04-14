@@ -2443,8 +2443,17 @@ function renderDashboard(){
   }
 
   // Active hives scroll
-  const activeHives = loadHives().filter(h => h.status === 'active');
-  document.getElementById('dash-hives').innerHTML = activeHives.map(h => {
+  const activeHives = loadHives().filter(h => h.status === 'active' && !h.id.toString().startsWith('demo-'));
+  if (activeHives.length === 0) {
+    document.getElementById('dash-hives').innerHTML = `
+      <div style="padding:20px 4px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">🐝</div>
+        <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:6px;">No hives yet</div>
+        <div style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.6;">Get started by setting up your apiary and adding your first hive.</div>
+        <button onclick="localStorage.removeItem('hk_onboarded');checkAndShowOnboarding();" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Set up my apiary →</button>
+      </div>`;
+  } else {
+    document.getElementById('dash-hives').innerHTML = activeHives.map(h => {
     const badge = getBadge(h);
     return `
       <div class="hive-mini" onclick="viewHive('${h.id}')">
@@ -2455,8 +2464,7 @@ function renderDashboard(){
       </div>
     `;
   }).join('');
-
-  // Greeting with personalised name
+  }
   const hour = new Date().getHours();
   var _greetingBase = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
   var _greetingName = '';
@@ -10900,7 +10908,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 16:06  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 16:10  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
