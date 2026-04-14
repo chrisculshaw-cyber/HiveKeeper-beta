@@ -8338,8 +8338,11 @@ async function onAuthSuccess() {
   if (typeof syncUserDisplayName === 'function') syncUserDisplayName();
   if (typeof initOfflineSync === 'function') initOfflineSync();
   if (typeof checkFoundingBadge === 'function') checkFoundingBadge();
+  // Process invite after consent check has had time to run
   var pendingInvite = localStorage.getItem('hk_pending_invite');
-  if (pendingInvite && typeof processInviteToken === 'function') processInviteToken(pendingInvite);
+  if (pendingInvite && typeof processInviteToken === 'function') {
+    setTimeout(function() { processInviteToken(pendingInvite); }, 1000);
+  }
 }
 
 async function loadUserProfile() {
@@ -9508,12 +9511,14 @@ async function pushHives() {
   var uid = getUserId(); if (!uid) return;
   var hives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
   if (!hives.length) return;
-  // Never push demo data or hives from shared apiaries (not owned by this user)
-  var sharedApiaryIds = loadApiaries()
-    .filter(function(a){ return a.sharedWith; })
-    .map(function(a){ return a.id; });
+  // Never push demo data, shared apiary hives, or hives owned by another user
+  var sharedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
+    .filter(function(a){ return a.sharedWith; }).map(function(a){ return a.id; });
   hives = hives.filter(function(h) {
-    return h.id && !h.id.toString().startsWith('demo-') && sharedApiaryIds.indexOf(h.apiaryId) === -1;
+    if (!h.id || h.id.toString().startsWith('demo-')) return false;
+    if (sharedApiaryIds.indexOf(h.apiaryId) !== -1) return false;
+    if (h.userId && h.userId !== uid) return false;
+    return true;
   });
   if (!hives.length) return;
   var sb = getSupabase();
@@ -9540,10 +9545,11 @@ async function pushHives() {
 
 // Returns set of hive IDs that belong to shared (not owned) apiaries — never push these
 function getSharedHiveIds() {
-  var sharedApiaryIds = loadApiaries()
+  var sharedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
     .filter(function(a){ return a.sharedWith; })
     .map(function(a){ return a.id; });
-  return loadHives()
+  if (!sharedApiaryIds.length) return [];
+  return JSON.parse(localStorage.getItem('hk_hives_v2') || '[]')
     .filter(function(h){ return sharedApiaryIds.indexOf(h.apiaryId) !== -1; })
     .map(function(h){ return h.id; });
 }
@@ -9754,7 +9760,8 @@ async function pullFromSupabase() {
           mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
           isHidden: h.is_hidden, notes: h.notes,
           waxMoth: h.wax_moth, temper: h.temper,
-          coverPhoto: h.cover_photo || null
+          coverPhoto: h.cover_photo || null,
+          userId: h.user_id || null
         };
       });
       localStorage.setItem('hk_hives_v2', JSON.stringify(mapped));
@@ -12585,7 +12592,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:40  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:49  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
