@@ -2992,6 +2992,7 @@ function renderHiveDetail(){
   var statusColour = hive.status==='active'?'var(--green)':hive.status==='dead'?'#9E9E9E':'#1565C0';
   document.getElementById('hive-detail-chips').innerHTML = `
     <div class="chip">${badge.text}</div>
+    <div class="chip" onclick="openRenameCurrentHive()" style="cursor:pointer;border-color:var(--forest);color:var(--forest);">✏️ Rename</div>
     <div class="chip" onclick="changeHiveRow('${hive.id}')" style="cursor:pointer;border-color:var(--honey);color:var(--honey);">&#x1F5C2; ${hive.row || 'Set row'}</div>
     ${hive.storesLevel ? `<div class="chip">&#x1F36F; Stores: ${hive.storesLevel}</div>` : ''}
     ${hive.waxMoth ? '<div class="chip">&#x1F98B; Wax moth present</div>' : ''}
@@ -6999,13 +7000,7 @@ function openQRModalFromInspect() {
 function renameFromInspect() {
   var hiveId = getCurrentInspectHiveId();
   if (!hiveId) { showToast('Select a hive first'); return; }
-  var hive = loadHives().find(function(h){ return h.id === hiveId; });
-  if (!hive) return;
-  var newName = prompt('Rename hive:', hive.name);
-  if (!newName || !newName.trim()) return;
-  var hives = loadHives();
-  var h = hives.find(function(x){ return x.id === hiveId; });
-  if (h) { h.name = newName.trim(); saveHives(hives); showToast('Renamed to ' + h.name); updateInspectMeta(); }
+  openRenameHive(hiveId);
 }
 
 function getCurrentInspectHiveId() {
@@ -11628,7 +11623,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:40  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:45  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
