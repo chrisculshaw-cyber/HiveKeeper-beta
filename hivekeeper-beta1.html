@@ -2509,13 +2509,23 @@ function filterRow(row, el){
 
 // ── Hive cover photo ──────────────────────────────────────────
 async function uploadHiveCoverPhoto(hiveId) {
-  var input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.style.display = 'none';
-  document.body.appendChild(input);
+  // Use a persistent hidden input rather than creating/destroying dynamically
+  var input = document.getElementById('_hive_cover_input');
+  if (!input) {
+    input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.id = '_hive_cover_input';
+    input.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;pointer-events:none;';
+    document.body.appendChild(input);
+  }
+  // Clear previous handler
+  input.onchange = null;
+  input.value = '';
+
   input.onchange = async function(e) {
-    var file = e.target.files[0];
+    var file = e.target.files && e.target.files[0];
+    input.value = ''; // reset immediately so it can be reused
     if (!file) return;
     var reader = new FileReader();
     reader.onload = async function(ev) {
@@ -2542,12 +2552,13 @@ async function uploadHiveCoverPhoto(hiveId) {
         var hive = hives.find(function(h){ return h.id === hiveId; });
         if (hive) { hive.coverPhoto = url; saveHives(hives); }
         showToast('Hive photo saved ✓');
-        renderApiary();
-        if (currentScreen === 's-hive' && currentHiveId === hiveId) renderHiveDetail();
+        try { renderApiary(); } catch(e2) {}
+        if (currentScreen === 's-hive' && currentHiveId === hiveId) {
+          try { renderHiveDetail(); } catch(e2) {}
+        }
       }
     };
     reader.readAsDataURL(file);
-    document.body.removeChild(input);
   };
   input.click();
 }
@@ -11036,7 +11047,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:50  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:55  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
