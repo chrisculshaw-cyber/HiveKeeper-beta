@@ -6814,20 +6814,21 @@ function drawQR(canvasId, url) {
     ctx.fillText('\uD83D\uDC1D', cx, cy);
   };
   img.onerror = function() {
-    // Fallback: draw simple pattern with URL text
+    // Fallback: draw border pattern with URL text
     ctx.fillStyle = 'white'; ctx.fillRect(0, 0, size, size);
+    ctx.strokeStyle = '#162B1F'; ctx.lineWidth = 3;
+    ctx.strokeRect(10, 10, size - 20, size - 20);
     ctx.fillStyle = '#162B1F';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.font = 'bold 13px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('Scan via NFC tag', size/2, size/2 - 20);
+    ctx.fillText('QR code', size/2, size/2 - 30);
     ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#666';
-    // Wrap URL
-    var words = url.split('/');
-    var lines = [words.slice(0,3).join('/'), words.slice(3).join('/')];
-    lines.forEach(function(line, i) {
-      ctx.fillText(line, size/2, size/2 + 10 + i * 18);
-    });
+    ctx.fillStyle = '#444';
+    ctx.fillText('Copy link above and', size/2, size/2);
+    ctx.fillText('paste into a QR generator', size/2, size/2 + 18);
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillStyle = '#162B1F';
+    ctx.fillText('gethivekeeper.com', size/2, size/2 + 44);
   };
   // Google Charts QR endpoint - free, no key needed
   var encoded = encodeURIComponent(url);
