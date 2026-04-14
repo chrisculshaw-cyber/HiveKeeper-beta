@@ -7821,8 +7821,10 @@ function switchApiary(id) {
 function initCurrentApiary() {
   var apiaries = loadApiaries();
   if (!apiaries.length) {
-    // Create default apiary from existing hive data
-    var defaultId = 'a0000000-0000-4000-8000-000000000001'; // Fixed UUID for default apiary
+    // Create default apiary with a proper random UUID (not hardcoded — multiple users sharing the same ID causes data leaks)
+    var defaultId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16);
+    });
     var defaultApiary = {id: defaultId, name: 'My Apiary', location: '', createdAt: Date.now()};
     saveApiaries([defaultApiary]);
     // Tag all existing hives with this apiary
@@ -10308,28 +10310,39 @@ async function checkInviteToken() {
   var token = params.get('invite');
   if (!token) return;
 
-  // Store token for after auth — also flag to skip onboarding
+  // Store token and flag to skip onboarding
   localStorage.setItem('hk_pending_invite', token);
-  localStorage.setItem('hk_onboarded', '1'); // invited users skip onboarding wizard
+  localStorage.setItem('hk_onboarded', '1');
 
   // If already logged in, process now
   if (_currentUser) {
     processInviteToken(token);
-  } else {
-    // Not logged in — show auth screen with invite context
-    showAuthScreen();
-    var authTitle = document.getElementById('auth-title') || document.querySelector('.auth-title');
-    if (authTitle) authTitle.textContent = 'Sign in to accept your invitation';
-    // Add invite banner
-    var existingBanner = document.getElementById('invite-banner');
-    if (!existingBanner) {
-      var banner = document.createElement('div');
-      banner.id = 'invite-banner';
-      banner.style.cssText = 'background:#2D5016;color:white;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:10000;';
-      banner.innerHTML = '🐝 You\'ve been invited to join an apiary — sign in or create an account to accept';
-      document.body.insertBefore(banner, document.body.firstChild);
-    }
+    return;
   }
+
+  // Session may not be restored yet — wait up to 3 seconds for it
+  var _sessionWait = 0;
+  var _sessionCheck = setInterval(function() {
+    _sessionWait += 200;
+    if (_currentUser) {
+      clearInterval(_sessionCheck);
+      processInviteToken(token);
+    } else if (_sessionWait >= 3000) {
+      clearInterval(_sessionCheck);
+      // Still not logged in — show auth screen
+      showAuthScreen();
+      var authTitle = document.getElementById('auth-title') || document.querySelector('.auth-title');
+      if (authTitle) authTitle.textContent = 'Sign in to accept your invitation';
+      var existingBanner = document.getElementById('invite-banner');
+      if (!existingBanner) {
+        var banner = document.createElement('div');
+        banner.id = 'invite-banner';
+        banner.style.cssText = 'background:#2D5016;color:white;padding:12px 20px;text-align:center;font-size:13px;font-weight:600;position:fixed;top:0;left:0;right:0;z-index:10000;';
+        banner.innerHTML = '🐝 You\'ve been invited to join an apiary — sign in or create an account to accept';
+        document.body.insertBefore(banner, document.body.firstChild);
+      }
+    }
+  }, 200);
 }
 
 function showInviteAcknowledgement(invite) {
@@ -12602,7 +12615,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 00:10  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 00:40  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
