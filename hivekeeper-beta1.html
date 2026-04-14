@@ -6985,6 +6985,26 @@ function formatTime(ts) {
 // DELETE HIVE
 // ═══════════════════════════════════════════════
 
+// Reusable Promise-based confirm sheet — replaces browser confirm()
+function showConfirmModal(title, message, confirmLabel, danger) {
+  return new Promise(function(resolve) {
+    var existing = document.getElementById('confirm-sheet');
+    if (existing) existing.remove();
+    var sheet = document.createElement('div');
+    sheet.id = 'confirm-sheet';
+    sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 24px rgba(0,0,0,.25);max-width:480px;margin:0 auto;text-align:center;';
+    var btnColour = danger !== false ? '#B83228' : 'var(--forest)';
+    sheet.innerHTML = '<div style="font-size:22px;margin-bottom:8px;">' + (danger !== false ? '⚠️' : '❓') + '</div>'
+      + '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;font-family:Syne,sans-serif;">' + title + '</div>'
+      + '<div style="font-size:13px;color:var(--text-l);margin-bottom:20px;line-height:1.6;">' + message + '</div>'
+      + '<button id="confirm-sheet-ok" style="width:100%;background:' + btnColour + ';border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;font-family:Syne,sans-serif;">' + (confirmLabel || 'Confirm') + '</button>'
+      + '<button id="confirm-sheet-cancel" style="width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Cancel</button>';
+    document.body.appendChild(sheet);
+    document.getElementById('confirm-sheet-ok').addEventListener('click', function(){ sheet.remove(); resolve(true); });
+    document.getElementById('confirm-sheet-cancel').addEventListener('click', function(){ sheet.remove(); resolve(false); });
+  });
+}
+
 function confirmDeleteHive(hiveId) {
   var hive = loadHives().find(function(h){ return h.id === hiveId; });
   if (!hive) return;
@@ -8912,16 +8932,27 @@ async function renderShareList() {
     var email = s.invited_email || s.email || '';
     var name = s.invited_name || s.name || email.split('@')[0];
     var status = s.status || 'pending';
+    var role = s.role || 'viewer';
     var statusBadge = status === 'accepted'
-      ? '<span style="color:var(--forest);font-size:10px;font-weight:700;">✓ Accepted</span>'
-      : '<span style="color:var(--honey);font-size:10px;font-weight:700;">⏳ Pending</span>';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wax);">' +
-      '<div>' +
-        '<div style="font-size:13px;font-weight:700;color:var(--text);">' + name + ' ' + statusBadge + '</div>' +
-        '<div style="font-size:11px;color:var(--text-l);">' + email + ' · ' + s.role + '</div>' +
-      '</div>' +
-      '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;font-weight:700;cursor:pointer;">Remove</button>' +
-    '</div>';
+      ? '<span style="color:var(--forest);font-size:10px;font-weight:700;">&#x2713; Accepted</span>'
+      : '<span style="color:var(--honey);font-size:10px;font-weight:700;">&#x23F3; Pending</span>';
+    return '<div style="padding:12px 0;border-bottom:1px solid var(--wax);">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+        + '<div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + name + ' ' + statusBadge + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);">' + email + '</div>'
+        + '</div>'
+        + '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:1px solid #B83228;border-radius:20px;padding:4px 10px;color:#B83228;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;flex-shrink:0;">Remove</button>'
+      + '</div>'
+      + '<div style="display:flex;align-items:center;gap:8px;">'
+        + '<div style="font-size:11px;color:var(--text-l);flex-shrink:0;">Role:</div>'
+        + '<select onchange="changeShareRole(\'' + s.id + '\',this.value)" style="flex:1;padding:7px 10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:Syne,sans-serif;font-size:12px;background:white;color:var(--text);">'
+          + '<option value="viewer"' + (role === 'viewer' ? ' selected' : '') + '>Viewer &#8212; see hives &amp; inspections</option>'
+          + '<option value="inspector"' + (role === 'inspector' ? ' selected' : '') + '>Inspector &#8212; can add inspections</option>'
+          + '<option value="manager"' + (role === 'manager' ? ' selected' : '') + '>Manager &#8212; full access</option>'
+        + '</select>'
+      + '</div>'
+    + '</div>';
   }).join('');
 
   list.innerHTML = ownerRow + shareRows;
@@ -9009,10 +9040,27 @@ async function inviteToApiary() {
   }
 }
 
-async function removeShare(shareId) {
-  if (!confirm('Remove this person\'s access?')) return;
+async function changeShareRole(shareId, newRole) {
+  try {
+    var sb = getSupabase();
+    await sb.from('apiary_shares').update({ role: newRole }).eq('id', shareId);
+    // Update localStorage cache
+    var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+    var s = shares.find(function(s){ return s.id === shareId; });
+    if (s) { s.role = newRole; localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares)); }
+    showToast('Role updated to ' + newRole + ' ✓');
+  } catch(e) {
+    showToast('Could not update role — try again');
+    console.warn('changeShareRole error:', e);
+    renderShareList(); // Revert UI on error
+  }
+}
 
-  // Remove from Supabase
+async function removeShare(shareId) {
+  // Use in-app confirm
+  var confirmed = await showConfirmModal('Remove access?', 'This person will no longer be able to see or use this apiary.');
+  if (!confirmed) return;
+
   try {
     var sb = getSupabase();
     await sb.from('apiary_shares').delete().eq('id', shareId);
@@ -9020,7 +9068,6 @@ async function removeShare(shareId) {
     console.warn('Failed to remove from Supabase:', e);
   }
 
-  // Remove from localStorage
   var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
   shares = shares.filter(function(s){ return s.id !== shareId; });
   localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
@@ -9072,15 +9119,44 @@ async function checkPolicyConsent() {
   }
   // Not accepted yet — clear any stale localStorage and show modal
   localStorage.removeItem('hk_policies_accepted');
+  // Reset checkbox state
+  _consentState = { 'consent-privacy': false, 'consent-security': false, 'consent-age': false };
+  ['consent-privacy','consent-security','consent-age'].forEach(function(id) {
+    var cb = document.getElementById('cb-' + id);
+    var lbl = document.getElementById('label-' + id);
+    if (cb) { cb.style.background = 'white'; cb.style.borderColor = 'var(--wax)'; cb.textContent = ''; }
+    if (lbl) { lbl.style.borderColor = 'var(--wax)'; lbl.style.background = 'white'; }
+  });
   openModalEl('modal-consent');
 }
 
+var _consentState = { 'consent-privacy': false, 'consent-security': false, 'consent-age': false };
+
+function toggleConsent(id) {
+  _consentState[id] = !_consentState[id];
+  var cb = document.getElementById('cb-' + id);
+  var lbl = document.getElementById('label-' + id);
+  if (cb) {
+    cb.style.background = _consentState[id] ? 'var(--forest)' : 'white';
+    cb.style.borderColor = _consentState[id] ? 'var(--forest)' : 'var(--wax)';
+    cb.textContent = _consentState[id] ? '✓' : '';
+    cb.style.color = 'white';
+    cb.style.fontWeight = '800';
+  }
+  if (lbl) {
+    lbl.style.borderColor = _consentState[id] ? 'var(--forest)' : 'var(--wax)';
+    lbl.style.background = _consentState[id] ? '#EAF5EC' : 'white';
+  }
+  // Hide error if all ticked
+  if (_consentState['consent-privacy'] && _consentState['consent-security'] && _consentState['consent-age']) {
+    var err = document.getElementById('consent-error');
+    if (err) err.style.display = 'none';
+  }
+}
+
 async function acceptPolicies() {
-  var p = document.getElementById('consent-privacy');
-  var s = document.getElementById('consent-security');
-  var a = document.getElementById('consent-age');
   var err = document.getElementById('consent-error');
-  if (!p.checked || !s.checked || !a.checked) {
+  if (!_consentState['consent-privacy'] || !_consentState['consent-security'] || !_consentState['consent-age']) {
     if (err) err.style.display = 'block';
     return;
   }
@@ -12027,7 +12103,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 21:06  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 21:20  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -12046,41 +12122,41 @@ function goToApiaryAlerts() {
   </div>
 
   <!-- MODAL: POLICY CONSENT -->
-  <div class="modal-overlay" id="modal-consent" style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.8);">
+  <div class="modal-overlay" id="modal-consent" style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
       <div style="text-align:center;margin-bottom:20px;">
         <div style="font-size:40px;margin-bottom:8px;">🐝</div>
         <div style="font-size:20px;font-weight:800;color:var(--forest);margin-bottom:6px;">Before you start</div>
-        <div style="font-size:13px;color:var(--text-l);line-height:1.6;">Please take a moment to read and agree to our policies. We've kept them clear and honest.</div>
+        <div style="font-size:13px;color:var(--text-l);line-height:1.6;">Please read and agree to our policies. We've kept them clear and honest.</div>
       </div>
 
-      <div style="background:var(--cream);border-radius:var(--rs);padding:14px;margin-bottom:12px;border:1px solid var(--wax);">
-        <div style="font-size:12px;color:var(--text);line-height:1.7;">
+      <div style="background:var(--cream);border-radius:var(--rs);padding:14px;margin-bottom:16px;border:1px solid var(--wax);">
+        <div style="font-size:12px;color:var(--text);line-height:1.8;">
           <strong style="color:var(--forest);">What we collect:</strong> Your apiary data, inspection records and photos. Your email for login.<br>
           <strong style="color:var(--forest);">What we don't:</strong> No payment cards, no tracking, no ad networks.<br>
-          <strong style="color:var(--forest);">Your data is yours:</strong> Export or delete it at any time from Settings.
+          <strong style="color:var(--forest);">Your data is yours:</strong> Export or delete it any time from Settings.
         </div>
       </div>
 
       <div style="margin-bottom:16px;">
-        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);margin-bottom:8px;background:white;">
-          <input type="checkbox" id="consent-privacy" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
-          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" style="color:var(--forest);font-weight:700;">Privacy Policy</a></span>
+        <label onclick="toggleConsent('consent-privacy')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:10px;background:white;transition:border-color .2s;" id="label-consent-privacy">
+          <div id="cb-consent-privacy" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a></span>
         </label>
-        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);margin-bottom:8px;background:white;">
-          <input type="checkbox" id="consent-security" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
-          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/security-policy.html" target="_blank" style="color:var(--forest);font-weight:700;">Security Policy</a></span>
+        <label onclick="toggleConsent('consent-security')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:10px;background:white;transition:border-color .2s;" id="label-consent-security">
+          <div id="cb-consent-security" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/security-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Security Policy</a></span>
         </label>
-        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);background:white;">
-          <input type="checkbox" id="consent-age" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
+        <label onclick="toggleConsent('consent-age')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);background:white;transition:border-color .2s;" id="label-consent-age">
+          <div id="cb-consent-age" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
           <span style="font-size:13px;color:var(--text);line-height:1.6;">I confirm I am aged 13 or over</span>
         </label>
       </div>
 
-      <div id="consent-error" style="display:none;background:#FDECEA;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#B83228;margin-bottom:10px;font-weight:600;">Please tick all boxes to continue.</div>
+      <div id="consent-error" style="display:none;background:#FDECEA;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#B83228;margin-bottom:12px;font-weight:600;">Please tick all three boxes to continue.</div>
 
-      <button onclick="acceptPolicies()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Continue to HiveKeeper 🐝</button>
-      <div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:8px;">Version 1.0 · 2 April 2026 · Culshaw Consulting Ltd</div>
+      <button onclick="acceptPolicies()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">I agree — take me to HiveKeeper 🐝</button>
+      <div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:8px;">You must agree to all three to use HiveKeeper · Version 1.0 · 2 April 2026</div>
     </div>
   </div>
 
