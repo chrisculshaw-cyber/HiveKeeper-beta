@@ -32,25 +32,11 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
 
-#app{width:100%;height:100dvh;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;}
+#app{width:100%;max-width:480px;margin:0 auto;height:100dvh;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;}
 @media(min-width:600px){
   body{background:#111;}
-  #app-container{
-    justify-content:center !important;
-    align-items:flex-start !important;
-    background:#111 !important;
-  }
-  #app{
-    max-width:480px !important;
-    width:480px !important;
-    margin:0 auto !important;
-    box-shadow:0 0 60px rgba(0,0,0,0.6);
-    position:relative !important;
-    overflow:hidden !important;
-    height:100dvh !important;
-    flex-shrink:0 !important;
-  }
-  .screen{max-width:480px;width:100%;box-shadow:none;}
+  #app-container{background:#111 !important;}
+  #app{box-shadow:0 0 60px rgba(0,0,0,0.6);}
 }
 @media(min-width:768px){
   /* Two-column hive list on wider screens */
@@ -1152,9 +1138,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div class="back-btn" onclick="goBack()" style="margin-bottom:0;">&#8249; Back</div>
         <div style="display:flex;gap:6px;">
-          <button onclick="openGuidedInspection()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:10px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;" title="Guided inspection">🐝</button>
-          <button onclick="openQRModalFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:10px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;" title="QR/NFC">&#x1F4F1;</button>
-          <button onclick="renameFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:10px 16px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">Rename</button>
+          <button onclick="openGuidedInspection()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🐝 Guided</button>
+          <button onclick="openQRModalFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">📱 QR</button>
+          <button onclick="renameFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">Rename</button>
         </div>
       </div>
       <div class="hive-selector-label">Inspecting</div>
@@ -11618,7 +11604,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:10  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
