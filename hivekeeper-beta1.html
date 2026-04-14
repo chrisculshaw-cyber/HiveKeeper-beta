@@ -2997,19 +2997,19 @@ function renderHiveDetail(){
     ${hive.storesLevel ? `<div class="chip">&#x1F36F; Stores: ${hive.storesLevel}</div>` : ''}
     ${hive.waxMoth ? '<div class="chip">&#x1F98B; Wax moth present</div>' : ''}
     ${hive.wild ? '<div class="chip">&#x1F33F; Wild comb</div>' : ''}
-    <div class="hive-status-chip" onclick="openHiveStatusModal('${hive.id}')" style="color:${statusColour};border-color:${statusColour};background:transparent;">
+    <div class="hive-status-chip" onclick="openHiveStatusModal('${hive.id}')" style="color:${statusColour};border-color:${statusColour};background:white;">
       &#x270F;&#xFE0F; Change status
     </div>
-    <div class="hive-status-chip" onclick="openHiveTypeModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);">
+    <div class="hive-status-chip" onclick="openHiveTypeModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
       ${HIVE_TYPE_ICONS[hive.boxType||'National']||'&#x1F41D;'} ${hive.boxType||'National'}
     </div>
-    <div class="hive-status-chip" onclick="openHiveComponentsModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);">
+    <div class="hive-status-chip" onclick="openHiveComponentsModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
       &#x1F4E6; ${hive.broodBoxes||1} brood · ${hive.supers||0} supers${getHoneyTotal(hive.id) > 0 ? " · 🍯 " + getHoneyTotal(hive.id) + "kg honey" : ""}
     </div>
-    <div class="hive-status-chip" style="color:var(--text-l);border-color:var(--wax);cursor:pointer;" onclick="hideHive('${hive.id}')">
+    <div class="hive-status-chip" style="color:var(--text-m);border-color:var(--wax);cursor:pointer;background:white;" onclick="hideHive('${hive.id}')">
       👁 Hide
     </div>
-    <div class="hive-status-chip" onclick="confirmDeleteHive('${hive.id}')" style="color:var(--red);border-color:var(--red);background:transparent;">
+    <div class="hive-status-chip" onclick="confirmDeleteHive('${hive.id}')" style="color:#B83228;border-color:#B83228;background:#FFF0EE;font-weight:800;">
       &#x1F5D1; Delete hive
     </div>
   `;
@@ -3067,7 +3067,7 @@ function renderHiveDetail(){
       coverBannerEl.appendChild(_cd);
       coverBannerEl.style.display = 'block';
     } else {
-      coverBannerEl.innerHTML = '<button onclick="uploadHiveCoverPhoto(\'' + hive.id + '\')" style="width:100%;background:var(--cream);border:1px dashed var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--text-l);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">📷 Upload hive image</button>';
+      coverBannerEl.innerHTML = '<button onclick="uploadHiveCoverPhoto(\'' + hive.id + '\')" style="width:100%;background:var(--cream);border:1px dashed var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--bark);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">📷 Upload hive image</button>';
       coverBannerEl.style.display = 'block';
     }
 
@@ -11623,7 +11623,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:50  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 20:00  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
