@@ -8080,7 +8080,16 @@ async function pushApiaries() {
     return { id: a.id, user_id: uid, name: a.name, location: a.location || '', lat: a.lat || null, lng: a.lng || null, created_at: new Date(a.createdAt || Date.now()).toISOString() };
   });
   var { error } = await sb.from('apiaries').upsert(rows, { onConflict: 'id' });
-  if (error) { console.warn('Apiary push error:', error.message); showToast('⚠️ Sync error (apiaries): ' + error.message); }
+  if (error && error.code === '42501') {
+    // RLS self-heal: delete and reinsert
+    console.warn('Apiary RLS error — attempting self-heal');
+    await sb.from('apiaries').delete().eq('user_id', uid);
+    var { error: retryError } = await sb.from('apiaries').insert(rows);
+    if (retryError) { console.warn('Apiary self-heal failed:', retryError.message); showToast('⚠️ Sync error (apiaries): ' + retryError.message); }
+  } else if (error) {
+    console.warn('Apiary push error:', error.message);
+    showToast('⚠️ Sync error (apiaries): ' + error.message);
+  }
 }
 
 async function pushHives() {
@@ -10793,7 +10802,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 14:45  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 14:54  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
