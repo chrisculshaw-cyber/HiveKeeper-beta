@@ -3020,12 +3020,18 @@ function renderHiveDetail(){
       _co.appendChild(_cs);
       _cd.appendChild(_ci);
       _cd.appendChild(_co);
+      // Add change photo button overlay
+      var _cchange = document.createElement('button');
+      _cchange.onclick = function(e){ e.stopPropagation(); uploadHiveCoverPhoto(hive.id); };
+      _cchange.style.cssText = 'position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);border:none;border-radius:12px;padding:3px 8px;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;';
+      _cchange.textContent = '📷 Change';
+      _cd.appendChild(_cchange);
       coverBannerEl.innerHTML = '';
       coverBannerEl.appendChild(_cd);
       coverBannerEl.style.display = 'block';
     } else {
-      coverBannerEl.innerHTML = '';
-      coverBannerEl.style.display = 'none';
+      coverBannerEl.innerHTML = '<button onclick="uploadHiveCoverPhoto(\'' + hive.id + '\')" style="width:100%;background:var(--cream);border:1px dashed var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--text-l);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">📷 Upload hive image</button>';
+      coverBannerEl.style.display = 'block';
     }
 
     statusEl.innerHTML = `
@@ -11030,7 +11036,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:40  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:50  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
