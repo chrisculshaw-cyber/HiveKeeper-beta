@@ -194,7 +194,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .data-chip-val{font-size:15px;font-weight:800;color:var(--text);font-family:'Cormorant Garamond',serif}
 .data-chip-sub{font-size:10px;color:var(--text-l);margin-top:2px}
 .val-red{color:var(--red)!important}.val-amber{color:var(--honey)!important}.val-green{color:var(--green)!important}
-.photo-strip{display:flex;gap:8px;padding:0 20px;overflow-x:auto;scrollbar-width:none}
+.photo-strip{display:flex;gap:8px;padding:0 20px 4px;overflow-x:auto;scrollbar-width:none;align-items:flex-start}
 .photo-strip::-webkit-scrollbar{display:none}
 .photo-thumb{flex-shrink:0;width:72px;height:72px;background:var(--wax);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;border:1px solid var(--wax)}
 .photo-add{flex-shrink:0;width:72px;height:72px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px dashed var(--text-l);cursor:pointer;color:var(--text-l);background:transparent}
@@ -3625,11 +3625,13 @@ function addPhotoToStrip(dataUrl, photoIndex, label) {
   var thumb = document.createElement('div');
   thumb.className = 'photo-thumb';
   thumb.id = 'photo-thumb-' + photoIndex;
-  thumb.style.cssText = 'position:relative;cursor:pointer;';
+  thumb.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0;width:72px;';
   thumb.innerHTML =
-    '<img src="' + dataUrl + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;">' +
-    '<div id="photo-status-' + photoIndex + '" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);border-radius:6px;padding:2px 5px;font-size:8px;font-weight:700;color:white;max-width:68px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">⏫</div>' +
-    '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:8px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + label + '</div>';
+    '<div style="position:relative;width:72px;height:72px;flex-shrink:0;">' +
+      '<img src="' + dataUrl + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;display:block;">' +
+      '<div id="photo-status-' + photoIndex + '" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);border-radius:6px;padding:2px 5px;font-size:8px;font-weight:700;color:white;">⏫</div>' +
+    '</div>' +
+    '<div style="font-size:8px;font-weight:700;color:var(--text-m);text-align:center;width:72px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.2;">' + (label || '') + '</div>';
   strip.insertBefore(thumb, strip.querySelector('.photo-add'));
 
   if (!currentInspData.photos) currentInspData.photos = [];
@@ -8110,60 +8112,60 @@ function triggerSOS() {
   var contact = loadSOSContact();
 
   if (!contact.number && !contact.whatsapp) {
-    // No contact set — show setup directly, no confirm
     showToast('Set up an emergency contact first');
     setTimeout(openSOSSetup, 300);
     return;
   }
 
-  // Build message immediately
   var apiary = typeof getCurrentApiary === 'function' ? getCurrentApiary() : null;
   var apiaryName = apiary ? apiary.name : 'my apiary';
   var apiaryLocation = apiary && apiary.location ? apiary.location : '';
   var myName = contact.myName || 'Me';
-  var baseMessage = myName + ' may need urgent help at ' + apiaryName +
-    (apiaryLocation ? ', ' + apiaryLocation : '') +
-    '. Please call or come immediately. Sent from HiveKeeper.';
 
-  showToast('Sending SOS...');
+  function buildMessage(lat, lng) {
+    var locationLine = apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '');
+    // Use live coords if available, otherwise fall back to stored apiary coords
+    var mapLat = lat || (apiary && apiary.lat ? apiary.lat : null);
+    var mapLng = lng || (apiary && apiary.lng ? apiary.lng : null);
+    var mapsUrl = mapLat && mapLng
+      ? 'https://maps.google.com/maps?daddr=' + mapLat + ',' + mapLng
+      : null;
+    var msg = '\uD83D\uDEA8 URGENT \u2014 ' + myName + ' needs help!\n\n'
+      + 'Location: ' + locationLine + '\n';
+    if (mapsUrl) {
+      msg += '\u27A1\uFE0F Navigate here:\n' + mapsUrl + '\n';
+    }
+    msg += '\nPlease call or come immediately.\nSent from HiveKeeper.';
+    return msg;
+  }
 
-  // Try live GPS first — if denied, fall back to stored apiary coords
+  showToast('\uD83D\uDCCD Getting location...');
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
-        var lat = pos.coords.latitude.toFixed(5);
-        var lng = pos.coords.longitude.toFixed(5);
-        var message = baseMessage + ' GPS: https://maps.google.com/?q=' + lat + ',' + lng;
-        sendSOSMessages(contact, message);
+        var lat = pos.coords.latitude.toFixed(6);
+        var lng = pos.coords.longitude.toFixed(6);
+        sendSOSMessages(contact, buildMessage(lat, lng));
       },
       function(err) {
         console.warn('SOS GPS error:', err.code, err.message);
-        // Try stored apiary coordinates as fallback
-        var apiary = getCurrentApiary ? getCurrentApiary() : null;
-        if (apiary && apiary.lat && apiary.lng) {
-          var message = baseMessage + ' Apiary location: https://maps.google.com/?q=' + apiary.lat + ',' + apiary.lng;
-          sendSOSMessages(contact, message);
-        } else {
-          // No coords at all — send without, don't expose technical error text
-          sendSOSMessages(contact, baseMessage);
-        }
+        sendSOSMessages(contact, buildMessage(null, null));
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   } else {
-    sendSOSMessages(contact, baseMessage);
+    sendSOSMessages(contact, buildMessage(null, null));
   }
 }
 
 function sendSOSMessages(contact, message) {
   var sent = [];
-  // SMS
   if (contact.number) {
     var cleanSMS = contact.number.replace(/\s/g, '');
     window.open('sms:' + cleanSMS + '?body=' + encodeURIComponent(message), '_blank');
     sent.push('SMS');
   }
-  // WhatsApp
   if (contact.whatsapp) {
     var cleanWA = contact.whatsapp.replace(/[\s\-\(\)]/g, '');
     if (cleanWA.startsWith('0')) cleanWA = '44' + cleanWA.substring(1);
@@ -8172,7 +8174,7 @@ function sendSOSMessages(contact, message) {
     }, contact.number ? 800 : 0);
     sent.push('WhatsApp');
   }
-  showToast('SOS sent via ' + sent.join(' & ') + ' ✓');
+  showToast('\uD83D\uDEA8 SOS sent via ' + sent.join(' & ') + ' \u2713');
 }
 
 
@@ -12417,7 +12419,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 22:30  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 22:45  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
