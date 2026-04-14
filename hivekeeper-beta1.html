@@ -958,7 +958,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
           <div id="offline-indicator" style="display:none;font-size:10px;color:#FFB74D;margin-top:2px;">&#x1F4F5; Offline — inspections will sync when online</div>
-          <div class="dash-name" id="apiary-name-display" onclick="openApiarySwitcher()" style="cursor:pointer;" title="Tap to switch apiary"><span id="apiary-name-text">My Apiary</span> <span style="font-size:14px;opacity:.6;">⌄</span></div>
+          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:inline-flex;align-items:center;gap:6px;">🍯 <span id="apiary-name-text">My Apiary</span></button>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">&#x2699;&#xFE0F;</div>
@@ -1073,7 +1073,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div class="screen-header" style="background:var(--forest);padding-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div>
-          <div class="screen-title" id="apiary-screen-title" onclick="openApiarySwitcher()" style="cursor:pointer;" title="Tap to switch apiary">My Apiary <span style="font-size:16px;opacity:.6;">⌄</span></div>
+          <button id="apiary-screen-title" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:inline-flex;align-items:center;gap:6px;">🍯 My Apiary</button>
           <div class="screen-sub" id="apiary-sub">Brigstock</div>
         </div>
         <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;">&#x1F441; Hidden</button>
@@ -3939,6 +3939,36 @@ async function sendAI(){
   input.value='';
   addMessage('user',msg);
   showTyping(true);
+
+  // Check for pending photo
+  var pendingPhoto = window._pendingAIPhoto || null;
+  window._pendingAIPhoto = null;
+
+  if(pendingPhoto){
+    try{
+      var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          type:'frame_analysis',
+          image:pendingPhoto.base64,
+          mimeType:pendingPhoto.mediaType,
+          hiveContext:{
+            question: msg,
+            apiary:(function(){ var a=loadApiaries().find(function(x){return x.id===currentApiaryId;}); return a?a.name:'Unknown apiary'; })()
+          }
+        })
+      });
+      if(!res.ok) throw new Error('Worker returned '+res.status);
+      var data=await res.json();
+      showTyping(false);
+      var analysis=data.analysis||data.result||data.text||null;
+      addMessage('ai', analysis||'I couldn\'t analyse that image — please try again or describe what you\'re seeing.');
+    }catch(e){ showTyping(false); addMessage('ai','Photo analysis failed — check your connection and try again.'); }
+    return;
+  }
+  addMessage('user',msg);
+  showTyping(true);
   const lower=msg.toLowerCase();
   const key=Object.keys(AI_KB).find(k=>lower.includes(k));
   if(key){ setTimeout(()=>{ showTyping(false); addMessage('ai',AI_KB[key]); },900); return; }
@@ -3985,35 +4015,18 @@ async function handleAIPhotoUpload(event) {
     var d = document.createElement('div');
     d.className = 'msg user';
     d.innerHTML = '<div class="msg-sender">You</div>'
-      + '<img src="' + dataUrl + '" style="max-width:100%;border-radius:8px;margin-top:6px;max-height:200px;object-fit:cover;" alt="Uploaded photo">'
-      + '<div style="margin-top:6px;font-size:13px;">Does this look normal?</div>';
+      + '<img src="' + dataUrl + '" style="max-width:100%;border-radius:8px;margin-top:6px;max-height:200px;object-fit:cover;" alt="Uploaded photo">';
     msgs.insertBefore(d, ti);
     msgs.scrollTop = msgs.scrollHeight;
 
-    showTyping(true);
+    // Store image data for sending with the next message
+    window._pendingAIPhoto = { base64: base64, mediaType: mediaType, dataUrl: dataUrl };
 
-    try {
-      var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'frame_analysis',
-          image: base64,
-          mimeType: mediaType,
-          hiveContext: {
-            question: 'The beekeeper has uploaded a photo and asked: does this look normal? Analyse what you can see and give specific, practical advice.',
-            apiary: (function(){ var a = loadApiaries().find(function(x){ return x.id === currentApiaryId; }); return a ? a.name : 'Unknown apiary'; })()
-          }
-        })
-      });
-      if (!res.ok) throw new Error('Worker returned ' + res.status);
-      var data = await res.json();
-      showTyping(false);
-      var analysis = data.analysis || data.result || data.text || null;
-      addMessage('ai', analysis || 'I couldn\'t analyse that image — please try again or describe what you\'re seeing.');
-    } catch(e) {
-      showTyping(false);
-      addMessage('ai', 'Photo analysis failed — check your connection and try again.');
+    // Prepopulate text field so user can edit before sending
+    var inputEl = document.getElementById('ai-input');
+    if (inputEl) {
+      inputEl.value = 'Does this look normal?';
+      inputEl.focus();
     }
   };
   reader.readAsDataURL(file);
@@ -9417,7 +9430,7 @@ function updateApiaryNameDisplays() {
     else if (nameDisplay.childNodes[0]) nameDisplay.childNodes[0].textContent = name;
   }
   var screenTitle = document.getElementById('apiary-screen-title');
-  if (screenTitle) screenTitle.innerHTML = name + ' <span style="font-size:16px;opacity:.6;">⌄</span>';
+  if (screenTitle) screenTitle.innerHTML = '🍯 ' + name;
   var switcherName = document.getElementById('apiary-switcher-name');
   if (switcherName) switcherName.textContent = name;
   var inspectLabel = document.getElementById('inspect-apiary-label');
@@ -11013,7 +11026,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:30  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:33  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
