@@ -1097,13 +1097,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Action buttons -->
       <!-- Default: Swarm, Share, Layout visible. Marks, +Hive, Rows shown in edit mode -->
       <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
-        <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
-        <button onclick="openShareApiary()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
-        <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Layout</button>
-        <button onclick="exportApiaryMap()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
-        <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
-        <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
+        <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
+        <button onclick="openShareApiary()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
+        <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Layout</button>
+        <button onclick="exportApiaryMap()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
+        <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
+        <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
     </div>
     <!-- Map canvas -->
@@ -1146,7 +1146,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="hive-selector-label">Inspecting</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <div style="font-size:11px;color:rgba(255,255,255,.6);" id="inspect-apiary-label">My Apiary</div>
-        <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
+        <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
       </div>
       <div id="inspect-hive-select-wrap" style="margin-top:4px;">
         <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:16px 18px;cursor:pointer;">
@@ -1185,7 +1185,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="rec-time" id="rec-time">00:00</div>
     </div>
     <div class="transcript-box" id="transcript-box" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;"><div class="transcript-label">&#x2736; AI Transcript</div><div style="font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.12);border-radius:20px;padding:2px 8px;">&#x270F; Tap to edit</div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;"><div class="transcript-label">&#x2736; AI Transcript</div><div style="font-size:11px;color:rgba(255,255,255,.6);background:rgba(255,255,255,.22);border-radius:20px;padding:2px 8px;">&#x270F; Tap to edit</div></div>
       <div class="transcript-text" id="transcript-text" contenteditable="true" spellcheck="true" style="outline:none;min-height:40px;border:1px dashed rgba(255,255,255,.3);border-radius:8px;padding:8px;margin-top:4px;" placeholder="Transcript will appear here..."></div>
     </div>
     <div id="extracted-section" style="display:none">
@@ -1294,7 +1294,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div class="back-btn" onclick="goBack()">&#8249; Apiary</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:8px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:8px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
           <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
           <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
         </div>
@@ -2992,8 +2992,8 @@ function renderHiveDetail(){
   var statusColour = hive.status==='active'?'var(--green)':hive.status==='dead'?'#9E9E9E':'#1565C0';
   document.getElementById('hive-detail-chips').innerHTML = `
     <div class="chip">${badge.text}</div>
-    <div class="chip" onclick="openRenameCurrentHive()" style="cursor:pointer;border-color:var(--forest);color:var(--forest);">✏️ Rename</div>
-    <div class="chip" onclick="changeHiveRow('${hive.id}')" style="cursor:pointer;border-color:var(--honey);color:var(--honey);">&#x1F5C2; ${hive.row || 'Set row'}</div>
+    <div class="chip" onclick="openRenameCurrentHive()" style="cursor:pointer;">✏️ Rename</div>
+    <div class="chip" onclick="changeHiveRow('${hive.id}')" style="cursor:pointer;border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.9);">&#x1F5C2; ${hive.row || 'Set row'}</div>
     ${hive.storesLevel ? `<div class="chip">&#x1F36F; Stores: ${hive.storesLevel}</div>` : ''}
     ${hive.waxMoth ? '<div class="chip">&#x1F98B; Wax moth present</div>' : ''}
     ${hive.wild ? '<div class="chip">&#x1F33F; Wild comb</div>' : ''}
@@ -11623,7 +11623,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:45  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 19:50  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
