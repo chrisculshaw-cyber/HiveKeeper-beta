@@ -9342,24 +9342,23 @@ async function checkAndShowOnboarding() {
   if (_currentUser) {
     try {
       var sb = getSupabase();
+      // Check by both user_id and email to catch all cases
       var { data } = await sb.from('apiary_shares')
-        .select('id, apiary_id, role, status')
-        .eq('user_id', _currentUser.id)
+        .select('id, apiary_id, role, status, token')
+        .or('user_id.eq.' + _currentUser.id + ',invited_email.eq.' + _currentUser.email)
         .eq('status', 'accepted')
         .limit(1);
       if (data && data.length > 0) {
-        // They're a collaborator — mark onboarded and skip wizard
         localStorage.setItem('hk_onboarded', '1');
         return;
       }
-      // Also check by email for invites not yet linked to user_id
+      // Also check for pending invites (signed_up but not yet accepted)
       var { data: byEmail } = await sb.from('apiary_shares')
-        .select('id, apiary_id, role, status')
+        .select('id, apiary_id, role, status, token')
         .eq('invited_email', _currentUser.email)
         .neq('status', 'accepted')
         .limit(1);
       if (byEmail && byEmail.length > 0) {
-        // Pending invite exists for this email — skip onboarding, process invite
         localStorage.setItem('hk_onboarded', '1');
         localStorage.setItem('hk_pending_invite', byEmail[0].token || byEmail[0].id);
         return;
@@ -9659,10 +9658,11 @@ async function pullFromSupabase() {
       localStorage.setItem('hk_apiaries_v1', JSON.stringify(mapped));
     }
 
-    // Pull shared apiaries (where this user is a collaborator)
+    // Pull shared apiaries (where this user is a collaborator — match by user_id OR email)
+    var userEmail = _currentUser ? _currentUser.email : '';
     var { data: sharedShares } = await sb.from('apiary_shares')
-      .select('apiary_id, role, status, owner_id')
-      .eq('user_id', uid)
+      .select('apiary_id, role, status, owner_id, user_id, invited_email')
+      .or('user_id.eq.' + uid + ',invited_email.eq.' + userEmail)
       .eq('status', 'accepted');
     if (sharedShares && sharedShares.length) {
       var existingApiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
@@ -12470,7 +12470,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:06  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
