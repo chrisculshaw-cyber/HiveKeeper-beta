@@ -1968,6 +1968,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- EMERGENCY -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
       <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #C62828;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">🆘 Set emergency contact</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
 
@@ -5840,6 +5841,233 @@ function downloadCurrentReport() {
   showToast('Report downloaded ✓');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// REFERRAL SCHEME
+// ═══════════════════════════════════════════════════════════════
+
+var _referralCode = null;
+var _referralCount = 0;
+var _referralConverted = 0;
+var _referralHiveBonus = 0;
+
+// Generate a referral code from user's name + random suffix
+function generateReferralCode(name) {
+  var base = (name || 'BEE').replace(/[^A-Z0-9]/gi,'').toUpperCase().substring(0,5);
+  var suffix = Math.floor(1000 + Math.random() * 9000);
+  return base + suffix;
+}
+
+// Load or create referral code
+async function loadReferralCode() {
+  if (!_currentUser) return null;
+  var sb = getSupabase();
+  var { data } = await sb.from('profiles')
+    .select('referral_code, referral_hive_bonus')
+    .eq('id', _currentUser.id)
+    .single();
+  if (data && data.referral_code) {
+    _referralCode = data.referral_code;
+    _referralHiveBonus = data.referral_hive_bonus || 0;
+    return _referralCode;
+  }
+  // Generate new code
+  var meta = _currentUser.user_metadata || {};
+  var name = meta.full_name || meta.name || _currentUser.email.split('@')[0];
+  var code = generateReferralCode(name);
+  await sb.from('profiles').update({ referral_code: code }).eq('id', _currentUser.id);
+  _referralCode = code;
+  return code;
+}
+
+// Load referral stats
+async function loadReferralStats() {
+  if (!_currentUser) return;
+  var sb = getSupabase();
+  var { data } = await sb.from('referrals')
+    .select('status')
+    .eq('referrer_id', _currentUser.id);
+  if (data) {
+    _referralCount = data.length;
+    _referralConverted = data.filter(function(r){ return r.status === 'converted'; }).length;
+  }
+}
+
+// Check URL for referral code on landing
+function checkReferralParam() {
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+  if (ref) {
+    localStorage.setItem('hk_ref_code', ref.toUpperCase());
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+// Record referral when new user signs up
+async function recordReferral(newUserId) {
+  var refCode = localStorage.getItem('hk_ref_code');
+  if (!refCode) return;
+  var sb = getSupabase();
+  // Find referrer
+  var { data: referrer } = await sb.from('profiles')
+    .select('id')
+    .eq('referral_code', refCode)
+    .single();
+  if (!referrer) return;
+  // Record referral
+  await sb.from('referrals').insert({
+    referrer_id: referrer.id,
+    referred_id: newUserId,
+    referral_code: refCode,
+    status: 'signed_up'
+  });
+  // Store on referred user's profile
+  await sb.from('profiles').update({ referred_by: refCode }).eq('id', newUserId);
+  localStorage.removeItem('hk_ref_code');
+  // Give referred user a bonus — 7 hives instead of 5
+  localStorage.setItem('hk_referral_bonus', '2');
+}
+
+// Get effective hive limit including referral bonus
+function getReferralHiveLimit() {
+  var base = 5;
+  // From Supabase-loaded bonus
+  if (_referralHiveBonus > 0) return base + _referralHiveBonus;
+  // From localStorage (new referred user, profile not yet loaded)
+  var bonus = parseInt(localStorage.getItem('hk_referral_bonus') || '0');
+  // From referral count (referrer rewards)
+  if (_referralCount >= 5) return 10;
+  if (_referralCount >= 3) return 10;
+  if (_referralCount >= 1) return 7;
+  return base + bonus;
+}
+
+// Override canAddHive to include referral bonus
+var _origCanAddHive = canAddHive;
+canAddHive = function() {
+  if (getUserTier() !== 'free') return _origCanAddHive();
+  var limit = getReferralHiveLimit();
+  var count = loadHives().filter(function(h){ return !h.id.toString().startsWith('demo-'); }).length;
+  return count < limit;
+};
+
+// Check if referrer has earned free Pro (5 referrals)
+function checkReferralProReward() {
+  if (_referralCount >= 5 && getUserTier() === 'free') {
+    // Flag for manual Pro upgrade — show notice
+    localStorage.setItem('hk_pro_reward_pending', '1');
+  }
+}
+
+// Open referral modal
+async function openReferralModal() {
+  openModalEl('modal-referral');
+  // Load code and stats
+  await loadReferralCode();
+  await loadReferralStats();
+  checkReferralProReward();
+  renderReferralModal();
+}
+
+function getReferralLink() {
+  return 'https://gethivekeeper.com?ref=' + (_referralCode || '...');
+}
+
+function renderReferralModal() {
+  var isFounding = isFoundingBeekeeper();
+  var tier = getUserTier();
+
+  // Referral link
+  var link = getReferralLink();
+  var linkEl = document.getElementById('referral-link-display');
+  if (linkEl) linkEl.textContent = link;
+
+  // Stats
+  var countEl = document.getElementById('referral-count');
+  var convEl = document.getElementById('referral-converted');
+  if (countEl) countEl.textContent = _referralCount;
+  if (convEl) convEl.textContent = _referralConverted;
+
+  // Reward banner
+  var bannerEl = document.getElementById('referral-reward-banner');
+  if (bannerEl) {
+    if (isFounding) {
+      var vouchers = Math.floor(_referralConverted / 3);
+      var toNext = 3 - (_referralConverted % 3);
+      bannerEl.innerHTML = '🏅 <strong>Founding Beekeeper</strong> — for every 3 beekeepers who take out a paid plan using your link, you\'ll receive a <strong>£25 gift voucher</strong> (choice of Thorne\'s or Simon The Beekeeper) at the end of 2026.'
+        + (vouchers > 0 ? '<br>🎁 <strong>' + vouchers + ' voucher' + (vouchers > 1 ? 's' : '') + ' earned so far!</strong>' : '')
+        + '<br>📊 ' + _referralConverted + ' paid conversions · ' + toNext + ' more to next voucher';
+    } else if (tier === 'free') {
+      var limit = getReferralHiveLimit();
+      var nextReward = _referralCount >= 5 ? 'Free Pro for 3 months 🎉' : _referralCount >= 3 ? '5 referrals → Free Pro 3 months' : _referralCount >= 1 ? '3 referrals → 10 hive slots' : '1 referral → 7 hive slots';
+      bannerEl.innerHTML = '🐝 <strong>Your referrals earn you more hive slots.</strong>'
+        + '<br>Current limit: <strong>' + limit + ' hives</strong>'
+        + '<br>Next reward: ' + nextReward
+        + (localStorage.getItem('hk_pro_reward_pending') === '1' ? '<br>🎉 <strong>You\'ve earned 3 months free Pro! Contact chris@culshaw.consulting to claim.</strong>' : '');
+    } else {
+      bannerEl.innerHTML = '🐝 Each beekeeper who converts to a paid plan using your link earns you <strong>1 month subscription credit</strong>. 12 conversions = a free year.<br>Contact chris@culshaw.consulting to claim credits.';
+    }
+  }
+
+  // Reward tiers
+  var tiersEl = document.getElementById('referral-tiers');
+  if (tiersEl) {
+    if (isFounding) {
+      tiersEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Founding Beekeeper rewards</div>'
+        + renderRewardRow('3 paid conversions', '£25 Thorne\'s or Simon The Beekeeper voucher', _referralConverted >= 3)
+        + renderRewardRow('6 paid conversions', '£50 in vouchers', _referralConverted >= 6)
+        + renderRewardRow('9 paid conversions', '£75 in vouchers', _referralConverted >= 9);
+    } else if (tier === 'free') {
+      tiersEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Your reward progress</div>'
+        + renderRewardRow('1 referral', '7 hive slots (up from 5)', _referralCount >= 1)
+        + renderRewardRow('3 referrals', '10 hive slots', _referralCount >= 3)
+        + renderRewardRow('5 referrals', 'Free Pro for 3 months', _referralCount >= 5);
+    } else {
+      tiersEl.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Pro/Commercial rewards</div>'
+        + renderRewardRow('1 paid conversion', '1 month subscription credit', _referralConverted >= 1)
+        + renderRewardRow('6 paid conversions', '6 months credit', _referralConverted >= 6)
+        + renderRewardRow('12 paid conversions', 'Free year', _referralConverted >= 12);
+    }
+  }
+
+  // Draw QR code
+  if (_referralCode) {
+    var canvas = document.getElementById('referral-qr-canvas');
+    if (canvas) drawQR('referral-qr-canvas', link);
+  }
+}
+
+function renderRewardRow(label, reward, achieved) {
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;margin-bottom:6px;border-radius:var(--rs);background:' + (achieved ? '#EAF5EC' : 'var(--cream)') + ';border:1px solid ' + (achieved ? '#A5D6A7' : 'var(--wax)') + ';">'
+    + '<div style="font-size:18px;">' + (achieved ? '✅' : '⭕') + '</div>'
+    + '<div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--text);">' + label + '</div>'
+    + '<div style="font-size:11px;color:var(--text-l);">' + reward + '</div></div>'
+    + '</div>';
+}
+
+function copyReferralLink() {
+  var link = getReferralLink();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(function(){ showToast('Referral link copied ✓'); });
+  } else {
+    var el = document.getElementById('referral-link-display');
+    if (el) { var range = document.createRange(); range.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); document.execCommand('copy'); showToast('Referral link copied ✓'); }
+  }
+}
+
+function downloadReferralQR() {
+  var canvas = document.getElementById('referral-qr-canvas');
+  if (!canvas) return;
+  var a = document.createElement('a');
+  a.download = 'hivekeeper-referral-qr.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  showToast('QR code saved ✓');
+}
+
+// Check referral param on every page load
+document.addEventListener('DOMContentLoaded', checkReferralParam);
+
 function exportApiaryMap() {
   var canvas = document.getElementById('map-canvas');
   if (!canvas) { showToast('Map not available'); return; }
@@ -7935,11 +8163,13 @@ async function onAuthSuccess() {
 async function loadUserProfile() {
   if (!_currentUser) return;
   const sb = getSupabase();
-  const { data } = await sb.from('profiles').select('name, tier, is_subscribed, is_founding_beekeeper').eq('id', _currentUser.id).single();
+  const { data } = await sb.from('profiles').select('name, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus').eq('id', _currentUser.id).single();
   if (data) {
     // Store tier for paywall checks
     if (data.tier) _userTier = data.tier;
     if (data.is_founding_beekeeper) localStorage.setItem('hk_founding_beekeeper', '1');
+    if (data.referral_code) _referralCode = data.referral_code;
+    if (data.referral_hive_bonus) _referralHiveBonus = data.referral_hive_bonus || 0;
     updatePlanBadge();
   }
   if (data && data.name) {
@@ -8864,6 +9094,10 @@ function obFinish() {
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
   if (typeof renderDashboard === 'function') renderDashboard();
   if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
+  // Record referral if they came via a ref link
+  if (getUserId() && typeof recordReferral === 'function') {
+    recordReferral(getUserId()).catch(function(){});
+  }
   goTo('s-home');
   showToast('Welcome to HiveKeeper 🐝');
 }
@@ -11623,7 +11857,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 20:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 20:13  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -11868,6 +12102,52 @@ function goToApiaryAlerts() {
       </div>
 
       <button onclick="closeModalEl('modal-pricing')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- MODAL: REFERRAL -->
+  <div class="modal-overlay" id="modal-referral" onclick="closeModal(event,'modal-referral')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🐝 Refer a beekeeper</div>
+
+      <!-- Reward summary -->
+      <div id="referral-reward-banner" style="background:#FAEEDA;border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;border:1px solid var(--honey);font-size:12px;color:#633806;line-height:1.7;"></div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div style="background:var(--cream);border-radius:var(--rs);padding:12px;text-align:center;border:1px solid var(--wax);">
+          <div id="referral-count" style="font-size:28px;font-weight:800;color:var(--forest);font-family:'Cormorant Garamond',serif;">0</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">Beekeepers referred</div>
+        </div>
+        <div style="background:var(--cream);border-radius:var(--rs);padding:12px;text-align:center;border:1px solid var(--wax);">
+          <div id="referral-converted" style="font-size:28px;font-weight:800;color:var(--forest);font-family:'Cormorant Garamond',serif;">0</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">Converted to paid</div>
+        </div>
+      </div>
+
+      <!-- Referral link -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your referral link</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div id="referral-link-display" style="flex:1;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--text);word-break:break-all;font-family:monospace;"></div>
+          <button onclick="copyReferralLink()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:10px 14px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">Copy</button>
+        </div>
+      </div>
+
+      <!-- QR code -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">QR code — share or print</div>
+        <div style="text-align:center;background:white;border-radius:var(--rs);padding:16px;border:1px solid var(--wax);">
+          <canvas id="referral-qr-canvas" width="180" height="180" style="display:block;margin:0 auto;"></canvas>
+          <button onclick="downloadReferralQR()" style="margin-top:10px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px 16px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">⬇ Download QR</button>
+        </div>
+      </div>
+
+      <!-- Reward tiers -->
+      <div id="referral-tiers" style="margin-bottom:16px;"></div>
+
+      <button onclick="closeModalEl('modal-referral')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
 
