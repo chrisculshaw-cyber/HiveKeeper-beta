@@ -9645,7 +9645,7 @@ async function pullFromSupabase() {
       var keysToKeep = ['hk_24h','hk_large_text','hk_sos_contact','hk_has_signed_in',
         'hk_user_lat','hk_user_lng','hk_user_location_name','hk_app_version','hk_compass_v1','hk_colour_blind',
         'hk_onboarded','hk_pending_invite','hk_policies_accepted','hk_founding_beekeeper',
-        'hk_ref_code','hk_referral_bonus'];
+        'hk_ref_code','hk_referral_bonus','hk_apiaries_v1','hk_hives_v2','hk_current_apiary'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -10266,6 +10266,71 @@ async function checkInviteToken() {
   }
 }
 
+function showInviteAcknowledgement(invite) {
+  return new Promise(function(resolve) {
+    var existing = document.getElementById('invite-ack-sheet');
+    if (existing) existing.remove();
+    var sheet = document.createElement('div');
+    sheet.id = 'invite-ack-sheet';
+    sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 32px rgba(0,0,0,.3);max-width:480px;margin:0 auto;';
+    var apiaryDisplay = invite.apiary_id || 'this apiary';
+    var roleDisplay = invite.role || 'viewer';
+    var checked = false;
+
+    sheet.innerHTML = '<div style="width:36px;height:4px;background:var(--wax);border-radius:2px;margin:0 auto 20px;"></div>'
+      + '<div style="text-align:center;margin-bottom:16px;">'
+        + '<div style="font-size:32px;margin-bottom:8px;">🐝</div>'
+        + '<div style="font-size:18px;font-weight:800;color:var(--forest);font-family:Syne,sans-serif;margin-bottom:6px;">You\'ve been invited!</div>'
+        + '<div style="font-size:13px;color:var(--text-l);line-height:1.6;">You\'re joining as <strong style="color:var(--forest);">' + roleDisplay + '</strong>. Before you continue, please confirm you understand how your data will be used.</div>'
+      + '</div>'
+      + '<div id="invite-ack-box" onclick="toggleInviteAck()" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:16px;background:white;transition:border-color .2s;">'
+        + '<div id="cb-invite-ack" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>'
+        + '<span style="font-size:13px;color:var(--text);line-height:1.6;">I understand that any inspection records I add to this apiary will be stored by HiveKeeper and visible to the apiary owner. See our <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a>.</span>'
+      + '</div>'
+      + '<div id="invite-ack-error" style="display:none;background:#FDECEA;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#B83228;margin-bottom:12px;font-weight:600;">Please tick the box to continue.</div>'
+      + '<button id="invite-ack-btn" onclick="confirmInviteAck()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;">Join apiary</button>'
+      + '<button onclick="document.getElementById(\'invite-ack-sheet\').remove();" style="width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Decline</button>';
+
+    document.body.appendChild(sheet);
+
+    window._inviteAckChecked = false;
+    window._inviteAckResolve = resolve;
+  });
+}
+
+function toggleInviteAck() {
+  window._inviteAckChecked = !window._inviteAckChecked;
+  var cb = document.getElementById('cb-invite-ack');
+  var box = document.getElementById('invite-ack-box');
+  var err = document.getElementById('invite-ack-error');
+  if (cb) {
+    cb.style.background = window._inviteAckChecked ? 'var(--forest)' : 'white';
+    cb.style.borderColor = window._inviteAckChecked ? 'var(--forest)' : 'var(--wax)';
+    cb.textContent = window._inviteAckChecked ? '\u2713' : '';
+    cb.style.color = 'white';
+    cb.style.fontWeight = '800';
+  }
+  if (box) {
+    box.style.borderColor = window._inviteAckChecked ? 'var(--forest)' : 'var(--wax)';
+    box.style.background = window._inviteAckChecked ? '#EAF5EC' : 'white';
+  }
+  if (err && window._inviteAckChecked) err.style.display = 'none';
+}
+
+function confirmInviteAck() {
+  if (!window._inviteAckChecked) {
+    var err = document.getElementById('invite-ack-error');
+    if (err) err.style.display = 'block';
+    return;
+  }
+  var sheet = document.getElementById('invite-ack-sheet');
+  if (sheet) sheet.remove();
+  if (typeof window._inviteAckResolve === 'function') {
+    window._inviteAckResolve(true);
+    window._inviteAckResolve = null;
+  }
+}
+
 async function processInviteToken(token) {
   if (!token) return;
 
@@ -10309,6 +10374,13 @@ async function processInviteToken(token) {
       localStorage.removeItem('hk_pending_invite');
       return;
     }
+  }
+
+  // Show data sharing acknowledgement before accepting
+  var acknowledged = await showInviteAcknowledgement(invite);
+  if (!acknowledged) {
+    localStorage.removeItem('hk_pending_invite');
+    return;
   }
 
   // Accept the invite — only update columns that exist
@@ -10378,13 +10450,15 @@ async function processInviteToken(token) {
   showToast('You\'ve joined the apiary! \u2713');
   window.history.replaceState({}, '', window.location.pathname);
 
-  // Refresh UI immediately without waiting for full cloud sync
+  // Refresh UI with the newly loaded shared apiary
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
   if (typeof renderDashboard === 'function') renderDashboard();
   if (typeof goTo === 'function') goTo('s-home');
 
-  // Background sync
-  initCloudSync().catch(function(){});
+  // Sync display name and non-destructive background tasks only
+  // Do NOT call initCloudSync here — it would wipe the apiary data we just fetched
+  if (typeof syncUserDisplayName === 'function') syncUserDisplayName().catch(function(){});
+  if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
 
   // Remove invite banner if present
   var banner = document.getElementById('invite-banner');
@@ -12470,7 +12544,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:06  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 23:15  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
