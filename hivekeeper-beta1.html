@@ -1645,6 +1645,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Current shares -->
       <div id="share-list" style="margin-bottom:16px;"></div>
 
+      <!-- Invite link + QR (shown after invite sent or QR button tapped) -->
+      <div id="share-invite-qr" style="display:none;padding-top:12px;border-top:1px solid var(--wax);margin-bottom:12px;"></div>
+
       <!-- Invite new -->
       <div style="padding-top:12px;border-top:1px solid var(--wax);">
         <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em;">Invite someone</div>
@@ -8868,6 +8871,8 @@ async function openShareApiary() {
   var modal = document.getElementById('modal-share-apiary');
   if (!modal) return;
   openModalEl('modal-share-apiary');
+  var qrEl = document.getElementById('share-invite-qr');
+  if (qrEl) { qrEl.style.display = 'none'; qrEl.innerHTML = ''; }
   await renderShareList();
 }
 
@@ -8942,7 +8947,10 @@ async function renderShareList() {
           + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + name + ' ' + statusBadge + '</div>'
           + '<div style="font-size:11px;color:var(--text-l);">' + email + '</div>'
         + '</div>'
-        + '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:1px solid #B83228;border-radius:20px;padding:4px 10px;color:#B83228;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;flex-shrink:0;">Remove</button>'
+        + '<div style="display:flex;gap:6px;">'
+        + (s.token ? '<button onclick="showInviteQR(\'' + (s.token||'') + '\',\'' + email + '\')" style="background:transparent;border:1px solid var(--forest);border-radius:20px;padding:4px 10px;color:var(--forest);font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">📱 QR</button>' : '')
+        + '<button onclick="removeShare(\'' + s.id + '\')" style="background:transparent;border:1px solid #B83228;border-radius:20px;padding:4px 10px;color:#B83228;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">Remove</button>'
+        + '</div>'
       + '</div>'
       + '<div style="display:flex;align-items:center;gap:8px;">'
         + '<div style="font-size:11px;color:var(--text-l);flex-shrink:0;">Role:</div>'
@@ -9028,6 +9036,8 @@ async function inviteToApiary() {
       if (shareNameEl) shareNameEl.value = '';
       renderShareList();
       showToast('Invite sent to ' + email + ' ✓');
+      // Show invite link + QR below the list
+      showInviteQR(token, email);
     } else {
       showToast('Failed to send invite — check your connection');
       console.warn('Invite error:', data);
@@ -9037,6 +9047,35 @@ async function inviteToApiary() {
     console.warn('Invite error:', e);
   } finally {
     if (btn) { btn.textContent = 'Send invite'; btn.disabled = false; }
+  }
+}
+
+function getInviteLink(token) {
+  return 'https://gethivekeeper.com?invite=' + token;
+}
+
+function showInviteQR(token, email) {
+  var container = document.getElementById('share-invite-qr');
+  if (!container) return;
+  var link = getInviteLink(token);
+  container.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Invite link for ' + (email || 'collaborator') + '</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:12px;">'
+      + '<div style="flex:1;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:10px 12px;font-size:11px;color:var(--text);word-break:break-all;font-family:monospace;">' + link + '</div>'
+      + '<button onclick="copyInviteLink(\'' + link + '\')" style="background:var(--forest);border:none;border-radius:var(--rs);padding:10px 14px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">Copy</button>'
+    + '</div>'
+    + '<div style="text-align:center;background:white;border-radius:var(--rs);padding:16px;border:1px solid var(--wax);margin-bottom:8px;">'
+      + '<canvas id="share-invite-qr-canvas" width="180" height="180" style="display:block;margin:0 auto;"></canvas>'
+      + '<div style="font-size:11px;color:var(--text-l);margin-top:8px;">Scan to accept invite · Or copy and share the link above</div>'
+    + '</div>';
+  container.style.display = 'block';
+  setTimeout(function() { drawQR('share-invite-qr-canvas', link); }, 50);
+}
+
+function copyInviteLink(link) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(link).then(function(){ showToast('Invite link copied ✓'); });
+  } else {
+    showToast('Copy the link from the box above');
   }
 }
 
@@ -9176,18 +9215,51 @@ async function acceptPolicies() {
 
 function isNewUser() {
   if (localStorage.getItem('hk_onboarded') === '1') return false;
-  if (localStorage.getItem('hk_pending_invite')) return false; // has or had a pending invite
+  if (localStorage.getItem('hk_pending_invite')) return false;
   var hives = loadHives().filter(function(h){ return !h.id.toString().startsWith('demo-'); });
   var apiaries = loadApiaries().filter(function(a){
     return !a.id.toString().startsWith('demo-') && a.id !== 'a0000000-0000-4000-8000-000000000001';
   });
-  // If user has any shared apiaries, they're not a new user
   if (apiaries.some(function(a){ return a.sharedWith; })) return false;
   return hives.length === 0 && apiaries.length === 0;
 }
 
-function checkAndShowOnboarding() {
+async function checkAndShowOnboarding() {
+  // Local checks first
   if (!isNewUser()) return;
+
+  // Ask Supabase — if this user has any accepted apiary shares, they're not a new user
+  if (_currentUser) {
+    try {
+      var sb = getSupabase();
+      var { data } = await sb.from('apiary_shares')
+        .select('id, apiary_id, role, status')
+        .eq('user_id', _currentUser.id)
+        .eq('status', 'accepted')
+        .limit(1);
+      if (data && data.length > 0) {
+        // They're a collaborator — mark onboarded and skip wizard
+        localStorage.setItem('hk_onboarded', '1');
+        return;
+      }
+      // Also check by email for invites not yet linked to user_id
+      var { data: byEmail } = await sb.from('apiary_shares')
+        .select('id, apiary_id, role, status')
+        .eq('invited_email', _currentUser.email)
+        .neq('status', 'accepted')
+        .limit(1);
+      if (byEmail && byEmail.length > 0) {
+        // Pending invite exists for this email — skip onboarding, process invite
+        localStorage.setItem('hk_onboarded', '1');
+        localStorage.setItem('hk_pending_invite', byEmail[0].token || byEmail[0].id);
+        return;
+      }
+    } catch(e) {
+      console.warn('Onboarding Supabase check failed — proceeding with local check only');
+    }
+  }
+
+  // Still looks like a new user — show wizard
   openModalEl('modal-onboarding');
 }
 
@@ -12135,7 +12207,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 21:41  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 21:55  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
