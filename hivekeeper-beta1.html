@@ -1943,83 +1943,78 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: SETTINGS -->
   <div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div class="modal-title" onclick="adminSecretTap()" style="user-select:none;">Settings</div>
 
-      <!-- PREFERENCES -->
-      <div class="settings-row" onclick="toggle24h()">
-        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">Show times as 14:30 instead of 2:30 PM</div></div>
-        <div class="settings-toggle" id="toggle-24h"></div>
-      </div>
-      <div class="settings-row" onclick="toggleLargeText()">
-        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout the app</div></div>
-        <div class="settings-toggle" id="toggle-large"></div>
-      </div>
-      <div class="settings-row" onclick="toggleColourBlind()">
-        <div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Use blue/orange instead of green/amber on the apiary map</div></div>
-        <div class="settings-toggle" id="toggle-cb"></div>
-      </div>
-      <div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;">
-        <div><div class="settings-label">Push notifications</div><div class="settings-sub">Inspection reminders, swarm alerts and treatment due dates</div></div>
-        <div class="settings-toggle" id="toggle-push"></div>
-      </div>
-
-      <!-- EMERGENCY -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #C62828;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">🆘 Set emergency contact</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
-
       <!-- ACCOUNT -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:48px;height:48px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">&#x1F3C5;</div>
+          <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
           <div>
             <div style="font-size:13px;font-weight:800;color:#412402;">Founding Beekeeper</div>
-            <div style="font-size:11px;color:#633806;margin-top:2px;">Beta 2026 &middot; Lifetime free membership</div>
+            <div style="font-size:11px;color:#633806;margin-top:2px;">Lifetime Pro · Thank you 🐝</div>
           </div>
         </div>
       </div>
-      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream,#F5F0E8);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
-          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div><div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest,#2D5016);margin-top:2px;">Beta</div>
+          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div>
+          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest);margin-top:2px;">Beta</div>
         </div>
         <div style="text-align:right;">
           <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
-          <div style="font-size:11px;font-weight:700;color:var(--honey,#C8730A);margin-top:2px;">View plans →</div>
+          <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
         </div>
       </div>
-      <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">Sign out</button>
+      <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
 
-      <!-- CALENDAR -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Calendar</div>
-      <button onclick="subscribeToCalendar()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:4px;">&#x1F4C5; Subscribe to HiveKeeper calendar</button>
-      <div style="font-size:10px;color:var(--text-l);text-align:center;margin-bottom:8px;">Inspection reminders &amp; seasonal events in Apple / Google Calendar</div>
+      <!-- PREFERENCES -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Preferences</div>
+      <div class="settings-row" onclick="toggle24h()">
+        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">14:30 instead of 2:30 PM</div></div>
+        <div class="settings-toggle" id="toggle-24h"></div>
+      </div>
+      <div class="settings-row" onclick="toggleLargeText()">
+        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout</div></div>
+        <div class="settings-toggle" id="toggle-large"></div>
+      </div>
+      <div class="settings-row" onclick="toggleColourBlind()">
+        <div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>
+        <div class="settings-toggle" id="toggle-cb"></div>
+      </div>
+      <div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">
+        <div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>
+        <div class="settings-toggle" id="toggle-push"></div>
+      </div>
 
-      <!-- COMMUNITY -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Community</div>
-      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">💬 Join WhatsApp Community</button>
-      <button onclick="window.open('https://chat.whatsapp.com/JBYBMaUBXn5Gj2hwUWaDFW','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💡 Suggest a feature</button>
+      <!-- TOOLS -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
+      <button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
 
       <!-- DATA -->
-      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Send feedback to Chris</button>
-      <div style="font-size:11px;color:var(--text-l);margin-bottom:16px;">Tell us what you love, what is broken, or what you want to see</div>
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
-
-      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud now</button>
+      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud</button>
       <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
-        <button onclick="exportToCSV()"   style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
-      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid var(--red,#e53935);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--red,#e53935);cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
+      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
       <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
+      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
 
-      <!-- HELP & CLOSE -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
+      <!-- SUPPORT -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Support</div>
+      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Send feedback to Chris</button>
+      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
 
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;margin-top:8px;">❓ Help &amp; guide</button>
+      <!-- EMERGENCY -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">🆘 Set emergency contact</button>
+
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
@@ -3909,6 +3904,7 @@ function saveInspection(){
   const inspections=loadInspections();
   inspections.unshift(insp);
   saveInspections(inspections);
+  trackEvent('inspection_saved', { has_photos: !!(insp.photoUrls && insp.photoUrls.length), has_transcript: !!insp.transcript, health_score: insp.healthScore });
   // Update hive fields from inspection
   var hives=loadHives();
   const hi=hives.findIndex(h=>h.id===currentHiveId);
@@ -6046,6 +6042,7 @@ function renderRewardRow(label, reward, achieved) {
 }
 
 function copyReferralLink() {
+  trackEvent('referral_link_copied', {});
   var link = getReferralLink();
   if (navigator.clipboard) {
     navigator.clipboard.writeText(link).then(function(){ showToast('Referral link copied ✓'); });
@@ -6067,6 +6064,39 @@ function downloadReferralQR() {
 
 // Check referral param on every page load
 document.addEventListener('DOMContentLoaded', checkReferralParam);
+
+// ═══════════════════════════════════════════════════════════════
+// ANALYTICS ENGINE
+// ═══════════════════════════════════════════════════════════════
+
+var _analyticsQueue = [];
+var _analyticsFlushTimer = null;
+
+function trackEvent(event, properties) {
+  if (!getUserId()) return;
+  _analyticsQueue.push({ event: event, properties: properties || {}, ts: Date.now() });
+  clearTimeout(_analyticsFlushTimer);
+  _analyticsFlushTimer = setTimeout(flushAnalytics, 3000);
+}
+
+async function flushAnalytics() {
+  if (!_analyticsQueue.length || !getUserId()) return;
+  var batch = _analyticsQueue.splice(0);
+  var sb = getSupabase();
+  var uid = getUserId();
+  try {
+    await sb.from('analytics_events').insert(
+      batch.map(function(e) { return { user_id: uid, event: e.event, properties: e.properties }; })
+    );
+  } catch(err) { console.warn('Analytics flush failed:', err.message); }
+}
+
+// Track screen views automatically
+var _origGoTo = goTo;
+goTo = function(id) {
+  _origGoTo(id);
+  trackEvent('screen_view', { screen: id });
+};
 
 function exportApiaryMap() {
   var canvas = document.getElementById('map-canvas');
@@ -8145,9 +8175,16 @@ async function onAuthSuccess() {
   try { renderDashboard(); } catch(e) {}
   try { renderFoundingBadge(); } catch(e) {}
 
-  // Show onboarding wizard for new users
+  // Show policy consent for new users, then onboarding
   setTimeout(function() {
-    try { checkAndShowOnboarding(); } catch(e) {}
+    try {
+      checkPolicyConsent().then(function() {
+        // Only show onboarding if consent already given
+        if (localStorage.getItem('hk_policies_accepted') === POLICY_VERSION) {
+          try { checkAndShowOnboarding(); } catch(e) {}
+        }
+      });
+    } catch(e) {}
   }, 500);
 
   showSyncStatus('Synced ✓');
@@ -9013,6 +9050,53 @@ function showSyncStatus(msg, isError) {
 // ONBOARDING WIZARD
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// POLICY CONSENT
+// ═══════════════════════════════════════════════════════════════
+
+var POLICY_VERSION = '1.0';
+
+async function checkPolicyConsent() {
+  if (!_currentUser) return;
+  // Check localStorage first for speed
+  if (localStorage.getItem('hk_policies_accepted') === POLICY_VERSION) return;
+  // Check Supabase
+  var sb = getSupabase();
+  var { data } = await sb.from('profiles')
+    .select('policies_accepted_at, policies_version')
+    .eq('id', _currentUser.id)
+    .single();
+  if (data && data.policies_version === POLICY_VERSION) {
+    localStorage.setItem('hk_policies_accepted', POLICY_VERSION);
+    return;
+  }
+  // Show consent modal
+  openModalEl('modal-consent');
+}
+
+async function acceptPolicies() {
+  var p = document.getElementById('consent-privacy');
+  var s = document.getElementById('consent-security');
+  var a = document.getElementById('consent-age');
+  var err = document.getElementById('consent-error');
+  if (!p.checked || !s.checked || !a.checked) {
+    if (err) err.style.display = 'block';
+    return;
+  }
+  if (err) err.style.display = 'none';
+  // Save to Supabase
+  var sb = getSupabase();
+  await sb.from('profiles').update({
+    policies_accepted_at: new Date().toISOString(),
+    policies_version: POLICY_VERSION
+  }).eq('id', _currentUser.id);
+  localStorage.setItem('hk_policies_accepted', POLICY_VERSION);
+  trackEvent('policies_accepted', { version: POLICY_VERSION });
+  closeModalEl('modal-consent');
+  // Now check onboarding
+  setTimeout(function() { try { checkAndShowOnboarding(); } catch(e) {} }, 300);
+}
+
 function isNewUser() {
   if (localStorage.getItem('hk_onboarded') === '1') return false;
   var hives = loadHives().filter(function(h){ return !h.id.toString().startsWith('demo-'); });
@@ -9099,8 +9183,8 @@ function obFinish() {
   if (getUserId() && typeof recordReferral === 'function') {
     recordReferral(getUserId()).catch(function(){});
   }
+  trackEvent('onboarding_complete', { referred: !!localStorage.getItem('hk_ref_code') });
   goTo('s-home');
-  showToast('Welcome to HiveKeeper 🐝');
 }
 
 // ── USER ID HELPER ───────────────────────────────────────────────
@@ -10148,6 +10232,7 @@ function canShareApiary() {
 }
 
 function showUpgradeModal(reason) {
+  trackEvent('paywall_hit', { reason: reason, tier: getUserTier() });
   openPricingModal(reason);
 }
 
@@ -10221,6 +10306,7 @@ function openPricingModal(highlightTier) {
 }
 
 function handleUpgrade(targetTier) {
+  trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
   // Stripe integration placeholder — will be replaced with real payment link
   var prices = {
     pro: '£3.99/month or £39.99/year',
@@ -10344,22 +10430,104 @@ function isAdminUser() {
 
 function openAdminPanel() {
   if (!isAdminUser()) { showToast('Admin only'); return; }
+  openModalEl('modal-admin-dashboard');
+  loadAdminDashboard();
+}
 
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
-  if (!sheet) return;
+async function loadAdminDashboard() {
+  if (!isAdminUser()) return;
+  var sb = getSupabase();
+  var el = document.getElementById('admin-dashboard-content');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Loading dashboard...</div>';
 
-  sheet.innerHTML = '<div class="modal-handle"></div>'
-    + '<div class="modal-title" style="color:var(--red);">🔧 Admin Panel</div>'
-    + '<p style="font-size:12px;color:var(--text-l);margin-bottom:12px;">Load a tester\'s data to see what they see. Your own data is unaffected.</p>'
-    + '<div class="form-group" style="margin-bottom:12px;">'
-      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Tester email</label>'
-      + '<input type="email" id="admin-email" placeholder="tester@example.com" style="width:100%;padding:14px;border:1px solid var(--red,#e53935);border-radius:var(--rs);font-size:15px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
-    + '</div>'
-    + '<button onclick="loadTesterData()" style="width:100%;background:var(--red,#e53935);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Load tester view</button>'
-    + (_adminMode ? '<button onclick="exitAdminMode()" style="width:100%;background:transparent;border:2px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">Exit tester view — back to my data</button>' : '')
-    + '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;margin-top:4px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+  try {
+    // Fetch all profiles
+    var { data: profiles } = await sb.from('profiles').select('id, email, tier, is_founding_beekeeper, policies_accepted_at, referral_code, created_at');
+    var totalUsers = profiles ? profiles.length : 0;
+    var freeUsers = profiles ? profiles.filter(function(p){ return !p.tier || p.tier === 'free'; }).length : 0;
+    var proUsers = profiles ? profiles.filter(function(p){ return p.tier === 'pro'; }).length : 0;
+    var commercialUsers = profiles ? profiles.filter(function(p){ return p.tier === 'commercial'; }).length : 0;
+    var foundingUsers = profiles ? profiles.filter(function(p){ return p.is_founding_beekeeper; }).length : 0;
+    var consentedUsers = profiles ? profiles.filter(function(p){ return p.policies_accepted_at; }).length : 0;
 
-  openModalEl('modal-sos');
+    // Last 30 days signups
+    var thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    var newUsers30 = profiles ? profiles.filter(function(p){ return p.created_at > thirtyDaysAgo; }).length : 0;
+
+    // Analytics events
+    var { data: events } = await sb.from('analytics_events').select('event, created_at, user_id').gte('created_at', thirtyDaysAgo);
+    var eventCounts = {};
+    var activeUserIds = new Set();
+    if (events) {
+      events.forEach(function(e) {
+        eventCounts[e.event] = (eventCounts[e.event] || 0) + 1;
+        activeUserIds.add(e.user_id);
+      });
+    }
+    var activeUsers30 = activeUserIds.size;
+
+    // Referrals
+    var { data: referrals } = await sb.from('referrals').select('status, created_at');
+    var totalReferrals = referrals ? referrals.length : 0;
+    var convertedReferrals = referrals ? referrals.filter(function(r){ return r.status === 'converted'; }).length : 0;
+
+    var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+      + statCard('Total users', totalUsers, 'var(--forest)')
+      + statCard('Active (30d)', activeUsers30, 'var(--forest)')
+      + statCard('New (30d)', newUsers30, 'var(--honey)')
+      + statCard('Consented', consentedUsers, '#185FA5')
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Plan breakdown</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px;">'
+      + miniStat('🌱 Free', freeUsers)
+      + miniStat('🐝 Pro', proUsers)
+      + miniStat('🍯 Commercial', commercialUsers)
+      + miniStat('🏅 Founding', foundingUsers)
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Referral scheme</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+      + miniStat('Total referrals', totalReferrals)
+      + miniStat('Converted', convertedReferrals)
+      + '</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Feature usage (30 days)</div>'
+      + '<div style="background:var(--cream);border-radius:var(--rs);border:1px solid var(--wax);overflow:hidden;margin-bottom:16px;">';
+
+    var eventOrder = ['inspection_saved','screen_view','paywall_hit','upgrade_intent','referral_link_copied','policies_accepted','onboarding_complete'];
+    var eventLabels = { inspection_saved:'Inspections saved', screen_view:'Screen views', paywall_hit:'Paywall hits', upgrade_intent:'Upgrade taps', referral_link_copied:'Referral links copied', policies_accepted:'Policies accepted', onboarding_complete:'Onboardings complete' };
+    eventOrder.forEach(function(ev) {
+      var count = eventCounts[ev] || 0;
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--wax);">'
+        + '<div style="font-size:12px;color:var(--text);">' + (eventLabels[ev] || ev) + '</div>'
+        + '<div style="font-size:13px;font-weight:700;color:var(--forest);">' + count + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+
+    // Admin tester tool
+    html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Tester view</div>'
+      + '<div style="display:flex;gap:8px;margin-bottom:8px;">'
+      + '<input type="email" id="admin-email" placeholder="tester@example.com" style="flex:1;padding:10px 12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:Syne,sans-serif;">'
+      + '<button onclick="loadTesterData()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:10px 14px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">Load</button>'
+      + '</div>'
+      + (_adminMode ? '<button onclick="exitAdminMode()" style="width:100%;background:transparent;border:2px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">Exit tester view</button>' : '');
+
+    if (el) el.innerHTML = html;
+  } catch(err) {
+    if (el) el.innerHTML = '<div style="color:var(--red);font-size:13px;padding:12px;">Error loading dashboard: ' + err.message + '</div>';
+  }
+}
+
+function statCard(label, value, colour) {
+  return '<div style="background:var(--cream);border-radius:var(--rs);padding:12px;text-align:center;border:1px solid var(--wax);">'
+    + '<div style="font-size:28px;font-weight:800;color:' + colour + ';font-family:\'Cormorant Garamond\',serif;">' + value + '</div>'
+    + '<div style="font-size:10px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">' + label + '</div>'
+    + '</div>';
+}
+function miniStat(label, value) {
+  return '<div style="background:var(--cream);border-radius:var(--rs);padding:8px;text-align:center;border:1px solid var(--wax);">'
+    + '<div style="font-size:18px;font-weight:800;color:var(--forest);font-family:\'Cormorant Garamond\',serif;">' + value + '</div>'
+    + '<div style="font-size:9px;font-weight:700;color:var(--text-l);margin-top:2px;">' + label + '</div>'
+    + '</div>';
 }
 
 async function loadTesterData() {
@@ -11858,7 +12026,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 20:13  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 20:37  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -11873,6 +12041,45 @@ function goToApiaryAlerts() {
   <!-- MODAL: ROW EDITOR -->
   <div class="modal-overlay" id="modal-row-editor" onclick="closeModal(event,'modal-row-editor')">
     <div class="modal-sheet" id="modal-row-editor-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: POLICY CONSENT -->
+  <div class="modal-overlay" id="modal-consent" style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.8);">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:40px;margin-bottom:8px;">🐝</div>
+        <div style="font-size:20px;font-weight:800;color:var(--forest);margin-bottom:6px;">Before you start</div>
+        <div style="font-size:13px;color:var(--text-l);line-height:1.6;">Please take a moment to read and agree to our policies. We've kept them clear and honest.</div>
+      </div>
+
+      <div style="background:var(--cream);border-radius:var(--rs);padding:14px;margin-bottom:12px;border:1px solid var(--wax);">
+        <div style="font-size:12px;color:var(--text);line-height:1.7;">
+          <strong style="color:var(--forest);">What we collect:</strong> Your apiary data, inspection records and photos. Your email for login.<br>
+          <strong style="color:var(--forest);">What we don't:</strong> No payment cards, no tracking, no ad networks.<br>
+          <strong style="color:var(--forest);">Your data is yours:</strong> Export or delete it at any time from Settings.
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);margin-bottom:8px;background:white;">
+          <input type="checkbox" id="consent-privacy" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" style="color:var(--forest);font-weight:700;">Privacy Policy</a></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);margin-bottom:8px;background:white;">
+          <input type="checkbox" id="consent-security" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/security-policy.html" target="_blank" style="color:var(--forest);font-weight:700;">Security Policy</a></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:12px;border-radius:var(--rs);border:1px solid var(--wax);background:white;">
+          <input type="checkbox" id="consent-age" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;cursor:pointer;">
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I confirm I am aged 13 or over</span>
+        </label>
+      </div>
+
+      <div id="consent-error" style="display:none;background:#FDECEA;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#B83228;margin-bottom:10px;font-weight:600;">Please tick all boxes to continue.</div>
+
+      <button onclick="acceptPolicies()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Continue to HiveKeeper 🐝</button>
+      <div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:8px;">Version 1.0 · 2 April 2026 · Culshaw Consulting Ltd</div>
     </div>
   </div>
 
@@ -12103,6 +12310,21 @@ function goToApiaryAlerts() {
       </div>
 
       <button onclick="closeModalEl('modal-pricing')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN DASHBOARD -->
+  <div class="modal-overlay" id="modal-admin-dashboard" onclick="closeModal(event,'modal-admin-dashboard')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="modal-title" style="margin-bottom:0;">📊 Dashboard</div>
+        <button onclick="loadAdminDashboard()" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:6px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:pointer;">↻ Refresh</button>
+      </div>
+      <div id="admin-dashboard-content">
+        <div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Loading...</div>
+      </div>
+      <button onclick="closeModalEl('modal-admin-dashboard')" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
 

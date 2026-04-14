@@ -184,6 +184,7 @@
       <tr><td>Open-Meteo</td><td>Open-Meteo GmbH</td><td>Live weather data per apiary — coordinates only, no personal data</td><td>EU</td></tr>
       <tr><td>postcodes.io / Nominatim</td><td>Open Source / OSM</td><td>Geocoding apiary locations — no personal data</td><td>UK / EU</td></tr>
       <tr><td>Google Charts API</td><td>Google LLC</td><td>QR code generation — hive URLs only, no personal data</td><td>Google global CDN</td></tr>
+      <tr><td>HiveKeeper Analytics</td><td>Culshaw Consulting Ltd (Supabase)</td><td>In-app usage analytics — screen views, feature usage, paywall interactions. No third party involved. Stored in Supabase analytics_events table.</td><td>AWS eu-west-2 (London)</td></tr>
       <tr><td>Median</td><td>Median.co</td><td>Native app wrapper — no user data stored</td><td>US</td></tr>
     </tbody>
   </table>
@@ -212,7 +213,37 @@
     <li>Analytics or behavioural profiling data</li>
   </ul>
 
-  <h1>4. Authentication and Access Control</h1>
+  <h1>4. How We Use Your Data</h1>
+  <p>We use your data only for the specific purposes set out below. We do not use it for any other purpose without your knowledge, and we do not sell it to third parties for marketing or advertising.</p>
+  <table>
+    <thead>
+      <tr><th>Data</th><th>How we use it</th><th>Lawful basis (UK GDPR Art. 6)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Email address</td><td>Account authentication, password reset, service notifications</td><td>Contract — necessary to provide the service</td></tr>
+      <tr><td>Apiary and hive data</td><td>Displaying your beekeeping records within the app</td><td>Contract — the core purpose of HiveKeeper</td></tr>
+      <tr><td>Inspection records and photos</td><td>Building your hive history, health scores, AI analysis (if requested)</td><td>Contract</td></tr>
+      <tr><td>GPS coordinates / postcode</td><td>Live weather data, nectar calendar, Asian Hornet Watch alerts</td><td>Legitimate interests — core app functionality</td></tr>
+      <tr><td>Analytics events</td><td>Understanding how the app is used to improve features and fix bugs</td><td>Legitimate interests — product improvement. No personal content is logged.</td></tr>
+      <tr><td>Referral data</td><td>Tracking referral rewards and calculating incentives</td><td>Contract — part of the referral scheme you opt into</td></tr>
+      <tr><td>Policy consent timestamp</td><td>Recording that you have agreed to our policies</td><td>Legal obligation — UK GDPR compliance</td></tr>
+      <tr><td>SOS emergency contact</td><td>Sending an alert in an apiary emergency</td><td>Explicit consent — you provide this voluntarily</td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>Data minimisation:</strong> We only collect data that is directly necessary for the purposes listed above. If we cannot justify collecting a piece of data, we do not collect it.</div>
+
+  <h1>5. Business Transfer</h1>
+  <div class="callout"><strong>Important:</strong> In the event of a sale, merger, acquisition or transfer of HiveKeeper or Culshaw Consulting Ltd, user data — including apiary records, account information and analytics — forms part of the business assets and may transfer to the acquiring party.</div>
+  <p>If such a transfer occurs, we will:</p>
+  <ul>
+    <li>Notify all registered users by email before the transfer takes effect</li>
+    <li>Ensure the acquiring party is bound by a data processing agreement that upholds the same or stronger standards as this policy</li>
+    <li>Give users a minimum of 30 days to export their data and delete their account before the transfer completes, if they do not wish their data to transfer</li>
+    <li>Publish an updated privacy and security policy under the new ownership before the effective date</li>
+  </ul>
+  <p>User data will never be sold as a standalone asset separately from the business — it transfers only as part of a legitimate business sale where the acquiring party intends to continue operating HiveKeeper as a service.</p>
+
+  <h1>6. Authentication and Access Control</h1>
   <ul>
     <li>Authentication is handled by Supabase Auth using email/password or magic link</li>
     <li>Passwords are hashed using bcrypt — we never have access to plaintext passwords</li>
@@ -221,7 +252,7 @@
     <li>API keys (OpenAI, Anthropic) are stored as server-side secrets — never exposed in client code</li>
   </ul>
 
-  <h1>5. Data Storage and Encryption</h1>
+  <h1>7. Data Storage and Encryption</h1>
   <ul>
     <li>All data at rest is encrypted using AES-256 (managed by AWS/Supabase)</li>
     <li>All data in transit uses TLS 1.2 or higher</li>
@@ -229,7 +260,7 @@
     <li>Local device data is stored in browser localStorage, subject to device-level security controls</li>
   </ul>
 
-  <h1>6. Data Retention</h1>
+  <h1>8. Data Retention</h1>
   <table>
     <thead>
       <tr><th>Data type</th><th>Retention</th></tr>
@@ -244,7 +275,7 @@
     </tbody>
   </table>
 
-  <h1>7. Your Rights (UK GDPR)</h1>
+  <h1>9. Your Rights (UK GDPR)</h1>
   <p>You have the following rights. To exercise any of them, contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a>. We will respond within 30 days.</p>
   <table>
     <thead>
@@ -260,7 +291,7 @@
     </tbody>
   </table>
 
-  <h1>8. Data Breach Procedure</h1>
+  <h1>10. Data Breach Procedure</h1>
   <ul>
     <li>In the event of a data breach, we will assess the risk within 72 hours of discovery</li>
     <li>Where required, the Information Commissioner's Office (ICO) will be notified within 72 hours</li>
@@ -268,20 +299,49 @@
     <li>A breach log is maintained internally regardless of whether external notification is required</li>
   </ul>
 
-  <h1>9. Advertising</h1>
+  <h1>11. Referral Scheme Data</h1>
+  <ul>
+    <li>Each user is assigned a unique referral code stored in their profile</li>
+    <li>When a new user signs up via a referral link, a referral record is created linking the referrer and referred user by ID only — email addresses are never shared between users</li>
+    <li>Referral counts and conversion status are used solely to calculate rewards</li>
+    <li>Referral records are deleted when an account is deleted</li>
+    <li>Founding Beekeeper voucher redemption details will be collected separately when claimed and are not stored in the app</li>
+  </ul>
+
+  <h1>12. Analytics</h1>
+  <p>HiveKeeper uses its own privacy-first analytics system built on Supabase. No third-party analytics tools, tracking pixels, cookies or advertising networks are used.</p>
+  <h2>What we record</h2>
+  <ul>
+    <li>Screen views — which screens you visit within the app</li>
+    <li>Feature usage — inspections saved, photos uploaded, reports viewed, calendar subscriptions</li>
+    <li>Paywall interactions — when you reach a plan limit, to help us understand pricing</li>
+    <li>Upgrade intent — when you tap an upgrade button (not whether you complete payment)</li>
+    <li>Referral activity — when you copy your referral link or a new user signs up via your link</li>
+    <li>Onboarding completion — whether setup was completed successfully</li>
+  </ul>
+  <h2>What we do not record</h2>
+  <ul>
+    <li>The content of your inspection notes or transcripts</li>
+    <li>Photos or any media</li>
+    <li>Your location beyond the apiary postcode you enter</li>
+    <li>Any data from outside the HiveKeeper app</li>
+  </ul>
+  <p>Analytics events are stored in a Supabase table (<code>analytics_events</code>) accessible only to the data controller. They are used solely to improve the app and understand how features are used. They are never sold, shared or used for advertising.</p>
+
+  <h1>13. Advertising</h1>
   <ul>
     <li>Ads are displayed on Free and Pro tiers only — not on Commercial</li>
     <li>Ads are served from a static curated list within the app — no external ad network, no tracking pixels, no behavioural targeting</li>
     <li>Ad clicks open external URLs — HiveKeeper does not track click behaviour</li>
   </ul>
 
-  <h1>10. Children</h1>
+  <h1>14. Children</h1>
   <p>HiveKeeper is not directed at children under the age of 13. We do not knowingly collect personal data from children. Contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a> if you believe a child has provided us with personal data.</p>
 
-  <h1>11. Changes to This Policy</h1>
+  <h1>15. Changes to This Policy</h1>
   <p>This policy will be reviewed annually or when significant changes to our systems occur. Users will be notified of material changes via the app and/or by email. The current version is always available at <a href="https://gethivekeeper.com/security-policy.html">gethivekeeper.com/security-policy.html</a>.</p>
 
-  <h1>12. Contact</h1>
+  <h1>16. Contact</h1>
   <ul>
     <li><strong>Data Controller:</strong> Chris Culshaw, Culshaw Consulting Ltd</li>
     <li><strong>Email:</strong> <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a></li>
