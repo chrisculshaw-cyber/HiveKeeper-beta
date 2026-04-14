@@ -958,9 +958,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
           <div id="offline-indicator" style="display:none;font-size:10px;color:#FFB74D;margin-top:2px;">&#x1F4F5; Offline — inspections will sync when online</div>
-          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:inline-flex;align-items:center;gap:6px;">🍯 <span id="apiary-name-text">My Apiary</span></button>
+          <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;"><span id="apiary-name-text">My Apiary</span></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
+          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;">🍯 Switch apiary</button>
           <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:36px;height:36px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">&#x2699;&#xFE0F;</div>
           <div class="avatar" onclick="openModalEl('modal-help')" title="Help">&#x1F9D1;&#x200D;&#x1F33E;</div>
         </div>
@@ -1073,10 +1074,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div class="screen-header" style="background:var(--forest);padding-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div>
-          <button id="apiary-screen-title" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;display:inline-flex;align-items:center;gap:6px;">🍯 My Apiary</button>
+          <div class="screen-title" id="apiary-screen-title" style="color:white;">My Apiary</div>
           <div class="screen-sub" id="apiary-sub">Brigstock</div>
         </div>
-        <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;">&#x1F441; Hidden</button>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;">🍯 Switch apiary</button>
+          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;">&#x1F441; Hidden</button>
+        </div>
       </div>
       <!-- Action buttons -->
       <!-- Default: Swarm, Share, Layout visible. Marks, +Hive, Rows shown in edit mode -->
@@ -9430,7 +9434,7 @@ function updateApiaryNameDisplays() {
     else if (nameDisplay.childNodes[0]) nameDisplay.childNodes[0].textContent = name;
   }
   var screenTitle = document.getElementById('apiary-screen-title');
-  if (screenTitle) screenTitle.innerHTML = '🍯 ' + name;
+  if (screenTitle) screenTitle.textContent = name;
   var switcherName = document.getElementById('apiary-switcher-name');
   if (switcherName) switcherName.textContent = name;
   var inspectLabel = document.getElementById('inspect-apiary-label');
@@ -11026,7 +11030,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:33  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 17:40  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
