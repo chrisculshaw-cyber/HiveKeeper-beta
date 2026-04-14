@@ -901,6 +901,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 <!-- AUTH OVERLAY -->
@@ -2533,7 +2534,10 @@ function filterRow(row, el){
 
 // ── Hive cover photo ──────────────────────────────────────────
 async function uploadHiveCoverPhoto(hiveId) {
-  // Use a persistent hidden input rather than creating/destroying dynamically
+  if (getUserTier() === 'free' && !isFoundingBeekeeper()) {
+    showUpgradeModal('photos');
+    return;
+  }
   var input = document.getElementById('_hive_cover_input');
   if (!input) {
     input = document.createElement('input');
@@ -3318,7 +3322,30 @@ function renderInspectHeader(){
   var _ab=document.getElementById('analyse-all-btn'); if(_ab){_ab.textContent='Analyse frame photo with AI';_ab.disabled=false;_ab.style.background='';}
   // Reset toggle buttons
   document.querySelectorAll('#s-inspect .toggle-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.getElementById('photo-strip').innerHTML='<div class="photo-add" onclick="addPhoto()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">📷<span style="font-size:8px;color:var(--text-l);font-weight:700;">AI</span></div>';
+  document.getElementById('photo-strip').innerHTML = (getUserTier() === 'free' && !isFoundingBeekeeper())
+    ? '<div onclick="openPhotoUpgradeTeaser()" style="display:flex;align-items:center;gap:0;cursor:pointer;position:relative;">'
+        // Three blurred placeholder frames
+        + '<div style="position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#d4c9b0,#e8e0d0);flex-shrink:0;border:1px solid var(--wax);">'
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.35;">🐝</div>'
+          + '<div style="position:absolute;inset:0;background:rgba(255,255,255,.45);backdrop-filter:blur(2px);"></div>'
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🔒</div>'
+        + '</div>'
+        + '<div style="position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#c8b89a,#ddd0ba);flex-shrink:0;border:1px solid var(--wax);margin-left:-8px;">'
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.35;">🍯</div>'
+          + '<div style="position:absolute;inset:0;background:rgba(255,255,255,.45);backdrop-filter:blur(2px);"></div>'
+        + '</div>'
+        + '<div style="position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;background:linear-gradient(135deg,#b8a888,#ccc0a8);flex-shrink:0;border:1px solid var(--wax);margin-left:-8px;">'
+          + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:.35;">🌿</div>'
+          + '<div style="position:absolute;inset:0;background:rgba(255,255,255,.45);backdrop-filter:blur(2px);"></div>'
+        + '</div>'
+        // Text callout
+        + '<div style="margin-left:12px;flex:1;">'
+          + '<div style="font-size:12px;font-weight:800;color:var(--forest);">📷 Frame photos</div>'
+          + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;line-height:1.4;">Build a visual hive timeline.<br>Compare frames inspection to inspection.</div>'
+          + '<div style="display:inline-block;margin-top:5px;background:var(--honey);color:white;font-size:9px;font-weight:800;padding:3px 8px;border-radius:20px;letter-spacing:.04em;">UPGRADE TO PRO →</div>'
+        + '</div>'
+      + '</div>'
+    : '<div class="photo-add" onclick="addPhoto()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">📷<span style="font-size:8px;color:var(--text-l);font-weight:700;">AI</span></div>';
 }
 
 function toggleRecord(){ recording ? stopRecording() : startRecording(); }
@@ -3413,14 +3440,57 @@ function showExtractedData(data){
 function editChip(key,label,val){ editingChipKey=key; document.getElementById('edit-chip-title').textContent='Edit: '+label; document.getElementById('edit-chip-label').textContent=label; document.getElementById('edit-chip-input').value=val; openModalEl('modal-edit-chip'); }
 function saveChipEdit(){ if(editingChipKey){ currentInspData[editingChipKey]=document.getElementById('edit-chip-input').value; showExtractedData(currentInspData); } closeModalEl('modal-edit-chip'); }
 
+function openPhotoUpgradeTeaser() {
+  // Show enhanced photo-focused upgrade pitch before the pricing modal
+  var existing = document.getElementById('photo-teaser-sheet');
+  if (existing) existing.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'photo-teaser-sheet';
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 32px rgba(0,0,0,.3);max-width:480px;margin:0 auto;';
+  sheet.innerHTML = '<div style="width:36px;height:4px;background:var(--wax);border-radius:2px;margin:0 auto 20px;"></div>'
+    + '<div style="text-align:center;margin-bottom:16px;">'
+      + '<div style="font-size:32px;margin-bottom:8px;">📷</div>'
+      + '<div style="font-size:18px;font-weight:800;color:var(--forest);font-family:Syne,sans-serif;margin-bottom:6px;">Frame photos — Pro feature</div>'
+      + '<div style="font-size:13px;color:var(--text-l);line-height:1.6;max-width:300px;margin:0 auto;">Build a visual timeline of every frame across every inspection. See how your colonies change week by week.</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+      + '<div style="background:var(--cream);border-radius:10px;padding:12px;border:1px solid var(--wax);">'
+        + '<div style="font-size:18px;margin-bottom:4px;">🖼️</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text);">Photo timeline</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">Every frame, every inspection, in order</div>'
+      + '</div>'
+      + '<div style="background:var(--cream);border-radius:10px;padding:12px;border:1px solid var(--wax);">'
+        + '<div style="font-size:18px;margin-bottom:4px;">🔍</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text);">Frame comparison</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">Compare any two frames side by side</div>'
+      + '</div>'
+      + '<div style="background:var(--cream);border-radius:10px;padding:12px;border:1px solid var(--wax);">'
+        + '<div style="font-size:18px;margin-bottom:4px;">🤖</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text);">AI analysis</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">Ask AI what it sees in your frames</div>'
+      + '</div>'
+      + '<div style="background:var(--cream);border-radius:10px;padding:12px;border:1px solid var(--wax);">'
+        + '<div style="font-size:18px;margin-bottom:4px;">👁️</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text);">Hive cover photos</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">Identify hives at a glance in the apiary</div>'
+      + '</div>'
+    + '</div>'
+    + '<button onclick="document.getElementById(\'photo-teaser-sheet\').remove();showUpgradeModal(\'photos\');" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;">Upgrade to Pro — £3.99/mo</button>'
+    + '<button onclick="document.getElementById(\'photo-teaser-sheet\').remove();" style="width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Maybe later</button>';
+  document.body.appendChild(sheet);
+}
+
 function addPhoto(){
+  // Frame photo storage is Pro and Commercial only
+  if (getUserTier() === 'free' && !isFoundingBeekeeper()) {
+    showUpgradeModal('photos');
+    return;
+  }
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   if (isMobile) {
-    // On mobile — show choice: camera or gallery
     openPhotoSourceSheet();
     return;
   }
-  // On desktop — go straight to file picker
   triggerPhotoPicker(null);
 }
 
@@ -6821,51 +6891,57 @@ function saveQRImage() {
   showToast('QR code saved');
 }
 
-// ── QR Code drawing using Google Charts API (reliable, no library needed) ──
+// ── QR Code drawing using qrcodejs (client-side, no external API) ──
 function drawQR(canvasId, url) {
   var canvas = document.getElementById(canvasId);
   if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var size = 220;
+  var size = 200;
   canvas.width = size; canvas.height = size;
 
-  // Use Google Charts QR API via an image
-  var img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function() {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, size, size);
-    ctx.drawImage(img, 10, 10, size - 20, size - 20);
+  if (typeof QRCode !== 'undefined') {
+    var tmp = document.createElement('div');
+    tmp.style.display = 'none';
+    document.body.appendChild(tmp);
+    try {
+      new QRCode(tmp, {
+        text: url, width: size, height: size,
+        colorDark: '#162B1F', colorLight: '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      setTimeout(function() {
+        var qrCanvas = tmp.querySelector('canvas');
+        if (qrCanvas) {
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(qrCanvas, 0, 0, size, size);
+          // Bee in centre
+          var cx = size/2, cy = size/2, r = 16;
+          ctx.fillStyle = 'white';
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+          ctx.font = '20px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('\uD83D\uDC1D', cx, cy);
+        }
+        tmp.remove();
+      }, 100);
+    } catch(e) { tmp.remove(); _drawQRFallback(canvas, size); }
+  } else {
+    _drawQRFallback(canvas, size);
+  }
+}
 
-    // HiveKeeper bee in centre
-    var cx = size / 2, cy = size / 2;
-    var r = 18;
-    ctx.fillStyle = 'white';
-    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    ctx.font = '22px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('\uD83D\uDC1D', cx, cy);
-  };
-  img.onerror = function() {
-    // Fallback: draw border pattern with URL text
-    ctx.fillStyle = 'white'; ctx.fillRect(0, 0, size, size);
-    ctx.strokeStyle = '#162B1F'; ctx.lineWidth = 3;
-    ctx.strokeRect(10, 10, size - 20, size - 20);
-    ctx.fillStyle = '#162B1F';
-    ctx.font = 'bold 13px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('QR code', size/2, size/2 - 30);
-    ctx.font = '11px sans-serif';
-    ctx.fillStyle = '#444';
-    ctx.fillText('Copy link above and', size/2, size/2);
-    ctx.fillText('paste into a QR generator', size/2, size/2 + 18);
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillStyle = '#162B1F';
-    ctx.fillText('gethivekeeper.com', size/2, size/2 + 44);
-  };
-  // Google Charts QR endpoint - free, no key needed
-  var encoded = encodeURIComponent(url);
-  img.src = 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encoded + '&chco=162B1F';
+function _drawQRFallback(canvas, size) {
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white'; ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = '#162B1F'; ctx.lineWidth = 2;
+  ctx.strokeRect(8, 8, size-16, size-16);
+  ctx.fillStyle = '#162B1F';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('QR code', size/2, size/2-24);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.fillText('Copy the link above', size/2, size/2+2);
+  ctx.fillText('and share directly', size/2, size/2+18);
 }
 
 // ── Deep link handler: open specific hive on load ──
@@ -7809,18 +7885,25 @@ function addNewApiary() {
   if (!canAddApiary()) { showUpgradeModal('apiary'); return; }
   var name = prompt('New apiary name:', 'My Second Apiary');
   if (!name || !name.trim()) return;
-  var location = prompt('Apiary location (postcode or town):', '');
+  var newId = uid();
+  var newApiary = { id: newId, name: name.trim(), location: '', lat: null, lng: null, createdAt: Date.now() };
   var apiaries = loadApiaries();
-  var newId = uid(); // UUID v4 for Supabase compatibility
-  var newApiary = { id: newId, name: name.trim(), location: location || '', lat: null, lng: null, createdAt: Date.now() };
   apiaries.push(newApiary);
   saveApiaries(apiaries);
   switchApiary(newId);
   showToast('Created ' + name.trim());
-  // Geocode the location if provided
-  if (location && location.trim()) {
-    geocodeApiaryLocation(newId, location.trim());
-  }
+  // Ask for location using in-app modal
+  showLocationInput('Location for ' + name.trim(), '', function(query) {
+    var coords = parseLatLng(query);
+    if (coords) {
+      var aps = loadApiaries();
+      var a = aps.find(function(x){ return x.id === newId; });
+      if (a) { a.lat = coords.lat; a.lng = coords.lng; a.location = query; saveApiaries(aps); }
+      showToast('Location set ✓');
+    } else if (query) {
+      geocodeApiaryLocation(newId, query);
+    }
+  });
 }
 
 function renameApiary(id) {
@@ -9289,15 +9372,22 @@ function obNext(fromStep) {
     saveApiaries([apiary]);
     localStorage.setItem(CURRENT_APIARY_KEY, apiaryId);
     currentApiaryId = apiaryId;
-    // Geocode in background
-    if (location && typeof geocodeLocation === 'function') {
-      geocodeLocation(location).then(function(coords) {
-        if (coords) {
-          var apiaries = loadApiaries();
-          var a = apiaries.find(function(x){ return x.id === apiaryId; });
-          if (a) { a.lat = coords.lat; a.lng = coords.lng; saveApiaries(apiaries); }
-        }
-      }).catch(function(){});
+    // Geocode in background — check for lat/long first
+    if (location) {
+      var directCoords = parseLatLng(location);
+      if (directCoords) {
+        var aps = loadApiaries();
+        var a = aps.find(function(x){ return x.id === apiaryId; });
+        if (a) { a.lat = directCoords.lat; a.lng = directCoords.lng; saveApiaries(aps); }
+      } else if (typeof geocodeLocation === 'function') {
+        geocodeLocation(location).then(function(coords) {
+          if (coords) {
+            var apiaries = loadApiaries();
+            var a = apiaries.find(function(x){ return x.id === apiaryId; });
+            if (a) { a.lat = coords.lat; a.lng = coords.lng; saveApiaries(apiaries); }
+          }
+        }).catch(function(){});
+      }
     }
     obShowStep(2);
   } else if (fromStep === 2) {
@@ -10260,15 +10350,61 @@ async function syncUserDisplayName() {
 }
 
 // ── WEATHER LOCATION SETTING ─────────────────────────────
+// Reusable in-app location input — replaces all prompt() calls for location
+function showLocationInput(title, current, callback) {
+  var existing = document.getElementById('location-input-sheet');
+  if (existing) existing.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'location-input-sheet';
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 24px rgba(0,0,0,.25);max-width:480px;margin:0 auto;';
+  sheet.innerHTML = '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;font-family:Syne,sans-serif;">' + title + '</div>'
+    + '<div style="font-size:12px;color:var(--text-l);margin-bottom:12px;line-height:1.6;">Enter a postcode, town name, or coordinates<br><span style="color:var(--text-m);">e.g. NN14 3JJ &nbsp;·&nbsp; Brigstock &nbsp;·&nbsp; 52.4751, -0.5837</span></div>'
+    + '<input id="loc-input-field" type="text" value="' + (current || '') + '" placeholder="Postcode, town or lat, lng" style="width:100%;padding:14px;border:2px solid var(--forest);border-radius:var(--rs);font-size:15px;font-family:Syne,sans-serif;box-sizing:border-box;outline:none;margin-bottom:14px;">'
+    + '<button id="loc-input-ok" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;">Set location</button>'
+    + '<button id="loc-input-cancel" style="width:100%;background:transparent;border:none;padding:8px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Cancel</button>';
+  document.body.appendChild(sheet);
+  var field = document.getElementById('loc-input-field');
+  field.focus();
+  field.setSelectionRange(field.value.length, field.value.length);
+  // Submit on Enter
+  field.addEventListener('keydown', function(e){ if (e.key === 'Enter') document.getElementById('loc-input-ok').click(); });
+  document.getElementById('loc-input-ok').addEventListener('click', function() {
+    var val = field.value.trim();
+    sheet.remove();
+    if (val) callback(val);
+  });
+  document.getElementById('loc-input-cancel').addEventListener('click', function(){ sheet.remove(); });
+}
+
+// Check if input is lat/long coordinates
+function parseLatLng(input) {
+  var m = input.match(/^\s*(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)\s*$/);
+  if (m) {
+    var lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return { lat: lat, lng: lng };
+    }
+  }
+  return null;
+}
+
 function openLocationSetting() {
   var current = (typeof USER_LOCATION_NAME !== 'undefined' ? USER_LOCATION_NAME : null)
     || localStorage.getItem('hk_user_location_name') || '';
 
-  var input = prompt('Enter your postcode or town name:\n(e.g. OL16 1XU or Rochdale)', current);
-  if (!input || !input.trim()) return;
-  var query = input.trim();
-
-  showToast('Looking up location...');
+  showLocationInput('Your location', current, function(query) {
+    showToast('Looking up location...');
+    // Check for lat/long first
+    var coords = parseLatLng(query);
+    if (coords) {
+      localStorage.setItem('hk_user_lat', coords.lat);
+      localStorage.setItem('hk_user_lng', coords.lng);
+      localStorage.setItem('hk_user_location_name', query);
+      if (typeof USER_LOCATION_NAME !== 'undefined') USER_LOCATION_NAME = query;
+      showToast('Location set ✓');
+      if (typeof renderDashboard === 'function') renderDashboard();
+      return;
+    }
 
   // Try Postcodes.io first (UK postcodes)
   var isPostcode = /^[A-Z]{1,2}[0-9][0-9A-Z]?\s*[0-9][A-Z]{2}$/i.test(query.replace(/\s/g,''));
@@ -10291,6 +10427,7 @@ function openLocationSetting() {
   } else {
     geocodeByName(query);
   }
+  }); // end showLocationInput callback
 }
 
 function geocodeByName(query) {
@@ -10429,10 +10566,10 @@ function marketBannerClick() {
 var _userTier = null; // loaded from Supabase on auth
 
 var TIER_LIMITS = {
-  free:       { apiaries: 1, hives: 5, sharing: false },
-  pro:        { apiaries: 99, hives: 999, sharing: true },
-  commercial: { apiaries: 999, hives: 9999, sharing: true },
-  beta:       { apiaries: 999, hives: 9999, sharing: true }
+  free:       { apiaries: 1, hives: 5, sharing: false, photos: false },
+  pro:        { apiaries: 99, hives: 999, sharing: true, photos: true },
+  commercial: { apiaries: 999, hives: 9999, sharing: true, photos: true },
+  beta:       { apiaries: 999, hives: 9999, sharing: true, photos: true }
 };
 
 function getUserTier() {
@@ -10506,7 +10643,8 @@ function openPricingModal(highlightTier) {
   var reasonMessages = {
     hive: "You've reached the 5 hive limit on the Free plan. Upgrade to Pro for unlimited hives.",
     apiary: "Multiple apiaries require a Pro or Commercial plan.",
-    share: "Apiary sharing requires a Pro or Commercial plan."
+    share: "Apiary sharing requires a Pro or Commercial plan.",
+    photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline."
   };
   var msgEl = document.getElementById('pricing-reason-msg');
   if (msgEl) {
@@ -11336,6 +11474,12 @@ function selectHiveForInspection(hiveId) {
 
 // ── APIARY LOCATION GEOCODING ─────────────────────────────
 function geocodeApiaryLocation(apiaryId, query) {
+  // Check for lat/long coordinates first
+  var coords = parseLatLng(query);
+  if (coords) {
+    saveApiaryLocation(apiaryId, coords.lat, coords.lng, query);
+    return;
+  }
   var isPostcode = /^[A-Z]{1,2}[0-9][0-9A-Z]?\s*[0-9][A-Z]{2}$/i.test(query.replace(/\s/g,''));
   if (isPostcode) {
     fetch('https://api.postcodes.io/postcodes/' + query.replace(/\s/g,'').toUpperCase())
@@ -11400,11 +11544,21 @@ function setApiaryLocation(apiaryId) {
   var apiary = apiaries.find(function(a){ return a.id === apiaryId; });
   if (!apiary) return;
   var current = apiary.location || '';
-  var input = prompt('Location for ' + apiary.name + ':\n(postcode or town name)', current);
-  if (!input || !input.trim()) return;
-  showToast('Looking up location...');
   closeModalEl('modal-apiary-switcher');
-  geocodeApiaryLocation(apiaryId, input.trim());
+  showLocationInput('Location for ' + apiary.name, current, function(query) {
+    var coords = parseLatLng(query);
+    if (coords) {
+      var aps = loadApiaries();
+      var a = aps.find(function(x){ return x.id === apiaryId; });
+      if (a) { a.lat = coords.lat; a.lng = coords.lng; a.location = query; saveApiaries(aps); }
+      showToast('Location set ✓');
+      localStorage.removeItem('hk_weather_v1');
+      fetchWeather();
+    } else {
+      showToast('Looking up location...');
+      geocodeApiaryLocation(apiaryId, query);
+    }
+  });
 }
 
 // ── COLOUR BLIND MODE ────────────────────────────────────
@@ -12263,7 +12417,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 22:10  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 14 April 2026 at 22:30  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -12345,7 +12499,7 @@ function goToApiaryAlerts() {
           <input type="text" id="ob-apiary-name" placeholder="e.g. Home Apiary, Nene Valley" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
         </div>
         <div class="form-group" style="margin-bottom:20px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Apiary location <span style="color:var(--text-l);font-weight:400;">(postcode or town)</span></label>
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Apiary location <span style="color:var(--text-l);font-weight:400;">(postcode, town or lat, lng)</span></label>
           <input type="text" id="ob-apiary-location" placeholder="e.g. NN14 3HD or Brigstock" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
           <div style="font-size:10px;color:var(--text-l);margin-top:4px;">Used for live weather, nectar calendar and Asian Hornet Watch</div>
         </div>
