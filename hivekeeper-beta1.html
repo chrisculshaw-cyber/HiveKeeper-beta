@@ -10466,65 +10466,57 @@ async function processInviteToken(token) {
     }).eq('token', token);
   }
 
-  // Fetch the actual apiary details and add with proper name
+  // Fetch apiary details fresh from Supabase
   var { data: sharedApiaryData } = await sb.from('apiaries').select('*').eq('id', invite.apiary_id).single();
-  var apiaries = loadApiaries();
-  var alreadyHave = apiaries.find(function(a){ return a.id === invite.apiary_id; });
-  if (!alreadyHave) {
-    apiaries.push({
-      id: invite.apiary_id,
-      name: sharedApiaryData ? sharedApiaryData.name : invite.apiary_id,
-      location: sharedApiaryData ? sharedApiaryData.location : '',
-      lat: sharedApiaryData ? sharedApiaryData.lat : null,
-      lng: sharedApiaryData ? sharedApiaryData.lng : null,
-      createdAt: sharedApiaryData ? new Date(sharedApiaryData.created_at).getTime() : Date.now(),
-      sharedWith: true,
-      role: invite.role,
-      ownerId: invite.owner_id
-    });
-    localStorage.setItem('hk_apiaries_v1', JSON.stringify(apiaries));
-  }
 
-  // Pull hives for the shared apiary directly
+  // Clear ALL stale data — fresh start for this invited user
+  localStorage.removeItem('hk_apiaries_v1');
+  localStorage.removeItem('hk_hives_v2');
+  localStorage.removeItem('hk_inspections_v2');
+  localStorage.removeItem(CURRENT_APIARY_KEY);
+
+  var sharedApiary = {
+    id: invite.apiary_id,
+    name: sharedApiaryData ? sharedApiaryData.name : 'Shared Apiary',
+    location: sharedApiaryData ? (sharedApiaryData.location || '') : '',
+    lat: sharedApiaryData ? sharedApiaryData.lat : null,
+    lng: sharedApiaryData ? sharedApiaryData.lng : null,
+    createdAt: sharedApiaryData ? new Date(sharedApiaryData.created_at).getTime() : Date.now(),
+    sharedWith: true, role: invite.role, ownerId: invite.owner_id
+  };
+  localStorage.setItem('hk_apiaries_v1', JSON.stringify([sharedApiary]));
+
+  // Pull hives fresh — write clean
   var { data: sharedHives } = await sb.from('hives').select('*').eq('apiary_id', invite.apiary_id);
   if (sharedHives && sharedHives.length) {
-    var existingHives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
-    sharedHives.forEach(function(h) {
-      if (!existingHives.find(function(x){ return x.id === h.id; })) {
-        existingHives.push({
-          id: h.id, name: h.name, row: h.row, status: h.status,
-          hiveType: h.hive_type, boxType: h.box_type,
-          broodBoxes: h.brood_boxes, supers: h.supers,
-          queenStatus: h.queen_status, storesLevel: h.stores_level,
-          varroaLevel: h.varroa_level, healthScore: h.health_score,
-          mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
-          isHidden: h.is_hidden, notes: h.notes,
-          waxMoth: h.wax_moth, temper: h.temper,
-          coverPhoto: h.cover_photo || null
-        });
-      }
-    });
-    localStorage.setItem('hk_hives_v2', JSON.stringify(existingHives));
+    localStorage.setItem('hk_hives_v2', JSON.stringify(sharedHives.map(function(h) {
+      return {
+        id: h.id, name: h.name, row: h.row, status: h.status,
+        hiveType: h.hive_type, boxType: h.box_type,
+        broodBoxes: h.brood_boxes, supers: h.supers,
+        queenStatus: h.queen_status, storesLevel: h.stores_level,
+        varroaLevel: h.varroa_level, healthScore: h.health_score,
+        mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
+        isHidden: h.is_hidden, notes: h.notes,
+        waxMoth: h.wax_moth, temper: h.temper,
+        coverPhoto: h.cover_photo || null, userId: h.user_id || null
+      };
+    })));
   }
 
-  // Set as current apiary and mark onboarded
   currentApiaryId = invite.apiary_id;
   localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
   localStorage.setItem('hk_onboarded', '1');
   localStorage.removeItem('hk_pending_invite');
 
-  showToast('You\'ve joined the apiary! \u2713');
+  showToast('Joined \'' + sharedApiary.name + '\' \u2713');
   window.history.replaceState({}, '', window.location.pathname);
 
-  // Refresh UI with the newly loaded shared apiary
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
+  if (typeof updateApiaryNameDisplays === 'function') updateApiaryNameDisplays();
   if (typeof renderDashboard === 'function') renderDashboard();
   if (typeof goTo === 'function') goTo('s-home');
-
-  // Sync display name and non-destructive background tasks only
-  // Do NOT call initCloudSync here — it would wipe the apiary data we just fetched
   if (typeof syncUserDisplayName === 'function') syncUserDisplayName().catch(function(){});
-  if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
 
   // Remove invite banner if present
   var banner = document.getElementById('invite-banner');
@@ -12610,7 +12602,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 00:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 00:10  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
