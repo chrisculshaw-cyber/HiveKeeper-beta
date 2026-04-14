@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiveKeeper — Privacy Policy</title>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.7; }
+  h1 { color: #1b2d5b; font-size: 28px; margin-bottom: 4px; }
+  h2 { color: #1b2d5b; font-size: 18px; margin-top: 32px; }
+  .bee { font-size: 32px; }
+  .updated { color: #888; font-size: 13px; margin-bottom: 32px; }
+  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-size: 13px; color: #888; }
+  a { color: #C8730A; }
+</style>
+</head>
+<body>
+
+<div class="bee">🐝</div>
+<h1>HiveKeeper Privacy Policy</h1>
+<p class="updated">Last updated: April 2026</p>
+
+<p>HiveKeeper is built by Chris Culshaw / Culshaw Consulting Ltd. This policy explains what data we collect, how we use it, and your rights.</p>
+
+<h2>What data we collect</h2>
+<p>When you use HiveKeeper, we collect:</p>
+<ul>
+  <li><strong>Account information</strong> — your email address and display name when you register</li>
+  <li><strong>Apiary and hive data</strong> — hive names, locations, inspection records, varroa counts, harvest records, treatment records</li>
+  <li><strong>Photos</strong> — frame photos and hive cover photos you choose to upload. These are stored in Supabase cloud storage.</li>
+  <li><strong>Location</strong> — your apiary location (postcode or town name) for weather and Asian Hornet Watch. GPS location is only used for the SOS emergency feature and is never stored.</li>
+  <li><strong>Voice recordings</strong> — audio recorded during inspections is sent to OpenAI Whisper for transcription. We do not store the audio file — only the resulting transcript.</li>
+</ul>
+
+<h2>How we use your data</h2>
+<ul>
+  <li>To provide the HiveKeeper service — storing and syncing your beekeeping records across devices</li>
+  <li>To generate your calendar subscription — inspection reminders and seasonal events</li>
+  <li>To power AI features — frame photo analysis via Claude Vision (Anthropic) and voice transcription via Whisper (OpenAI)</li>
+  <li>We do not sell your data to third parties</li>
+  <li>We do not use your data for advertising</li>
+</ul>
+
+<h2>Third party services</h2>
+<ul>
+  <li><strong>Supabase</strong> — database and file storage (supabase.com)</li>
+  <li><strong>OpenAI Whisper</strong> — voice transcription. Audio is processed and immediately discarded (openai.com)</li>
+  <li><strong>Anthropic Claude</strong> — AI frame photo analysis. Images are processed and not retained (anthropic.com)</li>
+  <li><strong>Open-Meteo</strong> — weather data. No personal data is shared (open-meteo.com)</li>
+  <li><strong>Cloudflare</strong> — API proxy and Worker hosting (cloudflare.com)</li>
+</ul>
+
+<h2>Data storage and security</h2>
+<p>Your data is stored on Supabase infrastructure with row-level security. Each user can only access their own data. Data is encrypted in transit (HTTPS) and at rest.</p>
+
+<h2>Your rights</h2>
+<p>You can:</p>
+<ul>
+  <li>Export all your data at any time via Settings → Download data</li>
+  <li>Delete all your data via Settings → Start fresh</li>
+  <li>Request deletion of your account and all associated data by emailing chris@culshaw.consulting</li>
+</ul>
+
+<h2>Children</h2>
+<p>HiveKeeper is not directed at children under 13. We do not knowingly collect data from children under 13.</p>
+
+<h2>Changes to this policy</h2>
+<p>We may update this policy. Significant changes will be notified in the app.</p>
+
+<h2>Contact</h2>
+<p>Questions about this policy: <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a></p>
+<p>Culshaw Consulting Ltd · Brigstock, Northamptonshire</p>
+
+<footer>
+  <a href="https://gethivekeeper.com">gethivekeeper.com</a> · 
+  chris@culshaw.consulting · 
+  culshaw.consulting
+</footer>
+
+</body>
+</html>
