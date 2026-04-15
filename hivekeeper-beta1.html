@@ -914,7 +914,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 20:49</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 22:05</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -997,6 +997,16 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <!-- STATS GRID -->
       <div class="stats-grid" id="dash-stats"></div>
+    </div>
+
+    <!-- SETUP INCOMPLETE BANNER -->
+    <div id="setup-incomplete-banner" style="display:none;margin:12px 16px 0;background:linear-gradient(135deg,#2D5016,#4A7030);border-radius:14px;padding:14px 16px;align-items:center;gap:12px;">
+      <div style="font-size:28px;">🍯</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:800;color:white;margin-bottom:2px;">Finish setting up HiveKeeper</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75);">Tap below to add your apiary and first hive</div>
+      </div>
+      <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">Set up →</button>
     </div>
 
     <!-- WINTER LOSS BANNER -->
@@ -2465,8 +2475,9 @@ var _userOnHome = true;
 
 function goTo(id){
   // Guard: block programmatic goTo('s-home') if user has manually navigated away
-  if (id === 's-home' && !_userOnHome && (Date.now() - _userLastNav) < 8000) {
-    return; // suppress async redirect to home within 8s of user navigating away
+  // _userOnHome is reset by the home nav button click directly
+  if (id === 's-home' && !_userOnHome && (Date.now() - _userLastNav) < 15000) {
+    return; // suppress async redirect to home for 15s after user navigates away
   }
   if (id !== 's-home') { _userOnHome = false; _userLastNav = Date.now(); }
   else { _userOnHome = true; }
@@ -2546,6 +2557,13 @@ function viewHive(id){
 
 function renderDashboard(){
   updateApiaryNameDisplays();
+  // Show sticky setup prompt if onboarding was never completed
+  var setupBanner = document.getElementById('setup-incomplete-banner');
+  var onboarded = localStorage.getItem('hk_onboarded') === '1';
+  var apiaries = loadApiaries().filter(function(a){ return !a.id.toString().startsWith('demo-'); });
+  if (setupBanner) {
+    setupBanner.style.display = (!onboarded && apiaries.length === 0) ? 'flex' : 'none';
+  }
   const s = getApiarySummary();
   const lossRate = Math.round(((s.dead + (s.empty||0)) / s.total)*100);
 
@@ -12870,7 +12888,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 20:49  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 22:05  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
