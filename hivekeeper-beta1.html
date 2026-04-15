@@ -965,8 +965,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="margin-top:24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Your data is encrypted and stored securely.<br>HiveKeeper never shares your information.</div>
 </div>
 
-<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;">
-<div id="app" style="max-width:480px;width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);opacity:0;pointer-events:none;">
+<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;opacity:0;pointer-events:none;">
+<div id="app" style="max-width:480px;width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);">
 <div id="toast"></div>
   
 
@@ -8446,9 +8446,9 @@ function showAuthScreen() {
     overlay.style.pointerEvents = 'all';
     overlay.style.zIndex = '9999';
   }
-  // Reveal app (behind auth overlay)
-  var app = document.getElementById('app');
-  if (app) { app.style.opacity = '1'; app.style.pointerEvents = 'all'; }
+  // Reveal app container (behind auth overlay)
+  var ac = document.getElementById('app-container');
+  if (ac) { ac.style.opacity = '1'; ac.style.pointerEvents = 'all'; }
 }
 
 function hideAuthScreen() {
@@ -8459,9 +8459,9 @@ function hideAuthScreen() {
     overlay.style.pointerEvents = 'none';
     overlay.style.zIndex = '-1';
   }
-  // Reveal app
-  var app = document.getElementById('app');
-  if (app) { app.style.opacity = '1'; app.style.pointerEvents = 'all'; }
+  // Reveal app container
+  var ac = document.getElementById('app-container');
+  if (ac) { ac.style.opacity = '1'; ac.style.pointerEvents = 'all'; }
 }
 
 // ── SIGN UP ─────────────────────────────────────
