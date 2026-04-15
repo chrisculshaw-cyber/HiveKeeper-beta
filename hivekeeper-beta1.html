@@ -496,10 +496,13 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 
 /* DASHBOARD HEADER */
 .app-header {
-  background: linear-gradient(135deg, var(--forest) 0%, #2D4A2D 100%);
   padding: 48px 20px 20px;
   display: flex; justify-content: space-between; align-items: flex-start;
 }
+.app-header.forest { background: linear-gradient(135deg, var(--forest) 0%, #2D4A2D 100%); }
+.app-header.bark { background: linear-gradient(135deg, #4A2E0E 0%, #6A3A10 100%); }
+.app-header.purple { background: linear-gradient(135deg, #1A0A30 0%, #2D1B50 100%); }
+.app-header.teal { background: linear-gradient(135deg, #0A2E2E 0%, #1A4A4A 100%); }
 .greeting { font-size: 13px; color: rgba(255,255,255,.65); margin-bottom: 2px; }
 .apiary-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: white; line-height: 1.1; }
 .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 0 20px 16px; }
@@ -1097,8 +1100,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <div class="screen" id="s-apiary">
   <div class="scroll-area">
     <!-- Forest header: title + action buttons -->
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header forest">
       <div>
         <div class="dash-greeting" id="s-apiary-greeting">Good morning,</div>
         <div id="s-apiary-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
@@ -1148,8 +1151,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
   <div class="scroll-area">
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header bark">
       <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Back</div>
       <div>
         <div class="dash-greeting" id="s-inspect-greeting">Good morning,</div>
@@ -1306,8 +1309,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- HIVE DETAIL -->
 <div class="screen" id="s-hive">
   <div class="scroll-area">
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header forest">
       <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Apiary</div>
       <div>
         <div class="dash-greeting" id="s-hive-greeting">Good morning,</div>
@@ -1348,8 +1351,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </div>
 <!-- AI ASSISTANT -->
 <div class="screen" id="s-ai" style="display:flex;flex-direction:column;">
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header purple">
       <div>
         <div class="dash-greeting" id="s-ai-greeting">Good morning,</div>
         <div id="s-ai-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
@@ -1435,8 +1438,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- CALENDAR SCREEN -->
   <div class="screen" id="s-calendar">
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header forest">
       <div>
         <div class="dash-greeting" id="s-calendar-greeting">Good morning,</div>
         <div id="s-calendar-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
@@ -2025,8 +2028,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- MARKETPLACE -->
 <div class="screen" id="s-market">
   <div class="scroll-area">
-  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
-    <div class="app-header">
+  <div class="screen-header-wrap" style="flex-shrink:0;">
+    <div class="app-header teal">
       <div>
         <div class="dash-greeting" id="s-market-greeting">Good morning,</div>
         <div id="s-market-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
