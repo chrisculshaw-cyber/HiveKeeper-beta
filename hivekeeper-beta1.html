@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 01:11</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 01:16</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1985,7 +1985,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
         </div>
       </div>
-      <button onclick="authSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
+      <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
 
       <!-- PREFERENCES -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Preferences</div>
@@ -10511,12 +10511,41 @@ async function processInviteToken(token) {
     .from('apiary_shares')
     .select('*')
     .eq('token', token)
-    .neq('status', 'accepted')
     .single();
 
   if (error || !invite) {
-    showToast('Invite not found or already used');
+    showToast('Invite not found or expired');
     localStorage.removeItem('hk_pending_invite');
+    return;
+  }
+
+  // If already accepted — load the shared apiary silently (localStorage may have been wiped)
+  if (invite.status === 'accepted') {
+    localStorage.removeItem('hk_pending_invite');
+    var alreadyLoaded = loadApiaries().find(function(a){ return a.id === invite.apiary_id; });
+    if (!alreadyLoaded) {
+      var { data: ad } = await sb.from('apiaries').select('*').eq('id', invite.apiary_id).single();
+      if (ad) {
+        var existing = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
+        existing.push({ id: ad.id, name: ad.name, location: ad.location || '', lat: ad.lat, lng: ad.lng,
+          createdAt: new Date(ad.created_at).getTime(), sharedWith: true, role: invite.role, ownerId: invite.owner_id });
+        localStorage.setItem('hk_apiaries_v1', JSON.stringify(existing));
+        var { data: hv } = await sb.from('hives').select('*').eq('apiary_id', invite.apiary_id);
+        if (hv) localStorage.setItem('hk_hives_v2', JSON.stringify(hv.map(function(h){
+          return { id:h.id,name:h.name,row:h.row,status:h.status,hiveType:h.hive_type,boxType:h.box_type,
+            broodBoxes:h.brood_boxes,supers:h.supers,queenStatus:h.queen_status,storesLevel:h.stores_level,
+            varroaLevel:h.varroa_level,healthScore:h.health_score,mapX:h.map_x,mapY:h.map_y,
+            apiaryId:h.apiary_id,isHidden:h.is_hidden,notes:h.notes,waxMoth:h.wax_moth,
+            temper:h.temper,coverPhoto:h.cover_photo||null,userId:h.user_id||null };
+        })));
+        currentApiaryId = invite.apiary_id;
+        localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
+        localStorage.setItem('hk_onboarded', '1');
+        if (typeof initCurrentApiary === 'function') initCurrentApiary();
+        if (typeof updateApiaryNameDisplays === 'function') updateApiaryNameDisplays();
+        if (typeof renderDashboard === 'function') renderDashboard();
+      }
+    }
     return;
   }
 
@@ -10885,6 +10914,17 @@ function showUpgradeModal(reason) {
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
+function addSignOutToSettings() {
+  var btn = document.getElementById('sign-out-btn');
+  if (!btn) return;
+  var name = '';
+  if (typeof _currentUser !== 'undefined' && _currentUser) {
+    var meta = _currentUser.user_metadata;
+    name = (meta && (meta.full_name || meta.name)) ? (meta.full_name || meta.name).split(' ')[0] : _currentUser.email;
+  }
+  btn.textContent = name ? 'Sign out as ' + name : 'Sign out';
+}
+
 function updatePlanBadge() {
   var nameEl = document.getElementById('settings-plan-name');
   var limitsEl = document.getElementById('settings-plan-limits');
@@ -12694,7 +12734,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 01:11  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 01:16  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
