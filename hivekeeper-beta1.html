@@ -48,7 +48,7 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
 }
 @media(min-width:600px){ .stats-grid{grid-template-columns:repeat(4,1fr);} }
 .screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream)}
-.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0);z-index:10}
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;max-width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:80px}
 .scroll-area::-webkit-scrollbar{display:none}
 #bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--wax);display:flex;align-items:flex-start;padding-top:8px;box-shadow:0 -4px 20px rgba(26,18,8,.06);z-index:100}
@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 15:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 15:54</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -965,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="margin-top:24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Your data is encrypted and stored securely.<br>HiveKeeper never shares your information.</div>
 </div>
 
-<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;">
+<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;position:relative;">
 <div id="app" style="max-width:480px;width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);">
 <div id="toast"></div>
   
@@ -2154,8 +2154,18 @@ function goTo(id){
   if(id==='s-apiary'){ renderApiary(); renderMap(); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
-  if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e) {} }
-  if(id==='s-ai'){ try { if(typeof initAIScreen==='function') initAIScreen(); } catch(e) {} }
+  if(id==='s-calendar'){ 
+    setTimeout(function() {
+      var calScroll = document.querySelector('#s-calendar .scroll-area');
+      if (calScroll) calScroll.scrollTop = 0;
+      try { renderCalendar(); renderSeasonalTips(); } 
+      catch(e) { console.error('Calendar render error:', e); }
+    }, 50);
+  }
+  if(id==='s-ai'){ 
+    var aiMsgs = document.getElementById('ai-messages');
+    if (aiMsgs) setTimeout(function(){ aiMsgs.scrollTop = 0; }, 50);
+  }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
 }
 
@@ -12549,6 +12559,38 @@ function goToApiaryAlerts() {
   }, 400);
 }
 
+// Watch for screen activation and fire render functions automatically
+(function() {
+  var renderMap = {
+    's-calendar': function() {
+      try { renderCalendar(); } catch(e) { console.warn('cal render:', e); }
+      try { renderSeasonalTips(); } catch(e) {}
+      try { renderCalendarForecast(); } catch(e) {}
+    },
+    's-ai': function() {
+      var m = document.getElementById('ai-messages');
+      if (m) { m.style.display = 'flex'; m.scrollTop = m.scrollHeight; }
+    }
+  };
+  var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        var el = mutation.target;
+        var id = el.id;
+        if (el.classList.contains('active') && renderMap[id]) {
+          setTimeout(renderMap[id], 50);
+        }
+      }
+    });
+  });
+  document.addEventListener('DOMContentLoaded', function() {
+    Object.keys(renderMap).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) observer.observe(el, { attributes: true });
+    });
+  });
+})();
+
 </script>
 
   <!-- VERSION FOOTER -->
@@ -12565,7 +12607,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 15:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 15:54  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
