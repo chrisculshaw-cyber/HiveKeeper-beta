@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 17:39</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 18:00</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1095,9 +1095,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
 <!-- APIARY MAP -->
 <div class="screen" id="s-apiary">
-  <!-- Forest header: title + action buttons -->
-  <div class="screen-header forest" style="flex-shrink:0;padding-bottom:12px;">
   <div class="scroll-area">
+    <!-- Forest header: title + action buttons -->
+    <div class="screen-header" style="background:var(--forest);padding-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div>
           <div class="screen-title" id="apiary-screen-title" style="color:white;">My Apiary</div>
@@ -1120,8 +1120,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
     </div>
-  </div>
-  <div class="scroll-area">
     <!-- Map canvas -->
     <div class="map-canvas-wrap">
       <canvas id="map-canvas" height="220"></canvas>
@@ -1149,8 +1147,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </div>
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
-  <div class="screen-header bark" style="flex-shrink:0;">
   <div class="scroll-area">
+    <div class="screen-header bark">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div class="back-btn" onclick="goBack()" style="margin-bottom:0;">&#8249; Back</div>
         <div style="display:flex;gap:6px;">
@@ -1173,8 +1171,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div class="screen-sub" id="inspect-meta" style="margin-top:6px;"></div>
     </div>
-  </div>
-  <div class="scroll-area">
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;">Last inspection</div>
@@ -1307,8 +1303,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
 <!-- HIVE DETAIL -->
 <div class="screen" id="s-hive">
-  <div class="screen-header forest" id="hive-detail-header" style="position:relative;flex-shrink:0;">
   <div class="scroll-area">
+    <div class="screen-header forest" id="hive-detail-header" style="position:relative;">
       <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div class="back-btn" onclick="goBack()">&#8249; Apiary</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -1325,8 +1321,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div id="hive-detail-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
       </div>
     </div>
-  </div>
-  <div class="scroll-area">
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
@@ -2011,8 +2005,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
 <!-- MARKETPLACE -->
 <div class="screen" id="s-market">
-  <div class="screen-header forest" style="flex-shrink:0;padding-bottom:16px;">
   <div class="scroll-area">
+    <div class="screen-header" style="background:var(--forest);padding-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div class="screen-title" style="color:white;">Marketplace</div>
@@ -2021,8 +2015,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
       </div>
     </div>
-  </div>
-  <div class="scroll-area">
     <!-- MARKETPLACE BANNER AD — full width, shown on all tiers -->
     <div id="market-banner" onclick="marketBannerClick()" style="width:100%;background:var(--honey);padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;box-sizing:border-box;">
       <div id="market-banner-logo" style="font-size:22px;flex-shrink:0;">🏠</div>
@@ -12747,7 +12739,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 17:39  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 18:00  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13108,5 +13100,19 @@ function goToApiaryAlerts() {
       <button onclick="closeModalEl('modal-guided-inspect')" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:12px;color:var(--text-l);cursor:pointer;padding:6px;">Skip guided mode</button>
     </div>
   </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.screen').forEach(function(screen) {
+    var sa = screen.querySelector('.scroll-area');
+    if (!sa) return;
+    var hdr = sa.querySelector(':scope > .screen-header');
+    if (!hdr) return;
+    sa.removeChild(hdr);
+    hdr.style.flexShrink = '0';
+    screen.insertBefore(hdr, sa);
+  });
+});
+</script>
 </body>
 </html>
