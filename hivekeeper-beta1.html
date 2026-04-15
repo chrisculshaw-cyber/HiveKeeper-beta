@@ -905,6 +905,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <!-- AUTH OVERLAY -->
@@ -914,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 23:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:04</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1136,13 +1138,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
     <!-- Map canvas -->
     <div class="map-canvas-wrap">
-      <canvas id="map-canvas" height="220"></canvas>
-      <div class="map-legend">
-        <div class="legend-pill"><div class="legend-dot" style="background:var(--green)"></div>Active</div>
-        <div class="legend-pill"><div class="legend-dot" style="background:var(--honey)"></div>Attention</div>
-        <div class="legend-pill"><div class="legend-dot" style="background:var(--red)"></div>Urgent</div>
-        <div class="legend-pill"><div class="legend-dot" style="background:#9E9E9E"></div>Lost</div>
-      </div>
+      <div id="leaflet-map" style="width:100%;height:340px;border-radius:var(--r);"></div>
+      <div id="map-canvas" style="display:none;"></div>
+      <!-- Hive count overlay -->
+      <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
     </div>
     <div style="font-size:11px;color:var(--text-l);text-align:center;padding:4px 0;font-family:'Syne',sans-serif;letter-spacing:.02em;">Tap a hive to open &middot; Drag in Apiary Settings to move</div>
     <!-- Row filter tabs — between canvas and hive list -->
@@ -2496,7 +2495,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ renderApiary(); renderMap(); }
+  if(id==='s-apiary'){ renderApiary(); renderMap(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){} }, 200); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -6406,11 +6405,13 @@ function toggleEditLayout(){
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='';
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
+    try { renderLeafletHives(true); } catch(e) {}
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
     if(banner) banner.classList.remove('show');
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
+    try { renderLeafletHives(false); } catch(e) {}
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
     var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='none';
@@ -12920,7 +12921,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 23:20  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:04  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13302,6 +13303,195 @@ function goToApiaryAlerts() {
       <button onclick="closeModalEl('modal-guided-inspect')" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:12px;color:var(--text-l);cursor:pointer;padding:6px;">Skip guided mode</button>
     </div>
   </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// LEAFLET SATELLITE MAP ENGINE
+// ═══════════════════════════════════════════════════════════
+var _leafletMap = null;
+var _hiveMarkers = {};
+var _landmarkMarkers = {};
+var MAP_DEFAULT_LAT = 52.4;   // UK centre default
+var MAP_DEFAULT_LNG = -0.9;
+var MAP_DEFAULT_ZOOM = 19;
+
+// Metres per hive spacing in grid layout
+var ROW_SPACING_M = 12;
+var HIVE_SPACING_M = 4;
+
+function initLeafletMap() {
+  var container = document.getElementById('leaflet-map');
+  if (!container) return;
+
+  // Destroy existing map if present
+  if (_leafletMap) {
+    _leafletMap.remove();
+    _leafletMap = null;
+    _hiveMarkers = {};
+    _landmarkMarkers = {};
+  }
+
+  // Get apiary centre coords
+  var apiary = getCurrentApiary();
+  var lat = (apiary && apiary.lat) ? parseFloat(apiary.lat) : MAP_DEFAULT_LAT;
+  var lng = (apiary && apiary.lng) ? parseFloat(apiary.lng) : MAP_DEFAULT_LNG;
+
+  // Init map
+  _leafletMap = L.map('leaflet-map', {
+    center: [lat, lng],
+    zoom: MAP_DEFAULT_ZOOM,
+    zoomControl: false,
+    attributionControl: true,
+    rotate: true,
+    rotateControl: false,
+  });
+
+  // Satellite tile layer — ESRI World Imagery (free, no API key)
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri',
+    maxZoom: 22,
+    maxNativeZoom: 19
+  }).addTo(_leafletMap);
+
+  // Zoom controls — top left
+  L.control.zoom({ position: 'topleft' }).addTo(_leafletMap);
+
+  // Compass / orientation reset button
+  var CompassControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function() {
+      var btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control');
+      btn.innerHTML = '🧭';
+      btn.title = 'Reset orientation';
+      btn.style.cssText = 'width:34px;height:34px;font-size:18px;cursor:pointer;background:white;border:none;border-radius:4px;display:flex;align-items:center;justify-content:center;';
+      L.DomEvent.on(btn, 'click', function(e) {
+        L.DomEvent.stopPropagation(e);
+        _leafletMap.setView([lat, lng], MAP_DEFAULT_ZOOM);
+      });
+      return btn;
+    }
+  });
+  new CompassControl().addTo(_leafletMap);
+
+  // Render hive markers
+  renderLeafletHives();
+
+  // Update count overlay
+  updateMapHiveCount();
+}
+
+function getHiveLatLng(hive, rows, apiaryLat, apiaryLng) {
+  // If hive has stored GPS offset, use it
+  if (hive.mapLat && hive.mapLng) {
+    return [parseFloat(hive.mapLat), parseFloat(hive.mapLng)];
+  }
+  // Otherwise derive from row/position grid
+  var rowIndex = 0;
+  var rowNames = rows.map(function(r) { return r.name; });
+  var ri = rowNames.indexOf(hive.row || 'Row 1');
+  if (ri >= 0) rowIndex = ri;
+
+  var hiveIndex = (hive.position || 1) - 1;
+
+  // Convert to metres offset from apiary centre
+  // Rows run west-east, stacked south-north
+  var totalRows = Math.max(rows.length, 1);
+  var northOffset = (rowIndex - (totalRows - 1) / 2) * ROW_SPACING_M;
+  var eastOffset  = (hiveIndex - 2) * HIVE_SPACING_M;
+
+  // Convert metres to lat/lng delta (approx)
+  var dLat = northOffset / 111320;
+  var dLng = eastOffset  / (111320 * Math.cos(apiaryLat * Math.PI / 180));
+
+  return [apiaryLat + dLat, apiaryLng + dLng];
+}
+
+function hiveStatusColor(hive) {
+  var s = (hive.status || '').toLowerCase();
+  if (s === 'dead' || s === 'lost') return '#E53935';
+  if (s === 'empty') return '#9E9E9E';
+  var score = hive.healthScore || hive.health_score || 0;
+  if (score >= 75) return '#2E7D32';
+  if (score >= 50) return '#F57C00';
+  return '#C62828';
+}
+
+function makeHiveIcon(hive, editMode) {
+  var col = hiveStatusColor(hive);
+  var name = (hive.name || 'Hive').split(' ').slice(-2).join(' ');
+  var html = '<div style="background:' + col + ';border:2px solid white;border-radius:8px;padding:3px 5px;min-width:44px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';">' +
+    '<div style="font-size:16px;">🐝</div>' +
+    '<div style="font-size:9px;font-weight:800;color:white;line-height:1.2;white-space:nowrap;">' + name + '</div>' +
+    '</div>';
+  return L.divIcon({ html: html, className: '', iconAnchor: [28, 20], iconSize: [56, 42], popupAnchor: [0, -22] });
+}
+
+function renderLeafletHives(editMode) {
+  if (!_leafletMap) return;
+  var apiary = getCurrentApiary();
+  if (!apiary) return;
+
+  var lat = apiary.lat ? parseFloat(apiary.lat) : MAP_DEFAULT_LAT;
+  var lng = apiary.lng ? parseFloat(apiary.lng) : MAP_DEFAULT_LNG;
+  var rows = loadRows ? loadRows() : [];
+  var hives = loadHives().filter(function(h) {
+    return h.apiaryId === currentApiaryId && !h.hidden;
+  });
+
+  // Remove old markers
+  Object.values(_hiveMarkers).forEach(function(m) { _leafletMap.removeLayer(m); });
+  _hiveMarkers = {};
+
+  hives.forEach(function(hive) {
+    var pos = getHiveLatLng(hive, rows, lat, lng);
+    var marker = L.marker(pos, {
+      icon: makeHiveIcon(hive, editMode),
+      draggable: !!editMode,
+      title: hive.name
+    });
+
+    // Click: open hive detail
+    marker.on('click', function() {
+      if (!editMode) {
+        openHiveDetail(hive.id || hive._id);
+      }
+    });
+
+    // Drag end: save new position
+    marker.on('dragend', function(e) {
+      var newLatLng = e.target.getLatLng();
+      hive.mapLat = newLatLng.lat;
+      hive.mapLng = newLatLng.lng;
+      var allHives = loadHives();
+      var idx = allHives.findIndex(function(h) { return (h.id || h._id) === (hive.id || hive._id); });
+      if (idx >= 0) { allHives[idx] = hive; saveHives(allHives); }
+    });
+
+    marker.addTo(_leafletMap);
+    _hiveMarkers[hive.id || hive._id] = marker;
+  });
+
+  updateMapHiveCount();
+}
+
+function updateMapHiveCount() {
+  var el = document.getElementById('map-hive-count');
+  if (!el) return;
+  var hives = loadHives ? loadHives().filter(function(h) { return h.apiaryId === currentApiaryId && !h.hidden; }) : [];
+  var active = hives.filter(function(h) { return (h.status||'active') === 'active'; }).length;
+  el.textContent = active + ' active hive' + (active !== 1 ? 's' : '');
+  el.style.display = hives.length ? 'block' : 'none';
+}
+
+function refreshLeafletMap(editMode) {
+  if (!_leafletMap) {
+    initLeafletMap();
+  } else {
+    renderLeafletHives(editMode);
+    setTimeout(function() { _leafletMap.invalidateSize(); }, 100);
+  }
+}
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
