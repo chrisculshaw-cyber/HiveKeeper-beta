@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 01:16</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 01:42</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -9446,12 +9446,12 @@ async function checkAndShowOnboarding() {
   if (_currentUser) {
     try {
       var sb = getSupabase();
-      // Check by both user_id and email to catch all cases
-      var { data } = await sb.from('apiary_shares')
-        .select('id, apiary_id, role, status, token')
-        .or('user_id.eq.' + _currentUser.id + ',invited_email.eq.' + _currentUser.email)
-        .eq('status', 'accepted')
-        .limit(1);
+      // Two separate queries — .or() with email breaks PostgREST
+      var { data: d1 } = await sb.from('apiary_shares')
+        .select('id').eq('user_id', _currentUser.id).eq('status', 'accepted').limit(1);
+      var { data: d2 } = await sb.from('apiary_shares')
+        .select('id').eq('invited_email', _currentUser.email).eq('status', 'accepted').limit(1);
+      var data = (d1 && d1.length) ? d1 : (d2 && d2.length) ? d2 : null;
       if (data && data.length > 0) {
         localStorage.setItem('hk_onboarded', '1');
         return;
@@ -9798,10 +9798,19 @@ async function pullFromSupabase() {
 
     // Pull shared apiaries (where this user is a collaborator — match by user_id OR email)
     var userEmail = _currentUser ? _currentUser.email : '';
-    var { data: sharedShares } = await sb.from('apiary_shares')
+    // Use two separate queries — .or() with email addresses containing @ breaks PostgREST syntax
+    var { data: sharesByUid } = await sb.from('apiary_shares')
       .select('apiary_id, role, status, owner_id, user_id, invited_email')
-      .or('user_id.eq.' + uid + ',invited_email.eq.' + userEmail)
-      .eq('status', 'accepted');
+      .eq('user_id', uid).eq('status', 'accepted');
+    var { data: sharesByEmail } = await sb.from('apiary_shares')
+      .select('apiary_id, role, status, owner_id, user_id, invited_email')
+      .eq('invited_email', userEmail).eq('status', 'accepted');
+    // Merge, deduplicate by apiary_id
+    var _seen = {};
+    var sharedShares = [];
+    [(sharesByUid || []).concat(sharesByEmail || [])].forEach(function(arr) {
+      arr.forEach(function(s) { if (!_seen[s.apiary_id]) { _seen[s.apiary_id] = true; sharedShares.push(s); } });
+    });
     if (sharedShares && sharedShares.length) {
       var existingApiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
       for (var si = 0; si < sharedShares.length; si++) {
@@ -12734,7 +12743,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 01:16  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 01:42  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
