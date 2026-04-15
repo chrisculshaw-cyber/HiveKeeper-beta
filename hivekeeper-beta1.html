@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 14:34 14 April 2026 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
+<!-- HiveKeeper · Last updated: 15:54 15 April 2026 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +48,7 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
 }
 @media(min-width:600px){ .stats-grid{grid-template-columns:repeat(4,1fr);} }
 .screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream)}
-.screen.active{opacity:1;pointer-events:all;transform:translateX(0);z-index:10}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;max-width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:80px}
 .scroll-area::-webkit-scrollbar{display:none}
 #bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--wax);display:flex;align-items:flex-start;padding-top:8px;box-shadow:0 -4px 20px rgba(26,18,8,.06);z-index:100}
@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 15:54</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 16:02</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -961,12 +961,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
 
   <!-- Error / status message -->
-  <div id="auth-error" style="margin-top:12px;font-size:13px;font-weight:700;color:white;text-align:center;max-width:340px;line-height:1.5;background:rgba(198,40,40,.4);border:1px solid rgba(239,154,154,.5);border-radius:10px;padding:10px 14px;display:none;"></div>
+  <div id="auth-error" style="margin-top:14px;font-size:12px;color:#EF9A9A;text-align:center;max-width:340px;line-height:1.5;"></div>
   <div style="margin-top:24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Your data is encrypted and stored securely.<br>HiveKeeper never shares your information.</div>
 </div>
 
-<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;position:relative;">
-<div id="app" style="max-width:480px;width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);">
+<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;">
+<div id="app" style="max-width:480px;width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);visibility:hidden;">
 <div id="toast"></div>
   
 
@@ -979,7 +979,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="app-header">
         <div>
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
-          <div id="founding-header-badge" style="display:none;margin-top:2px;">
+          <div id="founding-header-badge" style="display:none;margin-top:3px;">
             <span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span>
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
@@ -987,9 +987,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;"><span id="apiary-name-text">My Apiary</span></div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
           <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
-          <div class="avatar" onclick="openModalEl('modal-help')" title="Help" style="flex-shrink:0;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;gap:4px;">❓ Help</div>
+          <div class="avatar" onclick="openModalEl('modal-help')" title="Help" style="flex-shrink:0;">&#x1F9D1;&#x200D;&#x1F33E;</div>
         </div>
       </div>
       <!-- STATS GRID -->
@@ -1104,8 +1104,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div class="screen-sub" id="apiary-sub">Brigstock</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
-          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;">🍯 My Apiaries</button>
-      <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;">🍯 Switch apiary</button>
           <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;">&#x1F441; Hidden</button>
         </div>
       </div>
@@ -1117,7 +1116,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Layout</button>
         <button onclick="exportApiaryMap()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
         <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
     </div>
@@ -1161,7 +1160,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="hive-selector-label">Inspecting</div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
         <div style="font-size:11px;color:rgba(255,255,255,.6);" id="inspect-apiary-label">My Apiary</div>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:30px;height:30px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;">&#x2699;&#xFE0F;</div>
+        <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
       </div>
       <div id="inspect-hive-select-wrap" style="margin-top:4px;">
         <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:16px 18px;cursor:pointer;">
@@ -1205,7 +1204,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
     <div id="extracted-section" style="display:none">
       <div class="section-head">
-        <div class="section-title">Harvest data</div>
+        <div class="section-title">Extracted data</div>
         <button class="section-action" onclick="showToast('Tap any field to edit')">Edit all</button>
       </div>
       <div class="data-grid" id="data-grid"></div>
@@ -1216,9 +1215,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <label>Additional notes</label>
       <textarea id="inspect-notes" rows="3" placeholder="Add any additional notes here&#8230;"></textarea>
     </div>
-    <div id="ai-notes-section" style="display:none;margin:10px 20px 0;">
-      <label style="display:flex;align-items:center;gap:6px;">🤖 AI Frame Analysis <span style="font-size:10px;color:var(--text-l);font-weight:400;">(auto-filled — editable)</span></label>
-      <textarea id="inspect-ai-notes" rows="4" placeholder="AI analysis will appear here after you analyse your photos…" style="background:#F8F5EE;border:1px solid var(--honey);border-radius:var(--rs);width:100%;padding:10px;font-family:'Syne',sans-serif;font-size:13px;box-sizing:border-box;color:var(--text);resize:vertical;margin-top:6px;"></textarea>
     <div style="margin:12px 20px 0;">
       <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Queen seen?</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1312,7 +1308,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <div class="back-btn" onclick="goBack()">&#8249; Apiary</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:8px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 My Apiaries</button>
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:8px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
           <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
           <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
         </div>
@@ -1348,13 +1344,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- AI ASSISTANT -->
 <div class="screen" id="s-ai" style="display:flex;flex-direction:column;">
   <div class="screen-header purple" style="flex-shrink:0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <div class="screen-title">🤖 HiveKeeper AI</div>
-        <div class="screen-sub">UK beekeeping knowledge · your 24 hives · BBKA guidance</div>
-      </div>
-      <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
-    </div>
+    <div class="screen-title">🤖 HiveKeeper AI</div>
+    <div class="screen-sub">UK beekeeping knowledge · your 24 hives · BBKA guidance</div>
   </div>
   <div class="ai-messages" id="ai-messages">
     <div class="msg ai">
@@ -1382,6 +1373,41 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </div>
 
 <!-- MODAL: ADD HIVE -->
+<div class="modal-overlay" id="modal-add-hive" onclick="closeModal(event,'modal-add-hive')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add new hive</div>
+    <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
+    <div class="form-group"><label>Row</label><select id="new-hive-row"><option value="">No row</option></select></div>
+    <div class="form-group"><label>Hive type</label>
+      <select id="new-hive-type">
+        <option value="overwintered">Overwintered colony</option>
+        <option value="nuc">New nucleus (nuc)</option>
+        <option value="double_nuc">Double nuc (overwintered)</option>
+        <option value="swarm_prime">Prime swarm</option>
+        <option value="swarm_cast">Cast swarm</option>
+        <option value="split">Split / artificial swarm</option>
+        <option value="commercial">Commercial operation</option>
+        <option value="mating">Mating hive</option>
+        <option value="empty">Empty — ready for bees</option>
+        <option value="other">Other (specify in notes)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="nuc">Nuc box</option></select></div>
+      <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
+    </div>
+    <div class="form-group"><label>Queen status</label>
+      <select id="new-hive-queen">
+        <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
+        <option value="cells">Queen cells</option><option value="unknown">Unknown</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="new-hive-notes" rows="2" placeholder="Initial observations…"></textarea></div>
+    <button class="btn-primary" onclick="saveNewHive()">Add hive ✓</button>
+  </div>
+</div>
+
 <!-- MODAL: EDIT CHIP -->
 <div class="modal-overlay" id="modal-edit-chip" onclick="closeModal(event,'modal-edit-chip')">
   <div class="modal-sheet" onclick="event.stopPropagation()">
@@ -1404,7 +1430,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
         <button class="cal-nav-btn" onclick="calNextMonth()">&#8250;</button>
       </div>
-      <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 My Apiaries</button>
+      <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
     </div>
     <div class="scroll-area">
       <div class="cal-grid-wrap">
@@ -1463,7 +1489,37 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
 
   <!-- MODAL: ADD HIVE -->
-    <!-- MODAL: EDIT CHIP -->
+  <div class="modal-overlay" id="modal-add-hive" onclick="closeModal(event,'modal-add-hive')">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Add new hive</div>
+      <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
+      <div class="form-group"><label>Row <span style="font-size:10px;color:var(--text-l);font-weight:400;">(optional — drag to position on map in Edit Layout)</span></label><select id="new-hive-row"><option value="">No row — free position</option><option>Row 1</option><option>Row 2</option><option>Row 3</option><option>Row 4</option><option>Row 5</option></select></div>
+      <div class="form-group"><label>Hive type</label>
+        <select id="new-hive-type">
+          <option value="overwintered">Overwintered colony</option>
+          <option value="nuc">New nucleus (nuc)</option>
+          <option value="swarm_prime">Prime swarm</option>
+          <option value="swarm_cast">Cast swarm</option>
+          <option value="split">Split / artificial swarm</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option></select></div>
+        <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
+      </div>
+      <div class="form-group"><label>Queen status</label>
+        <select id="new-hive-queen">
+          <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
+          <option value="cells">Queen cells</option><option value="unknown">Unknown</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="new-hive-notes" rows="2" placeholder="Initial observations..."></textarea></div>
+      <button class="btn-primary" onclick="saveNewHive()">Add hive</button>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT CHIP -->
   <div class="modal-overlay" id="modal-edit-chip" onclick="closeModal(event,'modal-edit-chip')">
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
@@ -1487,9 +1543,35 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="insp-summary-cards"></div>
     </div>
   </div>
-
   <!-- MODAL: IMPORT -->
-    <!-- MODAL: SWARM CATCH -->
+  <div class="modal-overlay" id="modal-import" onclick="closeModal(event,'modal-import')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">📥 Import hive data</div>
+
+      <div style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.5;">
+        Import from a BeeBase/NBU CSV file or a HiveKeeper CSV export. Existing hives with the same name will be matched automatically.
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Select CSV file</label>
+        <input type="file" accept=".csv,.txt" onchange="handleImportFile(event)" 
+          style="width:100%;padding:12px;border:2px dashed var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;box-sizing:border-box;background:var(--cream);">
+      </div>
+
+      <div id="import-preview" style="margin-bottom:16px;max-height:200px;overflow-y:auto;"></div>
+
+      <button id="import-confirm-btn" onclick="" 
+        style="display:none;width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">
+        Import data
+      </button>
+      <button onclick="closeModalEl('modal-import')" 
+        style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">
+        Cancel
+      </button>
+    </div>
+  </div>
+  <!-- MODAL: SWARM CATCH -->
   <div class="modal-overlay" id="modal-swarm-catch" onclick="closeModal(event,'modal-swarm-catch')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
       <div class="modal-handle"></div>
@@ -1575,7 +1657,43 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
   </div>
   <!-- MODAL: HELP -->
-    <!-- SIDE RAIL --></div><!-- end app -->
+  <div class="modal-overlay" id="modal-help" onclick="closeModal(event,'modal-help')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🐝 HiveKeeper guide</div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Getting started</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Apiary</b> on the side rail to add your first hive. Give it a name, set its type (National, Langstroth, WBC etc), status, and number of brood boxes and supers. Drag hives to arrange them on your apiary map.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recording an inspection</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Inspect</b> on the side rail. Select your hive, then tap the 🎤 microphone and speak naturally — "queen seen on frame four, six frames of brood, stores adequate, no swarm cells". The AI extracts queen status, brood frames, stores, swarm risk, temper and health score automatically. You can also fill in the form manually.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Home screen</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Shows your apiary summary (active hives, lost colonies, unclear status), priority alerts, live weather for your apiary location, seasonal tip, Asian Hornet Watch, and your active hives scroll. Tap the apiary name to switch between multiple apiaries.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hive detail</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap any hive in the Apiary screen to open its detail page. Tabs show: inspection timeline, brood nest chart, frame tracker, varroa counts, harvests, and treatments. Tap any inspection to edit it. Queen heritage tracks breeding lineage.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Alerts</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The alert engine automatically flags: swarm risk, overdue inspections, low stores, queen issues, varroa levels, Asian hornet risk periods, and seasonal actions. Alerts appear on the home screen ranked by severity.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Varroa monitoring</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Log natural mite drop counts and wash counts in the Varroa tab on any hive. Treatment-free beekeepers can use the visual assessment option — mite levels on bees, uncapping behaviour, and exoskeleton damage indicators.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hiding hives</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>👁 Hide</b> on any hive to remove it from the active view without deleting it — useful for equipment being cleaned or colonies on loan. Hidden hives don't count toward your hive limit. Tap <b>👁 Show hidden</b> in the Apiary screen to reveal and unhide them.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Multiple apiaries</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap the apiary name on the home screen to add a second location. Each apiary has its own hives, map layout and inspection history. Switch between them with a single tap.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">QR &amp; NFC labels</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Open any hive and tap the QR code icon to generate a scannable label. Attach it to your hive — scanning it opens straight to that hive's inspection screen.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Calendar</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The calendar tab shows inspection history, a 5-day weather forecast, and seasonal tips for the current month — swarm prevention, feeding, treatment windows, and harvest timing.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">SOS emergency</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The red <b>SOS</b> button sends a pre-written SMS with your GPS location to a saved emergency contact. Set your contact first in ⚙️ Settings → Set emergency contact.</div></div>
+
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Marketplace</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Browse and list bees, equipment and honey for sale. Listings marked HiveKeeper Verified include live hive health data from the seller's inspection records.</div></div>
+
+      <div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Exporting data</div><div style="font-size:13px;color:var(--text);line-height:1.6;">In ⚙️ Settings: <b>Export all data to CSV</b> downloads everything. <b>Export to BeeBase/NBU format</b> produces the exact column structure needed for Regional Bee Inspector compliance reporting.</div></div>
+
+      <button onclick="closeModalEl('modal-help')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+    </div>
+  </div>
+
+
+  <!-- SIDE RAIL --></div><!-- end app -->
 
   <!-- MODAL: ADD VARROA -->
   <div class="modal-overlay" id="modal-add-varroa" onclick="closeModal(event,'modal-add-varroa')">
@@ -1803,17 +1921,89 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
 
   <!-- MODAL: SETTINGS -->
-  <!-- MARKETPLACE -->
+  <div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title" onclick="adminSecretTap()" style="user-select:none;">Settings</div>
+
+      <!-- ACCOUNT -->
+      <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#412402;">Founding Beekeeper</div>
+            <div style="font-size:11px;color:#633806;margin-top:2px;">Lifetime Pro · Thank you 🐝</div>
+          </div>
+        </div>
+      </div>
+      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
+          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div>
+          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest);margin-top:2px;">Beta</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
+          <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
+        </div>
+      </div>
+      <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
+
+      <!-- PREFERENCES -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Preferences</div>
+      <div class="settings-row" onclick="toggle24h()">
+        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">14:30 instead of 2:30 PM</div></div>
+        <div class="settings-toggle" id="toggle-24h"></div>
+      </div>
+      <div class="settings-row" onclick="toggleLargeText()">
+        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout</div></div>
+        <div class="settings-toggle" id="toggle-large"></div>
+      </div>
+      <div class="settings-row" onclick="toggleColourBlind()">
+        <div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>
+        <div class="settings-toggle" id="toggle-cb"></div>
+      </div>
+      <div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">
+        <div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>
+        <div class="settings-toggle" id="toggle-push"></div>
+      </div>
+
+      <!-- TOOLS -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
+      <button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
+
+      <!-- DATA -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
+      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud</button>
+      <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
+      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
+      <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
+      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
+
+      <!-- SUPPORT -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Support</div>
+      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Send feedback to Chris</button>
+      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
+
+      <!-- EMERGENCY -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">🆘 Set emergency contact</button>
+
+      <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+<!-- MARKETPLACE -->
 <div class="screen" id="s-market">
   <div class="scroll-area">
     <div class="screen-header" style="background:var(--forest);padding-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div class="screen-title" style="color:white;">Marketplace</div>
-          <div class="screen-sub" style="color:rgba(255,255,255,.65);">Buy and sell nucs, queens &amp; equipment</div>
-        </div>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
-      </div>
+      <div class="screen-title" style="color:white;">Marketplace</div>
+      <div class="screen-sub" style="color:rgba(255,255,255,.65);">Buy and sell nucs, queens &amp; equipment</div>
     </div>
     <!-- MARKETPLACE BANNER AD — full width, shown on all tiers -->
     <div id="market-banner" onclick="marketBannerClick()" style="width:100%;background:var(--honey);padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;box-sizing:border-box;">
@@ -1878,7 +2068,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </button>
 
   </div>
-
 
   <!-- MODAL: HIVE COMPONENTS (reused for type, components, market detail) -->
   <div class="modal-overlay" id="modal-hive-components" onclick="closeModal(event,'modal-hive-components')">
@@ -2154,18 +2343,7 @@ function goTo(id){
   if(id==='s-apiary'){ renderApiary(); renderMap(); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
-  if(id==='s-calendar'){ 
-    setTimeout(function() {
-      var calScroll = document.querySelector('#s-calendar .scroll-area');
-      if (calScroll) calScroll.scrollTop = 0;
-      try { renderCalendar(); renderSeasonalTips(); } 
-      catch(e) { console.error('Calendar render error:', e); }
-    }, 50);
-  }
-  if(id==='s-ai'){ 
-    var aiMsgs = document.getElementById('ai-messages');
-    if (aiMsgs) setTimeout(function(){ aiMsgs.scrollTop = 0; }, 50);
-  }
+  if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
 }
 
@@ -2994,7 +3172,6 @@ function renderHiveDetail(){
         </div>
         <div class="tl-type">📋 Inspection · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
-        ${insp.frameAnalysis ? '<div style="margin-top:6px;padding:8px;background:#F8F5EE;border-radius:8px;border-left:3px solid var(--honey);font-size:12px;color:var(--text-m);line-height:1.5;"><span style="font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">🤖 AI Analysis</span>' + insp.frameAnalysis.replace(/\n/g,'<br>') + '</div>' : ''}
         <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}</div>
         ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
       </div>
@@ -3150,8 +3327,6 @@ function renderInspectHeader(){
   document.getElementById('transcript-box').style.display='none';
   document.getElementById('extracted-section').style.display='none';
   document.getElementById('inspect-notes').value='';
-  var _aiNotes = document.getElementById('inspect-ai-notes'); if (_aiNotes) _aiNotes.value = '';
-  var _aiSection = document.getElementById('ai-notes-section'); if (_aiSection) _aiSection.style.display = 'none';
   document.getElementById('voice-status').textContent='Tap to record your inspection';
   document.getElementById('rec-btn').textContent='🎙️';
   var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.remove('recording');
@@ -3792,7 +3967,6 @@ function saveInspection(){
   const hive=loadHives().find(h=>h.id===currentHiveId);
   if(!hive) return;
   const notes=document.getElementById('inspect-notes').value;
-  const aiNotes=(document.getElementById('inspect-ai-notes')?document.getElementById('inspect-ai-notes').value.trim():'') || currentInspData.frameAnalysis || '';
   const insp={
     id:uid(), hiveId:currentHiveId,
     inspectedAt:(function(){
@@ -3815,7 +3989,7 @@ function saveInspection(){
     storesLevel:currentInspData.storesLevel||'adequate', swarmRisk:currentInspData.swarmRisk||'none',
     playCups:currentInspData.playCups||false, queenCells:currentInspData.queenCells||false,
     varroaLevel:currentInspData.varroaLevel||'low', varroaCount:currentInspData.varroaCount||null,
-    temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), frameAnalysis: aiNotes || null, syncStatus:'synced'
+    temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), syncStatus:'synced'
   };
   let s=0;
   if(insp.queenSeen) s+=20; else s+=5;
@@ -3898,18 +4072,8 @@ function saveInspection(){
 // ═══════════════════════════════════════════════
 
 function openAddHive(){
-  // Ensure there is a current apiary before adding a hive
-  if (!currentApiaryId) {
-    if (typeof initCurrentApiary === 'function') initCurrentApiary();
-  }
-  if (!currentApiaryId) {
-    showToast('Please set up your apiary first');
-    return;
-  }
   document.getElementById('new-hive-name').value='';
-  // Use local date not UTC
-  var _nd = new Date();
-  document.getElementById('new-hive-date').value = _nd.getFullYear() + '-' + String(_nd.getMonth()+1).padStart(2,'0') + '-' + String(_nd.getDate()).padStart(2,'0');
+  document.getElementById('new-hive-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('new-hive-notes').value='';
   // Populate row select dynamically
   var rowSel = document.getElementById('new-hive-row');
@@ -4288,7 +4452,7 @@ function initLiveData() {
   try { renderMarketBanner(); } catch(e) { console.log('market banner err',e); }
   fetchWeather();
 }
-// Don't run initLiveData on page load — defer until after auth to avoid errors and slow load
+initLiveData();
 var _origRD = renderDashboard;
 renderDashboard = function() {
   _origRD();
@@ -7814,17 +7978,6 @@ function editInspection(inspId) {
     var notesEl = document.getElementById('inspect-notes');
     if (notesEl) notesEl.value = insp.notes || insp.transcript || '';
 
-    // Populate AI frame analysis if present
-    var aiNotesEl = document.getElementById('inspect-ai-notes');
-    var aiSection = document.getElementById('ai-notes-section');
-    if (aiNotesEl && insp.frameAnalysis) {
-      aiNotesEl.value = insp.frameAnalysis;
-      if (aiSection) aiSection.style.display = 'block';
-    } else if (aiNotesEl) {
-      aiNotesEl.value = '';
-      if (aiSection) aiSection.style.display = 'none';
-    }
-
     // Set currentInspData from existing inspection
     currentInspData = {
       queenSeen: insp.queenSeen,
@@ -7886,7 +8039,6 @@ saveInspection = function() {
     if (idx === -1) { window._editingInspId = null; _origSaveInspectionEdit(); return; }
 
     var notes = document.getElementById('inspect-notes') ? document.getElementById('inspect-notes').value : '';
-    var aiNotes = document.getElementById('inspect-ai-notes') ? document.getElementById('inspect-ai-notes').value.trim() : '';
     var frameDataCopy = typeof frameData !== 'undefined' ? Object.assign({}, frameData) : {};
 
     inspections[idx] = Object.assign(inspections[idx], {
@@ -7907,7 +8059,6 @@ saveInspection = function() {
       framesStores: frameDataCopy.stores || 0,
       framesFoundation: frameDataCopy.foundation || 0,
       framesEmpty: frameDataCopy.empty || 0,
-      frameAnalysis: aiNotes || inspections[idx].frameAnalysis || null,
       editedAt: Date.now()
     });
 
@@ -10383,23 +10534,18 @@ async function processInviteToken(token) {
     return;
   }
 
-  // Check email matches — if wrong user is signed in, sign them out automatically
+  // Check email matches — use in-app confirm not browser confirm()
   if (_currentUser.email.toLowerCase() !== invite.invited_email.toLowerCase()) {
-    var sb2 = getSupabase();
-    showToast('Signing out ' + _currentUser.email + ' — this invite is for ' + invite.invited_email);
-    await sb2.auth.signOut();
-    // Re-show auth screen with invite banner
-    showAuthScreen();
-    var existingBanner = document.getElementById('invite-banner');
-    if (existingBanner) existingBanner.remove();
-    var banner = document.createElement('div');
-    banner.id = 'invite-banner';
-    banner.style.cssText = 'background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:12px 16px;text-align:center;font-size:13px;color:white;font-weight:600;margin-bottom:20px;width:100%;max-width:340px;line-height:1.5;';
-    banner.innerHTML = '🐝 This invite is for <strong>' + invite.invited_email + '</strong><br><span style="font-weight:400;font-size:12px;color:rgba(255,255,255,.7);">Please sign in with that account to accept</span>';
-    var tabs = document.querySelector('#auth-overlay > div');
-    var overlay = document.getElementById('auth-overlay');
-    if (overlay && tabs) overlay.insertBefore(banner, tabs);
-    return;
+    var proceed = await showConfirmModal(
+      'Wrong account?',
+      'This invite was sent to ' + invite.invited_email + '. You are signed in as ' + _currentUser.email + '. Accept anyway?',
+      'Accept invite',
+      false
+    );
+    if (!proceed) {
+      localStorage.removeItem('hk_pending_invite');
+      return;
+    }
   }
 
   // Show data sharing acknowledgement before accepting
@@ -12346,14 +12492,12 @@ async function analyseAllFrames() {
 
   if (allAnalyses.length) {
     var combined = allAnalyses.join('\n\n---\n\n');
-    var aiNotesEl = document.getElementById('inspect-ai-notes');
-    var aiSection = document.getElementById('ai-notes-section');
-    if (aiNotesEl) {
-      aiNotesEl.value = combined;  // Always start fresh — don't append
+    var notesEl = document.getElementById('inspect-notes');
+    if (notesEl) {
+      notesEl.value = (notesEl.value ? notesEl.value + '\n\n' : '') + 'AI Frame Analysis:\n' + combined;
     }
-    if (aiSection) aiSection.style.display = 'block';
     currentInspData.frameAnalysis = combined;
-    showToast('AI analysis complete ✓');
+    showToast('Analysis added to notes ✓');
   } else {
     showToast('Analysis failed — check connection');
     if (btn) { btn.textContent = '🤖 Analyse frames with AI'; btn.style.background = '#C8730A'; btn.style.color = '#ffffff'; }
@@ -12559,38 +12703,6 @@ function goToApiaryAlerts() {
   }, 400);
 }
 
-// Watch for screen activation and fire render functions automatically
-(function() {
-  var renderMap = {
-    's-calendar': function() {
-      try { renderCalendar(); } catch(e) { console.warn('cal render:', e); }
-      try { renderSeasonalTips(); } catch(e) {}
-      try { renderCalendarForecast(); } catch(e) {}
-    },
-    's-ai': function() {
-      var m = document.getElementById('ai-messages');
-      if (m) { m.style.display = 'flex'; m.scrollTop = m.scrollHeight; }
-    }
-  };
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        var el = mutation.target;
-        var id = el.id;
-        if (el.classList.contains('active') && renderMap[id]) {
-          setTimeout(renderMap[id], 50);
-        }
-      }
-    });
-  });
-  document.addEventListener('DOMContentLoaded', function() {
-    Object.keys(renderMap).forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el) observer.observe(el, { attributes: true });
-    });
-  });
-})();
-
 </script>
 
   <!-- VERSION FOOTER -->
@@ -12607,7 +12719,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 15:54  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 16:02  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -12968,217 +13080,5 @@ function goToApiaryAlerts() {
       <button onclick="closeModalEl('modal-guided-inspect')" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:12px;color:var(--text-l);cursor:pointer;padding:6px;">Skip guided mode</button>
     </div>
   </div>
-
-<!-- MODALS -->
-<div class="modal-overlay" id="modal-add-hive" onclick="closeModal(event,'modal-add-hive')">
-  <div class="modal-sheet" onclick="event.stopPropagation()">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Add new hive</div>
-    <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
-    <div class="form-group"><label>Row</label><select id="new-hive-row"><option value="">No row</option></select></div>
-    <div class="form-group"><label>Hive type</label>
-      <select id="new-hive-type">
-        <option value="overwintered">Overwintered colony</option>
-        <option value="nuc">New nucleus (nuc)</option>
-        <option value="double_nuc">Double nuc (overwintered)</option>
-        <option value="swarm_prime">Prime swarm</option>
-        <option value="swarm_cast">Cast swarm</option>
-        <option value="split">Split / artificial swarm</option>
-        <option value="commercial">Commercial operation</option>
-        <option value="mating">Mating hive</option>
-        <option value="empty">Empty — ready for bees</option>
-        <option value="other">Other (specify in notes)</option>
-      </select>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="nuc">Nuc box</option></select></div>
-      <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
-    </div>
-    <div class="form-group"><label>Queen status</label>
-      <select id="new-hive-queen">
-        <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
-        <option value="cells">Queen cells</option><option value="unknown">Unknown</option>
-      </select>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea id="new-hive-notes" rows="2" placeholder="Initial observations…"></textarea></div>
-    <button class="btn-primary" onclick="saveNewHive()">Add hive ✓</button>
-  </div>
-</div>
-
-
-<div class="modal-overlay" id="modal-add-hive" onclick="closeModal(event,'modal-add-hive')">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-      <div class="modal-handle"></div>
-      <div class="modal-title">Add new hive</div>
-      <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
-      <div class="form-group"><label>Row <span style="font-size:10px;color:var(--text-l);font-weight:400;">(optional — drag to position on map in Edit Layout)</span></label><select id="new-hive-row"><option value="">No row — free position</option></select></div>
-      <div class="form-group"><label>Hive type</label>
-        <select id="new-hive-type">
-          <option value="overwintered">Overwintered colony</option>
-          <option value="nuc">New nucleus (nuc)</option>
-          <option value="swarm_prime">Prime swarm</option>
-          <option value="swarm_cast">Cast swarm</option>
-          <option value="split">Split / artificial swarm</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option></select></div>
-        <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
-      </div>
-      <div class="form-group"><label>Queen status</label>
-        <select id="new-hive-queen">
-          <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
-          <option value="cells">Queen cells</option><option value="unknown">Unknown</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Notes</label><textarea id="new-hive-notes" rows="2" placeholder="Initial observations..."></textarea></div>
-      <button class="btn-primary" onclick="saveNewHive()">Add hive</button>
-    </div>
-  </div>
-
-
-<div class="modal-overlay" id="modal-import" onclick="closeModal(event,'modal-import')">
-    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
-      <div class="modal-handle"></div>
-      <div class="modal-title">📥 Import hive data</div>
-
-      <div style="font-size:13px;color:var(--text-m);margin-bottom:16px;line-height:1.5;">
-        Import from a BeeBase/NBU CSV file or a HiveKeeper CSV export. Existing hives with the same name will be matched automatically.
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em;">Select CSV file</label>
-        <input type="file" accept=".csv,.txt" onchange="handleImportFile(event)" 
-          style="width:100%;padding:12px;border:2px dashed var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;box-sizing:border-box;background:var(--cream);">
-      </div>
-
-      <div id="import-preview" style="margin-bottom:16px;max-height:200px;overflow-y:auto;"></div>
-
-      <button id="import-confirm-btn" onclick="" 
-        style="display:none;width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">
-        Import data
-      </button>
-      <button onclick="closeModalEl('modal-import')" 
-        style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">
-        Cancel
-      </button>
-    </div>
-  </div>
-
-<div class="modal-overlay" id="modal-help" onclick="closeModal(event,'modal-help')">
-    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
-      <div class="modal-handle"></div>
-      <div class="modal-title">🐝 HiveKeeper guide</div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Getting started</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Apiary</b> on the side rail to add your first hive. Give it a name, set its type (National, Langstroth, WBC etc), status, and number of brood boxes and supers. Drag hives to arrange them on your apiary map.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recording an inspection</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Inspect</b> on the side rail. Select your hive, then tap the 🎤 microphone and speak naturally — "queen seen on frame four, six frames of brood, stores adequate, no swarm cells". The AI extracts queen status, brood frames, stores, swarm risk, temper and health score automatically. You can also fill in the form manually.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Home screen</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Shows your apiary summary (active hives, lost colonies, unclear status), priority alerts, live weather for your apiary location, seasonal tip, Asian Hornet Watch, and your active hives scroll. Tap the apiary name to switch between multiple apiaries.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hive detail</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap any hive in the Apiary screen to open its detail page. Tabs show: inspection timeline, brood nest chart, frame tracker, varroa counts, harvests, and treatments. Tap any inspection to edit it. Queen heritage tracks breeding lineage.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Alerts</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The alert engine automatically flags: swarm risk, overdue inspections, low stores, queen issues, varroa levels, Asian hornet risk periods, and seasonal actions. Alerts appear on the home screen ranked by severity.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Varroa monitoring</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Log natural mite drop counts and wash counts in the Varroa tab on any hive. Treatment-free beekeepers can use the visual assessment option — mite levels on bees, uncapping behaviour, and exoskeleton damage indicators.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hiding hives</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>👁 Hide</b> on any hive to remove it from the active view without deleting it — useful for equipment being cleaned or colonies on loan. Hidden hives don't count toward your hive limit. Tap <b>👁 Show hidden</b> in the Apiary screen to reveal and unhide them.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Multiple apiaries</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap the apiary name on the home screen to add a second location. Each apiary has its own hives, map layout and inspection history. Switch between them with a single tap.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">QR &amp; NFC labels</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Open any hive and tap the QR code icon to generate a scannable label. Attach it to your hive — scanning it opens straight to that hive's inspection screen.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Calendar</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The calendar tab shows inspection history, a 5-day weather forecast, and seasonal tips for the current month — swarm prevention, feeding, treatment windows, and harvest timing.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">SOS emergency</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The red <b>SOS</b> button sends a pre-written SMS with your GPS location to a saved emergency contact. Set your contact first in ⚙️ Settings → Set emergency contact.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Marketplace</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Browse and list bees, equipment and honey for sale. Listings marked HiveKeeper Verified include live hive health data from the seller's inspection records.</div></div>
-
-      <div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Exporting data</div><div style="font-size:13px;color:var(--text);line-height:1.6;">In ⚙️ Settings: <b>Export all data to CSV</b> downloads everything. <b>Export to BeeBase/NBU format</b> produces the exact column structure needed for Regional Bee Inspector compliance reporting.</div></div>
-
-      <button onclick="closeModalEl('modal-help')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
-    </div>
-  </div>
-
-
-
-<div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
-    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
-      <div class="modal-handle"></div>
-      <div class="modal-title" onclick="adminSecretTap()" style="user-select:none;">Settings</div>
-
-      <!-- ACCOUNT -->
-      <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:10px 12px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
-          <div style="width:36px;height:36px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">&#x1F3C5;</div>
-          <div style="min-width:0;">
-            <div style="font-size:12px;font-weight:800;color:#412402;white-space:nowrap;">Founding Beekeeper</div>
-            <div style="font-size:10px;color:#633806;margin-top:1px;white-space:nowrap;">Lifetime Pro · Thank you 🐝</div>
-          </div>
-        </div>
-      </div>
-      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
-          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div>
-          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest);margin-top:2px;">Beta</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
-          <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
-        </div>
-      </div>
-      <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
-
-      <!-- PREFERENCES -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Preferences</div>
-      <div class="settings-row" onclick="toggle24h()">
-        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">14:30 instead of 2:30 PM</div></div>
-        <div class="settings-toggle" id="toggle-24h"></div>
-      </div>
-      <div class="settings-row" onclick="toggleLargeText()">
-        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout</div></div>
-        <div class="settings-toggle" id="toggle-large"></div>
-      </div>
-      <div class="settings-row" onclick="toggleColourBlind()">
-        <div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>
-        <div class="settings-toggle" id="toggle-cb"></div>
-      </div>
-      <div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">
-        <div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>
-        <div class="settings-toggle" id="toggle-push"></div>
-      </div>
-
-      <!-- TOOLS -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
-      <button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
-
-      <!-- DATA -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
-      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud</button>
-      <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
-      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
-      <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
-      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
-
-      <!-- SUPPORT -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Support</div>
-      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Send feedback to Chris</button>
-      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
-
-      <!-- EMERGENCY -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">🆘 Set emergency contact</button>
-
-      <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
-    </div>
-  </div>
-
-
 </body>
 </html>
