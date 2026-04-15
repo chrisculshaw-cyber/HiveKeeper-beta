@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:32</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1151,6 +1151,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="row-tabs" id="row-tabs" style="flex:1;overflow-x:auto;display:flex;padding:0 4px;"></div>
     </div>
     <!-- Hive list -->
+    <div id="apiary-debug-info" style="font-size:10px;color:var(--text-l);padding:4px 16px;"></div>
     <div id="hive-list-container" style="margin-top:4px;"></div>
     <!-- Seasonal alerts below hive list -->
     <div id="apiary-alerts-container" style="margin:8px 16px 0;"></div>
@@ -2497,7 +2498,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ renderApiary(); renderMap(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); }
+  if(id==='s-apiary'){ renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -2799,6 +2800,11 @@ function renderApiary(){
   const hivesToShow = _showHidden ? allHivesIncHidden : allHives;
   var hives = currentRowFilter === 'all' ? hivesToShow : currentRowFilter === 'unassigned' ? hivesToShow.filter(h => !h.row || h.row === '') : hivesToShow.filter(h => h.row === currentRowFilter);
 
+  // Debug: show hive count
+  var _debugEl = document.getElementById('apiary-debug-info');
+  if (_debugEl) {
+    _debugEl.textContent = 'loadHives: ' + loadHives().length + ' | filtered: ' + hives.length + ' | rowFilter: ' + currentRowFilter + ' | apiaryId: ' + currentApiaryId;
+  }
   document.getElementById('hive-list-container').innerHTML = hives.map(h => {
     const badge = getBadge(h);
     const isDead = h.status === 'dead';
@@ -2828,7 +2834,7 @@ function renderApiary(){
     if (h.status === 'empty') statusMeta = '📦 Empty — ready to receive bees';
     else if (h.status === 'dead') statusMeta = '💀 Colony lost';
     else if (h.status === 'unclear') statusMeta = '❓ Status unclear';
-    metaText = statusMeta || (h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : ''));
+    var metaText = statusMeta || (h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : ''));
     return `
       <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
         <div class="hive-list-icon" style="position:relative;">
@@ -12924,7 +12930,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:25  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:32  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
