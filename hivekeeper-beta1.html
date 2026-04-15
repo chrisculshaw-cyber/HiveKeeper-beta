@@ -914,7 +914,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 20:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 20:20</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1118,7 +1118,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
         <button id="apiary-export-btn" onclick="exportApiaryMap()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
         <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
   </div>
@@ -2416,7 +2416,18 @@ function syncUniversalHeaders(screenId) {
 }
 
 
+
+// Navigation guard — prevents async callbacks jumping back to home
+var _userLastNav = Date.now();
+var _userOnHome = true;
+
 function goTo(id){
+  // Guard: block programmatic goTo('s-home') if user has manually navigated away
+  if (id === 's-home' && !_userOnHome && (Date.now() - _userLastNav) < 8000) {
+    return; // suppress async redirect to home within 8s of user navigating away
+  }
+  if (id !== 's-home') { _userOnHome = false; _userLastNav = Date.now(); }
+  else { _userOnHome = true; }
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
   currentScreen = id;
@@ -12817,7 +12828,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 20:15  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 20:20  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
