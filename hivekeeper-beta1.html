@@ -209,7 +209,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 @keyframes msgin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg.ai{background:var(--white);color:var(--text);border:1px solid var(--wax);border-bottom-left-radius:4px;align-self:flex-start;box-shadow:var(--shadow)}
 .msg.user{background:var(--forest);color:white;border-bottom-right-radius:4px;align-self:flex-end}
-.msg-sender{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.msg-sender{font-size:10px;font-weight:800;letter-spacing:.02em;margin-bottom:4px}
 .msg.ai .msg-sender{color:var(--purple)}.msg.user .msg-sender{color:rgba(255,255,255,.5)}
 .typing-indicator{display:none;align-self:flex-start;background:var(--white);border:1px solid var(--wax);border-radius:16px;border-bottom-left-radius:4px;padding:12px 16px;gap:4px;align-items:center}
 .typing-indicator.show{display:flex}
@@ -911,7 +911,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 18:10</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 15 April 2026 at 18:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1097,20 +1097,20 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <div class="screen" id="s-apiary">
   <div class="scroll-area">
     <!-- Forest header: title + action buttons -->
-    <div class="screen-header" style="background:var(--forest);padding-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div>
-          <div class="screen-title" id="apiary-screen-title" style="color:white;">My Apiary</div>
-          <div class="screen-sub" id="apiary-sub">Brigstock</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;">🍯 Switch apiary</button>
-          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;">&#x1F441; Hidden</button>
-        </div>
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
+      <div>
+        <div class="dash-greeting" id="s-apiary-greeting">Good morning,</div>
+        <div id="s-apiary-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="apiary-screen-title-hdr">My Apiary</div>
       </div>
-      <!-- Action buttons -->
-      <!-- Default: Swarm, Share, Layout visible. Marks, +Hive, Rows shown in edit mode -->
-      <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
+      </div>
+    </div>
+        <div id="apiary-action-grid-hdr" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;">
         <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
         <button onclick="openShareApiary()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
@@ -1119,7 +1119,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
         <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
-    </div>
+  </div>
     <!-- Map canvas -->
     <div class="map-canvas-wrap">
       <canvas id="map-canvas" height="220"></canvas>
@@ -1148,29 +1148,31 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
   <div class="scroll-area">
-    <div class="screen-header bark">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <div class="back-btn" onclick="goBack()" style="margin-bottom:0;">&#8249; Back</div>
-        <div style="display:flex;gap:6px;">
-          <button onclick="openGuidedInspection()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🐝 Guided</button>
-          <button onclick="openQRModalFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">📱 QR</button>
-          <button onclick="renameFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 12px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">Rename</button>
-        </div>
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
+      <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Back</div>
+      <div>
+        <div class="dash-greeting" id="s-inspect-greeting">Good morning,</div>
+        <div id="s-inspect-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="inspect-screen-title">Inspecting</div>
       </div>
-      <div class="hive-selector-label">Inspecting</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <div style="font-size:11px;color:rgba(255,255,255,.6);" id="inspect-apiary-label">My Apiary</div>
-        <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🍯 Switch apiary</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
-      <div id="inspect-hive-select-wrap" style="margin-top:4px;">
-        <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:16px 18px;cursor:pointer;">
+    </div>
+    <div style="margin-top:8px;" id="inspect-hive-select-wrap-outer">
+      <div id="inspect-hive-select-wrap">
+        <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:12px 14px;cursor:pointer;">
           <span id="inspect-hive-selected-name" style="color:white;font-size:14px;font-weight:600;font-family:Syne,sans-serif;">Select a hive...</span>
-          <span style="color:rgba(255,255,255,.7);font-size:12px;">&#9660;</span>
+          <span style="color:rgba(255,255,255,.6);font-size:18px;">&#8250;</span>
         </div>
         <div id="inspect-hive-list" style="display:none;background:var(--white);border-radius:var(--rs);margin-top:4px;border:1px solid var(--wax);box-shadow:var(--shadow-l);max-height:280px;overflow-y:auto;position:relative;z-index:50;"></div>
       </div>
-      <div class="screen-sub" id="inspect-meta" style="margin-top:6px;"></div>
+      <div class="screen-sub" id="inspect-meta" style="margin-top:6px;color:rgba(255,255,255,.7);"></div>
     </div>
+  </div>
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;">Last inspection</div>
@@ -1304,23 +1306,26 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- HIVE DETAIL -->
 <div class="screen" id="s-hive">
   <div class="scroll-area">
-    <div class="screen-header forest" id="hive-detail-header" style="position:relative;">
-      <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div class="back-btn" onclick="goBack()">&#8249; Apiary</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
-          <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
-          <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
-        </div>
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
+      <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Apiary</div>
+      <div>
+        <div class="dash-greeting" id="s-hive-greeting">Good morning,</div>
+        <div id="s-hive-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="hive-detail-name">Hive</div>
       </div>
-      <div style="position:relative;z-index:1;">
-        <div class="screen-title" id="hive-detail-name">Hive</div>
-        <div class="screen-sub" id="hive-detail-meta">Loading...</div>
-        <div id="hive-detail-sub" style="display:none;"></div>
-        <div id="hive-health-bar" style="margin-top:8px;"></div>
-        <div id="hive-detail-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
+    <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
+      <div class="screen-sub" id="hive-detail-meta" style="flex:1;color:rgba(255,255,255,.7);">Loading...</div>
+      <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
+      <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
+    </div>
+  </div>
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
@@ -1343,13 +1348,17 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </div>
 <!-- AI ASSISTANT -->
 <div class="screen" id="s-ai" style="display:flex;flex-direction:column;">
-  <div class="screen-header purple" style="flex-shrink:0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
       <div>
-        <div class="screen-title">🤖 HiveKeeper AI</div>
-        <div class="screen-sub">UK beekeeping knowledge · your 24 hives · BBKA guidance</div>
+        <div class="dash-greeting" id="s-ai-greeting">Good morning,</div>
+        <div id="s-ai-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="ai-screen-title">HiveKeeper AI</div>
       </div>
-      <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
+      </div>
     </div>
   </div>
   <div class="ai-messages" id="ai-messages">
@@ -1426,17 +1435,27 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- CALENDAR SCREEN -->
   <div class="screen" id="s-calendar">
-    <div class="cal-header-strip">
-      <div class="cal-month-nav">
-        <button class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</button>
-        <div>
-          <div class="cal-month-name" id="cal-month-name">April</div>
-          <div class="cal-year" id="cal-year">2026</div>
-        </div>
-        <button class="cal-nav-btn" onclick="calNextMonth()">&#8250;</button>
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
+      <div>
+        <div class="dash-greeting" id="s-calendar-greeting">Good morning,</div>
+        <div id="s-calendar-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="calendar-screen-title">Calendar</div>
       </div>
-      <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
+      </div>
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+      <button class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</button>
+      <div style="text-align:center;">
+        <div class="cal-month-name" id="cal-month-name">April</div>
+        <div class="cal-year" id="cal-year">2026</div>
+      </div>
+      <button class="cal-nav-btn" onclick="calNextMonth()">&#8250;</button>
+    </div>
+  </div>
     <div class="scroll-area">
       <div class="cal-grid-wrap">
         <div class="cal-dow-row">
@@ -2006,15 +2025,19 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- MARKETPLACE -->
 <div class="screen" id="s-market">
   <div class="scroll-area">
-    <div class="screen-header" style="background:var(--forest);padding-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div class="screen-title" style="color:white;">Marketplace</div>
-          <div class="screen-sub" style="color:rgba(255,255,255,.65);">Buy and sell nucs, queens &amp; equipment</div>
-        </div>
+  <div class="screen-header forest" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 70%,#3D5C3D 100%);">
+    <div class="app-header">
+      <div>
+        <div class="dash-greeting" id="s-market-greeting">Good morning,</div>
+        <div id="s-market-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="market-screen-title">Marketplace</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
+  </div>
     <!-- MARKETPLACE BANNER AD — full width, shown on all tiers -->
     <div id="market-banner" onclick="marketBannerClick()" style="width:100%;background:var(--honey);padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;box-sizing:border-box;">
       <div id="market-banner-logo" style="font-size:22px;flex-shrink:0;">🏠</div>
@@ -2340,6 +2363,52 @@ var screenHistory = ['s-dashboard'];
 var currentHiveId = null;
 var currentRowFilter = 'all';
 
+// ═══════════════════════════════════════════════
+// UNIVERSAL HEADER SYNC
+// ═══════════════════════════════════════════════
+function syncUniversalHeaders(screenId) {
+  // Sync greeting and badge to all screen headers
+  var greetEl = document.getElementById('dash-greeting');
+  var greeting = greetEl ? greetEl.textContent : '';
+  var badgeVisible = document.getElementById('founding-header-badge') && 
+    document.getElementById('founding-header-badge').style.display !== 'none';
+  
+  var screens = ['s-apiary','s-inspect','s-hive','s-ai','s-calendar','s-market'];
+  screens.forEach(function(s) {
+    var g = document.getElementById(s + '-greeting');
+    if (g) g.textContent = greeting;
+    var b = document.getElementById(s + '-badge');
+    if (b) b.style.display = badgeVisible ? 'block' : 'none';
+  });
+
+  // Update apiary-specific titles
+  var apiaryName = '';
+  var apiaryEl = document.getElementById('apiary-name-text');
+  if (apiaryEl) apiaryName = apiaryEl.textContent || 'My Apiary';
+
+  var t = document.getElementById(screenId + '-title-hdr') || 
+          document.getElementById(screenId + '-screen-title') ||
+          document.getElementById(screenId.replace('s-','') + '-screen-title');
+
+  if (screenId === 's-apiary') {
+    var el = document.getElementById('apiary-screen-title-hdr');
+    if (el) el.textContent = apiaryName;
+  }
+  if (screenId === 's-calendar') {
+    var el = document.getElementById('calendar-screen-title');
+    if (el) el.textContent = apiaryName;
+  }
+  if (screenId === 's-market') {
+    var el = document.getElementById('market-screen-title');
+    if (el) el.textContent = apiaryName;
+  }
+  if (screenId === 's-ai') {
+    var el = document.getElementById('ai-screen-title');
+    if (el) el.textContent = 'HiveKeeper AI';
+  }
+}
+
+
 function goTo(id){
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
@@ -2357,6 +2426,8 @@ function goTo(id){
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){} }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
+  // Sync universal headers
+  try { syncUniversalHeaders(id); } catch(e) {}
 }
 
 // Intercept browser back button — navigate within app instead of leaving
@@ -12739,7 +12810,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 18:10  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 15 April 2026 at 18:25  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
