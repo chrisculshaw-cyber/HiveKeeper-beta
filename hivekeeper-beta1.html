@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:32</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1144,6 +1144,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
+      <!-- Locate me button -->
+      <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Locate me">📍</div>
+      <div id="map-locate-status" style="position:absolute;bottom:58px;right:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:180px;text-align:center;"></div>
     </div>
     <div style="font-size:11px;color:var(--text-l);text-align:center;padding:4px 0;font-family:'Syne',sans-serif;letter-spacing:.02em;">Tap a hive to open &middot; Drag in Apiary Settings to move</div>
     <!-- Row filter tabs — between canvas and hive list -->
@@ -6413,13 +6416,13 @@ function toggleEditLayout(){
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='';
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
-    try { renderLeafletHives(true); } catch(e) {}
+    window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
     if(banner) banner.classList.remove('show');
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
-    try { renderLeafletHives(false); } catch(e) {}
+    window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
     var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='none';
@@ -12930,7 +12933,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:32  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:45  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13505,6 +13508,70 @@ function updateMapHiveCount() {
   var active = hives.filter(function(h) { return (h.status||'active') === 'active'; }).length;
   el.textContent = active + ' active hive' + (active !== 1 ? 's' : '');
   el.style.display = hives.length ? 'block' : 'none';
+}
+
+function locateMeOnMap() {
+  var statusEl = document.getElementById('map-locate-status');
+  var btn = document.getElementById('map-locate-btn');
+  if (!_leafletMap) { showToast('Map not ready yet'); return; }
+  if (!navigator.geolocation) { showToast('Location not supported on this device'); return; }
+
+  if (statusEl) { statusEl.textContent = '⏳ Finding location…'; statusEl.style.display = 'block'; }
+  if (btn) btn.style.opacity = '0.5';
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var accuracy = Math.round(pos.coords.accuracy);
+
+      // Centre map on current location
+      _leafletMap.setView([lat, lng], 19);
+
+      // Add accuracy circle
+      if (window._locateCircle) _leafletMap.removeLayer(window._locateCircle);
+      window._locateCircle = L.circle([lat, lng], {
+        radius: accuracy,
+        color: '#1F3812',
+        fillColor: '#4A8028',
+        fillOpacity: 0.15,
+        weight: 2
+      }).addTo(_leafletMap);
+
+      // Add blue dot marker for current position
+      if (window._locateMarker) _leafletMap.removeLayer(window._locateMarker);
+      window._locateMarker = L.circleMarker([lat, lng], {
+        radius: 10,
+        color: 'white',
+        fillColor: '#1565C0',
+        fillOpacity: 1,
+        weight: 3
+      }).addTo(_leafletMap);
+
+      // Save as apiary location
+      var apiary = getCurrentApiary();
+      if (apiary && apiary.id) {
+        saveApiaryLocation(apiary.id, lat, lng, apiary.location || 'My Apiary');
+        // Re-render hive markers at new location
+        setTimeout(function() { renderLeafletHives(window._editModeActive || false); }, 300);
+        if (statusEl) { statusEl.textContent = '✅ Apiary location saved · ' + accuracy + 'm accuracy'; statusEl.style.display = 'block'; }
+        showToast('Location saved — drag hives to position them');
+      } else {
+        if (statusEl) { statusEl.textContent = '📍 Located · ' + accuracy + 'm accuracy'; statusEl.style.display = 'block'; }
+      }
+      if (btn) btn.style.opacity = '1';
+      // Hide status after 4s
+      setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 4000);
+    },
+    function(err) {
+      var msg = err.code === 1 ? 'Location permission denied' : err.code === 2 ? 'Location unavailable' : 'Location timed out';
+      if (statusEl) { statusEl.textContent = '❌ ' + msg; statusEl.style.display = 'block'; }
+      if (btn) btn.style.opacity = '1';
+      showToast(msg);
+      setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 3000);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
 }
 
 function refreshLeafletMap(editMode) {
