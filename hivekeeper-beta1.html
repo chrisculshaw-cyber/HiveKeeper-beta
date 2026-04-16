@@ -122,7 +122,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .hive-mini-name{font-size:11px;font-weight:700;color:var(--text);line-height:1.2}
 .hive-mini-meta{font-size:10px;color:var(--text-l);margin-top:3px;line-height:1.3}
 /* MAP */
-.map-canvas-wrap{margin:12px 20px 0;border-radius:var(--r);border:2px solid var(--forest-l);box-shadow:var(--shadow-l);position:relative;overflow:visible;isolation:isolate}
+.map-canvas-wrap{margin:12px 20px 0;border-radius:var(--r);border:2px solid var(--forest-l);box-shadow:var(--shadow-l);position:relative;overflow:hidden;isolation:isolate}
 #map-canvas{display:block;width:100%}
 .map-legend{position:absolute;bottom:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap}
 .legend-pill{background:rgba(255,255,255,.92);border-radius:20px;padding:3px 8px;font-size:9px;font-weight:700;display:flex;align-items:center;gap:4px;color:var(--text)}
@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 23:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 23:36</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1160,11 +1160,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-tap-banner" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(31,56,18,0.9);color:white;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">Tap anywhere on the map to place your hives there</div>
       <!-- Map crosshair for drop target -->
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
-    </div>
-    <div id="map-zoom-slider-wrap" style="position:absolute;left:0;top:0;bottom:0;width:34px;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0;pointer-events:all;background:rgba(255,255,255,0.15);border-radius:var(--r) 0 0 var(--r);">
-      <div onclick="if(_leafletMap){_leafletMap.zoomIn();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-weight:900;color:var(--forest);">+</div>
-      <input id="map-zoom-input" type="range" min="15" max="22" step="1" value="19" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;width:24px;flex:1;margin:6px 0;cursor:pointer;accent-color:var(--forest);" oninput="if(_leafletMap)_leafletMap.setZoom(parseInt(this.value))"/>
-      <div onclick="if(_leafletMap){_leafletMap.zoomOut();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-weight:900;color:var(--forest);">−</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
       <div id="map-tip-text"></div>
@@ -2939,10 +2934,186 @@ function renderApiary(){
 }
 
 function renderMap(){
-  // Canvas map replaced by Leaflet satellite map
-  try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
-}
+  const canvas = document.getElementById('map-canvas');
+  if (!canvas) return;
+  const wrap = canvas.parentElement;
+  if (!wrap) return;
+  const W = wrap.clientWidth || 350;
+  const H = 300;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  if(!ctx.roundRect){ctx.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);this.closePath();};}
 
+  const LABEL_W = 64;
+  const MAP_X = LABEL_W;
+  const MAP_W = W - LABEL_W;
+  // Dynamic row positions from loadRows()
+  var _rows = loadRows();
+  var _rowCount = _rows.length;
+  var ROW_Y = {};
+  _rows.forEach(function(r, i) {
+    ROW_Y[r.name] = 0.88 - (i * (0.72 / Math.max(_rowCount - 1, 1))); // name only — id would show as label on canvas
+  });
+  // Also support old hardcoded names
+  var hivesByRow = {};
+  loadHives().filter(function(h){ return h.apiaryId === currentApiaryId; }).forEach(function(h) {
+    var rk = h.row || 'Row 1';
+    hivesByRow[rk] = (hivesByRow[rk] || 0) + 1;
+  });
+  const ROW_TOTALS = hivesByRow;
+
+  // Green background
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#2E5B1A'); bg.addColorStop(0.5,'#4A8028'); bg.addColorStop(1,'#6BA033');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // Left label strip
+  ctx.fillStyle = 'rgba(0,0,0,0.38)';
+  ctx.fillRect(0,0,LABEL_W,H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(LABEL_W,0); ctx.lineTo(LABEL_W,H); ctx.stroke();
+
+  // Row labels
+  ctx.font = 'bold 9px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(255,255,255,0.88)';
+  Object.entries(ROW_Y).forEach(([row, yf]) => {
+    ctx.fillText(row.toUpperCase().replace(' ','\n'), LABEL_W/2, H*yf);
+  });
+  ctx.font = '8px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.42)';
+  ctx.fillText('BACK', LABEL_W/2, H*0.10);
+  ctx.fillText('FRONT', LABEL_W/2, H*0.93);
+  ctx.fillText('⬇', LABEL_W/2, H*0.975);
+
+  // No hedgerow — open field
+
+  // Shed is now a user landmark — add via 📍 Landmarks button
+
+  // Paths between rows
+  ctx.fillStyle = 'rgba(210,185,130,0.38)';
+  [[ROW_Y['Row 4'],ROW_Y['Row 3']],[ROW_Y['Row 3'],ROW_Y['Row 2']],[ROW_Y['Row 2'],ROW_Y['Row 1']]].forEach(([y1,y2]) => {
+    const py = H * (y1+y2)/2;
+    ctx.fillRect(MAP_X, py-5, MAP_W, 10);
+  });
+
+  // Landmarks (drawn before hives so hives appear on top)
+  var landmarks = loadLandmarks();
+  canvas._landmarkPositions = [];
+  landmarks.forEach(function(lm) {
+    var lx = MAP_X + lm.x * MAP_W;
+    var ly = lm.y * H;
+    var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
+    var scale = lm.scale || 1.0;
+    var rotation = (lm.r || 0) * Math.PI / 180;
+    var fontSize = Math.round(20 * scale);
+    var hitR = Math.round(18 * scale);
+
+    ctx.save();
+    ctx.translate(lx, ly);
+    if (rotation) ctx.rotate(rotation);
+    if (editLayoutMode) {
+      ctx.fillStyle = 'rgba(200,115,10,0.25)';
+      ctx.beginPath();
+      ctx.arc(0, 0, hitR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.font = fontSize + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(def.emoji, 0, 0);
+    if (rotation) ctx.rotate(-rotation);
+    ctx.font = 'bold ' + Math.round(8 * scale) + 'px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(lm.label, 0, hitR + 6);
+    ctx.restore();
+
+    canvas._landmarkPositions.push({ id: lm.id, x: lx, y: ly, r: hitR });
+  });
+
+  // Hives
+  var hives = loadHives();
+  canvas._hivePositions = [];
+  const hiveMargin = MAP_W * 0.05;
+
+  hives.forEach(hive => {
+    const total = ROW_TOTALS[hive.row] || 4;
+    const usable = MAP_W - hiveMargin*2;
+    const step = total > 1 ? usable/(total-1) : 0;
+    // Use stored position if dragged, otherwise calculate from row
+    const hx = (hive.mapX !== null && hive.mapX !== undefined && hive.mapX > 0)
+      ? MAP_X + hive.mapX * MAP_W
+      : MAP_X + hiveMargin + (hive.num-1)*step;
+    const hy = (hive.mapY !== null && hive.mapY !== undefined && hive.mapY > 0)
+      ? hive.mapY * H
+      : H * (ROW_Y[hive.row] || 0.5);
+    const color = getMapColor(hive);
+    const sz = 22; // slightly bigger for emoji
+
+    var isNuc = hive.boxType === 'nuc' || hive.hiveType === 'nuc';
+    var drawSz = isNuc ? Math.round(sz * 0.65) : sz;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    if (isNuc) {
+      ctx.roundRect(hx - drawSz * 0.7, hy - drawSz / 2, drawSz * 1.4, drawSz, 3);
+    } else {
+      ctx.roundRect(hx - drawSz/2, hy - drawSz/2, drawSz, drawSz, 4);
+    }
+    ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    ctx.font = 'bold ' + (isNuc ? '7' : '8') + 'px sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    // (hive number removed — name now shown below icon)
+    // Status letter overlay for colour blind accessibility
+    var statusLetter = '';
+    if (hive.status === 'active') statusLetter = '';
+    else if (hive.status === 'empty') statusLetter = 'E';
+    else if (hive.status === 'dead') statusLetter = 'L';
+    else if (hive.status === 'unclear') statusLetter = '?';
+    else if (hive.status === 'empty') statusLetter = 'E';
+    else if (hive.status === 'mating') statusLetter = 'M';
+    else if (hive.status === 'nuc') statusLetter = 'N';
+    // Attention/urgent from health score
+    if (hive.healthScore !== null && hive.healthScore !== undefined) {
+      if (hive.healthScore < 30) statusLetter = 'U';
+      else if (hive.healthScore < 60) statusLetter = 'A';
+    }
+    // Draw emoji icon matching hive status — same icons as hive list
+    var hiveIcon = getHiveIcon(hive);
+    ctx.font = (isNuc ? '10' : '12') + 'px Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(hiveIcon, hx, hy);
+
+    // Draw hive name below the icon
+    ctx.font = 'bold ' + Math.max(7, Math.round(sz * 0.38)) + 'px sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    var nameBelow = hy + sz/2 + 3;
+    ctx.fillText(hive.name, hx, nameBelow);
+
+    canvas._hivePositions.push({id:hive.id, x:hx, y:hy, r:sz/2+5});
+  });
+
+  // Draw compass — top right of map area
+  var compassX = W - 34;
+  var compassY = 34;
+  _compassX = compassX;
+  _compassY = compassY;
+  var compassRot = loadCompassRotation();
+  drawCompass(ctx, compassX, compassY, compassRot);
+
+  // Init compass interaction
+  initCompassInteraction();
+}
 
 (function() {
   var canvas = document.getElementById('map-canvas');
@@ -7148,7 +7319,7 @@ function deleteHiveAndData(hiveId) {
   try {
     var _sb=getSupabase(), _uid=getUserId();
     if (_uid && hiveId && !hiveId.toString().startsWith('demo-')) {
-      _sb.from('hives').delete().eq('id', hiveId).eq('user_id', _uid).then(function(r){ if(r.error) console.warn('Hive delete error:', r.error.message); else hkLog && hkLog('Hive deleted from Supabase OK'); });
+      _sb.from('hives').delete().eq('id', hiveId).eq('user_id', _uid);
       var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');
       delete _p[hiveId];
       localStorage.setItem('hk_map_positions', JSON.stringify(_p));
@@ -8386,13 +8557,6 @@ async function onAuthSuccess() {
   if (typeof syncUserDisplayName === 'function') syncUserDisplayName();
   if (typeof initOfflineSync === 'function') initOfflineSync();
   if (typeof checkFoundingBadge === 'function') checkFoundingBadge();
-  // Restore last screen if app was minimised
-  try {
-    var _lastScreen = localStorage.getItem('hk_last_screen');
-    if (_lastScreen && _lastScreen !== 's-home' && document.getElementById(_lastScreen)) {
-      setTimeout(function(){ try{ goTo(_lastScreen); }catch(e){} }, 600);
-    }
-  } catch(e) {}
 }
 
 async function loadUserProfile() {
@@ -10268,7 +10432,7 @@ async function loadSettingsFromCloud() {
   var sb = getSupabase();
   var { data } = await sb.from('profiles').select('settings, name').eq('id', getUserId()).single();
   if (data) {
-    if (data.name && !localStorage.getItem('hk_display_name')) {
+    if (data.name) {
       localStorage.setItem('hk_display_name', data.name);
       var nameEls = document.querySelectorAll('.user-display-name, #apiary-name-display');
     }
@@ -11529,46 +11693,30 @@ function saveLandmarks(l) { localStorage.setItem(LANDMARK_KEY, JSON.stringify(l)
 function addLandmark(type) {
   var def = LANDMARK_TYPES[type];
   if (!def) return;
+  var landmarks = loadLandmarks();
   var label = type === 'custom' ? (prompt('Label for this landmark:', 'Custom') || 'Custom') : def.label;
-  var sheet = document.getElementById('landmark-picker-sheet');
-  if (sheet) sheet.remove();
-  var banner = document.getElementById('map-tap-banner');
-  if (banner) { banner.textContent = 'Tap map to place ' + (def.emoji||'') + ' ' + label; banner.style.display='block'; }
-  if (!window._editModeActive) {
-    var editBtn = document.querySelector('[id="apiary-edit-btn"],[onclick*="toggleEditLayout"]');
-    if (editBtn) editBtn.click();
-  }
-  if (_leafletMap) {
-    _leafletMap.once('click', function(e) {
-      if (banner) banner.style.display='none';
-      var _apLm=getCurrentApiary();
-      var landmarks = loadLandmarks();
-      landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:e.latlng.lat,mapLng:e.latlng.lng,apiaryId:_apLm?_apLm.id:null});
-      saveLandmarks(landmarks);
-      try{renderLeafletHives(true);}catch(ex){}
-      showToast(label+' placed');
-    });
-  } else {
-    var _apLm=getCurrentApiary();
-    var _mc=null;
-    var landmarks = loadLandmarks();
-    landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:(_apLm&&_apLm.lat?_apLm.lat:52.5),mapLng:(_apLm&&_apLm.lng?_apLm.lng:-1.5),apiaryId:_apLm?_apLm.id:null});
-    saveLandmarks(landmarks);
-    showToast(label+' added');
-  }
+  var _apLm=getCurrentApiary();
+  var _mapCtr=_leafletMap?_leafletMap.getCenter():null;
+  var _lmBaseLat=(_apLm&&_apLm.lat)?_apLm.lat:(_mapCtr?_mapCtr.lat:52.5);
+  var _lmBaseLng=(_apLm&&_apLm.lng)?_apLm.lng:(_mapCtr?_mapCtr.lng:-1.5);
+  var _lmLat=_lmBaseLat+(Math.random()-0.5)*0.0002;
+  var _lmLng=_lmBaseLng+(Math.random()-0.5)*0.0002;
+  landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_apLm?_apLm.id:null});
+  saveLandmarks(landmarks);
+  try{renderLeafletHives(window._editModeActive||false);}catch(e){}
+  showToast(label+' added — drag to position in Apiary Settings');
 }
 
 function deleteLandmark(id) {
   var landmarks = loadLandmarks().filter(function(l){ return l.id !== id; });
-  localStorage.setItem(LANDMARK_KEY, JSON.stringify(landmarks));
-  if (getUserId()) { try { deleteLandmarkFromCloud(id); } catch(e) {} }
+  saveLandmarks(landmarks);
   try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
+  if (getUserId()) deleteLandmarkFromCloud(id).catch(function(){});
+  renderMap();
   showToast('Landmark removed');
 }
 
 function openLandmarkPicker() {
-  // Cancel any active tap place mode to prevent phantom clicks moving hives
-  if (typeof _tapPlaceMode !== 'undefined' && _tapPlaceMode) { try { togglePlaceMode(); } catch(e) {} }
   var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
@@ -11594,7 +11742,7 @@ function openLandmarkPicker() {
         'border-bottom:1px solid var(--wax);">' +
         '<div style="font-size:18px;">' + def.emoji + '</div>' +
         '<div style="flex:1;font-size:13px;font-weight:600;color:var(--text);">' + l.label + '</div>' +
-        '<button onclick="deleteLandmark(\'' + l.id + '\');setTimeout(openLandmarkPicker,50)" ' +
+        '<button onclick="deleteLandmark(\'' + l.id + '\');openLandmarkPicker()" ' +
         'style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;' +
         'font-weight:700;cursor:pointer;padding:4px 8px;">Remove</button>' +
         '</div>';
@@ -12810,7 +12958,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 23:30  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 23:36  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13285,15 +13433,14 @@ function initLeafletMap() {
     var _lmAll=loadLandmarks?loadLandmarks():[];
     var _apLm2=getCurrentApiary();
     if(_apLm2&&_lmAll.length&&_leafletMap){
-      var _mc2=_leafletMap?_leafletMap.getCenter():null;
-      var _aLt=_mc2?_mc2.lat:(_apLm2.lat||52.5),_aLg=_mc2?_mc2.lng:(_apLm2.lng||-1.5);
+      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
       _lmAll.forEach(function(lm){
-        // Show landmarks for current apiary or unassigned ones
+        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
         var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
         var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
         var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
         var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
-        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;position:relative;z-index:1000;">'
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
           +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
           +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
           +'</div>';
@@ -13309,45 +13456,32 @@ function initLeafletMap() {
     }
   }catch(e){console.warn('Landmark render:',e);}
     // Render landmarks on Leaflet map
-  // Clear old landmark markers first
-  if (typeof _landmarkMarkers === 'object') {
-    Object.values(_landmarkMarkers).forEach(function(m){ try{_leafletMap.removeLayer(m);}catch(e){} });
-  }
-  _landmarkMarkers = {};
   try {
-    var _lmAll = loadLandmarks ? loadLandmarks() : [];
-    if (_lmAll.length && _leafletMap) {
-      var _mc2 = _leafletMap.getCenter();
-      var _aLt = _mc2 ? _mc2.lat : lat;
-      var _aLg = _mc2 ? _mc2.lng : lng;
-      _lmAll.forEach(function(lm) {
-        var def = (typeof LANDMARK_TYPES !== 'undefined' && LANDMARK_TYPES[lm.type]) || {emoji:'&#x1F4CD;', label: lm.label || 'Landmark'};
-        var lt = lm.mapLat ? parseFloat(lm.mapLat) : _aLt;
-        var lg = lm.mapLng ? parseFloat(lm.mapLng) : _aLg;
-        if (isNaN(lt) || isNaN(lg)) { lt = _aLt; lg = _aLg; }
-        var rot = (-(typeof _mapBearing === 'number' ? _mapBearing : 0)) + 'deg';
-        var h = '<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
-          + '<div style="font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.8));">' + (def.emoji || '&#x1F4CD;') + '</div>'
-          + '<div style="font-size:9px;font-weight:900;color:white;background:rgba(0,0,0,0.75);border-radius:8px;padding:2px 6px;white-space:nowrap;margin-top:2px;">' + lm.label + '</div>'
-          + '</div>';
-        var ic = L.divIcon({html: h, className: '', iconAnchor: [22, 34], iconSize: [44, 42], popupAnchor: [0, -34]});
-        var mk = L.marker([lt, lg], {icon: ic, draggable: !!editMode, zIndexOffset: 1000});
-        if (editMode) {
-          (function(landmark) {
-            mk.on('dragend', function(e) {
-              var ll = e.target.getLatLng();
-              var all = loadLandmarks();
-              var idx = all.findIndex(function(x) { return x.id === landmark.id; });
-              if (idx >= 0) { all[idx].mapLat = ll.lat; all[idx].mapLng = ll.lng; saveLandmarks(all); }
-            });
-          })(lm);
-        }
+    var _lmAll=loadLandmarks?loadLandmarks():[];
+    var _apLm2=getCurrentApiary();
+    if(_apLm2&&_lmAll.length&&_leafletMap){
+      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
+      _lmAll.forEach(function(lm){
+        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
+        var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
+        var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
+        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
+        var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
+          +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
+          +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
+          +'</div>';
+        var ic=L.divIcon({html:h,className:'',iconAnchor:[20,32],iconSize:[40,40]});
+        var mk=L.marker([lt,lg],{icon:ic,draggable:!!editMode});
+        if(editMode){(function(landmark){mk.on('dragend',function(e){
+          var ll=e.target.getLatLng();
+          var all=loadLandmarks();var idx=all.findIndex(function(x){return x.id===landmark.id;});
+          if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);}
+        });})(lm);}
         mk.addTo(_leafletMap);
-        _landmarkMarkers[lm.id] = mk;
-        if (typeof hkLog === 'function') hkLog('LM:' + lm.label + ' ' + lt.toFixed(5) + ',' + lg.toFixed(5));
       });
     }
-  } catch(e) { console.warn('Landmark render error:', e); }
+  }catch(e){console.warn('Landmark render:',e);}
   updateMapHiveCount();
 }
 
@@ -13812,14 +13946,8 @@ function saveDisplayName() {
   input.style.background = '#f0fff0';
   var btn = document.getElementById('settings-name-save-btn');
   if (btn) { var orig=btn.innerHTML; btn.innerHTML='&#x2705;'; setTimeout(function(){ btn.innerHTML=orig; input.style.borderColor=''; input.style.background=''; },2500); }
-  showToast('Name saved - greeting updated');
-  try {
-    var _h=new Date().getHours();
-    var _gb=_h<12?'Good morning,':_h<18?'Good afternoon,':'Good evening,';
-    var _gEl=document.getElementById('dash-greeting');
-    if(_gEl) _gEl.textContent=_gb+' '+name.split(' ')[0];
-    syncUniversalHeaders(typeof currentScreen!=='undefined'?currentScreen:'s-home');
-  } catch(e) {}
+  showToast('Name saved');
+  try { syncUniversalHeaders(typeof currentScreen!=='undefined'?currentScreen:'s-home'); } catch(e) {}
 }
 function loadSettingsName() {
   var input = document.getElementById('settings-display-name');
