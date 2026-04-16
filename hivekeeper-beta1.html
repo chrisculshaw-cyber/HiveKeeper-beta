@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 23:18</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 23:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1161,10 +1161,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Map crosshair for drop target -->
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
-    <div id="map-zoom-slider-wrap" style="position:absolute;left:6px;top:50%;transform:translateY(-50%);z-index:600;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:all;">
-      <div onclick="if(_leafletMap){_leafletMap.zoomIn();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.35);font-weight:900;color:var(--forest);line-height:1;">+</div>
-      <input id="map-zoom-input" type="range" min="15" max="22" step="1" value="19" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;width:24px;height:70px;cursor:pointer;accent-color:var(--forest);" oninput="if(_leafletMap)_leafletMap.setZoom(parseInt(this.value))"/>
-      <div onclick="if(_leafletMap){_leafletMap.zoomOut();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.35);font-weight:900;color:var(--forest);line-height:1;">−</div>
+    <div id="map-zoom-slider-wrap" style="position:absolute;left:0;top:0;bottom:0;width:34px;z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0;pointer-events:all;background:rgba(255,255,255,0.15);border-radius:var(--r) 0 0 var(--r);">
+      <div onclick="if(_leafletMap){_leafletMap.zoomIn();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-weight:900;color:var(--forest);">+</div>
+      <input id="map-zoom-input" type="range" min="15" max="22" step="1" value="19" orient="vertical" style="writing-mode:vertical-lr;direction:rtl;width:24px;flex:1;margin:6px 0;cursor:pointer;accent-color:var(--forest);" oninput="if(_leafletMap)_leafletMap.setZoom(parseInt(this.value))"/>
+      <div onclick="if(_leafletMap){_leafletMap.zoomOut();var z=document.getElementById('map-zoom-input');if(z)z.value=_leafletMap.getZoom();}" style="background:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);font-weight:900;color:var(--forest);">−</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
       <div id="map-tip-text"></div>
@@ -11567,6 +11567,8 @@ function deleteLandmark(id) {
 }
 
 function openLandmarkPicker() {
+  // Cancel any active tap place mode to prevent phantom clicks moving hives
+  if (typeof _tapPlaceMode !== 'undefined' && _tapPlaceMode) { try { togglePlaceMode(); } catch(e) {} }
   var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
@@ -12808,7 +12810,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 23:18  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 23:25  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
