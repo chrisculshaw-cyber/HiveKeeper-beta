@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:50</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:57</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1140,13 +1140,22 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
     <!-- Map canvas -->
     <div class="map-canvas-wrap">
-      <div id="leaflet-map" style="width:100%;height:340px;border-radius:var(--r);"></div>
+      <div id="leaflet-map" style="width:115%;height:370px;margin:-15px -7.5%;border-radius:var(--r);transition:transform 0.3s ease;"></div>
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
+      <!-- Map search box -->
+      <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:6px;width:calc(100% - 100px);">
+        <input id="map-search-input" type="text" placeholder="Search location…" style="flex:1;padding:8px 12px;border-radius:20px;border:none;font-size:12px;font-family:'Syne',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3);outline:none;" onkeydown="if(event.key==='Enter'){searchMapLocation();}"/>
+        <div onclick="searchMapLocation()" style="background:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0;">🔍</div>
+      </div>
       <!-- Locate me button -->
-      <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Locate me">📍</div>
-      <div id="map-locate-status" style="position:absolute;bottom:58px;right:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:180px;text-align:center;"></div>
+      <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:60px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Use my GPS location">📍</div>
+      <!-- Place hives here button -->
+      <div id="map-place-btn" onclick="togglePlaceMode()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:20px;padding:8px 14px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);">🐝 Place hives here</div>
+      <div id="map-locate-status" style="position:absolute;bottom:112px;right:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:180px;text-align:center;"></div>
+      <!-- Tap mode banner -->
+      <div id="map-tap-banner" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(31,56,18,0.9);color:white;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">Tap anywhere on the map to place your hives there</div>
       <!-- Map search bar -->
       <div style="position:absolute;top:10px;left:50px;right:10px;z-index:500;display:flex;gap:6px;">
         <input id="map-search-input" type="text" placeholder="Search location…" style="flex:1;padding:8px 12px;border-radius:20px;border:none;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-family:'Syne',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')mapSearchGo()"/>
@@ -1157,7 +1166,15 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Map crosshair for drop target -->
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
-    <div style="font-size:11px;color:var(--text-l);text-align:center;padding:4px 0;font-family:'Syne',sans-serif;letter-spacing:.02em;">Tap a hive to open &middot; Drag in Apiary Settings to move</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
+      <div style="font-size:11px;color:var(--text-l);font-family:'Syne',sans-serif;letter-spacing:.02em;">Tap hive to open · Apiary Settings to move</div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div onclick="rotateMapBy(-15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;" title="Rotate anticlockwise">↺</div>
+        <div id="map-bearing-display" style="font-size:10px;font-weight:700;color:var(--text-l);min-width:28px;text-align:center;">0°</div>
+        <div onclick="rotateMapBy(15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;" title="Rotate clockwise">↻</div>
+        <div onclick="resetMapRotation()" style="background:var(--wax);border-radius:20px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;margin-left:2px;">Reset</div>
+      </div>
+    </div>
     <!-- Row filter tabs — between canvas and hive list -->
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
       <div class="row-tabs" id="row-tabs" style="flex:1;overflow-x:auto;display:flex;padding:0 4px;"></div>
@@ -1334,7 +1351,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
 <!-- HIVE DETAIL -->
 <div class="screen" id="s-hive">
-  <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 100%);">
+  <div class="screen-header-wrap" id="hive-detail-header" style="flex-shrink:0;background:linear-gradient(180deg,var(--forest) 0%,#2A4A2A 100%);">
     <div class="app-header forest">
       <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Apiary</div>
       <div>
@@ -1353,6 +1370,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
       <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
     </div>
+    <div id="hive-detail-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
   </div>
   <div class="scroll-area">
 
@@ -12946,7 +12964,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:50  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:57  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13586,6 +13604,84 @@ function dropAllHivesHere() {
   showToast('Hives placed — drag to fine-tune positions');
 }
 
+function searchMapLocation() {
+  var input = document.getElementById('map-search-input');
+  if (!input || !input.value.trim()) return;
+  var query = input.value.trim();
+  var statusEl = document.getElementById('map-locate-status');
+  if (statusEl) { statusEl.textContent = '⏳ Searching…'; statusEl.style.display = 'block'; }
+
+  fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(query) + '&format=json&limit=1&countrycodes=gb', { headers: { 'Accept-Language': 'en' } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data || !data.length) {
+        if (statusEl) { statusEl.textContent = '❌ Not found — try a postcode'; statusEl.style.display = 'block'; }
+        setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 3000);
+        return;
+      }
+      var lat = parseFloat(data[0].lat);
+      var lng = parseFloat(data[0].lon);
+      if (_leafletMap) {
+        _leafletMap.setView([lat, lng], 19);
+        if (statusEl) { statusEl.textContent = '✅ Found — tap "Place hives here" or drag map'; statusEl.style.display = 'block'; }
+        setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 4000);
+      }
+      input.blur();
+    })
+    .catch(function() {
+      if (statusEl) { statusEl.textContent = '❌ Search failed — check connection'; statusEl.style.display = 'block'; }
+      setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 3000);
+    });
+}
+
+var _tapPlaceMode = false;
+var _tapModeHandler = null;
+
+function togglePlaceMode() {
+  _tapPlaceMode = !_tapPlaceMode;
+  var btn = document.getElementById('map-place-btn');
+  var banner = document.getElementById('map-tap-banner');
+  if (_tapPlaceMode) {
+    if (btn) { btn.textContent = '✕ Cancel'; btn.style.background = '#C62828'; btn.style.color = 'white'; btn.style.borderColor = '#C62828'; }
+    if (banner) banner.style.display = 'block';
+    if (_leafletMap) {
+      _tapModeHandler = function(e) { placeHivesAtLatLng(e.latlng.lat, e.latlng.lng); };
+      _leafletMap.once('click', _tapModeHandler);
+    }
+  } else {
+    if (btn) { btn.innerHTML = '🐝 Place hives here'; btn.style.background = 'white'; btn.style.color = 'var(--forest)'; btn.style.borderColor = 'rgba(31,56,18,0.3)'; }
+    if (banner) banner.style.display = 'none';
+    if (_leafletMap && _tapModeHandler) { _leafletMap.off('click', _tapModeHandler); _tapModeHandler = null; }
+  }
+}
+
+function placeHivesAtLatLng(lat, lng) {
+  _tapPlaceMode = false;
+  var btn = document.getElementById('map-place-btn');
+  var banner = document.getElementById('map-tap-banner');
+  if (btn) { btn.innerHTML = '🐝 Place hives here'; btn.style.background = 'white'; btn.style.color = 'var(--forest)'; btn.style.borderColor = 'rgba(31,56,18,0.3)'; }
+  if (banner) banner.style.display = 'none';
+
+  var apiary = getCurrentApiary();
+  if (apiary && apiary.id) {
+    saveApiaryLocation(apiary.id, lat, lng, apiary.location || 'My Apiary');
+    // Clear stored hive GPS positions so they recalculate from new centre
+    var allHives = loadHives().filter(function(h) { return h.apiaryId === (apiary.id || currentApiaryId); });
+    allHives.forEach(function(h) { delete h.mapLat; delete h.mapLng; });
+    var allHivesAll = loadHives();
+    allHivesAll.forEach(function(h) {
+      if (h.apiaryId === (apiary.id || currentApiaryId)) { delete h.mapLat; delete h.mapLng; }
+    });
+    saveHives(allHivesAll);
+    // Re-render markers at new location
+    setTimeout(function() { renderLeafletHives(false); }, 200);
+    var statusEl = document.getElementById('map-locate-status');
+    if (statusEl) { statusEl.textContent = '✅ Hives placed! Go to Apiary Settings to fine-tune positions'; statusEl.style.display = 'block'; }
+    showToast('Hives placed — use Apiary Settings to position each one');
+    setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 5000);
+  }
+}
+
 function locateMeOnMap() {
   var statusEl = document.getElementById('map-locate-status');
   var btn = document.getElementById('map-locate-btn');
@@ -13640,14 +13736,50 @@ function locateMeOnMap() {
       setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 4000);
     },
     function(err) {
-      var msg = err.code === 1 ? 'Location permission denied' : err.code === 2 ? 'Location unavailable' : 'Location timed out';
-      if (statusEl) { statusEl.textContent = '❌ ' + msg; statusEl.style.display = 'block'; }
+      var msg = err.code === 1 ? 'GPS denied — search for your location instead' : err.code === 2 ? 'GPS unavailable — search for your location instead' : 'GPS timed out — search for your location instead';
+      if (statusEl) { statusEl.textContent = '⚠️ ' + msg; statusEl.style.display = 'block'; }
       if (btn) btn.style.opacity = '1';
-      showToast(msg);
+      showToast('Tip: search for your apiary name or postcode, then tap "Place hives here"');
       setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 3000);
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
+}
+
+var _mapBearing = 0;
+
+function rotateMapBy(delta) {
+  _mapBearing = (_mapBearing + delta + 360) % 360;
+  applyMapRotation();
+}
+
+function resetMapRotation() {
+  _mapBearing = 0;
+  applyMapRotation();
+}
+
+function applyMapRotation() {
+  var el = document.getElementById('leaflet-map');
+  if (el) el.style.transform = 'rotate(' + _mapBearing + 'deg)';
+  var disp = document.getElementById('map-bearing-display');
+  if (disp) disp.textContent = _mapBearing + '°';
+  // Save bearing for this apiary
+  var apiary = getCurrentApiary();
+  if (apiary && apiary.id) {
+    var apiaries = loadApiaries();
+    var a = apiaries.find(function(x){ return x.id === apiary.id; });
+    if (a) { a.mapBearing = _mapBearing; saveApiaries(apiaries); }
+  }
+}
+
+function loadMapBearing() {
+  var apiary = getCurrentApiary();
+  if (apiary && apiary.mapBearing !== undefined) {
+    _mapBearing = apiary.mapBearing;
+  } else {
+    _mapBearing = 0;
+  }
+  applyMapRotation();
 }
 
 function refreshLeafletMap(editMode) {
