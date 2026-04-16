@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 12:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 12:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12972,7 +12972,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 12:20  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 12:25  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13450,7 +13450,11 @@ function initLeafletMap() {
 }
 
 function getHiveLatLng(hive, rows, apiaryLat, apiaryLng, allHives) {
-  // Use directly stored position first
+  // Check dedicated position store first
+  var positions = getMapPositions();
+  var stored = positions[hive.id];
+  if (stored && stored.lat) return [stored.lat, stored.lng];
+  // Fall back to hive object
   if (hive.map_lat && hive.map_lng) {
     return [hive.map_lat, hive.map_lng];
   }
@@ -13802,6 +13806,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // ── DEBUG LOG ──────────────────────────────────────────────────
+function getMapPositions() {
+  try { return JSON.parse(localStorage.getItem('hk_map_positions') || '{}'); } catch(e) { return {}; }
+}
+function setMapPosition(hiveId, lat, lng) {
+  try {
+    var pos = getMapPositions();
+    pos[hiveId] = { lat: lat, lng: lng };
+    localStorage.setItem('hk_map_positions', JSON.stringify(pos));
+  } catch(e) {}
+}
+
 var _hkLog = [];
 function hkLog(msg) {
   var t = new Date().toTimeString().substr(0,8);
