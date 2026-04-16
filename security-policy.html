@@ -4,358 +4,211 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HiveKeeper — Information Security Policy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --forest: #2D5016;
-      --forest-m: #3A6B1C;
-      --honey: #C8730A;
-      --honey-pale: #FAEEDA;
-      --cream: #F5F0E8;
-      --wax: #D4C9B0;
-      --text: #1A1208;
-      --text-m: #4A3A25;
-      --text-l: #8A7A60;
-      --white: #FFFDF8;
-    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Syne', sans-serif;
-      background: var(--cream);
-      color: var(--text);
-      line-height: 1.7;
-      font-size: 15px;
-    }
-    header {
-      background: linear-gradient(160deg, var(--forest) 0%, var(--forest-m) 100%);
-      padding: 40px 24px 32px;
-      text-align: center;
-    }
-    header .logo {
-      font-size: 28px;
-      font-weight: 800;
-      color: white;
-      letter-spacing: -.02em;
-      margin-bottom: 6px;
-    }
-    header .subtitle {
-      font-size: 14px;
-      color: rgba(255,255,255,.7);
-      margin-bottom: 4px;
-    }
-    header .meta {
-      font-size: 12px;
-      color: rgba(255,255,255,.5);
-    }
-    nav.breadcrumb {
-      background: var(--forest);
-      padding: 10px 24px;
-      font-size: 12px;
-      color: rgba(255,255,255,.6);
-    }
-    nav.breadcrumb a {
-      color: rgba(255,255,255,.8);
-      text-decoration: none;
-    }
-    nav.breadcrumb a:hover { color: white; }
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 32px 24px 64px;
-    }
-    h1 {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--forest);
-      margin: 40px 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--wax);
-    }
-    h1:first-child { margin-top: 0; }
-    h2 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      margin: 24px 0 8px;
-    }
-    p {
-      margin-bottom: 14px;
-      color: var(--text-m);
-    }
-    ul {
-      margin: 0 0 14px 20px;
-      color: var(--text-m);
-    }
-    ul li { margin-bottom: 6px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 14px 0 20px;
-      font-size: 13px;
-    }
-    th {
-      background: var(--forest);
-      color: white;
-      padding: 10px 12px;
-      text-align: left;
-      font-weight: 700;
-    }
-    td {
-      padding: 9px 12px;
-      border-bottom: 1px solid var(--wax);
-      color: var(--text-m);
-      vertical-align: top;
-    }
-    tr:nth-child(odd) td { background: white; }
-    tr:nth-child(even) td { background: var(--cream); }
-    .callout {
-      background: var(--honey-pale);
-      border-left: 3px solid var(--honey);
-      border-radius: 0 8px 8px 0;
-      padding: 12px 16px;
-      margin: 16px 0;
-      font-size: 13px;
-      color: #633806;
-    }
-    .callout strong { color: var(--honey); }
-    .badge {
-      display: inline-block;
-      background: var(--forest);
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 20px;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-    .badge.amber { background: var(--honey); }
-    .badge.red { background: #B83228; }
-    footer {
-      background: var(--forest);
-      color: rgba(255,255,255,.6);
-      text-align: center;
-      padding: 24px;
-      font-size: 12px;
-    }
-    footer a { color: rgba(255,255,255,.8); text-decoration: none; }
-    footer a:hover { color: white; }
-    @media (max-width: 600px) {
-      table { font-size: 12px; }
-      th, td { padding: 8px; }
-      h1 { font-size: 18px; }
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #1a1208; background: #faf6ee; line-height: 1.7; }
+    .header { background: #1F3812; padding: 24px 20px; text-align: center; }
+    .header-logo { font-size: 28px; font-weight: 800; color: white; font-family: 'Georgia', serif; }
+    .header-sub { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; }
+    .hero { background: #2A4A2A; padding: 40px 20px; text-align: center; }
+    .hero h1 { font-size: 26px; font-weight: 800; color: white; margin-bottom: 8px; }
+    .hero-meta { font-size: 13px; color: rgba(255,255,255,.65); }
+    .summary { background: #1F3812; color: white; padding: 16px 20px; font-size: 13px; line-height: 1.6; }
+    .container { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+    h2 { font-size: 20px; font-weight: 800; color: #1F3812; margin: 40px 0 12px; border-bottom: 2px solid #e8f0e0; padding-bottom: 8px; }
+    h3 { font-size: 15px; font-weight: 700; color: #4a7030; margin: 24px 0 8px; }
+    p { font-size: 14px; margin-bottom: 12px; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    li { font-size: 14px; margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+    th { background: #1F3812; color: white; padding: 8px 12px; text-align: left; font-weight: 700; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e8f0e0; vertical-align: top; }
+    tr:nth-child(even) td { background: #f5f0e8; }
+    a { color: #1F3812; }
+    .ico-badge { display: inline-block; background: #e8f0e0; border: 1px solid #4a7030; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; color: #1F3812; margin: 8px 0; }
+    .footer { background: #1F3812; color: rgba(255,255,255,.6); text-align: center; padding: 20px; font-size: 12px; }
+    .footer a { color: rgba(255,255,255,.8); }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">🐝 HiveKeeper</div>
-  <div class="subtitle">Information Security Policy</div>
-  <div class="meta">Version 1.0 &middot; 2 April 2026 &middot; Culshaw Consulting Ltd</div>
-</header>
+<div class="header">
+  <div class="header-logo">🐝 HiveKeeper</div>
+  <div class="header-sub"><a href="https://gethivekeeper.com" style="color:rgba(255,255,255,.65);">gethivekeeper.com</a> › Security Policy</div>
+</div>
 
-<nav class="breadcrumb">
-  <a href="/">gethivekeeper.com</a> &rsaquo; Security Policy
-</nav>
+<div class="hero">
+  <h1>Information Security Policy</h1>
+  <div class="hero-meta">Version 1.1 · 16 April 2026 · Culshaw Consulting Ltd</div>
+</div>
+
+<div class="summary">
+  <strong>Summary:</strong> HiveKeeper stores your beekeeping data securely using Supabase (UK-based, AES-256 encrypted). We never see your password. Your data is yours — export or delete it any time. We use no ad networks, no tracking, and no third-party analytics.
+</div>
 
 <div class="container">
 
-  <div class="callout">
-    <strong>Summary:</strong> HiveKeeper stores your beekeeping data securely using Supabase (UK-based, AES-256 encrypted). We never see your password. Your data is yours — export or delete it any time. We use no ad networks, no tracking, and no third-party analytics.
-  </div>
+<h2>1. Overview</h2>
+<p>This Information Security Policy describes how HiveKeeper (operated by Culshaw Consulting Ltd, Company No. 16938477) collects, stores, processes and protects user data. It covers all systems used in the delivery of the HiveKeeper service.</p>
+<p>HiveKeeper is a UK beekeeping management application accessible at <a href="https://gethivekeeper.com">gethivekeeper.com</a> and via native iOS and Android apps. All processing is conducted in accordance with UK GDPR and the Data Protection Act 2018.</p>
 
-  <h1>1. Overview</h1>
-  <p>This Information Security Policy describes how HiveKeeper (operated by Culshaw Consulting Ltd, Company No. 16938477) collects, stores, processes and protects user data. It covers all systems used in the delivery of the HiveKeeper service.</p>
-  <p>HiveKeeper is a UK beekeeping management application accessible at <a href="https://gethivekeeper.com">gethivekeeper.com</a> and via native iOS and Android apps. All processing is conducted in accordance with UK GDPR and the Data Protection Act 2018.</p>
+<h2>2. Systems and Third-Party Processors</h2>
+<table>
+  <tr><th>System</th><th>Provider</th><th>Purpose</th><th>Data location</th></tr>
+  <tr><td>Supabase</td><td>Supabase Inc.</td><td>Database, authentication, file storage</td><td>AWS eu-west-2 (London)</td></tr>
+  <tr><td>Cloudflare Workers</td><td>Cloudflare Inc.</td><td>API proxy for voice transcription, AI analysis, iCal calendar</td><td>Cloudflare edge (UK/EU)</td></tr>
+  <tr><td>GitHub Pages</td><td>GitHub Inc. / Microsoft</td><td>Static web hosting — no user data stored</td><td>Global CDN</td></tr>
+  <tr><td>OpenAI Whisper</td><td>OpenAI Inc.</td><td>Voice transcription of inspection notes — processed in real time, not stored</td><td>US (via Cloudflare Worker)</td></tr>
+  <tr><td>Anthropic Claude</td><td>Anthropic PBC</td><td>AI frame analysis and beekeeping advice — processed in real time, not stored</td><td>US (via Cloudflare Worker)</td></tr>
+  <tr><td>Open-Meteo</td><td>Open-Meteo GmbH</td><td>Live weather data per apiary — coordinates only, no personal data</td><td>EU</td></tr>
+  <tr><td>postcodes.io / Nominatim</td><td>Open Source / OSM</td><td>Geocoding apiary locations — no personal data</td><td>UK / EU</td></tr>
+  <tr><td>Leaflet.js / ESRI</td><td>ESRI / OpenStreetMap</td><td>Satellite map tiles for apiary map — no personal data transmitted</td><td>Global CDN</td></tr>
+  <tr><td>Google Charts API</td><td>Google LLC</td><td>QR code generation — hive URLs only, no personal data</td><td>Google global CDN</td></tr>
+  <tr><td>HiveKeeper Analytics</td><td>Culshaw Consulting Ltd (Supabase)</td><td>In-app usage analytics — screen views, feature usage, paywall interactions. No third party involved.</td><td>AWS eu-west-2 (London)</td></tr>
+  <tr><td>Median</td><td>Median.co</td><td>Native app wrapper — no user data stored</td><td>US</td></tr>
+</table>
 
-  <h1>2. Systems and Third-Party Processors</h1>
-  <p>The following systems process or store HiveKeeper user data.</p>
-  <table>
-    <thead>
-      <tr><th>System</th><th>Provider</th><th>Purpose</th><th>Data location</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Supabase</td><td>Supabase Inc.</td><td>Database, authentication, file storage</td><td>AWS eu-west-2 (London)</td></tr>
-      <tr><td>Cloudflare Workers</td><td>Cloudflare Inc.</td><td>API proxy for voice transcription, AI analysis, iCal calendar</td><td>Cloudflare edge (UK/EU)</td></tr>
-      <tr><td>GitHub Pages</td><td>GitHub Inc. / Microsoft</td><td>Static web hosting — no user data stored</td><td>Global CDN</td></tr>
-      <tr><td>OpenAI Whisper</td><td>OpenAI Inc.</td><td>Voice transcription of inspection notes — processed in real time, not stored</td><td>US (via Cloudflare Worker)</td></tr>
-      <tr><td>Anthropic Claude</td><td>Anthropic PBC</td><td>AI frame analysis and beekeeping advice — processed in real time, not stored</td><td>US (via Cloudflare Worker)</td></tr>
-      <tr><td>Open-Meteo</td><td>Open-Meteo GmbH</td><td>Live weather data per apiary — coordinates only, no personal data</td><td>EU</td></tr>
-      <tr><td>postcodes.io / Nominatim</td><td>Open Source / OSM</td><td>Geocoding apiary locations — no personal data</td><td>UK / EU</td></tr>
-      <tr><td>Google Charts API</td><td>Google LLC</td><td>QR code generation — hive URLs only, no personal data</td><td>Google global CDN</td></tr>
-      <tr><td>HiveKeeper Analytics</td><td>Culshaw Consulting Ltd (Supabase)</td><td>In-app usage analytics — screen views, feature usage, paywall interactions. No third party involved. Stored in Supabase analytics_events table.</td><td>AWS eu-west-2 (London)</td></tr>
-      <tr><td>Median</td><td>Median.co</td><td>Native app wrapper — no user data stored</td><td>US</td></tr>
-    </tbody>
-  </table>
+<h2>3. Data We Collect</h2>
+<h3>Account data</h3>
+<ul>
+  <li>Email address — required for account creation and authentication</li>
+  <li>Display name — optional, used for inspection records and sharing</li>
+  <li>Subscription tier — free, pro, or commercial</li>
+  <li>Referral code — auto-generated for the referral scheme</li>
+</ul>
+<h3>Apiary and hive data</h3>
+<ul>
+  <li>Apiary names, locations (postcode or town), and GPS coordinates</li>
+  <li>Hive names, status, health scores, inspection records</li>
+  <li>Hive GPS positions on the apiary satellite map</li>
+  <li>Frame photos and hive cover photos</li>
+  <li>Varroa counts, harvest records, treatment logs</li>
+  <li>Voice inspection transcripts (processed via Whisper, stored as text)</li>
+</ul>
+<h3>What we do NOT collect</h3>
+<ul>
+  <li>Payment card details — handled entirely by Apple App Store or Google Play</li>
+  <li>Device identifiers or advertising IDs</li>
+  <li>Browsing history or cross-site tracking data</li>
+  <li>Analytics or behavioural profiling data</li>
+</ul>
 
-  <h1>3. Data We Collect</h1>
-  <h2>Account data</h2>
-  <ul>
-    <li>Email address — required for account creation and authentication</li>
-    <li>Display name — optional, used for inspection records and sharing</li>
-    <li>Subscription tier — free, pro, or commercial</li>
-    <li>Referral code — auto-generated for the referral scheme</li>
-  </ul>
-  <h2>Apiary and hive data</h2>
-  <ul>
-    <li>Apiary names, locations (postcode or town), and GPS coordinates</li>
-    <li>Hive names, status, health scores, inspection records</li>
-    <li>Frame photos and hive cover photos</li>
-    <li>Varroa counts, harvest records, treatment logs</li>
-    <li>Voice inspection transcripts (processed via Whisper, stored as text)</li>
-  </ul>
-  <h2>What we do NOT collect</h2>
-  <ul>
-    <li>Payment card details — handled entirely by Apple App Store or Google Play</li>
-    <li>Device identifiers or advertising IDs</li>
-    <li>Browsing history or cross-site tracking data</li>
-    <li>Analytics or behavioural profiling data</li>
-  </ul>
+<h2>4. How We Use Your Data</h2>
+<table>
+  <tr><th>Data</th><th>How we use it</th><th>Lawful basis (UK GDPR Art. 6)</th></tr>
+  <tr><td>Email address</td><td>Account authentication, password reset, service notifications</td><td>Contract — necessary to provide the service</td></tr>
+  <tr><td>Apiary and hive data</td><td>Displaying your beekeeping records within the app</td><td>Contract — the core purpose of HiveKeeper</td></tr>
+  <tr><td>Inspection records and photos</td><td>Building your hive history, health scores, AI analysis (if requested)</td><td>Contract</td></tr>
+  <tr><td>GPS coordinates / postcode</td><td>Live weather data, nectar calendar, Asian Hornet Watch alerts, satellite map</td><td>Legitimate interests — core app functionality</td></tr>
+  <tr><td>Analytics events</td><td>Understanding how the app is used to improve features and fix bugs</td><td>Legitimate interests — product improvement. No personal content is logged.</td></tr>
+  <tr><td>Referral data</td><td>Tracking referral rewards and calculating incentives</td><td>Contract — part of the referral scheme you opt into</td></tr>
+  <tr><td>Policy consent timestamp</td><td>Recording that you have agreed to our policies</td><td>Legal obligation — UK GDPR compliance</td></tr>
+  <tr><td>SOS emergency contact</td><td>Sending an alert in an apiary emergency</td><td>Explicit consent — you provide this voluntarily</td></tr>
+</table>
+<p><strong>Data minimisation:</strong> We only collect data that is directly necessary for the purposes listed above. If we cannot justify collecting a piece of data, we do not collect it.</p>
 
-  <h1>4. How We Use Your Data</h1>
-  <p>We use your data only for the specific purposes set out below. We do not use it for any other purpose without your knowledge, and we do not sell it to third parties for marketing or advertising.</p>
-  <table>
-    <thead>
-      <tr><th>Data</th><th>How we use it</th><th>Lawful basis (UK GDPR Art. 6)</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Email address</td><td>Account authentication, password reset, service notifications</td><td>Contract — necessary to provide the service</td></tr>
-      <tr><td>Apiary and hive data</td><td>Displaying your beekeeping records within the app</td><td>Contract — the core purpose of HiveKeeper</td></tr>
-      <tr><td>Inspection records and photos</td><td>Building your hive history, health scores, AI analysis (if requested)</td><td>Contract</td></tr>
-      <tr><td>GPS coordinates / postcode</td><td>Live weather data, nectar calendar, Asian Hornet Watch alerts</td><td>Legitimate interests — core app functionality</td></tr>
-      <tr><td>Analytics events</td><td>Understanding how the app is used to improve features and fix bugs</td><td>Legitimate interests — product improvement. No personal content is logged.</td></tr>
-      <tr><td>Referral data</td><td>Tracking referral rewards and calculating incentives</td><td>Contract — part of the referral scheme you opt into</td></tr>
-      <tr><td>Policy consent timestamp</td><td>Recording that you have agreed to our policies</td><td>Legal obligation — UK GDPR compliance</td></tr>
-      <tr><td>SOS emergency contact</td><td>Sending an alert in an apiary emergency</td><td>Explicit consent — you provide this voluntarily</td></tr>
-    </tbody>
-  </table>
-  <div class="callout"><strong>Data minimisation:</strong> We only collect data that is directly necessary for the purposes listed above. If we cannot justify collecting a piece of data, we do not collect it.</div>
+<h2>5. Business Transfer</h2>
+<p>In the event of a sale, merger, acquisition or transfer of HiveKeeper or Culshaw Consulting Ltd, user data forms part of the business assets and may transfer to the acquiring party. We will notify all registered users by email before any transfer takes effect and give users a minimum of 30 days to export and delete their data. User data will never be sold as a standalone asset.</p>
 
-  <h1>5. Business Transfer</h1>
-  <div class="callout"><strong>Important:</strong> In the event of a sale, merger, acquisition or transfer of HiveKeeper or Culshaw Consulting Ltd, user data — including apiary records, account information and analytics — forms part of the business assets and may transfer to the acquiring party.</div>
-  <p>If such a transfer occurs, we will:</p>
-  <ul>
-    <li>Notify all registered users by email before the transfer takes effect</li>
-    <li>Ensure the acquiring party is bound by a data processing agreement that upholds the same or stronger standards as this policy</li>
-    <li>Give users a minimum of 30 days to export their data and delete their account before the transfer completes, if they do not wish their data to transfer</li>
-    <li>Publish an updated privacy and security policy under the new ownership before the effective date</li>
-  </ul>
-  <p>User data will never be sold as a standalone asset separately from the business — it transfers only as part of a legitimate business sale where the acquiring party intends to continue operating HiveKeeper as a service.</p>
+<h2>6. Authentication and Access Control</h2>
+<ul>
+  <li>Authentication is handled by Supabase Auth using email/password</li>
+  <li>Passwords are hashed using bcrypt — we never have access to plaintext passwords</li>
+  <li>Row Level Security (RLS) is enforced on all database tables — users can only access their own data</li>
+  <li>All admin accounts are protected with multi-factor authentication</li>
+  <li>API keys are stored as server-side secrets — never exposed in client code</li>
+</ul>
 
-  <h1>6. Authentication and Access Control</h1>
-  <ul>
-    <li>Authentication is handled by Supabase Auth using email/password or magic link</li>
-    <li>Passwords are hashed using bcrypt — we never have access to plaintext passwords</li>
-    <li>Row Level Security (RLS) is enforced on all database tables — users can only access their own data</li>
-    <li>All admin accounts are protected with multi-factor authentication</li>
-    <li>API keys (OpenAI, Anthropic) are stored as server-side secrets — never exposed in client code</li>
-  </ul>
+<h2>7. Data Storage and Encryption</h2>
+<ul>
+  <li>All data at rest is encrypted using AES-256 (managed by AWS/Supabase)</li>
+  <li>All data in transit uses TLS 1.2 or higher</li>
+  <li>Photos are stored in Supabase Storage with server-side encryption at rest</li>
+  <li>Local device data is stored in browser localStorage, subject to device-level security controls</li>
+  <li>Apiary map positions are stored locally and synced to Supabase — they are not shared with mapping providers</li>
+</ul>
 
-  <h1>7. Data Storage and Encryption</h1>
-  <ul>
-    <li>All data at rest is encrypted using AES-256 (managed by AWS/Supabase)</li>
-    <li>All data in transit uses TLS 1.2 or higher</li>
-    <li>Photos are stored in Supabase Storage with server-side encryption at rest</li>
-    <li>Local device data is stored in browser localStorage, subject to device-level security controls</li>
-  </ul>
+<h2>8. Data Retention</h2>
+<table>
+  <tr><th>Data type</th><th>Retention</th></tr>
+  <tr><td>User account and hive data</td><td>Until account deletion is requested</td></tr>
+  <tr><td>Frame and cover photos</td><td>Until deleted by user or account deletion</td></tr>
+  <tr><td>Voice recordings (OpenAI Whisper)</td><td>Processed in real time — not retained by OpenAI under API terms</td></tr>
+  <tr><td>Photo data sent for AI analysis</td><td>Processed in real time — not retained by Anthropic under API terms</td></tr>
+  <tr><td>SOS emergency contact details</td><td>Until updated or account deleted</td></tr>
+  <tr><td>Inactive accounts</td><td>Reviewed at 24 months inactivity — user contacted before any deletion</td></tr>
+</table>
 
-  <h1>8. Data Retention</h1>
-  <table>
-    <thead>
-      <tr><th>Data type</th><th>Retention</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>User account and hive data</td><td>Until account deletion is requested</td></tr>
-      <tr><td>Frame and cover photos</td><td>Until deleted by user or account deletion</td></tr>
-      <tr><td>Voice recordings (OpenAI Whisper)</td><td>Processed in real time — not retained by OpenAI under API terms</td></tr>
-      <tr><td>Photo data sent for AI analysis</td><td>Processed in real time — not retained by Anthropic under API terms</td></tr>
-      <tr><td>SOS emergency contact details</td><td>Until updated or account deleted</td></tr>
-      <tr><td>Inactive accounts</td><td>Reviewed at 24 months inactivity — user contacted before any deletion</td></tr>
-    </tbody>
-  </table>
+<h2>9. Your Rights (UK GDPR)</h2>
+<table>
+  <tr><th>Right</th><th>How to exercise</th></tr>
+  <tr><td>Access</td><td>Request a copy of all personal data held — we will provide a CSV export within 30 days</td></tr>
+  <tr><td>Rectification</td><td>Update data directly in the app, or contact us for corrections</td></tr>
+  <tr><td>Erasure</td><td>Use Settings → Start fresh, or email us for full account deletion</td></tr>
+  <tr><td>Data portability</td><td>Use Settings → Export all data to CSV at any time</td></tr>
+  <tr><td>Object to processing</td><td>Contact us — we will cease processing within 30 days where lawful</td></tr>
+  <tr><td>Withdraw consent</td><td>Delete your account at any time — no questions asked</td></tr>
+</table>
+<p>To exercise any right, contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a>. We will respond within 30 days.</p>
 
-  <h1>9. Your Rights (UK GDPR)</h1>
-  <p>You have the following rights. To exercise any of them, contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a>. We will respond within 30 days.</p>
-  <table>
-    <thead>
-      <tr><th>Right</th><th>How to exercise</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Access</td><td>Request a copy of all personal data held — we will provide a CSV export within 30 days</td></tr>
-      <tr><td>Rectification</td><td>Update data directly in the app, or contact us for corrections</td></tr>
-      <tr><td>Erasure</td><td>Use Settings → Start fresh, or email us for full account deletion</td></tr>
-      <tr><td>Data portability</td><td>Use Settings → Export all data to CSV at any time</td></tr>
-      <tr><td>Object to processing</td><td>Contact us — we will cease processing within 30 days where lawful</td></tr>
-      <tr><td>Withdraw consent</td><td>Delete your account at any time — no questions asked</td></tr>
-    </tbody>
-  </table>
+<h2>10. Data Breach Procedure</h2>
+<ul>
+  <li>In the event of a data breach, we will assess the risk within 72 hours of discovery</li>
+  <li>Where required, the ICO will be notified within 72 hours</li>
+  <li>Affected users will be notified directly by email without undue delay</li>
+  <li>A breach log is maintained internally regardless of whether external notification is required</li>
+</ul>
 
-  <h1>10. Data Breach Procedure</h1>
-  <ul>
-    <li>In the event of a data breach, we will assess the risk within 72 hours of discovery</li>
-    <li>Where required, the Information Commissioner's Office (ICO) will be notified within 72 hours</li>
-    <li>Affected users will be notified directly by email without undue delay where there is a high risk to their rights</li>
-    <li>A breach log is maintained internally regardless of whether external notification is required</li>
-  </ul>
+<h2>11. Referral Scheme Data</h2>
+<ul>
+  <li>Each user is assigned a unique referral code stored in their profile</li>
+  <li>Referral records link referrer and referred user by ID only — email addresses are never shared between users</li>
+  <li>Referral records are deleted when an account is deleted</li>
+</ul>
 
-  <h1>11. Referral Scheme Data</h1>
-  <ul>
-    <li>Each user is assigned a unique referral code stored in their profile</li>
-    <li>When a new user signs up via a referral link, a referral record is created linking the referrer and referred user by ID only — email addresses are never shared between users</li>
-    <li>Referral counts and conversion status are used solely to calculate rewards</li>
-    <li>Referral records are deleted when an account is deleted</li>
-    <li>Founding Beekeeper voucher redemption details will be collected separately when claimed and are not stored in the app</li>
-  </ul>
+<h2>12. Analytics</h2>
+<p>HiveKeeper uses its own privacy-first analytics system built on Supabase. No third-party analytics tools, tracking pixels, cookies or advertising networks are used.</p>
+<h3>What we record</h3>
+<ul>
+  <li>Screen views — which screens you visit within the app</li>
+  <li>Feature usage — inspections saved, photos uploaded, reports viewed</li>
+  <li>Paywall interactions — when you reach a plan limit</li>
+  <li>Onboarding completion — whether setup was completed successfully</li>
+</ul>
+<h3>What we do not record</h3>
+<ul>
+  <li>The content of your inspection notes or transcripts</li>
+  <li>Photos or any media</li>
+  <li>Your location beyond the apiary postcode you enter</li>
+  <li>Any data from outside the HiveKeeper app</li>
+</ul>
 
-  <h1>12. Analytics</h1>
-  <p>HiveKeeper uses its own privacy-first analytics system built on Supabase. No third-party analytics tools, tracking pixels, cookies or advertising networks are used.</p>
-  <h2>What we record</h2>
-  <ul>
-    <li>Screen views — which screens you visit within the app</li>
-    <li>Feature usage — inspections saved, photos uploaded, reports viewed, calendar subscriptions</li>
-    <li>Paywall interactions — when you reach a plan limit, to help us understand pricing</li>
-    <li>Upgrade intent — when you tap an upgrade button (not whether you complete payment)</li>
-    <li>Referral activity — when you copy your referral link or a new user signs up via your link</li>
-    <li>Onboarding completion — whether setup was completed successfully</li>
-  </ul>
-  <h2>What we do not record</h2>
-  <ul>
-    <li>The content of your inspection notes or transcripts</li>
-    <li>Photos or any media</li>
-    <li>Your location beyond the apiary postcode you enter</li>
-    <li>Any data from outside the HiveKeeper app</li>
-  </ul>
-  <p>Analytics events are stored in a Supabase table (<code>analytics_events</code>) accessible only to the data controller. They are used solely to improve the app and understand how features are used. They are never sold, shared or used for advertising.</p>
+<h2>13. Advertising</h2>
+<ul>
+  <li>Ads are displayed on Free and Pro tiers only — not on Commercial</li>
+  <li>Ads are served from a static curated list within the app — no external ad network, no tracking pixels, no behavioural targeting</li>
+</ul>
 
-  <h1>13. Advertising</h1>
-  <ul>
-    <li>Ads are displayed on Free and Pro tiers only — not on Commercial</li>
-    <li>Ads are served from a static curated list within the app — no external ad network, no tracking pixels, no behavioural targeting</li>
-    <li>Ad clicks open external URLs — HiveKeeper does not track click behaviour</li>
-  </ul>
+<h2>14. Children</h2>
+<p>HiveKeeper is not directed at children under the age of 13. We do not knowingly collect personal data from children. Contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a> if you believe a child has provided us with personal data.</p>
 
-  <h1>14. Children</h1>
-  <p>HiveKeeper is not directed at children under the age of 13. We do not knowingly collect personal data from children. Contact <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a> if you believe a child has provided us with personal data.</p>
+<h2>15. Changes to This Policy</h2>
+<p>This policy will be reviewed annually or when significant changes to our systems occur. Users will be notified of material changes via the app and/or by email. The current version is always available at <a href="https://gethivekeeper.com/security-policy.html">gethivekeeper.com/security-policy.html</a>.</p>
 
-  <h1>15. Changes to This Policy</h1>
-  <p>This policy will be reviewed annually or when significant changes to our systems occur. Users will be notified of material changes via the app and/or by email. The current version is always available at <a href="https://gethivekeeper.com/security-policy.html">gethivekeeper.com/security-policy.html</a>.</p>
-
-  <h1>16. Contact</h1>
-  <ul>
-    <li><strong>Data Controller:</strong> Chris Culshaw, Culshaw Consulting Ltd</li>
-    <li><strong>Email:</strong> <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a></li>
-    <li><strong>Website:</strong> <a href="https://culshaw.consulting">culshaw.consulting</a></li>
-    <li><strong>Company No:</strong> 16938477</li>
-    <li><strong>ICO:</strong> Registration pending on first revenue</li>
-  </ul>
+<h2>16. Contact and ICO Registration</h2>
+<p><strong>Data Controller:</strong> Chris Culshaw, Culshaw Consulting Ltd<br>
+<strong>Email:</strong> <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a><br>
+<strong>Website:</strong> <a href="https://culshaw.consulting">culshaw.consulting</a><br>
+<strong>Company No:</strong> 16938477</p>
+<p><div class="ico-badge">🛡️ ICO Registration No: CSN4273098</div></p>
+<p>Culshaw Consulting Ltd is registered with the Information Commissioner's Office under registration number <strong>CSN4273098</strong>.</p>
 
 </div>
 
-<footer>
-  <p><a href="/">gethivekeeper.com</a> &middot; <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a> &middot; <a href="https://culshaw.consulting">culshaw.consulting</a></p>
-  <p style="margin-top:6px;">HiveKeeper &middot; Culshaw Consulting Ltd &middot; Company No. 16938477 &middot; Version 1.0 &middot; 2 April 2026</p>
-</footer>
+<div class="footer">
+  <a href="https://gethivekeeper.com">gethivekeeper.com</a> · <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a> · <a href="https://culshaw.consulting">culshaw.consulting</a><br>
+  HiveKeeper · Culshaw Consulting Ltd · Company No. 16938477 · Version 1.1 · 16 April 2026
+</div>
 
 </body>
 </html>
