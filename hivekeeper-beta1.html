@@ -918,7 +918,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:09</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12975,7 +12975,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:09  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13537,7 +13537,7 @@ function renderLeafletHives(editMode) {
     var pos = getHiveLatLng(hive, rows, lat, lng, hives);
     var marker = L.marker(pos, {
       icon: makeHiveIcon(hive, editMode),
-      draggable: false,  // We handle drag ourselves for speed
+      draggable: !!editMode,
       title: hive.name
     });
 
@@ -13548,82 +13548,12 @@ function renderLeafletHives(editMode) {
       }
     });
 
-    if (editMode) {
-      // Direct touch drag — bypasses Leaflet's slow drag system
-      marker.on('add', function() {
-        var el = marker.getElement();
-        if (!el) return;
-        el.style.cursor = 'grab';
-        el.style.touchAction = 'none';
-        var dragging = false;
-
-        function onTouchStart(e) {
-          if (e.touches.length !== 1) return;
-          dragging = true;
-          el.style.cursor = 'grabbing';
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        function onTouchMove(e) {
-          if (!dragging || e.touches.length !== 1) return;
-          e.preventDefault();
-          e.stopPropagation();
-          var touch = e.touches[0];
-          var mapEl = document.getElementById('leaflet-map');
-          var rect = mapEl.getBoundingClientRect();
-          var x = touch.clientX - rect.left;
-          var y = touch.clientY - rect.top;
-          // Account for map rotation
-          if (_mapBearing !== 0) {
-            var cx = rect.width / 2, cy = rect.height / 2;
-            var rad = -_mapBearing * Math.PI / 180;
-            var dx = x - cx, dy = y - cy;
-            x = cx + dx * Math.cos(rad) - dy * Math.sin(rad);
-            y = cy + dx * Math.sin(rad) + dy * Math.cos(rad);
-          }
-          // Scale from visible container to full map div
-          var containerEl = mapEl.parentElement;
-          var scaleX = parseFloat(mapEl.style.width) / 100 || 1.6;
-          var containerW = containerEl ? containerEl.clientWidth : rect.width;
-          x = x * scaleX;
-          var ll = _leafletMap.containerPointToLatLng([x, y]);
-          marker.setLatLng(ll);
-        }
-        function onTouchEnd(e) {
-          if (!dragging) return;
-          dragging = false;
-          el.style.cursor = 'grab';
-          var ll = marker.getLatLng();
-          setMapPosition(hive.id, ll.lat, ll.lng);
-          try { pushMapPositions(); } catch(ex) {}
-        }
-
-        el.addEventListener('touchstart', onTouchStart, { passive: false });
-        el.addEventListener('touchmove', onTouchMove, { passive: false });
-        el.addEventListener('touchend', onTouchEnd);
-        // Mouse fallback for desktop
-        el.addEventListener('mousedown', function(e) {
-          dragging = true; e.preventDefault();
-          function onMouseMove(e) {
-            if (!dragging) return;
-            var mapEl = document.getElementById('leaflet-map');
-            var rect = mapEl.getBoundingClientRect();
-            var ll = _leafletMap.containerPointToLatLng([e.clientX - rect.left, e.clientY - rect.top]);
-            marker.setLatLng(ll);
-          }
-          function onMouseUp() {
-            dragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            var ll = marker.getLatLng();
-            setMapPosition(hive.id, ll.lat, ll.lng);
-            try { pushMapPositions(); } catch(ex) {}
-          }
-          document.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mouseup', onMouseUp);
-        });
-      });
-    }
+    // Drag end: save position
+    marker.on('dragend', function(e) {
+      var ll = e.target.getLatLng();
+      setMapPosition(hive.id, ll.lat, ll.lng);
+      try { pushMapPositions(); } catch(ex) {}
+    });
 
     marker.addTo(_leafletMap);
     _hiveMarkers[hive.id || hive._id] = marker;
@@ -13892,7 +13822,7 @@ async function pushMapPositions() {
     var payload = { id: apiary.id, user_id: uid, map_positions: positions, map_bearing: bearing };
     var sb = getSupabase();
     await sb.from('apiaries').upsert(payload, { onConflict: 'id' });
-  } catch(e) { console.warn('Map positions push failed:', e); showToast('⚠️ Map sync failed — check connection'); }
+  } catch(e) { console.warn('Map positions push failed:', e); }
 }
 
 async function pullMapPositions() {
@@ -13900,7 +13830,8 @@ async function pullMapPositions() {
     var uid = getUserId(); if (!uid) return;
     var apiary = getCurrentApiary(); if (!apiary || !apiary.id) return;
     var sb = getSupabase();
-    var { data } = await sb.from('apiaries').select('map_positions, map_bearing').eq('id', apiary.id).single();
+    var { data: rows } = await sb.from('apiaries').select('map_positions, map_bearing').eq('id', apiary.id).limit(1);
+    var data = rows && rows.length ? rows[0] : null;
     if (data && data.map_positions) {
       try {
         // Supabase returns jsonb as JS object already — no need to JSON.parse
