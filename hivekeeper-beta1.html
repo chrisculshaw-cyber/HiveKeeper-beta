@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 21:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:00</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1120,7 +1120,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div id="apiary-sub" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button><button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
@@ -2036,6 +2036,14 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
+      <!-- PROFILE NAME -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
+        <div style="display:flex;gap:8px;">
+          <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
+          <div id="settings-name-save-btn" onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
+        </div>
+      </div>
       <!-- PROFILE NAME -->
       <div style="margin-bottom:14px;">
         <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
@@ -7384,6 +7392,7 @@ function deleteHiveAndData(hiveId) {
     }
   } catch(e) {}
 
+  try{var _sb=getSupabase();var _uid=getUserId();if(_uid&&hiveId&&!hiveId.toString().startsWith('demo-')){_sb.from('hives').delete().eq('id',hiveId).eq('user_id',_uid);}var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');delete _p[hiveId];localStorage.setItem('hk_map_positions',JSON.stringify(_p));}catch(e){}
   showToast('Hive deleted');
   goTo('s-apiary');
   renderApiary();
@@ -11187,7 +11196,7 @@ function showUpgradeModal(reason) {
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
-function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {}
+function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { loadSettingsName(); } catch(e) {}
   var btn = document.getElementById('sign-out-btn');
   if (!btn) return;
   var name = '';
@@ -13005,7 +13014,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 21:55  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:00  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13502,6 +13511,33 @@ function initLeafletMap() {
       });
     }
   }catch(e){console.warn('Landmark render:',e);}
+    // Render landmarks on Leaflet map
+  try {
+    var _lmAll=loadLandmarks?loadLandmarks():[];
+    var _apLm2=getCurrentApiary();
+    if(_apLm2&&_lmAll.length&&_leafletMap){
+      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
+      _lmAll.forEach(function(lm){
+        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
+        var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
+        var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
+        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
+        var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
+          +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
+          +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
+          +'</div>';
+        var ic=L.divIcon({html:h,className:'',iconAnchor:[20,32],iconSize:[40,40]});
+        var mk=L.marker([lt,lg],{icon:ic,draggable:!!editMode});
+        if(editMode){(function(landmark){mk.on('dragend',function(e){
+          var ll=e.target.getLatLng();
+          var all=loadLandmarks();var idx=all.findIndex(function(x){return x.id===landmark.id;});
+          if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);}
+        });})(lm);}
+        mk.addTo(_leafletMap);
+      });
+    }
+  }catch(e){console.warn('Landmark render:',e);}
   updateMapHiveCount();
 }
 
@@ -13966,6 +14002,25 @@ function saveDisplayName() {
   input.style.background = '#f0fff0';
   var btn = document.getElementById('settings-name-save-btn');
   if (btn) { var orig=btn.innerHTML; btn.innerHTML='&#x2705;'; setTimeout(function(){ btn.innerHTML=orig; input.style.borderColor=''; input.style.background=''; },2500); }
+  showToast('Name saved');
+  try { syncUniversalHeaders('s-home'); } catch(e) {}
+}
+function loadSettingsName() {
+  var input = document.getElementById('settings-display-name');
+  if (input) input.value = localStorage.getItem('hk_display_name') || '';
+}
+
+
+function saveDisplayName() {
+  var input = document.getElementById('settings-display-name');
+  if (!input || !input.value.trim()) { showToast('Please enter your name'); return; }
+  var name = input.value.trim();
+  localStorage.setItem('hk_display_name', name);
+  var uid = getUserId();
+  if (uid) getSupabase().from('profiles').upsert({id:uid, display_name:name},{onConflict:'id'});
+  var btn = document.getElementById('settings-name-save-btn');
+  if (btn) { var orig=btn.innerHTML; btn.innerHTML='&#x2705;'; btn.style.background='#2E7D32'; setTimeout(function(){ btn.innerHTML=orig; btn.style.background='var(--forest)'; },2500); }
+  if (input) { input.style.borderColor='#2E7D32'; setTimeout(function(){ input.style.borderColor=''; },2500); }
   showToast('Name saved');
   try { syncUniversalHeaders('s-home'); } catch(e) {}
 }
