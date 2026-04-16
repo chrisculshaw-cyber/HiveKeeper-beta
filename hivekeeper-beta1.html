@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 02:40</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 10:14</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12971,7 +12971,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 02:40  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 10:14  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13448,12 +13448,21 @@ function initLeafletMap() {
   updateMapHiveCount();
 }
 
+function getMapPositions() {
+  try { return JSON.parse(localStorage.getItem('hk_map_positions') || '{}'); } catch(e) { return {}; }
+}
+function setMapPosition(hiveId, lat, lng) {
+  var pos = getMapPositions();
+  pos[hiveId] = { lat: lat, lng: lng };
+  localStorage.setItem('hk_map_positions', JSON.stringify(pos));
+}
+
 function getHiveLatLng(hive, rows, apiaryLat, apiaryLng, allHives) {
-  // Use directly stored position first
-  if (hive.map_lat && hive.map_lng) {
-    return [hive.map_lat, hive.map_lng];
-  }
-  // Grid fallback
+  // Always check dedicated positions store first — never overwritten by sync
+  var positions = getMapPositions();
+  var stored = positions[hive.id];
+  if (stored) return [stored.lat, stored.lng];
+  // Fall back to grid layout
   var rowIndex = 0;
   var rowNames = rows.map(function(r) { return r.name; });
   var ri = rowNames.indexOf(hive.row || 'Row 1');
@@ -13528,13 +13537,7 @@ function renderLeafletHives(editMode) {
     // Drag end: save new position
     marker.on('dragend', function(e) {
       var newLatLng = e.target.getLatLng();
-      var allH = loadHives();
-      var idx = allH.findIndex(function(h) { return h.id === hive.id; });
-      if (idx >= 0) {
-        allH[idx].map_lat = newLatLng.lat;
-        allH[idx].map_lng = newLatLng.lng;
-        saveHives(allH);
-      }
+      setMapPosition(hive.id, newLatLng.lat, newLatLng.lng);
     });
 
     marker.addTo(_leafletMap);
@@ -13757,22 +13760,21 @@ function loadMapBearing() {
 
 
 function saveHivePositions() {
-  var allH = loadHives();
   var saved = 0;
   Object.keys(_hiveMarkers).forEach(function(hiveId) {
     var marker = _hiveMarkers[hiveId];
     if (!marker) return;
     var ll = marker.getLatLng();
-    var idx = allH.findIndex(function(h) { return h.id === hiveId; });
-    if (idx >= 0) {
-      allH[idx].map_lat = ll.lat;
-      allH[idx].map_lng = ll.lng;
-      saved++;
-    }
+    setMapPosition(hiveId, ll.lat, ll.lng);
+    saved++;
   });
-  saveHives(allH);
+  // Show saved state on button
+  var msb = document.getElementById('map-save-btn');
+  if (msb) { msb.innerHTML = '✅ Saved'; msb.style.background = '#2E7D32'; }
+  setTimeout(function(){ 
+    if (msb) { msb.innerHTML = '💾 Save positions'; msb.style.background = 'var(--forest)'; }
+  }, 2000);
   showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved');
-  setTimeout(function(){ var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='none'; }, 2000);
 }
 
 
