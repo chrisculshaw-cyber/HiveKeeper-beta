@@ -1,0 +1,24 @@
+name: Upload IPA to App Store Connect
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Write API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "${{ secrets.APP_STORE_KEY_P8 }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_KEY_ID }}.p8
+
+      - name: Upload IPA to App Store Connect
+        run: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file "App (1).ipa" \
+            --apiKey "${{ secrets.APP_STORE_KEY_ID }}" \
+            --apiIssuer "${{ secrets.APP_STORE_ISSUER_ID }}"
