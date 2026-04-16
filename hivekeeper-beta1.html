@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 00:57</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 01:08</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1144,17 +1144,16 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
-      <!-- Map search box -->
-      <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:6px;width:calc(100% - 100px);">
-        <input id="map-search-input" type="text" placeholder="Search location…" style="flex:1;padding:8px 12px;border-radius:20px;border:none;font-size:12px;font-family:'Syne',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3);outline:none;" onkeydown="if(event.key==='Enter'){searchMapLocation();}"/>
-        <div onclick="searchMapLocation()" style="background:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0;">🔍</div>
+      <!-- Edit mode map controls (hidden until Apiary Settings) -->
+      <div id="map-edit-controls" style="display:none;">
+        <div style="position:absolute;top:10px;left:8px;right:8px;z-index:500;display:flex;gap:6px;">
+          <input id="map-search-input" type="text" placeholder="Search location or postcode…" style="flex:1;padding:8px 12px;border-radius:20px;border:none;font-size:12px;font-family:'Syne',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.3);outline:none;" onkeydown="if(event.key==='Enter'){searchMapLocation();}"/>
+          <div onclick="searchMapLocation()" style="background:var(--forest);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0;">🔍</div>
+        </div>
+        <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:60px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Use my GPS location">📍</div>
+        <div id="map-place-btn" onclick="togglePlaceMode()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:20px;padding:8px 14px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);">🐝 Place hives here</div>
       </div>
-      <!-- Locate me button -->
-      <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:60px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Use my GPS location">📍</div>
-      <!-- Place hives here button -->
-      <div id="map-place-btn" onclick="togglePlaceMode()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:20px;padding:8px 14px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);">🐝 Place hives here</div>
-      <div id="map-locate-status" style="position:absolute;bottom:112px;right:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:180px;text-align:center;"></div>
-      <!-- Tap mode banner -->
+      <div id="map-locate-status" style="position:absolute;bottom:60px;left:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:200px;text-align:center;"></div>
       <div id="map-tap-banner" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(31,56,18,0.9);color:white;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">Tap anywhere on the map to place your hives there</div>
       <!-- Map search bar -->
       <div style="position:absolute;top:10px;left:50px;right:10px;z-index:500;display:flex;gap:6px;">
@@ -1167,12 +1166,14 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
-      <div style="font-size:11px;color:var(--text-l);font-family:'Syne',sans-serif;letter-spacing:.02em;">Tap hive to open · Apiary Settings to move</div>
-      <div style="display:flex;gap:4px;align-items:center;">
-        <div onclick="rotateMapBy(-15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;" title="Rotate anticlockwise">↺</div>
-        <div id="map-bearing-display" style="font-size:10px;font-weight:700;color:var(--text-l);min-width:28px;text-align:center;">0°</div>
-        <div onclick="rotateMapBy(15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;" title="Rotate clockwise">↻</div>
-        <div onclick="resetMapRotation()" style="background:var(--wax);border-radius:20px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;margin-left:2px;">Reset</div>
+      <div style="font-size:11px;color:var(--text-l);font-family:'Syne',sans-serif;letter-spacing:.02em;" id="map-tip-text">Tap hive to open · Apiary Settings to reposition</div>
+      <div id="map-rotation-controls" style="display:none;flex-shrink:0;">
+        <div style="display:flex;gap:4px;align-items:center;">
+          <div onclick="rotateMapBy(-15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">↺</div>
+          <div id="map-bearing-display" style="font-size:10px;font-weight:700;color:var(--text-l);min-width:28px;text-align:center;">0°</div>
+          <div onclick="rotateMapBy(15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">↻</div>
+          <div onclick="resetMapRotation()" style="background:var(--wax);border-radius:20px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;margin-left:2px;">Reset</div>
+        </div>
       </div>
     </div>
     <!-- Row filter tabs — between canvas and hive list -->
@@ -6444,6 +6445,9 @@ function toggleEditLayout(){
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
+    var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
+    var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
+    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
     var dab=document.getElementById('map-drop-all-btn'); if(dab) dab.style.display='block';
     var mch=document.getElementById('map-crosshair'); if(mch) mch.style.display='block';
   } else {
@@ -6452,6 +6456,9 @@ function toggleEditLayout(){
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
+    var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='none';
+    var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
+    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Tap hive to open · Apiary Settings to reposition';
     var dab=document.getElementById('map-drop-all-btn'); if(dab) dab.style.display='none';
     var mch=document.getElementById('map-crosshair'); if(mch) mch.style.display='none';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
@@ -12964,7 +12971,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 00:57  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 01:08  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13477,7 +13484,9 @@ function hiveStatusColor(hive) {
 function makeHiveIcon(hive, editMode) {
   var col = hiveStatusColor(hive);
   var name = (hive.name || 'Hive').split(' ').slice(-2).join(' ');
-  var html = '<div style="background:' + col + ';border:2px solid white;border-radius:8px;padding:3px 5px;min-width:44px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';">' +
+  // Counter-rotate label so it stays upright when map rotates
+  var counterRot = (-_mapBearing) + 'deg';
+  var html = '<div style="background:' + col + ';border:2px solid white;border-radius:8px;padding:3px 5px;min-width:44px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';transform:rotate(' + counterRot + ');transform-origin:center center;">' +
     '<div style="font-size:16px;">🐝</div>' +
     '<div style="font-size:9px;font-weight:800;color:white;line-height:1.2;white-space:nowrap;">' + name + '</div>' +
     '</div>';
@@ -13492,8 +13501,9 @@ function renderLeafletHives(editMode) {
   var lat = apiary.lat ? parseFloat(apiary.lat) : MAP_DEFAULT_LAT;
   var lng = apiary.lng ? parseFloat(apiary.lng) : MAP_DEFAULT_LNG;
   var rows = loadRows ? loadRows() : [];
+  var _apiaryId = currentApiaryId || (getCurrentApiary() ? getCurrentApiary().id : null);
   var hives = loadHives().filter(function(h) {
-    return h.apiaryId === currentApiaryId && !h.hidden;
+    return (h.apiaryId === _apiaryId || (!h.apiaryId && !_apiaryId)) && !h.hidden;
   });
 
   // Remove old markers
@@ -13763,6 +13773,8 @@ function applyMapRotation() {
   if (el) el.style.transform = 'rotate(' + _mapBearing + 'deg)';
   var disp = document.getElementById('map-bearing-display');
   if (disp) disp.textContent = _mapBearing + '°';
+  // Re-render markers with updated counter-rotation
+  try { renderLeafletHives(window._editModeActive || false); } catch(e) {}
   // Save bearing for this apiary
   var apiary = getCurrentApiary();
   if (apiary && apiary.id) {
