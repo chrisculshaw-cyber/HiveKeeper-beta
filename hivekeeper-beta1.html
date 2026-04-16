@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:50</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:53</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1143,7 +1143,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="leaflet-map" style="width:160%;height:540px;margin:-100px -30%;transition:transform 0.3s ease;"></div>
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
-      <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--forest);color:white;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;">💾 Save positions</div>
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
       <!-- Save positions button — shown in edit mode -->
       <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;border:2px solid rgba(255,255,255,0.3);">💾 Save positions</div>
@@ -6445,7 +6444,6 @@ function toggleEditLayout(){
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
     try { setMapInteractive(true); } catch(e) {}
     var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
-    var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='block';
     var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='block';
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
@@ -12973,7 +12971,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:50  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:53  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13758,24 +13756,7 @@ function loadMapBearing() {
 
 
 
-function saveHivePositions() {
-  var allH = loadHives();
-  var saved = 0;
-  Object.keys(_hiveMarkers).forEach(function(hiveId) {
-    var marker = _hiveMarkers[hiveId];
-    if (!marker) return;
-    var ll = marker.getLatLng();
-    var idx = allH.findIndex(function(h) { return h.id === hiveId; });
-    if (idx >= 0) {
-      allH[idx].map_lat = ll.lat;
-      allH[idx].map_lng = ll.lng;
-      saved++;
-    }
-  });
-  saveHives(allH);
-  showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved');
-  setTimeout(function(){ var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='none'; }, 2000);
-}
+
 
 
 function setMapInteractive(interactive) {
