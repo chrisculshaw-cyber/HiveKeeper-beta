@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated 16 April 2026 at 13:55 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
+<!-- HiveKeeper · Last updated 16 April 2026 at 19:25 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 13:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 19:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2036,6 +2036,14 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
+      <!-- PROFILE NAME -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your profile</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="settings-display-name" type="text" placeholder="Your name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;background:var(--white);color:var(--text);" oninput="settingsNameChanged()"/>
+          <div id="settings-name-save" onclick="saveDisplayName()" style="display:none;background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;">Save</div>
+        </div>
+      </div>
       <!-- ACCOUNT -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
@@ -8490,7 +8498,7 @@ async function initAuth() {
         _currentUser = session.user;
         // Clean up the URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        onAuthSuccess();
+        onAuthSuccess(); try { getSupabase().from('profiles').select('display_name').eq('id', session.user.id).single().then(function(r){ if(r.data && r.data.display_name) localStorage.setItem('hk_display_name', r.data.display_name); }); } catch(e) {}
       } else if (event === 'SIGNED_OUT') {
         _currentUser = null;
         _currentSession = null;
@@ -11166,6 +11174,7 @@ function showUpgradeModal(reason) {
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
 function addSignOutToSettings() {
+  loadSettingsDisplayName();
   var btn = document.getElementById('sign-out-btn');
   if (!btn) return;
   var name = '';
@@ -12987,7 +12996,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 13:55  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 19:25  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13980,6 +13989,38 @@ function saveHivePositions() {
   hkLog('saved '+saved+' to localStorage');
   pushMapPositions().catch(function(e){ hkLog('push failed: '+e); });
   showToast('Saving '+saved+' positions...');
+}
+
+
+function settingsNameChanged() {
+  var btn = document.getElementById('settings-name-save');
+  if (btn) btn.style.display = 'block';
+}
+function saveDisplayName() {
+  var input = document.getElementById('settings-display-name');
+  if (!input) return;
+  var name = input.value.trim();
+  if (!name) { showToast('Please enter your name'); return; }
+  // Save to profile in Supabase
+  var uid = getUserId();
+  if (uid) {
+    var sb = getSupabase();
+    sb.from('profiles').upsert({ id: uid, display_name: name }, { onConflict: 'id' }).then(function(res) {
+      if (res.error) { showToast('Could not save name'); return; }
+      // Also update localStorage
+      localStorage.setItem('hk_display_name', name);
+      var btn = document.getElementById('settings-name-save');
+      if (btn) { btn.innerHTML = '✅ Saved'; setTimeout(function(){ btn.style.display='none'; btn.innerHTML='Save'; }, 2000); }
+      showToast('Name updated');
+      renderDashboard();
+    });
+  }
+}
+function loadSettingsDisplayName() {
+  var input = document.getElementById('settings-display-name');
+  if (!input) return;
+  var name = localStorage.getItem('hk_display_name') || '';
+  input.value = name;
 }
 
 </script>
