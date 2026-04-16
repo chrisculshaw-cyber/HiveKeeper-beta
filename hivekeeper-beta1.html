@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 02:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 02:40</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -9856,7 +9856,9 @@ async function pushHives() {
       map_x: h.mapX || 0, map_y: h.mapY || 0,
       is_hidden: h.isHidden || false, notes: h.notes || '',
       wax_moth: h.waxMoth || false, temper: h.temper || '',
-      cover_photo: h.coverPhoto || null
+      cover_photo: h.coverPhoto || null,
+      map_lat: h.map_lat || null,
+      map_lng: h.map_lng || null
     };
   });
   var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
@@ -12969,7 +12971,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 02:25  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 02:40  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13531,7 +13533,7 @@ function renderLeafletHives(editMode) {
       if (idx >= 0) {
         allH[idx].map_lat = newLatLng.lat;
         allH[idx].map_lng = newLatLng.lng;
-        localStorage.setItem('hk_hives_v2', JSON.stringify(allH));
+        saveHives(allH);
       }
     });
 
@@ -13768,7 +13770,7 @@ function saveHivePositions() {
       saved++;
     }
   });
-  localStorage.setItem('hk_hives_v2', JSON.stringify(allH));
+  saveHives(allH);
   showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved');
   setTimeout(function(){ var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='none'; }, 2000);
 }
