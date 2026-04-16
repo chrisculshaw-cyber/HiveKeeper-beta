@@ -13265,27 +13265,31 @@ function goToApiaryAlerts() {
 
       <!-- PRICING CARDS -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
-        <div style="border:1px solid var(--wax);border-radius:12px;padding:12px 6px;text-align:center;">
+        <div style="border:1px solid var(--wax);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:20px;">&#x1F331;</div>
           <div style="font-size:12px;font-weight:800;color:var(--text);margin:4px 0;">Free</div>
           <div style="font-size:15px;font-weight:800;color:var(--text);">&#xa3;0</div>
-          <div style="font-size:9px;color:var(--text-l);margin:4px 0 8px;">3 hives forever</div>
-          <div style="background:var(--wax);border-radius:8px;padding:7px 4px;font-size:10px;color:var(--text-l);font-weight:700;">Your plan</div>
+          <div style="font-size:9px;color:var(--text-l);margin:4px 0;min-height:14px;">3 hives</div>
+          <div style="flex:1;"></div>
+          <div style="width:100%;background:var(--wax);border-radius:8px;padding:7px 4px;font-size:10px;color:var(--text-l);font-weight:700;margin-top:8px;">Your plan</div>
         </div>
-        <div style="border:2px solid #185FA5;border-radius:12px;padding:12px 6px;text-align:center;background:#F0F6FF;">
+        <div style="border:2px solid #185FA5;border-radius:12px;padding:12px 6px;text-align:center;background:#F0F6FF;display:flex;flex-direction:column;align-items:center;">
           <div style="font-size:9px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:2px 6px;margin-bottom:4px;display:inline-block;">POPULAR</div>
           <div style="font-size:20px;">&#x1F41D;</div>
           <div style="font-size:12px;font-weight:800;color:#185FA5;margin:4px 0;">Pro</div>
           <div style="font-size:15px;font-weight:800;color:#185FA5;">&#xa3;3.99<span style="font-size:9px;">/mo</span></div>
-          <div style="font-size:9px;color:#185FA5;opacity:0.7;margin:4px 0 8px;">&#xa3;39.99/yr</div>
-          <button onclick="handleUpgrade('pro')" style="width:100%;background:#185FA5;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;">Upgrade &#x2192;</button>
+          <div style="font-size:9px;color:#185FA5;opacity:0.7;margin:4px 0;min-height:14px;">&#xa3;39.99/yr</div>
+          <div style="flex:1;"></div>
+          <button onclick="handleUpgrade('pro')" style="width:100%;background:#185FA5;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
-        <div style="border:2px solid #3B6D11;border-radius:12px;padding:12px 6px;text-align:center;background:#F2F9EA;">
+        <div style="border:2px solid #3B6D11;border-radius:12px;padding:12px 6px;text-align:center;background:#F2F9EA;display:flex;flex-direction:column;align-items:center;">
+          <div style="font-size:9px;color:transparent;border-radius:6px;padding:2px 6px;margin-bottom:4px;display:inline-block;">.</div>
           <div style="font-size:20px;">&#x1F36F;</div>
           <div style="font-size:12px;font-weight:800;color:#3B6D11;margin:4px 0;">Commercial</div>
           <div style="font-size:15px;font-weight:800;color:#3B6D11;">&#xa3;19.99<span style="font-size:9px;">/mo</span></div>
-          <div style="font-size:9px;color:#3B6D11;opacity:0.7;margin:4px 0 8px;">&#xa3;199.99/yr</div>
-          <button onclick="handleUpgrade('commercial')" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;">Upgrade &#x2192;</button>
+          <div style="font-size:9px;color:#3B6D11;opacity:0.7;margin:4px 0;min-height:14px;">&#xa3;199.99/yr</div>
+          <div style="flex:1;"></div>
+          <button onclick="handleUpgrade('commercial')" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
       </div>
 
