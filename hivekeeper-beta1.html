@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 01:42</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 01:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1144,6 +1144,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
+      <!-- Touch blocker overlay for locked mode -->
+      <div id="map-touch-blocker" style="position:absolute;inset:0;z-index:400;background:transparent;display:block;" ontouchstart="return false;" onmousedown="return false;"></div>
       <!-- Edit mode map controls (hidden until Apiary Settings) -->
       <div id="map-edit-controls" style="display:none;">
         <div style="position:absolute;top:10px;left:8px;right:8px;z-index:500;display:flex;gap:6px;">
@@ -1151,6 +1153,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div onclick="searchMapLocation()" style="background:var(--forest);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0;">🔍</div>
         </div>
         <div id="map-locate-btn" onclick="locateMeOnMap()" style="position:absolute;bottom:60px;right:12px;background:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);" title="Use my GPS location">📍</div>
+        <div onclick="saveHivePositions()" style="position:absolute;top:56px;right:12px;background:var(--forest);color:white;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;">💾 Save positions</div>
         <div id="map-place-btn" onclick="togglePlaceMode()" style="position:absolute;bottom:12px;right:12px;background:white;border-radius:20px;padding:8px 14px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;border:2px solid rgba(31,56,18,0.3);">🐝 Place hives here</div>
       </div>
       <div id="map-locate-status" style="position:absolute;bottom:60px;left:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:200px;text-align:center;"></div>
@@ -6439,6 +6442,7 @@ function toggleEditLayout(){
     showToast('Drag hives to reposition');
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
     try { setMapInteractive(true); } catch(e) {}
+    var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
@@ -12961,7 +12965,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 01:42  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 01:50  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13439,6 +13443,11 @@ function initLeafletMap() {
 }
 
 function getHiveLatLng(hive, rows, apiaryLat, apiaryLng, allHives) {
+  // Check dedicated position store first (survives Supabase sync)
+  var storedPos = loadHivePosition(hive.id || hive._id);
+  if (storedPos) {
+    return [storedPos.lat, storedPos.lng];
+  }
   if (hive.mapLat && hive.mapLng) {
     return [parseFloat(hive.mapLat), parseFloat(hive.mapLng)];
   }
@@ -13521,11 +13530,8 @@ function renderLeafletHives(editMode) {
     // Drag end: save new position
     marker.on('dragend', function(e) {
       var newLatLng = e.target.getLatLng();
-      hive.mapLat = newLatLng.lat;
-      hive.mapLng = newLatLng.lng;
-      var allHives = loadHives();
-      var idx = allHives.findIndex(function(h) { return (h.id || h._id) === (hive.id || hive._id); });
-      if (idx >= 0) { allHives[idx] = hive; saveHives(allHives); }
+      // Save to dedicated position store (persists across Supabase syncs)
+      saveHivePosition(hive.id || hive._id, newLatLng.lat, newLatLng.lng);
     });
 
     marker.addTo(_leafletMap);
@@ -13743,6 +13749,38 @@ function loadMapBearing() {
     _mapBearing = 0;
   }
   applyMapRotation();
+}
+
+// ── HIVE POSITION STORAGE (separate from Supabase sync) ──────────
+var HK_POS_KEY = 'hk_hive_positions_v1';
+
+function saveHivePosition(hiveId, lat, lng) {
+  try {
+    var positions = JSON.parse(localStorage.getItem(HK_POS_KEY) || '{}');
+    positions[hiveId] = { lat: lat, lng: lng };
+    localStorage.setItem(HK_POS_KEY, JSON.stringify(positions));
+  } catch(e) {}
+}
+
+function loadHivePosition(hiveId) {
+  try {
+    var positions = JSON.parse(localStorage.getItem(HK_POS_KEY) || '{}');
+    return positions[hiveId] || null;
+  } catch(e) { return null; }
+}
+
+function saveHivePositions() {
+  // Save all current marker positions
+  var saved = 0;
+  Object.keys(_hiveMarkers).forEach(function(hiveId) {
+    var marker = _hiveMarkers[hiveId];
+    if (marker) {
+      var ll = marker.getLatLng();
+      saveHivePosition(hiveId, ll.lat, ll.lng);
+      saved++;
+    }
+  });
+  showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved');
 }
 
 function setMapInteractive(interactive) {
