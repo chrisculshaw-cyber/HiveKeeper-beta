@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 01:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 01:32</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1155,13 +1155,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div id="map-locate-status" style="position:absolute;bottom:60px;left:8px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;display:none;z-index:500;backdrop-filter:blur(4px);max-width:200px;text-align:center;"></div>
       <div id="map-tap-banner" style="display:none;position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:500;background:rgba(31,56,18,0.9);color:white;border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.3);">Tap anywhere on the map to place your hives there</div>
-      <!-- Map search bar -->
-      <div style="position:absolute;top:10px;left:50px;right:10px;z-index:500;display:flex;gap:6px;">
-        <input id="map-search-input" type="text" placeholder="Search location…" style="flex:1;padding:8px 12px;border-radius:20px;border:none;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.25);font-family:'Syne',sans-serif;outline:none;" onkeydown="if(event.key==='Enter')mapSearchGo()"/>
-        <button onclick="mapSearchGo()" style="background:var(--forest);color:white;border:none;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.25);white-space:nowrap;font-family:'Syne',sans-serif;">Go</button>
-      </div>
-      <!-- Drop all hives here button - only shown in edit mode -->
-      <div id="map-drop-all-btn" onclick="dropAllHivesHere()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--honey);color:white;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;font-family:'Syne',sans-serif;">🐝 Drop all hives here</div>
       <!-- Map crosshair for drop target -->
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
@@ -6449,8 +6442,6 @@ function toggleEditLayout(){
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
-    var dab=document.getElementById('map-drop-all-btn'); if(dab) dab.style.display='block';
-    var mch=document.getElementById('map-crosshair'); if(mch) mch.style.display='block';
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
     if(banner) banner.classList.remove('show');
@@ -6460,8 +6451,6 @@ function toggleEditLayout(){
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='none';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Tap hive to open · Apiary Settings to reposition';
-    var dab=document.getElementById('map-drop-all-btn'); if(dab) dab.style.display='none';
-    var mch=document.getElementById('map-crosshair'); if(mch) mch.style.display='none';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
     var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='none';
@@ -12972,7 +12961,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 01:15  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 01:32  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13367,8 +13356,8 @@ var MAP_DEFAULT_LNG = -0.9;
 var MAP_DEFAULT_ZOOM = 19;
 
 // Metres per hive spacing in grid layout
-var ROW_SPACING_M = 12;
-var HIVE_SPACING_M = 4;
+var ROW_SPACING_M = 15;
+var HIVE_SPACING_M = 5;
 
 function initLeafletMap() {
   var container = document.getElementById('leaflet-map');
@@ -13393,8 +13382,11 @@ function initLeafletMap() {
     zoom: MAP_DEFAULT_ZOOM,
     zoomControl: false,
     attributionControl: true,
-    rotate: true,
-    rotateControl: false,
+    dragging: false,
+    touchZoom: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false,
+    keyboard: false,
   });
 
   // Satellite tile layer — ESRI World Imagery (free, no API key)
@@ -13462,8 +13454,10 @@ function getHiveLatLng(hive, rows, apiaryLat, apiaryLng) {
   // Convert to metres offset from apiary centre
   // Rows run west-east, stacked south-north
   var totalRows = Math.max(rows.length, 1);
+  // Count how many hives are in this row for centering
+  var hivesInRow = rows.length > 0 ? Math.max(1, Math.round(24 / Math.max(rows.length, 1))) : 6;
   var northOffset = (rowIndex - (totalRows - 1) / 2) * ROW_SPACING_M;
-  var eastOffset  = (hiveIndex - 2) * HIVE_SPACING_M;
+  var eastOffset  = (hiveIndex - (hivesInRow - 1) / 2) * HIVE_SPACING_M;
 
   // Convert metres to lat/lng delta (approx)
   var dLat = northOffset / 111320;
@@ -13487,11 +13481,11 @@ function makeHiveIcon(hive, editMode) {
   var name = (hive.name || 'Hive').split(' ').slice(-2).join(' ');
   // Counter-rotate label so it stays upright when map rotates
   var counterRot = (-_mapBearing) + 'deg';
-  var html = '<div style="background:' + col + ';border:2px solid white;border-radius:8px;padding:3px 5px;min-width:44px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';transform:rotate(' + counterRot + ');transform-origin:center center;">' +
-    '<div style="font-size:16px;">🐝</div>' +
-    '<div style="font-size:9px;font-weight:800;color:white;line-height:1.2;white-space:nowrap;">' + name + '</div>' +
+  var html = '<div style="background:' + col + ';border:1.5px solid white;border-radius:6px;padding:2px 4px;min-width:32px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';transform:rotate(' + counterRot + ');transform-origin:center center;">' +
+    '<div style="font-size:11px;line-height:1;">🐝</div>' +
+    '<div style="font-size:7px;font-weight:800;color:white;line-height:1.2;white-space:nowrap;">' + name + '</div>' +
     '</div>';
-  return L.divIcon({ html: html, className: '', iconAnchor: [28, 20], iconSize: [56, 42], popupAnchor: [0, -22] });
+  return L.divIcon({ html: html, className: '', iconAnchor: [20, 14], iconSize: [40, 28], popupAnchor: [0, -16] });
 }
 
 function renderLeafletHives(editMode) {
@@ -13579,41 +13573,6 @@ function mapSearchGo() {
     });
 }
 
-function dropAllHivesHere() {
-  if (!_leafletMap) return;
-  var centre = _leafletMap.getCenter();
-  var lat = centre.lat;
-  var lng = centre.lng;
-
-  // Save as apiary location
-  var apiary = getCurrentApiary();
-  if (apiary && apiary.id) {
-    saveApiaryLocation(apiary.id, lat, lng, apiary.location || 'My Apiary');
-  }
-
-  // Clear stored mapLat/mapLng for all hives in this apiary so they regenerate from grid
-  var allHives = loadHives();
-  var rows = loadRows ? loadRows() : [];
-  allHives.forEach(function(h) {
-    if (h.apiaryId !== currentApiaryId) return;
-    // Calculate grid position relative to new centre
-    var ri = 0;
-    var rowNames = rows.map(function(r) { return r.name; });
-    var ri2 = rowNames.indexOf(h.row || 'Row 1');
-    if (ri2 >= 0) ri = ri2;
-    var hiveIdx = (h.position || 1) - 1;
-    var totalRows = Math.max(rows.length, 1);
-    var northOffset = (ri - (totalRows - 1) / 2) * ROW_SPACING_M;
-    var eastOffset  = (hiveIdx - 2) * HIVE_SPACING_M;
-    var dLat = northOffset / 111320;
-    var dLng = eastOffset  / (111320 * Math.cos(lat * Math.PI / 180));
-    h.mapLat = lat + dLat;
-    h.mapLng = lng + dLng;
-  });
-  saveHives(allHives);
-  renderLeafletHives(true); // Re-render in edit mode
-  showToast('Hives placed — drag to fine-tune positions');
-}
 
 function searchMapLocation() {
   var input = document.getElementById('map-search-input');
@@ -13731,17 +13690,10 @@ function locateMeOnMap() {
         weight: 3
       }).addTo(_leafletMap);
 
-      // Save as apiary location
-      var apiary = getCurrentApiary();
-      if (apiary && apiary.id) {
-        saveApiaryLocation(apiary.id, lat, lng, apiary.location || 'My Apiary');
-        // Re-render hive markers at new location
-        setTimeout(function() { renderLeafletHives(window._editModeActive || false); }, 300);
-        if (statusEl) { statusEl.textContent = '✅ Apiary location saved · ' + accuracy + 'm accuracy'; statusEl.style.display = 'block'; }
-        showToast('Location saved — drag hives to position them');
-      } else {
-        if (statusEl) { statusEl.textContent = '📍 Located · ' + accuracy + 'm accuracy'; statusEl.style.display = 'block'; }
-      }
+      // Just centre the map — don't move hives automatically
+      // User must tap "Place hives here" to confirm
+      if (statusEl) { statusEl.textContent = '✅ Located · ' + accuracy + 'm accuracy — tap "Place hives here" to drop hives'; statusEl.style.display = 'block'; }
+      showToast('Tap "Place hives here" to drop your hives at this spot');
       if (btn) btn.style.opacity = '1';
       // Hide status after 4s
       setTimeout(function() { if (statusEl) statusEl.style.display = 'none'; }, 4000);
