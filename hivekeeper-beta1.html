@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 00:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 00:22</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12957,7 +12957,7 @@ function goToApiaryAlerts() {
 
   <!-- VERSION FOOTER -->
   <div id="trial-footer-banner" onclick="openPricingModal('footer_banner')" style="display:none;position:fixed;bottom:calc(var(--nav-h, 60px) + 34px);left:0;right:0;z-index:49;background:#C8730A;color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-align:center;padding:5px 14px;line-height:1.4;cursor:pointer;"></div>
-  <div id="version-footer" style="position:fixed;bottom:var(--nav-h,80px);left:0;right:0;z-index:50;pointer-events:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;text-align:center;letter-spacing:.02em;"></div>
+  <div id="trial-footer-banner" style="position:absolute;bottom:var(--nav-h);left:0;right:0;z-index:500;pointer-events:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;text-align:center;letter-spacing:.02em;"></div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13250,34 +13250,38 @@ function goToApiaryAlerts() {
       </div>
 
       <!-- PRICING CARDS -->
-      <div style="display:table;width:100%;border-collapse:separate;border-spacing:8px;margin:0 -8px 4px;">
-        <div style="display:table-row;">
-          <div style="display:table-cell;width:33%;border:1px solid var(--wax);border-radius:12px;padding:12px 6px;text-align:center;vertical-align:bottom;">
-            <div style="font-size:20px;">&#x1F331;</div>
-            <div style="font-size:12px;font-weight:800;color:var(--text);margin:4px 0;">Free</div>
-            <div style="font-size:15px;font-weight:800;color:var(--text);">&#xa3;0</div>
-            <div style="font-size:9px;color:var(--text-l);margin:4px 0 8px;min-height:13px;">3 hives</div>
-            <div style="background:var(--wax);border-radius:8px;padding:7px 4px;font-size:10px;color:var(--text-l);font-weight:700;">Your plan</div>
-          </div>
-          <div style="display:table-cell;width:33%;border:2px solid #185FA5;border-radius:12px;padding:12px 6px;text-align:center;background:#F0F6FF;vertical-align:bottom;">
-            <div style="font-size:9px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:2px 6px;margin-bottom:4px;display:inline-block;">POPULAR</div>
-            <div style="font-size:20px;">&#x1F41D;</div>
-            <div style="font-size:12px;font-weight:800;color:#185FA5;margin:4px 0;">Pro</div>
-            <div style="font-size:15px;font-weight:800;color:#185FA5;">&#xa3;3.99<span style="font-size:9px;">/mo</span></div>
-            <div style="font-size:9px;color:#185FA5;opacity:0.7;margin:4px 0 8px;min-height:13px;">&#xa3;39.99/yr</div>
-            <button onclick="handleUpgrade('pro')" style="width:100%;background:#185FA5;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;">Upgrade &#x2192;</button>
-          </div>
-          <div style="display:table-cell;width:33%;border:2px solid #3B6D11;border-radius:12px;padding:12px 6px;text-align:center;background:#F2F9EA;vertical-align:bottom;">
-            <div style="font-size:9px;color:transparent;padding:2px 6px;margin-bottom:4px;display:inline-block;">.</div>
-            <div style="font-size:20px;">&#x1F36F;</div>
-            <div style="font-size:12px;font-weight:800;color:#3B6D11;margin:4px 0;">Commercial</div>
-            <div style="font-size:15px;font-weight:800;color:#3B6D11;">&#xa3;19.99<span style="font-size:9px;">/mo</span></div>
-            <div style="font-size:9px;color:#3B6D11;opacity:0.7;margin:4px 0 8px;min-height:13px;">&#xa3;199.99/yr</div>
-            <button onclick="handleUpgrade('commercial')" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:8px;padding:8px 2px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;">Upgrade &#x2192;</button>
-          </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;">
+        <!-- Free -->
+        <div style="flex:1;border:1px solid var(--wax);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;">
+          <div style="font-size:20px;">&#x1F331;</div>
+          <div style="font-size:12px;font-weight:800;color:var(--text);margin:4px 0;">Free</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text);">&#xa3;0</div>
+          <div style="font-size:9px;color:var(--text-l);margin:4px 0;min-height:13px;">3 hives forever</div>
+          <div style="flex:1;"></div>
+          <div style="background:var(--wax);border-radius:8px;padding:8px 4px;font-size:10px;color:var(--text-l);font-weight:700;margin-top:8px;">Your plan</div>
+        </div>
+        <!-- Pro -->
+        <div style="flex:1;border:2px solid #185FA5;border-radius:12px;padding:12px 6px;text-align:center;background:#F0F6FF;display:flex;flex-direction:column;">
+          <div style="font-size:9px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:2px 5px;margin-bottom:4px;display:inline-block;align-self:center;">POPULAR</div>
+          <div style="font-size:20px;">&#x1F41D;</div>
+          <div style="font-size:12px;font-weight:800;color:#185FA5;margin:4px 0;">Pro</div>
+          <div style="font-size:15px;font-weight:800;color:#185FA5;">&#xa3;3.99<span style="font-size:9px;">/mo</span></div>
+          <div style="font-size:9px;color:#185FA5;opacity:0.7;margin:4px 0;min-height:13px;">&#xa3;39.99/yr</div>
+          <div style="flex:1;"></div>
+          <button onclick="handleUpgrade('pro')" style="width:100%;background:#185FA5;color:white;border:none;border-radius:8px;padding:8px 4px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
+        </div>
+        <!-- Commercial -->
+        <div style="flex:1;border:2px solid #3B6D11;border-radius:12px;padding:12px 6px;text-align:center;background:#F2F9EA;display:flex;flex-direction:column;">
+          <div style="font-size:9px;color:transparent;padding:2px 5px;margin-bottom:4px;display:inline-block;align-self:center;">.</div>
+          <div style="font-size:20px;">&#x1F36F;</div>
+          <div style="font-size:12px;font-weight:800;color:#3B6D11;margin:4px 0;">Commercial</div>
+          <div style="font-size:15px;font-weight:800;color:#3B6D11;">&#xa3;19.99<span style="font-size:9px;">/mo</span></div>
+          <div style="font-size:9px;color:#3B6D11;opacity:0.7;margin:4px 0;min-height:13px;">&#xa3;199.99/yr</div>
+          <div style="flex:1;"></div>
+          <button onclick="handleUpgrade('commercial')" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:8px;padding:8px 4px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
       </div>
-
+      
       <div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.6;padding-bottom:4px;">Cancel anytime &middot; Billed via Apple / Google &middot; Prices inc. VAT</div>
       <button onclick="closeModalEl('modal-pricing')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Maybe later</button>
     </div>
@@ -14059,8 +14063,14 @@ function renderTrialBanners() {
     b.textContent = dLeft <= 3 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' left — your bees need you! Tap to upgrade' :
                     dLeft <= 7 ? dLeft + ' days of free trial left — tap to upgrade' :
                     'Free trial: ' + dLeft + ' days remaining — tap to upgrade';
+    b.style.cursor = 'pointer';
+    b.style.pointerEvents = 'all';
+    b.onclick = function(){ try{ openPricingModal('trial_banner'); }catch(e){} };
   } else {
-    b.style.display = 'none';
+    b.style.display = 'block';
+    b.style.background = '#C62828';
+    b.textContent = 'Your free trial has ended — tap to upgrade and keep your hives';
+    b.onclick = function(){ try{ openPricingModal('trial_expired'); }catch(e){} };
     if (!localStorage.getItem('hk_trial_expired_shown')) {
       localStorage.setItem('hk_trial_expired_shown', '1');
       setTimeout(function(){ try { openPricingModal('trial_expired'); } catch(e) {} }, 1500);
