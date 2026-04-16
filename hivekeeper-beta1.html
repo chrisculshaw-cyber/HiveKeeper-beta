@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:07</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2036,14 +2036,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
-      <!-- PROFILE NAME -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
-        <div style="display:flex;gap:8px;">
-          <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
-          <div id="settings-name-save-btn" onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
-        </div>
-      </div>
       <!-- PROFILE NAME -->
       <div style="margin-bottom:14px;">
         <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
@@ -5449,95 +5441,34 @@ var highlightedHiveId=null, highlightAnim=null, highlightFrame=0;
 function highlightHiveOnMap(hiveId) {
   if(highlightedHiveId===hiveId){ clearHighlight(); currentHiveId=hiveId; goTo('s-hive'); return; }
   clearHighlight(); highlightedHiveId=hiveId;
-  var mapWrap=document.querySelector('.map-canvas-wrap');
-  if(mapWrap) mapWrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // Highlight in hive list
   document.querySelectorAll('.hive-list-item').forEach(function(el){
     el.classList.remove('highlighted');
     if(el.dataset.hiveid===hiveId) el.classList.add('highlighted');
   });
-  highlightFrame=0;
-  if(highlightAnim) clearInterval(highlightAnim);
-  highlightAnim=setInterval(function(){
-    highlightFrame++;
-    renderMapWithHighlight(hiveId,highlightFrame);
-    if(highlightFrame>30) clearHighlight();
-  },100);
+  // Pulse the Leaflet marker
+  var marker = _hiveMarkers ? _hiveMarkers[hiveId] : null;
+  if(marker) {
+    var el = marker.getElement();
+    if(el) {
+      var pulseCount = 0;
+      var pulseInterval = setInterval(function(){
+        pulseCount++;
+        el.style.transform = (pulseCount%2===0) ? 'scale(1.3)' : 'scale(1)';
+        el.style.transition = 'transform 0.15s';
+        if(pulseCount >= 6) { clearInterval(pulseInterval); el.style.transform = ''; clearHighlight(); }
+      }, 150);
+    }
+  }
+  setTimeout(function(){ clearHighlight(); }, 2000);
 }
 function clearHighlight(){
   if(highlightAnim){clearInterval(highlightAnim);highlightAnim=null;}
   highlightedHiveId=null; highlightFrame=0;
   document.querySelectorAll('.hive-list-item').forEach(function(el){el.classList.remove('highlighted');});
-  renderMap();
 }
-function renderMapWithHighlight(hiveId, frame) {
-  var canvas = document.getElementById('map-canvas');
-  if (!canvas || !canvas.width || canvas.width < 10) {
-    renderMap(); return;
-  }
+function renderMapWithHighlight(hiveId, frame) { /* replaced by Leaflet pulse */ }
 
-  // Use the SAME dimensions renderMap used — do not recalculate
-  var W = canvas.width, H = canvas.height;
-
-  // If we have stored positions from renderMap, use those directly for the rings
-  var positions = canvas._hivePositions || [];
-  var targetPos = null;
-  for (var p = 0; p < positions.length; p++) {
-    if (positions[p].id === hiveId) { targetPos = positions[p]; break; }
-  }
-
-  // Redraw the full map using renderMap (preserves exact same positions)
-  // then draw the pulse rings on top
-  var ctx = canvas.getContext('2d');
-  if (!ctx) return;
-
-  // Re-execute renderMap's drawing logic with the same W/H
-  // to avoid any position drift
-  renderMap();
-
-  // Now draw pulse rings on top at the stored position
-  if (targetPos) {
-    var pulse = Math.abs(Math.sin(frame * 0.35));
-    var ringR = 14 + pulse * 12;
-
-    // Outer fading ring
-    ctx.save();
-    ctx.strokeStyle = 'rgba(200,115,10,' + (0.85 - pulse*0.5) + ')';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(targetPos.x, targetPos.y, ringR, 0, Math.PI*2); ctx.stroke();
-
-    // Second larger ring
-    ctx.strokeStyle = 'rgba(200,115,10,' + (0.4 - pulse*0.25) + ')';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(targetPos.x, targetPos.y, ringR + 10, 0, Math.PI*2); ctx.stroke();
-
-    // Redraw the target hive marker on top so it stays bright
-    var sz = 24;
-    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 2;
-    ctx.fillStyle = '#E8960C';
-    if (ctx.roundRect) {
-      ctx.roundRect(targetPos.x-sz/2, targetPos.y-sz/2, sz, sz, 4);
-    } else {
-      ctx.beginPath(); ctx.rect(targetPos.x-sz/2, targetPos.y-sz/2, sz, sz);
-    }
-    ctx.fill();
-    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 2.5;
-    if (ctx.roundRect) {
-      ctx.roundRect(targetPos.x-sz/2, targetPos.y-sz/2, sz, sz, 4);
-    } else {
-      ctx.rect(targetPos.x-sz/2, targetPos.y-sz/2, sz, sz);
-    }
-    ctx.stroke();
-    ctx.restore();
-
-    // Hive label
-    ctx.font = 'bold 9px sans-serif'; ctx.fillStyle = 'white';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    var hives = loadHives();
-    var hive = hives.find(function(h){ return h.id === hiveId; });
-    if (hive) ctx.fillText('H'+hive.num, targetPos.x, targetPos.y);
-  }
-}
 function getHiveCanvasPos(hive,W,H){
   var LABEL_W=64, MAP_X=LABEL_W, MAP_W=W-LABEL_W;
   var ROW_Y={'Row 1':0.84,'Row 2':0.65,'Row 3':0.46,'Row 4':0.27};
@@ -7392,11 +7323,10 @@ function deleteHiveAndData(hiveId) {
     }
   } catch(e) {}
 
-  try{var _sb=getSupabase();var _uid=getUserId();if(_uid&&hiveId&&!hiveId.toString().startsWith('demo-')){_sb.from('hives').delete().eq('id',hiveId).eq('user_id',_uid);}var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');delete _p[hiveId];localStorage.setItem('hk_map_positions',JSON.stringify(_p));}catch(e){}
   showToast('Hive deleted');
   goTo('s-apiary');
   renderApiary();
-  renderMap();
+  try { renderLeafletHives(false); } catch(e) {}
   renderDashboard();
 }
 
@@ -11759,7 +11689,6 @@ function addLandmark(type) {
   var _lmLng=_apLm?((_apLm.lng||-1.5)+(Math.random()-0.5)*0.0003):-1.5;
   landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_apLm?_apLm.id:null});
   saveLandmarks(landmarks);
-  renderMap();
   try{renderLeafletHives(window._editModeActive||false);}catch(e){}
   showToast(label+' added — drag to position in Apiary Settings');
 }
@@ -13014,7 +12943,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:07  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -14003,7 +13932,7 @@ function saveDisplayName() {
   var btn = document.getElementById('settings-name-save-btn');
   if (btn) { var orig=btn.innerHTML; btn.innerHTML='&#x2705;'; setTimeout(function(){ btn.innerHTML=orig; input.style.borderColor=''; input.style.background=''; },2500); }
   showToast('Name saved');
-  try { syncUniversalHeaders('s-home'); } catch(e) {}
+  try { syncUniversalHeaders(typeof currentScreen!=='undefined'?currentScreen:'s-home'); } catch(e) {}
 }
 function loadSettingsName() {
   var input = document.getElementById('settings-display-name');
@@ -14011,23 +13940,6 @@ function loadSettingsName() {
 }
 
 
-function saveDisplayName() {
-  var input = document.getElementById('settings-display-name');
-  if (!input || !input.value.trim()) { showToast('Please enter your name'); return; }
-  var name = input.value.trim();
-  localStorage.setItem('hk_display_name', name);
-  var uid = getUserId();
-  if (uid) getSupabase().from('profiles').upsert({id:uid, display_name:name},{onConflict:'id'});
-  var btn = document.getElementById('settings-name-save-btn');
-  if (btn) { var orig=btn.innerHTML; btn.innerHTML='&#x2705;'; btn.style.background='#2E7D32'; setTimeout(function(){ btn.innerHTML=orig; btn.style.background='var(--forest)'; },2500); }
-  if (input) { input.style.borderColor='#2E7D32'; setTimeout(function(){ input.style.borderColor=''; },2500); }
-  showToast('Name saved');
-  try { syncUniversalHeaders('s-home'); } catch(e) {}
-}
-function loadSettingsName() {
-  var input = document.getElementById('settings-display-name');
-  if (input) input.value = localStorage.getItem('hk_display_name') || '';
-}
 
 </script>
 </body>
