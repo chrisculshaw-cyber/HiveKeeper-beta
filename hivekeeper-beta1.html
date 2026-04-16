@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 12:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 12:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1162,7 +1162,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
-      <div style="font-size:11px;color:var(--text-l);font-family:'Syne',sans-serif;letter-spacing:.02em;" id="map-tip-text">Tap hive to open · Apiary Settings to reposition</div>
+      <div id="map-tip-text"></div>
       <div id="map-rotation-controls" style="display:none;flex-shrink:0;">
         <div style="display:flex;gap:4px;align-items:center;">
           <div onclick="rotateMapBy(-15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">↺</div>
@@ -1177,7 +1177,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="row-tabs" id="row-tabs" style="flex:1;overflow-x:auto;display:flex;padding:0 4px;"></div>
     </div>
     <!-- Hive list -->
-    <div id="apiary-debug-info" style="font-size:10px;color:var(--text-l);padding:4px 16px;"></div>
     <div id="hive-list-container" style="margin-top:4px;"></div>
     <!-- Seasonal alerts below hive list -->
     <div id="apiary-alerts-container" style="margin:8px 16px 0;"></div>
@@ -2828,10 +2827,6 @@ function renderApiary(){
   var hives = currentRowFilter === 'all' ? hivesToShow : currentRowFilter === 'unassigned' ? hivesToShow.filter(h => !h.row || h.row === '') : hivesToShow.filter(h => h.row === currentRowFilter);
 
   // Debug: show hive count
-  var _debugEl = document.getElementById('apiary-debug-info');
-  if (_debugEl) {
-    _debugEl.textContent = 'loadHives: ' + loadHives().length + ' | filtered: ' + hives.length + ' | rowFilter: ' + currentRowFilter + ' | apiaryId: ' + currentApiaryId;
-  }
   document.getElementById('hive-list-container').innerHTML = hives.map(h => {
     const badge = getBadge(h);
     const isDead = h.status === 'dead';
@@ -6446,7 +6441,7 @@ function toggleEditLayout(){
 
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
-    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
+    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
     // Save positions when exiting edit mode
@@ -6457,7 +6452,7 @@ function toggleEditLayout(){
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='none';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
-    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Tap hive to open · Apiary Settings to reposition';
+    var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
     var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='none';
@@ -8609,7 +8604,6 @@ function showAuthScreen() {
 }
 
 function hideAuthScreen() {
-  var dbtn = document.getElementById('hk-debug-btn'); if(dbtn) dbtn.style.display='block';
   var overlay = document.getElementById('auth-overlay');
   if (overlay) {
     overlay.style.display = 'none';
@@ -12972,7 +12966,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 12:25  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 12:30  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13826,20 +13820,8 @@ function hkLog(msg) {
   if (p && p.style.display !== 'none') renderDebugPanel();
   console.log('HK:', msg);
 }
-function renderDebugPanel() {
-  var p = document.getElementById('hk-debug-panel');
-  if (!p) return;
-  p.innerHTML = _hkLog.slice().reverse().map(function(l) {
-    var c = l.indexOf('ERROR')>-1||l.indexOf('FAIL')>-1 ? '#f66' : l.indexOf('OK')>-1 ? '#6f6' : '#0f0';
-    return '<div style="color:'+c+';padding:1px 0;border-bottom:1px solid #333;">'+l+'</div>';
-  }).join('');
-}
-function toggleDebugPanel() {
-  var p = document.getElementById('hk-debug-panel');
-  if (!p) return;
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
-  if (p.style.display !== 'none') renderDebugPanel();
-}
+function renderDebugPanel() {}
+function toggleDebugPanel() {}
 // ── MAP POSITION SUPABASE SYNC ─────────────────────────────────
 async function pushMapPositions() {
   var uid = getUserId();
@@ -13912,7 +13894,4 @@ function saveHivePositions() {
 
 </script>
 </body>
-
-<button onclick="toggleDebugPanel()" style="position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:500;display:none;" id="hk-debug-btn">&#x1F50D; Log</button>
-<div id="hk-debug-panel" style="position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:500;display:none;font-family:monospace;font-size:10px;"></div>
 </html>
