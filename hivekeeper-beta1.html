@@ -904,6 +904,38 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
+
+#hk-debug-panel {
+  position: fixed;
+  bottom: 160px;
+  left: 8px;
+  right: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.85);
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 10px;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 9999;
+  display: none;
+}
+#hk-debug-toggle {
+  position: fixed;
+  bottom: 135px;
+  right: 8px;
+  background: #1F3812;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 9999;
+  font-family: 'Syne', sans-serif;
+}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -918,7 +950,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:35</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2528,7 +2560,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){ hkLog('pull call failed: '+e); } }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -6120,7 +6152,11 @@ function runAndDownloadReport(id) {
   if (!html) return;
   var report = [].concat(REPORTS_BY_TIER.pro, REPORTS_BY_TIER.commercial).find(function(r){ return r.id === id; });
   var filename = (report ? report.label : id).replace(/\s+/g,'-').toLowerCase() + '-' + new Date().toISOString().split('T')[0] + '.html';
-  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + '</body></html>';
+  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + '
+<button id="hk-debug-toggle" onclick="toggleDebugPanel()">🔍 Debug</button>
+<div id="hk-debug-panel"></div>
+
+</body></html>';
   var blob = new Blob([full], { type: 'text/html' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -12975,7 +13011,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:30  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:35  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13552,7 +13588,6 @@ function renderLeafletHives(editMode) {
     marker.on('dragend', function(e) {
       var ll = e.target.getLatLng();
       setMapPosition(hive.id, ll.lat, ll.lng);
-      try { pushMapPositions(); } catch(ex) {}
     });
 
     marker.addTo(_leafletMap);
@@ -13740,14 +13775,14 @@ function rotateMapBy(delta) {
   _mapBearing = (_mapBearing + delta + 360) % 360;
   applyMapRotation();
   clearTimeout(window._bearingPushTimer);
-  window._bearingPushTimer = setTimeout(function(){ try{ pushMapPositions(); }catch(e){} }, 1000);
+  window._bearingPushTimer = setTimeout(function(){ }, 1000);
 }
 
 function resetMapRotation() {
   _mapBearing = 0;
   applyMapRotation();
   clearTimeout(window._bearingPushTimer);
-  window._bearingPushTimer = setTimeout(function(){ try{ pushMapPositions(); }catch(e){} }, 500);
+  window._bearingPushTimer = setTimeout(function(){ }, 500);
 }
 
 function applyMapRotation() {
@@ -13757,11 +13792,9 @@ function applyMapRotation() {
   if (disp) disp.textContent = _mapBearing + '°';
   // Re-render markers with updated counter-rotation
   try { renderLeafletHives(window._editModeActive || false); } catch(e) {}
-  // Bearing saved to Supabase via pushMapPositions — not to apiary object
 }
 
 function loadMapBearing() {
-  // Bearing is loaded from Supabase via pullMapPositions
   // Just ensure _mapBearing is a valid number
   if (typeof _mapBearing !== 'number') _mapBearing = 0;
   applyMapRotation();
@@ -13808,43 +13841,72 @@ function setMapInteractive(interactive) {
   }
 }
 
+
+
 async function pushMapPositions() {
   try {
-    var uid = getUserId(); if (!uid) return;
-    var apiary = getCurrentApiary(); if (!apiary || !apiary.id) return;
-    if (apiary.id.toString().startsWith('demo-')) return;
+    var uid = getUserId();
+    hkLog('PUSH: uid=' + (uid ? uid.substr(0,8) : 'null'));
+    if (!uid) { hkLog('PUSH FAIL: no user'); return; }
+    var apiary = getCurrentApiary();
+    hkLog('PUSH: apiary=' + (apiary ? apiary.id : 'null'));
+    if (!apiary || !apiary.id) { hkLog('PUSH FAIL: no apiary'); return; }
+    if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH: skipped demo'); return; }
     var positions = getMapPositions();
+    var posCount = Object.keys(positions).length;
     var bearing = _mapBearing || 0;
+    hkLog('PUSH: ' + posCount + ' positions, bearing=' + bearing);
     var sb = getSupabase();
-    var { error } = await sb.from('apiaries')
+    var { data, error } = await sb.from('apiaries')
       .update({ map_positions: positions, map_bearing: bearing })
       .eq('id', apiary.id)
-      .eq('user_id', uid);
-    if (error) { console.warn('Push error:', error); showToast('⚠️ Map sync error: ' + error.message); }
-    else { showToast('✅ Positions saved to cloud'); }
-  } catch(e) { console.warn('Map positions push failed:', e); showToast('⚠️ Map sync failed'); }
+      .eq('user_id', uid)
+      .select();
+    if (error) {
+      hkLog('PUSH ERROR: ' + error.message + ' code=' + error.code);
+      showToast('⚠️ Map sync error: ' + error.message);
+    } else {
+      hkLog('PUSH OK: rows updated=' + (data ? data.length : '?'));
+      showToast('✅ Positions saved to cloud (' + posCount + ' hives)');
+    }
+  } catch(e) {
+    hkLog('PUSH EXCEPTION: ' + e.message);
+    showToast('⚠️ Map sync failed: ' + e.message);
+  }
 }
 
 async function pullMapPositions() {
   try {
-    var uid = getUserId(); if (!uid) return;
-    var apiary = getCurrentApiary(); if (!apiary || !apiary.id) return;
+    var uid = getUserId();
+    hkLog('PULL: uid=' + (uid ? uid.substr(0,8) : 'null'));
+    if (!uid) { hkLog('PULL FAIL: no user'); return; }
+    var apiary = getCurrentApiary();
+    hkLog('PULL: apiary=' + (apiary ? apiary.id : 'null'));
+    if (!apiary || !apiary.id) { hkLog('PULL FAIL: no apiary'); return; }
     var sb = getSupabase();
-    var { data: rows } = await sb.from('apiaries').select('map_positions, map_bearing').eq('id', apiary.id).limit(1);
+    var { data: rows, error } = await sb.from('apiaries')
+      .select('map_positions, map_bearing')
+      .eq('id', apiary.id)
+      .limit(1);
+    if (error) { hkLog('PULL ERROR: ' + error.message); return; }
+    hkLog('PULL: rows=' + (rows ? rows.length : 0));
     var data = rows && rows.length ? rows[0] : null;
     if (data && data.map_positions) {
-      try {
-        // Supabase returns jsonb as JS object already — no need to JSON.parse
-        var positions = typeof data.map_positions === 'string' ? JSON.parse(data.map_positions) : data.map_positions;
-        localStorage.setItem('hk_map_positions', JSON.stringify(positions));
-      } catch(e) { console.warn('Map positions parse error:', e); }
+      var positions = typeof data.map_positions === 'string' ? JSON.parse(data.map_positions) : data.map_positions;
+      var posCount = Object.keys(positions).length;
+      localStorage.setItem('hk_map_positions', JSON.stringify(positions));
+      hkLog('PULL OK: ' + posCount + ' positions loaded');
+    } else {
+      hkLog('PULL: no map_positions in row');
     }
     if (data && data.map_bearing !== null && data.map_bearing !== undefined) {
       _mapBearing = data.map_bearing;
-      // Apply rotation immediately so markers counter-rotate correctly
       applyMapRotation();
+      hkLog('PULL: bearing=' + _mapBearing);
     }
-  } catch(e) { console.warn('Map positions pull failed:', e); }
+  } catch(e) {
+    hkLog('PULL EXCEPTION: ' + e.message);
+  }
 }
 
 function refreshLeafletMap(editMode) {
@@ -13869,6 +13931,40 @@ document.addEventListener('DOMContentLoaded', function() {
     screen.insertBefore(hdr, sa);
   });
 });
+
+// ── DEBUG LOGGING ─────────────────────────────────────────────
+var _debugLog = [];
+function hkLog(msg) {
+  var time = new Date().toISOString().substr(11,8);
+  var entry = '[' + time + '] ' + msg;
+  _debugLog.push(entry);
+  if (_debugLog.length > 100) _debugLog.shift();
+  var panel = document.getElementById('hk-debug-panel');
+  if (panel && panel.style.display !== 'none') {
+    panel.innerHTML = _debugLog.slice().reverse().map(function(l){
+      var col = l.includes('ERROR') || l.includes('FAIL') ? '#ff4444' : 
+                l.includes('OK') || l.includes('saved') ? '#44ff44' : '#00ff00';
+      return '<div style="color:'+col+';border-bottom:1px solid #333;padding:2px 0;">'+l+'</div>';
+    }).join('');
+  }
+  console.log('HK:', entry);
+}
+function toggleDebugPanel() {
+  var panel = document.getElementById('hk-debug-panel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display !== 'none') {
+    panel.innerHTML = _debugLog.slice().reverse().map(function(l){
+      var col = l.includes('ERROR') || l.includes('FAIL') ? '#ff4444' :
+                l.includes('OK') || l.includes('saved') ? '#44ff44' : '#00ff00';
+      return '<div style="color:'+col+';border-bottom:1px solid #333;padding:2px 0;">'+l+'</div>';
+    }).join('');
+  }
+}
+function copyDebugLog() {
+  navigator.clipboard.writeText(_debugLog.join('\n')).then(function(){ showToast('Debug log copied'); });
+}
+
 </script>
 </body>
 </html>
