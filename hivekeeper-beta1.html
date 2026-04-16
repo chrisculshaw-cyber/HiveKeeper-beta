@@ -124,8 +124,6 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 /* MAP */
 .map-canvas-wrap{margin:12px 20px 0;border-radius:var(--r);border:2px solid var(--forest-l);box-shadow:var(--shadow-l);position:relative;overflow:hidden;isolation:isolate}
 #map-canvas{display:block;width:100%}
-#leaflet-map .leaflet-marker-icon { touch-action: none; }
-#leaflet-map .leaflet-dragging .leaflet-marker-icon { cursor: grabbing; }
 .map-legend{position:absolute;bottom:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap}
 .legend-pill{background:rgba(255,255,255,.92);border-radius:20px;padding:3px 8px;font-size:9px;font-weight:700;display:flex;align-items:center;gap:4px;color:var(--text)}
 .legend-dot{width:7px;height:7px;border-radius:50%}
@@ -904,38 +902,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
-
-#hk-debug-panel {
-  position: fixed;
-  bottom: 160px;
-  left: 8px;
-  right: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  background: rgba(0,0,0,0.85);
-  color: #00ff00;
-  font-family: monospace;
-  font-size: 10px;
-  border-radius: 8px;
-  padding: 8px;
-  z-index: 9999;
-  display: none;
-}
-#hk-debug-toggle {
-  position: fixed;
-  bottom: 135px;
-  right: 8px;
-  background: #1F3812;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  z-index: 9999;
-  font-family: 'Syne', sans-serif;
-}
+#hk-debug-panel{position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:9999;display:none;font-family:monospace;font-size:10px;}
+#hk-debug-btn{position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -950,7 +918,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:35</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1177,6 +1145,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="leaflet-map" style="width:160%;height:540px;margin:-100px -30%;transition:transform 0.3s ease;"></div>
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
+      <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--forest);color:white;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;">💾 Save positions</div>
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
       <!-- Save positions button — shown in edit mode -->
       <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;border:2px solid rgba(255,255,255,0.3);">💾 Save positions</div>
@@ -2560,7 +2529,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){ hkLog('pull call failed: '+e); } }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){ hkLog('pull call err:'+e); } }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -6152,13 +6121,7 @@ function runAndDownloadReport(id) {
   if (!html) return;
   var report = [].concat(REPORTS_BY_TIER.pro, REPORTS_BY_TIER.commercial).find(function(r){ return r.id === id; });
   var filename = (report ? report.label : id).replace(/\s+/g,'-').toLowerCase() + '-' + new Date().toISOString().split('T')[0] + '.html';
-  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + '
-<button id="hk-debug-toggle" onclick="toggleDebugPanel()">🔍 Debug</button>
-<div id="hk-debug-panel"></div>
-
-</body></html>';
-  var blob = new Blob([full], { type: 'text/html' });
-  var a = document.createElement('a');
+  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + 'ement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
@@ -6483,6 +6446,7 @@ function toggleEditLayout(){
     try { setMapInteractive(true); } catch(e) {}
     var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
     var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='block';
+    var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='block';
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
@@ -6492,11 +6456,8 @@ function toggleEditLayout(){
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
-    try { setMapInteractive(false); } catch(e) {}
-    var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='block';
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='none';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
-    var msb = document.getElementById('map-save-btn'); if(msb) msb.style.display='none';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Tap hive to open · Apiary Settings to reposition';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
@@ -13000,9 +12961,9 @@ function goToApiaryAlerts() {
   <div id="version-footer" style="
     position:fixed;
     bottom:var(--nav-h, 80px);left:0;right:0;
-    background:rgba(22,43,31,0.9);
+    background:rgba(22,43,31,0.85);
     backdrop-filter:blur(4px);
-    color:rgba(255,255,255,0.8);
+    color:rgba(255,255,255,0.85);
     font-family:'Syne',sans-serif;
     font-size:12px;
     font-weight:600;
@@ -13011,7 +12972,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:35  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:45  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13437,8 +13398,6 @@ function initLeafletMap() {
     scrollWheelZoom: false,
     doubleClickZoom: false,
     keyboard: false,
-    inertia: false,
-    tap: false,
   });
 
   // Satellite tile layer — ESRI World Imagery (free, no API key)
@@ -13490,27 +13449,12 @@ function initLeafletMap() {
   updateMapHiveCount();
 }
 
-function getMapPositions() {
-  try { return JSON.parse(localStorage.getItem('hk_map_positions') || '{}'); } catch(e) { return {}; }
-}
-function setMapPosition(hiveId, lat, lng) {
-  var pos = getMapPositions();
-  pos[hiveId] = { lat: lat, lng: lng };
-  localStorage.setItem('hk_map_positions', JSON.stringify(pos));
-}
-
 function getHiveLatLng(hive, rows, apiaryLat, apiaryLng, allHives) {
-  // Check dedicated positions store first
-  var positions = getMapPositions();
-  var stored = positions[hive.id];
-  if (stored) return [stored.lat, stored.lng];
-  // Fall back to Supabase-synced map_lat/map_lng on hive object
+  // Use directly stored position first
   if (hive.map_lat && hive.map_lng) {
-    // Populate position store so subsequent calls are fast
-    setMapPosition(hive.id, hive.map_lat, hive.map_lng);
     return [hive.map_lat, hive.map_lng];
   }
-  // Fall back to grid layout
+  // Grid fallback
   var rowIndex = 0;
   var rowNames = rows.map(function(r) { return r.name; });
   var ri = rowNames.indexOf(hive.row || 'Row 1');
@@ -13541,14 +13485,12 @@ function hiveStatusColor(hive) {
 function makeHiveIcon(hive, editMode) {
   var col = hiveStatusColor(hive);
   var name = (hive.name || 'Hive').split(' ').slice(-2).join(' ');
-  // Counter-rotate so label always reads name downwards regardless of map bearing
-  var bearing = (typeof _mapBearing === 'number') ? _mapBearing : 0;
-  var counterRot = (-bearing) + 'deg';
-  var html = '<div style="width:40px;height:28px;display:flex;align-items:center;justify-content:center;">' +
-    '<div style="background:' + col + ';border:1.5px solid white;border-radius:6px;padding:2px 4px;min-width:32px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';transform:rotate(' + counterRot + ');transform-origin:center center;position:relative;z-index:1;">' +
+  // Counter-rotate label so it stays upright when map rotates
+  var counterRot = (-_mapBearing) + 'deg';
+  var html = '<div style="background:' + col + ';border:1.5px solid white;border-radius:6px;padding:2px 4px;min-width:32px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:' + (editMode ? 'grab' : 'pointer') + ';transform:rotate(' + counterRot + ');transform-origin:center center;">' +
     '<div style="font-size:11px;line-height:1;">🐝</div>' +
     '<div style="font-size:7px;font-weight:800;color:white;line-height:1.2;white-space:nowrap;">' + name + '</div>' +
-    '</div></div>';
+    '</div>';
   return L.divIcon({ html: html, className: '', iconAnchor: [20, 14], iconSize: [40, 28], popupAnchor: [0, -16] });
 }
 
@@ -13584,10 +13526,16 @@ function renderLeafletHives(editMode) {
       }
     });
 
-    // Drag end: save position
+    // Drag end: save new position
     marker.on('dragend', function(e) {
-      var ll = e.target.getLatLng();
-      setMapPosition(hive.id, ll.lat, ll.lng);
+      var newLatLng = e.target.getLatLng();
+      var allH = loadHives();
+      var idx = allH.findIndex(function(h) { return h.id === hive.id; });
+      if (idx >= 0) {
+        allH[idx].map_lat = newLatLng.lat;
+        allH[idx].map_lng = newLatLng.lng;
+        saveHives(allH);
+      }
     });
 
     marker.addTo(_leafletMap);
@@ -13774,15 +13722,11 @@ var _mapBearing = 0;
 function rotateMapBy(delta) {
   _mapBearing = (_mapBearing + delta + 360) % 360;
   applyMapRotation();
-  clearTimeout(window._bearingPushTimer);
-  window._bearingPushTimer = setTimeout(function(){ }, 1000);
 }
 
 function resetMapRotation() {
   _mapBearing = 0;
   applyMapRotation();
-  clearTimeout(window._bearingPushTimer);
-  window._bearingPushTimer = setTimeout(function(){ }, 500);
 }
 
 function applyMapRotation() {
@@ -13792,11 +13736,22 @@ function applyMapRotation() {
   if (disp) disp.textContent = _mapBearing + '°';
   // Re-render markers with updated counter-rotation
   try { renderLeafletHives(window._editModeActive || false); } catch(e) {}
+  // Save bearing for this apiary
+  var apiary = getCurrentApiary();
+  if (apiary && apiary.id) {
+    var apiaries = loadApiaries();
+    var a = apiaries.find(function(x){ return x.id === apiary.id; });
+    if (a) { a.mapBearing = _mapBearing; saveApiaries(apiaries); }
+  }
 }
 
 function loadMapBearing() {
-  // Just ensure _mapBearing is a valid number
-  if (typeof _mapBearing !== 'number') _mapBearing = 0;
+  var apiary = getCurrentApiary();
+  if (apiary && apiary.mapBearing !== undefined) {
+    _mapBearing = apiary.mapBearing;
+  } else {
+    _mapBearing = 0;
+  }
   applyMapRotation();
 }
 
@@ -13804,24 +13759,107 @@ function loadMapBearing() {
 
 function saveHivePositions() {
   var saved = 0;
-  var allH = loadHives();
-  var positions = getMapPositions();
   Object.keys(_hiveMarkers).forEach(function(hiveId) {
     var marker = _hiveMarkers[hiveId];
     if (!marker) return;
     var ll = marker.getLatLng();
     setMapPosition(hiveId, ll.lat, ll.lng);
-    var idx = allH.findIndex(function(h){ return h.id === hiveId; });
-    if (idx >= 0) { allH[idx].map_lat = ll.lat; allH[idx].map_lng = ll.lng; }
+    hkLog('savePos: '+hiveId.substr(0,8)+' lat='+ll.lat.toFixed(5));
     saved++;
   });
-  saveHives(allH);
+  hkLog('saveHivePositions: '+saved+' saved to localStorage');
   var msb = document.getElementById('map-save-btn');
-  if (msb) { msb.innerHTML = '✅ Saved'; msb.style.background = '#2E7D32'; }
-  setTimeout(function(){
-    if (msb) { msb.innerHTML = '💾 Save positions'; msb.style.background = 'var(--forest)'; }
-  }, 2000);
-  showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved to cloud');
+  if (msb) { msb.innerHTML = '⏳ Syncing...'; msb.style.opacity = '0.7'; }
+  try { 
+    pushMapPositions().then(function() {
+      if (msb) { msb.innerHTML = '✅ Saved'; msb.style.background='#2E7D32'; msb.style.opacity='1'; }
+      setTimeout(function(){ if (msb) { msb.innerHTML = '💾 Save positions'; msb.style.background='var(--forest)'; } }, 3000);
+    });
+  } catch(e) { hkLog('push call failed: '+e); }
+  showToast('Saving ' + saved + ' positions...');
+}
+
+
+// ── DEBUG LOG ─────────────────────────────────────────────────
+var _hkLog = [];
+function hkLog(msg) {
+  var t = new Date().toTimeString().substr(0,8);
+  _hkLog.push('['+t+'] '+msg);
+  if (_hkLog.length > 80) _hkLog.shift();
+  var p = document.getElementById('hk-debug-panel');
+  if (p && p.style.display !== 'none') renderDebugPanel();
+  console.log('HK:', msg);
+}
+function renderDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.innerHTML = _hkLog.slice().reverse().map(function(l) {
+    var c = l.indexOf('ERROR')>-1||l.indexOf('FAIL')>-1 ? '#f66' : l.indexOf('OK')>-1||l.indexOf('saved')>-1 ? '#6f6' : '#0f0';
+    return '<div style="color:'+c+';padding:1px 0;border-bottom:1px solid #222;">'+l+'</div>';
+  }).join('');
+}
+function toggleDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display !== 'none') renderDebugPanel();
+}
+
+// ── MAP POSITION SUPABASE SYNC ────────────────────────────────
+async function pushMapPositions() {
+  var uid = getUserId();
+  var apiary = getCurrentApiary();
+  hkLog('PUSH start uid='+(uid?uid.substr(0,8):'null')+' apiary='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PUSH SKIP: missing uid or apiary'); return; }
+  if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH SKIP: demo'); return; }
+  var positions = getMapPositions();
+  var cnt = Object.keys(positions).length;
+  hkLog('PUSH: '+cnt+' positions, bearing='+(_mapBearing||0));
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries')
+      .update({ map_positions: positions, map_bearing: _mapBearing||0 })
+      .eq('id', apiary.id)
+      .eq('user_id', uid)
+      .select('id');
+    if (res.error) {
+      hkLog('PUSH ERROR: '+res.error.message+' ('+res.error.code+')');
+      showToast('Map sync error: '+res.error.message);
+    } else {
+      hkLog('PUSH OK: '+(res.data?res.data.length:0)+' rows updated');
+      showToast('Positions saved to cloud');
+    }
+  } catch(e) {
+    hkLog('PUSH EXCEPTION: '+e.message);
+  }
+}
+
+async function pullMapPositions() {
+  var uid = getUserId();
+  var apiary = getCurrentApiary();
+  hkLog('PULL start uid='+(uid?uid.substr(0,8):'null')+' apiary='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PULL SKIP: missing uid or apiary'); return; }
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries').select('map_positions,map_bearing').eq('id',apiary.id).limit(1);
+    if (res.error) { hkLog('PULL ERROR: '+res.error.message); return; }
+    hkLog('PULL: '+(res.data?res.data.length:0)+' rows');
+    var row = res.data && res.data.length ? res.data[0] : null;
+    if (row && row.map_positions) {
+      var pos = typeof row.map_positions === 'string' ? JSON.parse(row.map_positions) : row.map_positions;
+      localStorage.setItem('hk_map_positions', JSON.stringify(pos));
+      hkLog('PULL OK: '+Object.keys(pos).length+' positions');
+    } else {
+      hkLog('PULL: no map_positions in row');
+    }
+    if (row && row.map_bearing != null) {
+      _mapBearing = row.map_bearing;
+      applyMapRotation();
+      hkLog('PULL bearing='+_mapBearing);
+    }
+  } catch(e) {
+    hkLog('PULL EXCEPTION: '+e.message);
+  }
 }
 
 function setMapInteractive(interactive) {
@@ -13838,74 +13876,6 @@ function setMapInteractive(interactive) {
     _leafletMap.doubleClickZoom.disable();
     _leafletMap.scrollWheelZoom.disable();
     _leafletMap.keyboard.disable();
-  }
-}
-
-
-
-async function pushMapPositions() {
-  try {
-    var uid = getUserId();
-    hkLog('PUSH: uid=' + (uid ? uid.substr(0,8) : 'null'));
-    if (!uid) { hkLog('PUSH FAIL: no user'); return; }
-    var apiary = getCurrentApiary();
-    hkLog('PUSH: apiary=' + (apiary ? apiary.id : 'null'));
-    if (!apiary || !apiary.id) { hkLog('PUSH FAIL: no apiary'); return; }
-    if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH: skipped demo'); return; }
-    var positions = getMapPositions();
-    var posCount = Object.keys(positions).length;
-    var bearing = _mapBearing || 0;
-    hkLog('PUSH: ' + posCount + ' positions, bearing=' + bearing);
-    var sb = getSupabase();
-    var { data, error } = await sb.from('apiaries')
-      .update({ map_positions: positions, map_bearing: bearing })
-      .eq('id', apiary.id)
-      .eq('user_id', uid)
-      .select();
-    if (error) {
-      hkLog('PUSH ERROR: ' + error.message + ' code=' + error.code);
-      showToast('⚠️ Map sync error: ' + error.message);
-    } else {
-      hkLog('PUSH OK: rows updated=' + (data ? data.length : '?'));
-      showToast('✅ Positions saved to cloud (' + posCount + ' hives)');
-    }
-  } catch(e) {
-    hkLog('PUSH EXCEPTION: ' + e.message);
-    showToast('⚠️ Map sync failed: ' + e.message);
-  }
-}
-
-async function pullMapPositions() {
-  try {
-    var uid = getUserId();
-    hkLog('PULL: uid=' + (uid ? uid.substr(0,8) : 'null'));
-    if (!uid) { hkLog('PULL FAIL: no user'); return; }
-    var apiary = getCurrentApiary();
-    hkLog('PULL: apiary=' + (apiary ? apiary.id : 'null'));
-    if (!apiary || !apiary.id) { hkLog('PULL FAIL: no apiary'); return; }
-    var sb = getSupabase();
-    var { data: rows, error } = await sb.from('apiaries')
-      .select('map_positions, map_bearing')
-      .eq('id', apiary.id)
-      .limit(1);
-    if (error) { hkLog('PULL ERROR: ' + error.message); return; }
-    hkLog('PULL: rows=' + (rows ? rows.length : 0));
-    var data = rows && rows.length ? rows[0] : null;
-    if (data && data.map_positions) {
-      var positions = typeof data.map_positions === 'string' ? JSON.parse(data.map_positions) : data.map_positions;
-      var posCount = Object.keys(positions).length;
-      localStorage.setItem('hk_map_positions', JSON.stringify(positions));
-      hkLog('PULL OK: ' + posCount + ' positions loaded');
-    } else {
-      hkLog('PULL: no map_positions in row');
-    }
-    if (data && data.map_bearing !== null && data.map_bearing !== undefined) {
-      _mapBearing = data.map_bearing;
-      applyMapRotation();
-      hkLog('PULL: bearing=' + _mapBearing);
-    }
-  } catch(e) {
-    hkLog('PULL EXCEPTION: ' + e.message);
   }
 }
 
@@ -13931,40 +13901,9 @@ document.addEventListener('DOMContentLoaded', function() {
     screen.insertBefore(hdr, sa);
   });
 });
-
-// ── DEBUG LOGGING ─────────────────────────────────────────────
-var _debugLog = [];
-function hkLog(msg) {
-  var time = new Date().toISOString().substr(11,8);
-  var entry = '[' + time + '] ' + msg;
-  _debugLog.push(entry);
-  if (_debugLog.length > 100) _debugLog.shift();
-  var panel = document.getElementById('hk-debug-panel');
-  if (panel && panel.style.display !== 'none') {
-    panel.innerHTML = _debugLog.slice().reverse().map(function(l){
-      var col = l.includes('ERROR') || l.includes('FAIL') ? '#ff4444' : 
-                l.includes('OK') || l.includes('saved') ? '#44ff44' : '#00ff00';
-      return '<div style="color:'+col+';border-bottom:1px solid #333;padding:2px 0;">'+l+'</div>';
-    }).join('');
-  }
-  console.log('HK:', entry);
-}
-function toggleDebugPanel() {
-  var panel = document.getElementById('hk-debug-panel');
-  if (!panel) return;
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-  if (panel.style.display !== 'none') {
-    panel.innerHTML = _debugLog.slice().reverse().map(function(l){
-      var col = l.includes('ERROR') || l.includes('FAIL') ? '#ff4444' :
-                l.includes('OK') || l.includes('saved') ? '#44ff44' : '#00ff00';
-      return '<div style="color:'+col+';border-bottom:1px solid #333;padding:2px 0;">'+l+'</div>';
-    }).join('');
-  }
-}
-function copyDebugLog() {
-  navigator.clipboard.writeText(_debugLog.join('\n')).then(function(){ showToast('Debug log copied'); });
-}
-
 </script>
+
+<button id="hk-debug-btn" onclick="toggleDebugPanel()" style="position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;">&#x1F50D; Log</button>
+<div id="hk-debug-panel" style="position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:9999;display:none;font-family:monospace;font-size:10px;"></div>
 </body>
 </html>
