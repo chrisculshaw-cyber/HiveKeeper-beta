@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:53</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 12:00</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1145,7 +1145,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
       <!-- Save positions button — shown in edit mode -->
-      <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;position:absolute;bottom:12px;left:12px;background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.4);z-index:500;font-family:'Syne',sans-serif;white-space:nowrap;border:2px solid rgba(255,255,255,0.3);">💾 Save positions</div>
       <!-- Touch blocker overlay for locked mode -->
       <div id="map-touch-blocker" style="position:absolute;inset:0;z-index:400;background:transparent;display:block;" ontouchstart="return false;" onmousedown="return false;"></div>
       <!-- Edit mode map controls (hidden until Apiary Settings) -->
@@ -1162,6 +1161,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- Map crosshair for drop target -->
       <div id="map-crosshair" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;pointer-events:none;z-index:499;text-shadow:0 2px 4px rgba(0,0,0,0.4);">🎯</div>
     </div>
+    <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;margin:8px 12px 0;background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);text-align:center;border:2px solid rgba(255,255,255,0.2);">💾 Save positions</div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px 2px;">
       <div style="font-size:11px;color:var(--text-l);font-family:'Syne',sans-serif;letter-spacing:.02em;" id="map-tip-text">Tap hive to open · Apiary Settings to reposition</div>
       <div id="map-rotation-controls" style="display:none;flex-shrink:0;">
@@ -12971,7 +12971,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:53  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 12:00  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
