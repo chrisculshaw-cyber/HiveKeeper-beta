@@ -1135,7 +1135,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="apiary-hive-btn" onclick="openAddHive()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
         <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
-      <div id="map-save-btn" onclick="saveHivePositions()" style="display:none;margin:6px 0 0;background:var(--honey);color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);text-align:center;border:none;width:100%;font-family:'Syne',sans-serif;">💾 Save hive positions</div>
   </div>
   <div class="scroll-area">
 
@@ -6431,7 +6430,7 @@ function toggleEditLayout(){
   var tip=document.getElementById('map-tip');
   var canvas=document.getElementById('map-canvas');
   if(editLayoutMode){
-    btn.textContent='Done ✓'; btn.classList.add('active');
+    btn.innerHTML='&#x1F4BE; Save &amp; Close'; btn.classList.add('active');
     if(banner) banner.classList.add('show');
     if(tip) tip.style.display='none';
     if(canvas) canvas.classList.add('edit-mode');
@@ -6444,12 +6443,14 @@ function toggleEditLayout(){
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
     try { setMapInteractive(true); } catch(e) {}
     var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
-    var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='block';
+
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='block';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='flex';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='Drag hive markers · Rotate map · Place hives here';
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
+    // Save positions when exiting edit mode
+    try { saveHivePositions(); } catch(e) {}
     if(banner) banner.classList.remove('show');
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
