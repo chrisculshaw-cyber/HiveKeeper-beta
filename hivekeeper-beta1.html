@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated 16 April 2026 at 19:25 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
+<!-- HiveKeeper · Last updated 16 April 2026 at 19:30 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 19:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 19:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2620,7 +2620,7 @@ function renderDashboard(){
     var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
     var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
     var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
-    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _gMeta=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _gFirst=_gMeta?(' '+_gMeta.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
+    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _gStored=localStorage.getItem('hk_display_name')||''; var _gMeta=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _gName=_gStored||_gMeta; var _gFirst=_gName?(' '+_gName.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
     return;
   }
   // Stats
@@ -2731,10 +2731,13 @@ function renderDashboard(){
   const hour = new Date().getHours();
   var _greetingBase = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
   var _greetingName = '';
-  if (typeof _currentUser !== 'undefined' && _currentUser) {
+  var _storedName = localStorage.getItem('hk_display_name') || '';
+  if (_storedName) {
+    _greetingName = ' ' + _storedName.split(' ')[0];
+  } else if (typeof _currentUser !== 'undefined' && _currentUser) {
     var _meta = _currentUser.user_metadata || {};
     var _fullName = _meta.full_name || _meta.name || '';
-    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0]; // first name only
+    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
   }
   document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
   if (typeof renderFoundingBadge === 'function') renderFoundingBadge();
@@ -8498,7 +8501,7 @@ async function initAuth() {
         _currentUser = session.user;
         // Clean up the URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        onAuthSuccess(); try { getSupabase().from('profiles').select('display_name').eq('id', session.user.id).single().then(function(r){ if(r.data && r.data.display_name) localStorage.setItem('hk_display_name', r.data.display_name); }); } catch(e) {}
+        onAuthSuccess(); try { getSupabase().from('profiles').select('display_name').eq('id', session.user.id).maybeSingle().then(function(r){ if(r.data && r.data.display_name){ localStorage.setItem('hk_display_name', r.data.display_name); try{ syncUniversalHeaders('s-home'); }catch(e){} } }); } catch(e) {}
       } else if (event === 'SIGNED_OUT') {
         _currentUser = null;
         _currentSession = null;
@@ -11732,18 +11735,24 @@ function addLandmark(type) {
   if (!def) return;
   var landmarks = loadLandmarks();
   var label = type === 'custom' ? (prompt('Label for this landmark:', 'Custom') || 'Custom') : def.label;
+  // Get apiary centre for initial position
+  var apiary = getCurrentApiary();
+  var lmLat = apiary ? (apiary.lat || 52.5) : 52.5;
+  var lmLng = apiary ? (apiary.lng || -1.5) : -1.5;
+  // Offset slightly so it doesn't sit exactly on hives
+  lmLat += (Math.random() - 0.5) * 0.0003;
+  lmLng += (Math.random() - 0.5) * 0.0003;
   landmarks.push({
     id: 'lm_' + Date.now().toString(36),
     type: type,
     label: label,
-    x: 0.5,
-    y: 0.5,
-    r: 0,
-    scale: 1.8
+    x: 0.5, y: 0.5, r: 0, scale: 1.8,
+    mapLat: lmLat, mapLng: lmLng
   });
   saveLandmarks(landmarks);
   renderMap();
-  showToast(label + ' added — drag to position');
+  try { renderLeafletHives(window._editModeActive || false); } catch(e) {}
+  showToast(label + ' added — enter Apiary Settings to drag into position');
 }
 
 function deleteLandmark(id) {
@@ -12996,7 +13005,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 19:25  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 19:30  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13467,6 +13476,37 @@ function initLeafletMap() {
   renderLeafletHives();
 
   // Update count overlay
+    // Render landmark markers
+  var landmarks = loadLandmarks();
+  var apiary = getCurrentApiary();
+  if (apiary) {
+    var aLat = apiary.lat || 52.5, aLng = apiary.lng || -1.5;
+    landmarks.filter(function(lm) {
+      return (lm.apiaryId === apiary.id || !lm.apiaryId);
+    }).forEach(function(lm) {
+      var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
+      var lmLat = lm.mapLat || aLat;
+      var lmLng = lm.mapLng || aLng;
+      var bearing = (typeof _mapBearing === 'number') ? _mapBearing : 0;
+      var counterRot = (-bearing) + 'deg';
+      var lmHtml = '<div style="text-align:center;transform:rotate('+counterRot+');transform-origin:center center;">'
+        + '<div style="font-size:22px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">' + (def.emoji || '📍') + '</div>'
+        + '<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,0.6);border-radius:6px;padding:1px 4px;white-space:nowrap;margin-top:1px;">' + lm.label + '</div>'
+        + '</div>';
+      var lmIcon = L.divIcon({ html: lmHtml, className: '', iconAnchor: [20,28], iconSize: [40,36] });
+      var lmMarker = L.marker([lmLat, lmLng], { icon: lmIcon, draggable: !!editMode });
+      if (editMode) {
+        lmMarker.on('dragend', function(e) {
+          var ll = e.target.getLatLng();
+          var lms = loadLandmarks();
+          var idx = lms.findIndex(function(x){ return x.id === lm.id; });
+          if (idx >= 0) { lms[idx].mapLat = ll.lat; lms[idx].mapLng = ll.lng; saveLandmarks(lms); }
+        });
+      }
+      lmMarker.addTo(_leafletMap);
+    });
+  }
+
   updateMapHiveCount();
 }
 
