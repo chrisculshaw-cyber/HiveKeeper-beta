@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 20:10</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 21:01</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1120,7 +1120,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div id="apiary-sub" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button><button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+          <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
@@ -2037,13 +2037,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
 
       <!-- PROFILE NAME -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
-        <div style="display:flex;gap:8px;">
-          <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
-          <div onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
-        </div>
-      </div>
+      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div><div style="display:flex;gap:8px;"><input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" /><div onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div></div></div>
       <!-- ACCOUNT -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
@@ -2733,8 +2727,7 @@ function renderDashboard(){
   var _greetingName = '';
   if (typeof _currentUser !== 'undefined' && _currentUser) {
     var _meta = _currentUser.user_metadata || {};
-    var _stored = localStorage.getItem('hk_display_name') || '';
-    var _fullName = _stored || _meta.full_name || _meta.name || '';
+    var _storedName = localStorage.getItem('hk_display_name')||''; var _fullName = _storedName || _meta.full_name || _meta.name || '';
     if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
   }
   document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
@@ -3435,17 +3428,7 @@ function openFrameCompare() {
       allPhotos.push({ url: url, label: (lbl||'Frame') + ' · ' + dateStr });
     });
   });
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
   var thumbs = allPhotos.map(function(p, i) {
     return '<div onclick="selectComparePhoto(' + i + ',this)" data-url="' + p.url + '" data-label="' + p.label + '" style="cursor:pointer;border:2px solid transparent;border-radius:8px;overflow:hidden;flex-shrink:0;">'
@@ -6637,23 +6620,35 @@ function renderAsianHornetWatch(lat, lng) {
   var nearestMiles = Math.round(nearest.distKm * 0.621371);
 
   // Determine alert level based on nearest confirmed sighting
-  var level, badgeClass, badgeText, statusText;
-  if(nearestKm < 50) {
+  var level, badgeClass, badgeText, statusText, panelBg, panelBorder;
+  if(nearestKm < 80) {  // ~50 miles
     level='alert'; badgeClass='ah-badge-alert'; badgeText='ELEVATED RISK';
-    statusText='Confirmed sighting '+nearestMiles+' miles from your apiary. Heightened vigilance required during August-October.';
-  } else if(nearestKm < 150) {
+    panelBg='#7B1515'; panelBorder='#C62828';
+    statusText='Confirmed sighting '+nearestMiles+' miles from your apiary. Heightened vigilance required — check hive entrances daily.';
+  } else if(nearestKm < 161) {  // ~100 miles
     level='watch'; badgeClass='ah-badge-watch'; badgeText='WATCH';
+    panelBg='#7A4A00'; panelBorder='#E65100';
     statusText='Nearest confirmed sighting '+nearestMiles+' miles away. Monitor your hive entrances during warm afternoons (Aug-Oct).';
   } else {
     level='clear'; badgeClass='ah-badge-clear'; badgeText='LOW RISK';
-    statusText='No confirmed sightings within 150 miles of Brigstock. Continue routine monitoring.';
+    panelBg='#1A3A1A'; panelBorder='#2E7D32';
+    statusText='No confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
+  }
   }
 
   // Update header
   var sub = document.getElementById('ah-header-sub');
   if(sub) sub.textContent = 'Nearest confirmed: '+nearestMiles+' miles · '+nearest.loc;
+  // Update panel background colour
+  var ahPanel = document.querySelector('.ah-panel');
+  if(ahPanel) { ahPanel.style.background = panelBg; ahPanel.style.borderColor = panelBorder; }
 
   var typeLabels = {nest:'Nest found', spring_queen:'Spring queen caught', worker:'Worker caught'};
+  // Add live map links to panel
+  var liveLinksHtml = '<div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;">'
+    + '<a href="https://www.bbka.org.uk/asian-hornet-incursion-map" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">🗺️ BBKA Live Map</a>'
+    + '<a href="https://www.nationalbeeunit.com/about-us/beekeeping-news/yellow-legged-hornet-2025-rolling-update-2" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">📋 BeeBase 2026 Update</a>'
+    + '</div>';
   var typeEmoji = {nest:'&#x1F534;', spring_queen:'&#x1F7E0;', worker:'&#x1F7E1;'};
 
   // Build content
@@ -6691,7 +6686,7 @@ function renderAsianHornetWatch(lat, lng) {
     +'</div>';
 
   var ahContent = document.getElementById('ah-content');
-  if(ahContent) ahContent.innerHTML = html;
+  if(ahContent) ahContent.innerHTML = liveLinksHtml + html;
 }
 
 // Hornet watch initialises when dashboard renders
@@ -7372,6 +7367,8 @@ function deleteHiveAndData(hiveId) {
   var treatments = loadTreatments().filter(function(t){ return t.hiveId !== hiveId; });
   saveTreatments(treatments);
 
+  try { var _sb=getSupabase(),_uid=getUserId(); if(_uid&&hiveId&&!hiveId.toString().startsWith('demo-')){ _sb.from('hives').delete().eq('id',hiveId).eq('user_id',_uid); var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}'); delete _p[hiveId]; localStorage.setItem('hk_map_positions',JSON.stringify(_p)); } } catch(e) {}
+  try{var _sb=getSupabase();var _uid=getUserId();if(_uid&&hiveId&&!hiveId.toString().startsWith('demo-')){_sb.from('hives').delete().eq('id',hiveId).eq('user_id',_uid);}var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');delete _p[hiveId];localStorage.setItem('hk_map_positions',JSON.stringify(_p));}catch(e){}
   showToast('Hive deleted');
   goTo('s-apiary');
   renderApiary();
@@ -8048,12 +8045,15 @@ function getCurrentApiary() {
 }
 
 function selectApiaryItem(id) {
-  document.querySelectorAll('[id^="apiary-opt-"]').forEach(function(el) {
-    el.style.background = 'var(--white)';
-    el.style.borderLeft = '';
+  document.querySelectorAll("[id^='apiary-opt-']").forEach(function(el){
+    el.style.background="var(--white)";
+    var nm=el.querySelector("[style*='font-weight:800']"); if(nm) nm.innerHTML=nm.innerHTML.replace(" ✓","");
   });
-  var sel = document.getElementById('apiary-opt-' + id);
-  if (sel) { sel.style.background = 'var(--honey-pale)'; sel.style.borderLeft = '3px solid var(--honey)'; }
+  var sel=document.getElementById("apiary-opt-"+id);
+  if(sel){
+    sel.style.background="var(--honey-pale)";
+    var nm=sel.querySelector("[style*='font-weight:800']"); if(nm&&nm.innerHTML.indexOf(" ✓")===-1) nm.innerHTML+="✓";
+  }
   switchApiary(id);
 }
 function switchApiary(id) {
@@ -8069,6 +8069,8 @@ function switchApiary(id) {
   renderMap();
   closeModalEl('modal-apiary-switcher');
   showToast('Switched to ' + (apiary ? apiary.name : 'apiary'));
+  // Refresh Leaflet map for new apiary
+  setTimeout(function(){ try{ if(_leafletMap){_leafletMap.remove();_leafletMap=null;} initLeafletMap(); setTimeout(function(){ setMapInteractive(false); try{pullMapPositions().then(function(){renderLeafletHives(false);});}catch(e){} },800); }catch(e){} },300);
 }
 
 function initCurrentApiary() {
@@ -8329,17 +8331,7 @@ function saveSOSContact(data) { localStorage.setItem(SOS_CONTACT_KEY, JSON.strin
 
 function openSOSSetup() {
   var contact = loadSOSContact();
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
@@ -8486,7 +8478,7 @@ var _currentSession = null;
 
 function getSupabase() {
   if (!_supabase) {
-    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,storageKey:'hk_supabase_auth',storage:window.localStorage,autoRefreshToken:true}});
   }
   return _supabase;
 }
@@ -11182,7 +11174,7 @@ function showUpgradeModal(reason) {
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
-function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {}
+function addSignOutToSettings() { try{loadSettingsName();}catch(e){}
   var btn = document.getElementById('sign-out-btn');
   if (!btn) return;
   var name = '';
@@ -11740,15 +11732,8 @@ function addLandmark(type) {
   if (!def) return;
   var landmarks = loadLandmarks();
   var label = type === 'custom' ? (prompt('Label for this landmark:', 'Custom') || 'Custom') : def.label;
-  landmarks.push({
-    id: 'lm_' + Date.now().toString(36),
-    type: type,
-    label: label,
-    x: 0.5,
-    y: 0.5,
-    r: 0,
-    scale: 1.8
-  });
+  var _ap2=getCurrentApiary(); var _lmLat=_ap2?(_ap2.lat||52.5)+(Math.random()-0.5)*0.0003:52.5; var _lmLng=_ap2?(_ap2.lng||-1.5)+(Math.random()-0.5)*0.0003:-1.5;
+  landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_ap2?_ap2.id:null});
   saveLandmarks(landmarks);
   renderMap();
   showToast(label + ' added — drag to position');
@@ -11763,23 +11748,13 @@ function deleteLandmark(id) {
 }
 
 function openLandmarkPicker() {
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
   var types = Object.keys(LANDMARK_TYPES);
   var grid = types.map(function(type) {
     var def = LANDMARK_TYPES[type];
-    return '<div onclick="addLandmark(\'' + type + '\');var _lps=document.getElementById(\'landmark-picker-sheet\');if(_lps)_lps.remove()" ' +
+    return '<div onclick="addLandmark(\'' + type + '\');closeModalEl(\'modal-sos\')" ' +
       'style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;' +
       'background:var(--cream);border-radius:var(--rs);cursor:pointer;border:1px solid var(--wax);">' +
       '<div style="font-size:24px;">' + def.emoji + '</div>' +
@@ -11812,7 +11787,11 @@ function openLandmarkPicker() {
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;">' +
     grid + '</div>' +
     existingHtml +
-    '<button onclick="document.getElementById(\'landmark-picker-sheet\').remove()" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+    '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;margin-top:16px;' +
+    'background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;' +
+    'font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-sos');
 }
 
 // ── LANDMARKS CLOUD SYNC ─────────────────────────────────
@@ -11850,17 +11829,7 @@ function openLandmarkEditor(id) {
   var lm = landmarks.find(function(l){ return l.id === id; });
   if (!lm) return;
   var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">' + def.emoji + ' Edit landmark</div>'
@@ -12036,17 +12005,7 @@ function initCompassInteraction() {
 // ── INSPECTION HIVE PICKER ───────────────────────────────
 function showInspectionHivePicker() {
   var hives = loadHives().filter(function(h){ return !h.isHidden; });
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
   var rows = hives.map(function(h) {
@@ -12960,17 +12919,7 @@ function changeHiveRow(hiveId) {
     html += '<button class="row-pick-btn" data-row="' + r.name + '" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);background:' + (active ? '#C8730A' : 'white') + ';color:' + (active ? 'white' : 'var(--text)') + ';font-size:14px;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;">' + r.name + '</button>';
   });
     html += '<button onclick="closeModalEl(\'modal-sos\')\" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);background:transparent;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
-  // Use a dedicated bottom sheet
-  var existing_sheet = document.getElementById('landmark-picker-sheet');
-  if (existing_sheet) existing_sheet.remove();
-  var sheet_wrap = document.createElement('div');
-  sheet_wrap.id = 'landmark-picker-sheet';
-  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
-  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
-  var sheet = document.createElement('div');
-  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
-  sheet_wrap.appendChild(sheet);
-  document.body.appendChild(sheet_wrap);
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
   sheet.innerHTML = html;
   // Attach click handlers
@@ -13040,7 +12989,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 20:10  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 21:01  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13291,11 +13240,8 @@ function goToApiaryAlerts() {
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
       <div class="modal-title">Upgrade HiveKeeper</div>
       <div onclick="closeModalEl('modal-pricing')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
-    </div>
-      <div onclick="closeModalEl('modal-feedback-sheet')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
       <div id="pricing-reason-msg" style="display:none;background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:10px 14px;font-size:13px;color:#633806;font-weight:600;margin-bottom:16px;line-height:1.5;"></div>
 
@@ -13514,6 +13460,54 @@ function initLeafletMap() {
   renderLeafletHives();
 
   // Update count overlay
+    // Render landmarks on map
+  try {
+    var _lms = loadLandmarks ? loadLandmarks() : [];
+    var _ap = getCurrentApiary();
+    if (_ap && _lms.length && _leafletMap) {
+      var _aLat = _ap.lat||52.5, _aLng = _ap.lng||-1.5;
+      _lms.forEach(function(lm) {
+        if (lm.apiaryId && lm.apiaryId !== _ap.id) return;
+        var def = (typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'📍',label:lm.label||'Landmark'};
+        var lmLat = lm.mapLat || _aLat; var lmLng = lm.mapLng || _aLng;
+        var rot = (-(_mapBearing||0))+'deg';
+        var lmHtml = '<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;"><div style="font-size:22px;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.6));">'+(def.emoji||'📍')+'</div><div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,0.65);border-radius:6px;padding:1px 4px;white-space:nowrap;">'+lm.label+'</div></div>';
+        var lmIcon = L.divIcon({html:lmHtml,className:'',iconAnchor:[20,30],iconSize:[40,38]});
+        var lmMarker = L.marker([lmLat,lmLng],{icon:lmIcon,draggable:!!editMode});
+        if (editMode) {
+          (function(landmark){ lmMarker.on('dragend',function(e){ var ll=e.target.getLatLng(); var all=loadLandmarks(); var idx=all.findIndex(function(x){return x.id===landmark.id;}); if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);} }); })(lm);
+        }
+        lmMarker.addTo(_leafletMap);
+      });
+    }
+  } catch(e) {}
+    // Render landmarks on Leaflet map
+  try {
+    var _lmAll=loadLandmarks?loadLandmarks():[];
+    var _apLm2=getCurrentApiary();
+    if(_apLm2&&_lmAll.length&&_leafletMap){
+      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
+      _lmAll.forEach(function(lm){
+        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
+        var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
+        var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
+        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
+        var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
+          +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
+          +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
+          +'</div>';
+        var ic=L.divIcon({html:h,className:'',iconAnchor:[20,32],iconSize:[40,40]});
+        var mk=L.marker([lt,lg],{icon:ic,draggable:!!editMode});
+        if(editMode){(function(landmark){mk.on('dragend',function(e){
+          var ll=e.target.getLatLng();
+          var all=loadLandmarks();var idx=all.findIndex(function(x){return x.id===landmark.id;});
+          if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);}
+        });})(lm);}
+        mk.addTo(_leafletMap);
+      });
+    }
+  }catch(e){console.warn('Landmark render:',e);}
   updateMapHiveCount();
 }
 
@@ -13972,8 +13966,11 @@ function saveDisplayName() {
   if (!input || !input.value.trim()) { showToast('Please enter your name'); return; }
   var name = input.value.trim();
   localStorage.setItem('hk_display_name', name);
-  var uid = getUserId();
-  if (uid) getSupabase().from('profiles').upsert({id:uid, display_name:name},{onConflict:'id'});
+  try { var uid=getUserId(); if(uid) getSupabase().from('profiles').upsert({id:uid,display_name:name},{onConflict:'id'}); } catch(e) {}
+  var _nInput=document.getElementById('settings-display-name');
+  var _nBtn=document.getElementById('settings-name-save-btn');
+  if(_nInput){_nInput.style.borderColor='#2E7D32';_nInput.style.background='#f0fff0';}
+  if(_nBtn){var _orig=_nBtn.innerHTML;_nBtn.innerHTML='&#x2705;';setTimeout(function(){_nBtn.innerHTML=_orig;if(_nInput){_nInput.style.borderColor='';_nInput.style.background='';}},2500);}
   showToast('Name saved');
   try { syncUniversalHeaders('s-home'); } catch(e) {}
 }
