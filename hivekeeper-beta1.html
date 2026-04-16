@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:53</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 23:00</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12979,7 +12979,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:53  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 23:00  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13460,9 +13460,9 @@ function initLeafletMap() {
         // Show landmarks for current apiary or unassigned ones
         var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
         var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
-        var lg=lm.mapLng||(_mc?_mc.lng:_aLg)+(Math.random()-0.5)*0.0002;
+        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
         var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
-        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;position:relative;z-index:1000;">'
           +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
           +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
           +'</div>';
@@ -13488,9 +13488,9 @@ function initLeafletMap() {
         // Show landmarks for current apiary or unassigned ones
         var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
         var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
-        var lg=lm.mapLng||(_mc?_mc.lng:_aLg)+(Math.random()-0.5)*0.0002;
+        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
         var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
-        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
+        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;position:relative;z-index:1000;">'
           +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
           +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
           +'</div>';
