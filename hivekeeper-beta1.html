@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 16:17 15 April 2026 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
+<!-- HiveKeeper · Last updated 16 April 2026 at 13:55 · Paywall enforcement + Founding Beekeeper bypass + Pricing modal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 13:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 13:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6444,8 +6444,7 @@ function toggleEditLayout(){
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
   } else {
     btn.innerHTML='&#x270F;&#xFE0F;<br>Apiary Settings'; btn.classList.remove('active');
-    // Save positions when exiting edit mode
-    try { saveHivePositions(); } catch(e) { hkLog('saveHivePositions ERROR: '+e); }
+    try { saveHivePositions(); } catch(e) { console.warn('save err',e); }
     if(banner) banner.classList.remove('show');
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
@@ -6619,11 +6618,11 @@ function renderAsianHornetWatch(lat, lng) {
 
   // Determine alert level based on nearest confirmed sighting
   var level, badgeClass, badgeText, statusText, panelBg, panelBorder;
-  if(nearestKm < 80) {  // ~50 miles
+  if(nearestKm < 80) {
     level='alert'; badgeClass='ah-badge-alert'; badgeText='ELEVATED RISK';
     panelBg='#7B1515'; panelBorder='#C62828';
     statusText='Confirmed sighting '+nearestMiles+' miles from your apiary. Heightened vigilance required — check hive entrances daily.';
-  } else if(nearestKm < 161) {  // ~100 miles
+  } else if(nearestKm < 161) {
     level='watch'; badgeClass='ah-badge-watch'; badgeText='WATCH';
     panelBg='#7A4A00'; panelBorder='#E65100';
     statusText='Nearest confirmed sighting '+nearestMiles+' miles away. Monitor your hive entrances during warm afternoons (Aug-Oct).';
@@ -6632,17 +6631,14 @@ function renderAsianHornetWatch(lat, lng) {
     panelBg='#1A3A1A'; panelBorder='#2E7D32';
     statusText='No confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
   }
-  }
 
   // Update header
   var sub = document.getElementById('ah-header-sub');
   if(sub) sub.textContent = 'Nearest confirmed: '+nearestMiles+' miles · '+nearest.loc;
-  // Update panel background colour
   var ahPanel = document.querySelector('.ah-panel');
   if(ahPanel) { ahPanel.style.background = panelBg; ahPanel.style.borderColor = panelBorder; }
 
   var typeLabels = {nest:'Nest found', spring_queen:'Spring queen caught', worker:'Worker caught'};
-  // Add live map links to panel
   var liveLinksHtml = '<div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;">'
     + '<a href="https://www.bbka.org.uk/asian-hornet-incursion-map" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">🗺️ BBKA Live Map</a>'
     + '<a href="https://www.nationalbeeunit.com/about-us/beekeeping-news/yellow-legged-hornet-2025-rolling-update-2" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">📋 BeeBase 2026 Update</a>'
@@ -8040,7 +8036,7 @@ function getCurrentApiary() {
   return apiaries.find(function(a){ return a.id === id; }) || apiaries[0];
 }
 
-function selectApiaryItem(id) {
+function selectApiaryItem(id){
   document.querySelectorAll("[id^='apiary-opt-']").forEach(function(el){
     el.style.background="var(--white)";
     var nm=el.querySelector("[style*='font-weight:800']"); if(nm) nm.innerHTML=nm.innerHTML.replace(" ✓","");
@@ -8628,6 +8624,7 @@ function showAuthScreen() {
 }
 
 function hideAuthScreen() {
+  var dbtn=document.getElementById('hk-debug-btn'); if(dbtn) dbtn.style.display='block';
   var overlay = document.getElementById('auth-overlay');
   if (overlay) {
     overlay.style.display = 'none';
@@ -12990,7 +12987,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 13:45  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 13:55  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13913,6 +13910,81 @@ function saveHivePositions() {
   showToast('Saving '+saved+' positions...');
 }
 
+
+// ── DEBUG LOG ──────────────────────────────────────────────────
+var _hkLog = [];
+function hkLog(msg) {
+  var t = new Date().toTimeString().substr(0,8);
+  _hkLog.push('['+t+'] '+msg);
+  if (_hkLog.length > 80) _hkLog.shift();
+  var p = document.getElementById('hk-debug-panel');
+  if (p && p.style.display !== 'none') renderDebugPanel();
+  console.log('HK:', msg);
+}
+function renderDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.innerHTML = _hkLog.slice().reverse().map(function(l) {
+    var c = l.indexOf('ERROR')>-1||l.indexOf('FAIL')>-1 ? '#f66' : l.indexOf('OK')>-1 ? '#6f6' : '#0f0';
+    return '<div style="color:'+c+';padding:1px 0;border-bottom:1px solid #333;">'+l+'</div>';
+  }).join('');
+}
+function toggleDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display !== 'none') renderDebugPanel();
+}
+async function pushMapPositions() {
+  var uid = getUserId(); var apiary = getCurrentApiary();
+  hkLog('PUSH uid='+(uid?uid.substr(0,8):'null')+' ap='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PUSH SKIP'); return; }
+  if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH SKIP demo'); return; }
+  var positions = getMapPositions(); var cnt = Object.keys(positions).length;
+  hkLog('PUSH '+cnt+' pos bearing='+(_mapBearing||0));
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries').update({ map_positions: positions, map_bearing: _mapBearing||0 }).eq('id', apiary.id).eq('user_id', uid).select('id');
+    if (res.error) { hkLog('PUSH ERROR: '+res.error.message+' ('+res.error.code+')'); showToast('Map sync error: '+res.error.message); }
+    else { hkLog('PUSH OK rows='+(res.data?res.data.length:0)); showToast('Positions saved to cloud'); }
+  } catch(e) { hkLog('PUSH EX: '+e.message); }
+}
+async function pullMapPositions() {
+  var uid = getUserId(); var apiary = getCurrentApiary();
+  hkLog('PULL uid='+(uid?uid.substr(0,8):'null')+' ap='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PULL SKIP'); return; }
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries').select('map_positions,map_bearing').eq('id',apiary.id).limit(1);
+    if (res.error) { hkLog('PULL ERROR: '+res.error.message); return; }
+    hkLog('PULL rows='+(res.data?res.data.length:0));
+    var row = res.data && res.data.length ? res.data[0] : null;
+    if (row && row.map_positions) {
+      var pos = typeof row.map_positions === 'string' ? JSON.parse(row.map_positions) : row.map_positions;
+      localStorage.setItem('hk_map_positions', JSON.stringify(pos));
+      hkLog('PULL OK '+Object.keys(pos).length+' pos');
+    } else { hkLog('PULL: no map_positions'); }
+    if (row && row.map_bearing != null) { _mapBearing = row.map_bearing; applyMapRotation(); hkLog('PULL bearing='+_mapBearing); }
+  } catch(e) { hkLog('PULL EX: '+e.message); }
+}
+function saveHivePositions() {
+  hkLog('saveHivePositions called, markers='+Object.keys(_hiveMarkers).length);
+  var saved = 0;
+  Object.keys(_hiveMarkers).forEach(function(hiveId) {
+    var marker = _hiveMarkers[hiveId]; if (!marker) return;
+    var ll = marker.getLatLng();
+    setMapPosition(hiveId, ll.lat, ll.lng);
+    hkLog('pos: '+hiveId.substr(0,8)+' '+ll.lat.toFixed(5)+','+ll.lng.toFixed(5));
+    saved++;
+  });
+  hkLog('saved '+saved+' to localStorage');
+  pushMapPositions().catch(function(e){ hkLog('push failed: '+e); });
+  showToast('Saving '+saved+' positions...');
+}
+
 </script>
 </body>
+
+<button onclick="toggleDebugPanel()" id="hk-debug-btn" style="position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:500;display:none;">&#x1F50D; Log</button>
+<div id="hk-debug-panel" style="position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:500;display:none;font-family:monospace;font-size:10px;"></div>
 </html>
