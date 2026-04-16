@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:07</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 22:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5450,13 +5450,16 @@ function highlightHiveOnMap(hiveId) {
   var marker = _hiveMarkers ? _hiveMarkers[hiveId] : null;
   if(marker) {
     var el = marker.getElement();
-    if(el) {
+    var innerEl = el ? el.querySelector('div') : null;
+    var target = innerEl || el;
+    if(target) {
       var pulseCount = 0;
+      var origTransform = target.style.transform || '';
       var pulseInterval = setInterval(function(){
         pulseCount++;
-        el.style.transform = (pulseCount%2===0) ? 'scale(1.3)' : 'scale(1)';
-        el.style.transition = 'transform 0.15s';
-        if(pulseCount >= 6) { clearInterval(pulseInterval); el.style.transform = ''; clearHighlight(); }
+        target.style.transform = origTransform + (pulseCount%2===0 ? ' scale(1.4)' : ' scale(1)');
+        target.style.transition = 'transform 0.15s';
+        if(pulseCount >= 6) { clearInterval(pulseInterval); target.style.transform = origTransform; clearHighlight(); }
       }, 150);
     }
   }
@@ -7320,6 +7323,10 @@ function deleteHiveAndData(hiveId) {
       var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');
       delete _p[hiveId];
       localStorage.setItem('hk_map_positions', JSON.stringify(_p));
+      // Track deleted ID so pull doesn't restore it
+      var _del=JSON.parse(localStorage.getItem('hk_deleted_hives')||'[]');
+      if(_del.indexOf(hiveId)<0){_del.push(hiveId);}
+      localStorage.setItem('hk_deleted_hives', JSON.stringify(_del));
     }
   } catch(e) {}
 
@@ -10074,6 +10081,9 @@ async function pullFromSupabase() {
           userId: h.user_id || null
         };
       });
+      // Filter out locally deleted hives
+      var _delList=JSON.parse(localStorage.getItem('hk_deleted_hives')||'[]');
+      if(_delList.length) mapped=mapped.filter(function(h){return _delList.indexOf(h.id)<0;});
       localStorage.setItem('hk_hives_v2', JSON.stringify(mapped));
     }
 
@@ -10423,6 +10433,7 @@ async function loadSettingsFromCloud() {
   var { data } = await sb.from('profiles').select('settings, name').eq('id', getUserId()).single();
   if (data) {
     if (data.name) {
+      localStorage.setItem('hk_display_name', data.name);
       var nameEls = document.querySelectorAll('.user-display-name, #apiary-name-display');
     }
     if (data.settings) {
@@ -11685,8 +11696,11 @@ function addLandmark(type) {
   var landmarks = loadLandmarks();
   var label = type === 'custom' ? (prompt('Label for this landmark:', 'Custom') || 'Custom') : def.label;
   var _apLm=getCurrentApiary();
-  var _lmLat=_apLm?((_apLm.lat||52.5)+(Math.random()-0.5)*0.0003):52.5;
-  var _lmLng=_apLm?((_apLm.lng||-1.5)+(Math.random()-0.5)*0.0003):-1.5;
+  var _mapCtr=_leafletMap?_leafletMap.getCenter():null;
+  var _lmBaseLat=(_apLm&&_apLm.lat)?_apLm.lat:(_mapCtr?_mapCtr.lat:52.5);
+  var _lmBaseLng=(_apLm&&_apLm.lng)?_apLm.lng:(_mapCtr?_mapCtr.lng:-1.5);
+  var _lmLat=_lmBaseLat+(Math.random()-0.5)*0.0002;
+  var _lmLng=_lmBaseLng+(Math.random()-0.5)*0.0002;
   landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_apLm?_apLm.id:null});
   saveLandmarks(landmarks);
   try{renderLeafletHives(window._editModeActive||false);}catch(e){}
@@ -11696,6 +11710,7 @@ function addLandmark(type) {
 function deleteLandmark(id) {
   var landmarks = loadLandmarks().filter(function(l){ return l.id !== id; });
   saveLandmarks(landmarks);
+  try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
   if (getUserId()) deleteLandmarkFromCloud(id).catch(function(){});
   renderMap();
   showToast('Landmark removed');
@@ -12943,7 +12958,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:07  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 22:25  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13926,7 +13941,7 @@ function saveDisplayName() {
   var name = input.value.trim();
   localStorage.setItem('hk_display_name', name);
   var uid = getUserId();
-  if (uid) getSupabase().from('profiles').upsert({id:uid, display_name:name},{onConflict:'id'});
+  if (uid) { try { getSupabase().from('profiles').update({name:name}).eq('id',uid); } catch(e) { console.warn('Profile save:', e); } }
   input.style.borderColor = '#2E7D32';
   input.style.background = '#f0fff0';
   var btn = document.getElementById('settings-name-save-btn');
