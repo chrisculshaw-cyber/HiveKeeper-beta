@@ -902,8 +902,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
-#hk-debug-panel{position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:9999;display:none;font-family:monospace;font-size:10px;}
-#hk-debug-btn{position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -918,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 11:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2529,7 +2527,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){ hkLog('pull call err:'+e); } }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -6121,7 +6119,9 @@ function runAndDownloadReport(id) {
   if (!html) return;
   var report = [].concat(REPORTS_BY_TIER.pro, REPORTS_BY_TIER.commercial).find(function(r){ return r.id === id; });
   var filename = (report ? report.label : id).replace(/\s+/g,'-').toLowerCase() + '-' + new Date().toISOString().split('T')[0] + '.html';
-  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + 'ement('a');
+  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + (report ? report.label : id) + '</title></head><body>' + html + '</body></html>';
+  var blob = new Blob([full], { type: 'text/html' });
+  var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
@@ -8610,6 +8610,7 @@ function showAuthScreen() {
 }
 
 function hideAuthScreen() {
+  var dbtn = document.getElementById('hk-debug-btn'); if(dbtn) dbtn.style.display='block';
   var overlay = document.getElementById('auth-overlay');
   if (overlay) {
     overlay.style.display = 'none';
@@ -12972,7 +12973,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:45  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 11:50  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13758,109 +13759,24 @@ function loadMapBearing() {
 
 
 function saveHivePositions() {
+  var allH = loadHives();
   var saved = 0;
   Object.keys(_hiveMarkers).forEach(function(hiveId) {
     var marker = _hiveMarkers[hiveId];
     if (!marker) return;
     var ll = marker.getLatLng();
-    setMapPosition(hiveId, ll.lat, ll.lng);
-    hkLog('savePos: '+hiveId.substr(0,8)+' lat='+ll.lat.toFixed(5));
-    saved++;
+    var idx = allH.findIndex(function(h) { return h.id === hiveId; });
+    if (idx >= 0) {
+      allH[idx].map_lat = ll.lat;
+      allH[idx].map_lng = ll.lng;
+      saved++;
+    }
   });
-  hkLog('saveHivePositions: '+saved+' saved to localStorage');
-  var msb = document.getElementById('map-save-btn');
-  if (msb) { msb.innerHTML = '⏳ Syncing...'; msb.style.opacity = '0.7'; }
-  try { 
-    pushMapPositions().then(function() {
-      if (msb) { msb.innerHTML = '✅ Saved'; msb.style.background='#2E7D32'; msb.style.opacity='1'; }
-      setTimeout(function(){ if (msb) { msb.innerHTML = '💾 Save positions'; msb.style.background='var(--forest)'; } }, 3000);
-    });
-  } catch(e) { hkLog('push call failed: '+e); }
-  showToast('Saving ' + saved + ' positions...');
+  saveHives(allH);
+  showToast('✅ ' + saved + ' hive position' + (saved !== 1 ? 's' : '') + ' saved');
+  setTimeout(function(){ var msb=document.getElementById('map-save-btn'); if(msb) msb.style.display='none'; }, 2000);
 }
 
-
-// ── DEBUG LOG ─────────────────────────────────────────────────
-var _hkLog = [];
-function hkLog(msg) {
-  var t = new Date().toTimeString().substr(0,8);
-  _hkLog.push('['+t+'] '+msg);
-  if (_hkLog.length > 80) _hkLog.shift();
-  var p = document.getElementById('hk-debug-panel');
-  if (p && p.style.display !== 'none') renderDebugPanel();
-  console.log('HK:', msg);
-}
-function renderDebugPanel() {
-  var p = document.getElementById('hk-debug-panel');
-  if (!p) return;
-  p.innerHTML = _hkLog.slice().reverse().map(function(l) {
-    var c = l.indexOf('ERROR')>-1||l.indexOf('FAIL')>-1 ? '#f66' : l.indexOf('OK')>-1||l.indexOf('saved')>-1 ? '#6f6' : '#0f0';
-    return '<div style="color:'+c+';padding:1px 0;border-bottom:1px solid #222;">'+l+'</div>';
-  }).join('');
-}
-function toggleDebugPanel() {
-  var p = document.getElementById('hk-debug-panel');
-  if (!p) return;
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
-  if (p.style.display !== 'none') renderDebugPanel();
-}
-
-// ── MAP POSITION SUPABASE SYNC ────────────────────────────────
-async function pushMapPositions() {
-  var uid = getUserId();
-  var apiary = getCurrentApiary();
-  hkLog('PUSH start uid='+(uid?uid.substr(0,8):'null')+' apiary='+(apiary?apiary.id.substr(0,8):'null'));
-  if (!uid || !apiary || !apiary.id) { hkLog('PUSH SKIP: missing uid or apiary'); return; }
-  if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH SKIP: demo'); return; }
-  var positions = getMapPositions();
-  var cnt = Object.keys(positions).length;
-  hkLog('PUSH: '+cnt+' positions, bearing='+(_mapBearing||0));
-  try {
-    var sb = getSupabase();
-    var res = await sb.from('apiaries')
-      .update({ map_positions: positions, map_bearing: _mapBearing||0 })
-      .eq('id', apiary.id)
-      .eq('user_id', uid)
-      .select('id');
-    if (res.error) {
-      hkLog('PUSH ERROR: '+res.error.message+' ('+res.error.code+')');
-      showToast('Map sync error: '+res.error.message);
-    } else {
-      hkLog('PUSH OK: '+(res.data?res.data.length:0)+' rows updated');
-      showToast('Positions saved to cloud');
-    }
-  } catch(e) {
-    hkLog('PUSH EXCEPTION: '+e.message);
-  }
-}
-
-async function pullMapPositions() {
-  var uid = getUserId();
-  var apiary = getCurrentApiary();
-  hkLog('PULL start uid='+(uid?uid.substr(0,8):'null')+' apiary='+(apiary?apiary.id.substr(0,8):'null'));
-  if (!uid || !apiary || !apiary.id) { hkLog('PULL SKIP: missing uid or apiary'); return; }
-  try {
-    var sb = getSupabase();
-    var res = await sb.from('apiaries').select('map_positions,map_bearing').eq('id',apiary.id).limit(1);
-    if (res.error) { hkLog('PULL ERROR: '+res.error.message); return; }
-    hkLog('PULL: '+(res.data?res.data.length:0)+' rows');
-    var row = res.data && res.data.length ? res.data[0] : null;
-    if (row && row.map_positions) {
-      var pos = typeof row.map_positions === 'string' ? JSON.parse(row.map_positions) : row.map_positions;
-      localStorage.setItem('hk_map_positions', JSON.stringify(pos));
-      hkLog('PULL OK: '+Object.keys(pos).length+' positions');
-    } else {
-      hkLog('PULL: no map_positions in row');
-    }
-    if (row && row.map_bearing != null) {
-      _mapBearing = row.map_bearing;
-      applyMapRotation();
-      hkLog('PULL bearing='+_mapBearing);
-    }
-  } catch(e) {
-    hkLog('PULL EXCEPTION: '+e.message);
-  }
-}
 
 function setMapInteractive(interactive) {
   if (!_leafletMap) return;
@@ -13901,9 +13817,104 @@ document.addEventListener('DOMContentLoaded', function() {
     screen.insertBefore(hdr, sa);
   });
 });
-</script>
 
-<button id="hk-debug-btn" onclick="toggleDebugPanel()" style="position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:9999;">&#x1F50D; Log</button>
-<div id="hk-debug-panel" style="position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:9999;display:none;font-family:monospace;font-size:10px;"></div>
+
+// ── DEBUG LOG ──────────────────────────────────────────────────
+var _hkLog = [];
+function hkLog(msg) {
+  var t = new Date().toTimeString().substr(0,8);
+  _hkLog.push('['+t+'] '+msg);
+  if (_hkLog.length > 80) _hkLog.shift();
+  var p = document.getElementById('hk-debug-panel');
+  if (p && p.style.display !== 'none') renderDebugPanel();
+  console.log('HK:', msg);
+}
+function renderDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.innerHTML = _hkLog.slice().reverse().map(function(l) {
+    var c = l.indexOf('ERROR')>-1||l.indexOf('FAIL')>-1 ? '#f66' : l.indexOf('OK')>-1 ? '#6f6' : '#0f0';
+    return '<div style="color:'+c+';padding:1px 0;border-bottom:1px solid #333;">'+l+'</div>';
+  }).join('');
+}
+function toggleDebugPanel() {
+  var p = document.getElementById('hk-debug-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display !== 'none') renderDebugPanel();
+}
+// ── MAP POSITION SUPABASE SYNC ─────────────────────────────────
+async function pushMapPositions() {
+  var uid = getUserId();
+  var apiary = getCurrentApiary();
+  hkLog('PUSH uid='+(uid?uid.substr(0,8):'null')+' ap='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PUSH SKIP'); return; }
+  if (apiary.id.toString().startsWith('demo-')) { hkLog('PUSH SKIP demo'); return; }
+  var positions = getMapPositions();
+  var cnt = Object.keys(positions).length;
+  hkLog('PUSH '+cnt+' pos bearing='+(_mapBearing||0));
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries')
+      .update({ map_positions: positions, map_bearing: _mapBearing||0 })
+      .eq('id', apiary.id)
+      .eq('user_id', uid)
+      .select('id');
+    if (res.error) {
+      hkLog('PUSH ERROR: '+res.error.message+' ('+res.error.code+')');
+      showToast('Map sync error: '+res.error.message);
+    } else {
+      hkLog('PUSH OK rows='+(res.data?res.data.length:0));
+      showToast('Positions saved to cloud');
+    }
+  } catch(e) { hkLog('PUSH EX: '+e.message); }
+}
+async function pullMapPositions() {
+  var uid = getUserId();
+  var apiary = getCurrentApiary();
+  hkLog('PULL uid='+(uid?uid.substr(0,8):'null')+' ap='+(apiary?apiary.id.substr(0,8):'null'));
+  if (!uid || !apiary || !apiary.id) { hkLog('PULL SKIP'); return; }
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('apiaries').select('map_positions,map_bearing').eq('id',apiary.id).limit(1);
+    if (res.error) { hkLog('PULL ERROR: '+res.error.message); return; }
+    hkLog('PULL rows='+(res.data?res.data.length:0));
+    var row = res.data && res.data.length ? res.data[0] : null;
+    if (row && row.map_positions) {
+      var pos = typeof row.map_positions === 'string' ? JSON.parse(row.map_positions) : row.map_positions;
+      localStorage.setItem('hk_map_positions', JSON.stringify(pos));
+      hkLog('PULL OK '+Object.keys(pos).length+' pos');
+    } else { hkLog('PULL: no map_positions'); }
+    if (row && row.map_bearing != null) {
+      _mapBearing = row.map_bearing;
+      applyMapRotation();
+      hkLog('PULL bearing='+_mapBearing);
+    }
+  } catch(e) { hkLog('PULL EX: '+e.message); }
+}
+function saveHivePositions() {
+  var saved = 0;
+  Object.keys(_hiveMarkers).forEach(function(hiveId) {
+    var marker = _hiveMarkers[hiveId];
+    if (!marker) return;
+    var ll = marker.getLatLng();
+    setMapPosition(hiveId, ll.lat, ll.lng);
+    hkLog('pos: '+hiveId.substr(0,8)+' '+ll.lat.toFixed(5)+','+ll.lng.toFixed(5));
+    saved++;
+  });
+  hkLog('saveHivePositions: '+saved+' to localStorage');
+  var msb = document.getElementById('map-save-btn');
+  if (msb) { msb.innerHTML = 'Syncing...'; msb.style.opacity='0.7'; }
+  pushMapPositions().then(function() {
+    if (msb) { msb.innerHTML = 'Saved'; msb.style.background='#2E7D32'; msb.style.opacity='1'; }
+    setTimeout(function(){ if (msb) { msb.innerHTML = 'Save positions'; msb.style.background='var(--forest)'; } }, 3000);
+  }).catch(function(e){ hkLog('push failed: '+e); });
+  showToast('Saving '+saved+' positions...');
+}
+
+</script>
 </body>
+
+<button onclick="toggleDebugPanel()" style="position:fixed;bottom:140px;right:8px;background:#1F3812;color:white;border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;z-index:500;display:none;" id="hk-debug-btn">&#x1F50D; Log</button>
+<div id="hk-debug-panel" style="position:fixed;bottom:165px;left:8px;right:8px;max-height:180px;overflow-y:auto;background:rgba(0,0,0,0.9);border-radius:8px;padding:8px;z-index:500;display:none;font-family:monospace;font-size:10px;"></div>
 </html>
