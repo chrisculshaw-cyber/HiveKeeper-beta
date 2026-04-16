@@ -1140,7 +1140,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
     <!-- Map canvas -->
     <div class="map-canvas-wrap">
-      <div id="leaflet-map" style="width:150%;height:450px;margin:-55px -25%;transition:transform 0.3s ease;"></div>
+      <div id="leaflet-map" style="width:160%;height:540px;margin:-100px -30%;transition:transform 0.3s ease;"></div>
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
@@ -13356,8 +13356,8 @@ var MAP_DEFAULT_LNG = -0.9;
 var MAP_DEFAULT_ZOOM = 19;
 
 // Metres per hive spacing in grid layout
-var ROW_SPACING_M = 15;
-var HIVE_SPACING_M = 5;
+var ROW_SPACING_M = 20;
+var HIVE_SPACING_M = 6;
 
 function initLeafletMap() {
   var container = document.getElementById('leaflet-map');
@@ -13438,33 +13438,31 @@ function initLeafletMap() {
   updateMapHiveCount();
 }
 
-function getHiveLatLng(hive, rows, apiaryLat, apiaryLng) {
-  // If hive has stored GPS offset, use it
+function getHiveLatLng(hive, rows, apiaryLat, apiaryLng, allHives) {
   if (hive.mapLat && hive.mapLng) {
     return [parseFloat(hive.mapLat), parseFloat(hive.mapLng)];
   }
-  // Otherwise derive from row/position grid
   var rowIndex = 0;
   var rowNames = rows.map(function(r) { return r.name; });
   var ri = rowNames.indexOf(hive.row || 'Row 1');
   if (ri >= 0) rowIndex = ri;
-
-  var hiveIndex = (hive.position || 1) - 1;
-
-  // Convert to metres offset from apiary centre
-  // Rows run west-east, stacked south-north
   var totalRows = Math.max(rows.length, 1);
-  // Count how many hives are in this row for centering
-  var hivesInRow = rows.length > 0 ? Math.max(1, Math.round(24 / Math.max(rows.length, 1))) : 6;
+
+  // Assign unique east index based on position within row
+  var hivesInSameRow = (allHives || []).filter(function(h) {
+    return (h.row || 'Row 1') === (hive.row || 'Row 1');
+  }).sort(function(a, b) { return (a.id || '').localeCompare(b.id || ''); });
+  var hiveIndex = hivesInSameRow.findIndex(function(h) { return h.id === hive.id; });
+  if (hiveIndex < 0) hiveIndex = 0;
+  var hivesInRow = Math.max(hivesInSameRow.length, 1);
+
   var northOffset = (rowIndex - (totalRows - 1) / 2) * ROW_SPACING_M;
   var eastOffset  = (hiveIndex - (hivesInRow - 1) / 2) * HIVE_SPACING_M;
-
-  // Convert metres to lat/lng delta (approx)
   var dLat = northOffset / 111320;
-  var dLng = eastOffset  / (111320 * Math.cos(apiaryLat * Math.PI / 180));
-
+  var dLng = eastOffset / (111320 * Math.cos(apiaryLat * Math.PI / 180));
   return [apiaryLat + dLat, apiaryLng + dLng];
 }
+
 
 function hiveStatusColor(hive) {
   var s = (hive.status || '').toLowerCase();
@@ -13506,7 +13504,7 @@ function renderLeafletHives(editMode) {
   _hiveMarkers = {};
 
   hives.forEach(function(hive) {
-    var pos = getHiveLatLng(hive, rows, lat, lng);
+    var pos = getHiveLatLng(hive, rows, lat, lng, hives);
     var marker = L.marker(pos, {
       icon: makeHiveIcon(hive, editMode),
       draggable: !!editMode,
