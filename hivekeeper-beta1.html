@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 20:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 16 April 2026 at 20:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2036,6 +2036,14 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
+      <!-- PROFILE NAME -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
+        <div style="display:flex;gap:8px;">
+          <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
+          <div onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
+        </div>
+      </div>
       <!-- ACCOUNT -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
@@ -2725,8 +2733,9 @@ function renderDashboard(){
   var _greetingName = '';
   if (typeof _currentUser !== 'undefined' && _currentUser) {
     var _meta = _currentUser.user_metadata || {};
-    var _fullName = _meta.full_name || _meta.name || '';
-    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0]; // first name only
+    var _stored = localStorage.getItem('hk_display_name') || '';
+    var _fullName = _stored || _meta.full_name || _meta.name || '';
+    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
   }
   document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
   if (typeof renderFoundingBadge === 'function') renderFoundingBadge();
@@ -3426,7 +3435,17 @@ function openFrameCompare() {
       allPhotos.push({ url: url, label: (lbl||'Frame') + ' · ' + dateStr });
     });
   });
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
   var thumbs = allPhotos.map(function(p, i) {
     return '<div onclick="selectComparePhoto(' + i + ',this)" data-url="' + p.url + '" data-label="' + p.label + '" style="cursor:pointer;border:2px solid transparent;border-radius:8px;overflow:hidden;flex-shrink:0;">'
@@ -8028,6 +8047,15 @@ function getCurrentApiary() {
   return apiaries.find(function(a){ return a.id === id; }) || apiaries[0];
 }
 
+function selectApiaryItem(id) {
+  document.querySelectorAll('[id^="apiary-opt-"]').forEach(function(el) {
+    el.style.background = 'var(--white)';
+    el.style.borderLeft = '';
+  });
+  var sel = document.getElementById('apiary-opt-' + id);
+  if (sel) { sel.style.background = 'var(--honey-pale)'; sel.style.borderLeft = '3px solid var(--honey)'; }
+  switchApiary(id);
+}
 function switchApiary(id) {
   localStorage.setItem(CURRENT_APIARY_KEY, id);
   currentApiaryId = id;
@@ -8098,7 +8126,7 @@ function openApiarySwitcher() {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
     var isCurrent = current && a.id === current.id;
-    return '<div onclick="switchApiary(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
+    return '<div id="apiary-opt-' + a.id + '" onclick="selectApiaryItem(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
       + '<div style="font-size:28px;">🏡</div>'
       + '<div style="flex:1;">'
         + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + '</div>'
@@ -8301,7 +8329,17 @@ function saveSOSContact(data) { localStorage.setItem(SOS_CONTACT_KEY, JSON.strin
 
 function openSOSSetup() {
   var contact = loadSOSContact();
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
@@ -11144,7 +11182,7 @@ function showUpgradeModal(reason) {
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
-function addSignOutToSettings() {
+function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {}
   var btn = document.getElementById('sign-out-btn');
   if (!btn) return;
   var name = '';
@@ -11725,13 +11763,23 @@ function deleteLandmark(id) {
 }
 
 function openLandmarkPicker() {
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
 
   var types = Object.keys(LANDMARK_TYPES);
   var grid = types.map(function(type) {
     var def = LANDMARK_TYPES[type];
-    return '<div onclick="addLandmark(\'' + type + '\');closeModalEl(\'modal-sos\')" ' +
+    return '<div onclick="addLandmark(\'' + type + '\');var _lps=document.getElementById(\'landmark-picker-sheet\');if(_lps)_lps.remove()" ' +
       'style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;' +
       'background:var(--cream);border-radius:var(--rs);cursor:pointer;border:1px solid var(--wax);">' +
       '<div style="font-size:24px;">' + def.emoji + '</div>' +
@@ -11764,11 +11812,7 @@ function openLandmarkPicker() {
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;">' +
     grid + '</div>' +
     existingHtml +
-    '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;margin-top:16px;' +
-    'background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;' +
-    'font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
-
-  openModalEl('modal-sos');
+    '<button onclick="document.getElementById(\'landmark-picker-sheet\').remove()" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 }
 
 // ── LANDMARKS CLOUD SYNC ─────────────────────────────────
@@ -11806,7 +11850,17 @@ function openLandmarkEditor(id) {
   var lm = landmarks.find(function(l){ return l.id === id; });
   if (!lm) return;
   var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">' + def.emoji + ' Edit landmark</div>'
@@ -11982,7 +12036,17 @@ function initCompassInteraction() {
 // ── INSPECTION HIVE PICKER ───────────────────────────────
 function showInspectionHivePicker() {
   var hives = loadHives().filter(function(h){ return !h.isHidden; });
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
 
   var rows = hives.map(function(h) {
@@ -12896,7 +12960,17 @@ function changeHiveRow(hiveId) {
     html += '<button class="row-pick-btn" data-row="' + r.name + '" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);background:' + (active ? '#C8730A' : 'white') + ';color:' + (active ? 'white' : 'var(--text)') + ';font-size:14px;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;">' + r.name + '</button>';
   });
     html += '<button onclick="closeModalEl(\'modal-sos\')\" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);background:transparent;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
-  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  // Use a dedicated bottom sheet
+  var existing_sheet = document.getElementById('landmark-picker-sheet');
+  if (existing_sheet) existing_sheet.remove();
+  var sheet_wrap = document.createElement('div');
+  sheet_wrap.id = 'landmark-picker-sheet';
+  sheet_wrap.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.5);';
+  sheet_wrap.onclick = function(e){ if(e.target===sheet_wrap) sheet_wrap.remove(); };
+  var sheet = document.createElement('div');
+  sheet.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:white;border-radius:20px 20px 0 0;padding:20px;max-height:80vh;overflow-y:auto;';
+  sheet_wrap.appendChild(sheet);
+  document.body.appendChild(sheet_wrap);
   if (!sheet) return;
   sheet.innerHTML = html;
   // Attach click handlers
@@ -12966,7 +13040,7 @@ function goToApiaryAlerts() {
     z-index:50;
     pointer-events:none;
     letter-spacing:.02em;
-  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 20:00  ·  by Chris Culshaw</div>
+  ">HiveKeeper Beta  ·  Last updated 16 April 2026 at 20:10  ·  by Chris Culshaw</div>
 
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
@@ -13890,6 +13964,22 @@ function saveHivePositions() {
     setTimeout(function(){ if (msb) { msb.innerHTML = 'Save positions'; msb.style.background='var(--forest)'; } }, 3000);
   }).catch(function(e){ hkLog('push failed: '+e); });
   showToast('Saving '+saved+' positions...');
+}
+
+
+function saveDisplayName() {
+  var input = document.getElementById('settings-display-name');
+  if (!input || !input.value.trim()) { showToast('Please enter your name'); return; }
+  var name = input.value.trim();
+  localStorage.setItem('hk_display_name', name);
+  var uid = getUserId();
+  if (uid) getSupabase().from('profiles').upsert({id:uid, display_name:name},{onConflict:'id'});
+  showToast('Name saved');
+  try { syncUniversalHeaders('s-home'); } catch(e) {}
+}
+function loadSettingsName() {
+  var input = document.getElementById('settings-display-name');
+  if (input) input.value = localStorage.getItem('hk_display_name') || '';
 }
 
 </script>
