@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 11:35</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 11:40</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -14008,7 +14008,7 @@ function loadSettingsName() {
 
 
 
-var TRIAL_DAYS = 30;
+var TRIAL_DAYS = 14;
 
 function getTrialStartDate() {
   var stored = localStorage.getItem('hk_trial_start');
@@ -14039,7 +14039,7 @@ function canUsePremiumFeature(feature) {
   if (tier === 'pro' || tier === 'commercial') return true;
   if (isInTrial()) {
     var days = trialDaysLeft();
-    if (days <= 7) {
+    if (days <= 5) {
       showToast('Free trial: ' + days + ' day' + (days !== 1 ? 's' : '') + ' left — tap to upgrade');
     }
     return true;
@@ -14134,12 +14134,12 @@ function renderTrialBanners() {
   if (!foundingChecked && getUserId()) { b.style.display = 'none'; return; }
   var inTrial = typeof isInTrial === 'function' && isInTrial();
   if (inTrial) {
-    var dLeft = typeof trialDaysLeft === 'function' ? trialDaysLeft() : 30;
+    var dLeft = typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14;
     b.style.display = 'block';
-    b.style.background = dLeft <= 3 ? '#C62828' : dLeft <= 7 ? '#BA7517' : '#C8730A';
+    b.style.background = dLeft <= 2 ? '#C62828' : dLeft <= 5 ? '#BA7517' : '#C8730A';
     b.style.padding = '9px 20px';
-    b.textContent = dLeft <= 3 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' left — your bees need you! Tap to upgrade' :
-                    dLeft <= 7 ? dLeft + ' days of free trial left — tap to upgrade' :
+    b.textContent = dLeft <= 2 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' left — your bees need you! Tap to upgrade' :
+                    dLeft <= 5 ? dLeft + ' days of free trial left — tap to upgrade' :
                     'Free trial: ' + dLeft + ' days remaining — tap to upgrade';
     b.style.cursor = 'pointer';
     b.style.pointerEvents = 'all';
