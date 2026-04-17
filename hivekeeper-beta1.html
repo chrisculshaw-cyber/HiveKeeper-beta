@@ -369,6 +369,17 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-badge-alert { background: #FDECEA; color: var(--red); }
 .ah-badge-watch { background: #FFF3CD; color: #B07800; }
 .ah-badge-clear { background: #EAFAF1; color: var(--green); }
+/* Flashing border when an Asian Hornet sighting is within 20 miles (critical) */
+.ah-panel-flash { animation: ahCriticalPulse 1.4s ease-in-out infinite; }
+@keyframes ahCriticalPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.55), 0 2px 8px rgba(0,0,0,0.25); }
+  50%  { box-shadow: 0 0 0 8px rgba(255, 23, 68, 0.0), 0 2px 8px rgba(0,0,0,0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.0), 0 2px 8px rgba(0,0,0,0.25); }
+}
+/* Respect user preference for reduced motion — never flash */
+@media (prefers-reduced-motion: reduce) {
+  .ah-panel-flash { animation: none; border-width: 3px; }
+}
 .ah-sighting { padding: 8px 0; border-bottom: 1px solid var(--wax); display: flex; gap: 10px; align-items: flex-start; }
 .ah-sighting:last-child { border-bottom: none; }
 .ah-sighting-loc { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
@@ -919,7 +930,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 22:03</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 22:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6685,18 +6696,22 @@ function renderAsianHornetWatch(lat, lng) {
   var nearestMiles = Math.round(nearest.distKm * 0.621371);
 
   // Determine alert level based on nearest confirmed sighting
-  var level, badgeClass, badgeText, statusText, panelBg, panelBorder;
-  if(nearestKm < 80) {  // ~50 miles
+  var level, badgeClass, badgeText, statusText, panelBg, panelBorder, panelFlash;
+  if(nearestKm < 32) {  // ~20 miles — CRITICAL, flash
+    level='critical'; badgeClass='ah-badge-alert'; badgeText='CRITICAL';
+    panelBg='#8B0000'; panelBorder='#FF1744'; panelFlash=true;
+    statusText='Confirmed sighting ONLY '+nearestMiles+' miles from your apiary. Check hive entrances multiple times per day. Set monitoring traps now.';
+  } else if(nearestKm < 80) {  // ~50 miles
     level='alert'; badgeClass='ah-badge-alert'; badgeText='ELEVATED RISK';
-    panelBg='#7B1515'; panelBorder='#C62828';
+    panelBg='#7B1515'; panelBorder='#C62828'; panelFlash=false;
     statusText='Confirmed sighting '+nearestMiles+' miles from your apiary. Heightened vigilance required — check hive entrances daily.';
   } else if(nearestKm < 161) {  // ~100 miles
     level='watch'; badgeClass='ah-badge-watch'; badgeText='WATCH';
-    panelBg='#7A4A00'; panelBorder='#E65100';
+    panelBg='#7A4A00'; panelBorder='#E65100'; panelFlash=false;
     statusText='Nearest confirmed sighting '+nearestMiles+' miles away. Monitor your hive entrances during warm afternoons (Aug-Oct).';
   } else {
     level='clear'; badgeClass='ah-badge-clear'; badgeText='LOW RISK';
-    panelBg='#1A3A1A'; panelBorder='#2E7D32';
+    panelBg='#1A3A1A'; panelBorder='#2E7D32'; panelFlash=false;
     statusText='No confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
   }
 
@@ -6705,27 +6720,31 @@ function renderAsianHornetWatch(lat, lng) {
   if(sub) sub.textContent = 'Nearest confirmed: '+nearestMiles+' miles · '+nearest.loc;
   // Update panel background colour
   var ahPanel = document.querySelector('.ah-panel');
-  if(ahPanel) { ahPanel.style.background = panelBg; ahPanel.style.borderColor = panelBorder; }
+  if(ahPanel) {
+    ahPanel.style.background = panelBg;
+    ahPanel.style.borderColor = panelBorder;
+    // Flash only at CRITICAL level
+    if(panelFlash) ahPanel.classList.add('ah-panel-flash');
+    else ahPanel.classList.remove('ah-panel-flash');
+  }
 
-  var typeLabels = {nest:'Nest found', spring_queen:'Spring queen caught', worker:'Worker caught'};
-  // Add live map links to panel
-  var liveLinksHtml = '<div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;">'
-    + '<a href="https://www.bbka.org.uk/asian-hornet-incursion-map" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">🗺️ BBKA Live Map</a>'
-    + '<a href="https://www.nationalbeeunit.com/about-us/beekeeping-news/yellow-legged-hornet-2025-rolling-update-2" target="_blank" style="flex:1;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:12px;padding:8px 12px;font-size:11px;font-weight:700;color:white;text-decoration:none;text-align:center;">📋 BeeBase 2026 Update</a>'
-    + '</div>';
-  var typeEmoji = {nest:'&#x1F534;', spring_queen:'&#x1F7E0;', worker:'&#x1F7E1;'};
+  var typeLabels = {nest:'Nest found', spring_queen:'Spring queen caught', worker:'Worker caught', sighting:'Sighting reported'};
+  var typeEmoji = {nest:'&#x1F534;', spring_queen:'&#x1F7E0;', worker:'&#x1F7E1;', sighting:'&#x1F7E3;'};
 
   // Build content
   var top5 = withDist.slice(0,5);
   var sightingsHtml = top5.map(function(s) {
     var km = Math.round(s.distKm), mi = Math.round(s.distKm*0.621371);
-    var d = s.date.split('-'); var monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var dateStr = monthNames[parseInt(d[1])-1]+' '+d[0];
+    var d = (s.date || '').split('-'); var monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var dateStr = (d[0] && d[1]) ? (monthNames[parseInt(d[1])-1]+' '+d[0]) : (d[0] || '—');
+    var stype = s.type || 'sighting';
+    var sEmoji = typeEmoji[stype] || typeEmoji.sighting;
+    var sLabel = typeLabels[stype] || typeLabels.sighting;
     return '<div class="ah-sighting">'
-      +'<div style="font-size:16px;flex-shrink:0;">'+typeEmoji[s.type]+'</div>'
+      +'<div style="font-size:16px;flex-shrink:0;">'+sEmoji+'</div>'
       +'<div style="flex:1;">'
         +'<div class="ah-sighting-loc">'+s.loc+'</div>'
-        +'<div class="ah-sighting-date">'+typeLabels[s.type]+' · '+dateStr+'</div>'
+        +'<div class="ah-sighting-date">'+sLabel+' · '+dateStr+'</div>'
       +'</div>'
       +'<div class="ah-sighting-dist">'+mi+'mi</div>'
       +'</div>';
@@ -6752,7 +6771,7 @@ function renderAsianHornetWatch(lat, lng) {
     +'</div>';
 
   var ahContent = document.getElementById('ah-content');
-  if(ahContent) ahContent.innerHTML = liveLinksHtml + html;
+  if(ahContent) ahContent.innerHTML = html;
 }
 
 // Hornet watch initialises when dashboard renders
