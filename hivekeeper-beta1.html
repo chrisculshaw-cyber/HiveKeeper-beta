@@ -396,8 +396,8 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-footer-note a { color: #FFD54F; text-decoration: underline; }
 .ah-footer-note a:hover { color: #FFE082; }
 /* Report sighting button — sits below the alert banner */
-.ah-report-btn { width: 100%; background: linear-gradient(135deg, #C62828, #8B0000); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 800; font-family: 'Syne', sans-serif; cursor: pointer; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(198,40,40,0.35); letter-spacing: 0.02em; }
-.ah-report-btn:hover { background: linear-gradient(135deg, #D32F2F, #9B0000); }
+.ah-report-btn { width: 100%; background: linear-gradient(135deg, #C62828, #8B0000); color: white; border: none; border-radius: 12px; padding: 14px 16px; font-size: 14px; font-weight: 800; font-family: 'Syne', sans-serif; cursor: pointer; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(198,40,40,0.35); letter-spacing: 0.02em; text-align: center; }
+.ah-report-btn:hover { background: linear-gradient(135deg, #D32F2F, #9B0000); box-shadow: 0 3px 10px rgba(198,40,40,0.5); }
 .ah-report-btn:active { transform: scale(0.98); }
 /* Flashing border when a confirmed Asian Hornet nest is within 20 miles (critical) */
 .ah-banner-flash { animation: ahCriticalPulse 1.4s ease-in-out infinite; }
@@ -965,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 00:40</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 00:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2185,6 +2185,15 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div style="display:flex;gap:8px;">
           <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
           <div id="settings-name-save-btn" onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
+        </div>
+      </div>
+      <!-- PROFILE PHONE -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your phone</div>
+        <div style="font-size:10px;color:var(--text-l);margin-bottom:6px;line-height:1.5;">Used for SOS messages and auto-filling Asian Hornet reports. Kept private.</div>
+        <div style="display:flex;gap:8px;">
+          <input id="settings-phone" type="tel" placeholder="e.g. 07700 900123" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
+          <div id="settings-phone-save-btn" onclick="saveProfilePhone()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
         </div>
       </div>
       <!-- ACCOUNT -->
@@ -6819,6 +6828,12 @@ function openHornetReportForm() {
       if (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.email) emailEl.value = _currentUser.email;
     } catch(e) {}
   }
+  // Prefill phone from saved profile
+  var phoneEl = document.getElementById('hr-phone');
+  if (phoneEl && !phoneEl.value) {
+    var savedPhone = localStorage.getItem('hk_user_phone') || '';
+    if (savedPhone) phoneEl.value = savedPhone;
+  }
 
   openModalEl('modal-hornet-report');
 }
@@ -7175,7 +7190,10 @@ function renderAsianHornetWatch(lat, lng) {
     +'<div class="ah-status-text">'+statusText+'</div>'
     +'<div class="ah-status-badge '+badgeClass+'">'+badgeText+'</div>'
     +'</div>'
-    +'<button onclick="openHornetReportForm()" class="ah-report-btn">&#x1F6A8; I\'ve spotted an Asian Hornet</button>';
+    +'<button onclick="openHornetReportForm()" class="ah-report-btn">'
+      +'<div style="font-size:14px;font-weight:800;">&#x1F6A8; Spotted an Asian Hornet?</div>'
+      +'<div style="font-size:11px;font-weight:600;opacity:0.9;margin-top:3px;">Tap here to submit a report &rarr;</div>'
+    +'</button>';
 
   // My reports — only show button if they've submitted any
   try {
@@ -7186,6 +7204,10 @@ function renderAsianHornetWatch(lat, lng) {
   } catch(e) {}
 
   html += '<div class="ah-section-head">5 nearest reports</div>'
+    +'<div style="display:flex;gap:12px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,0.85);flex-wrap:wrap;">'
+      +'<span>&#x1F534; Confirmed nest</span>'
+      +'<span>&#x1F7E1; Sighting</span>'
+    +'</div>'
     +sightingsHtml
     +'<div class="ah-footer-note">'
       +(AH_LIVE_FETCHED
@@ -8919,10 +8941,15 @@ function triggerSOS() {
     var mapsUrl = mapLat && mapLng
       ? 'https://maps.google.com/maps?daddr=' + mapLat + ',' + mapLng
       : null;
+    // Beekeeper's own phone — helps emergency contact call back directly
+    var myPhone = localStorage.getItem('hk_user_phone') || '';
     var msg = '\uD83D\uDEA8 URGENT \u2014 ' + myName + ' needs help!\n\n'
       + 'Location: ' + locationLine + '\n';
     if (mapsUrl) {
       msg += '\u27A1\uFE0F Navigate here:\n' + mapsUrl + '\n';
+    }
+    if (myPhone) {
+      msg += '\n\u260E\uFE0F Call me back on: ' + myPhone + '\n';
     }
     msg += '\nPlease call or come immediately.\nSent from HiveKeeper.';
     return msg;
@@ -11747,7 +11774,7 @@ function showUpgradeModal(reason) {
 }
 
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
-function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { loadSettingsName(); } catch(e) {}
+function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { loadSettingsPhone(); } catch(e) {}
   var btn = document.getElementById('sign-out-btn');
   if (!btn) return;
   var name = '';
@@ -15015,6 +15042,41 @@ function saveDisplayName() {
 function loadSettingsName() {
   var input = document.getElementById('settings-display-name');
   if (input) input.value = localStorage.getItem('hk_display_name') || '';
+}
+
+// Save beekeeper's own phone number (separate from emergency contact)
+// Stored in localStorage and synced to the profiles table where possible.
+function saveProfilePhone() {
+  var input = document.getElementById('settings-phone');
+  if (!input) return;
+  var raw = input.value.trim();
+  // Basic sanitisation — strip spaces/dashes/brackets for storage, keep original for display
+  var cleaned = raw.replace(/[\s\-().]/g, '');
+  // UK-ish validation: allow +44..., 0..., or empty (clearing)
+  if (raw && !/^[+]?\d{10,15}$/.test(cleaned)) {
+    showToast('Please enter a valid phone number');
+    return;
+  }
+  localStorage.setItem('hk_user_phone', raw);
+  var uid = getUserId();
+  if (uid) {
+    try { getSupabase().from('profiles').update({phone: raw}).eq('id', uid); }
+    catch(e) { console.warn('Profile phone save:', e); }
+  }
+  input.style.borderColor = '#2E7D32';
+  input.style.background = '#f0fff0';
+  var btn = document.getElementById('settings-phone-save-btn');
+  if (btn) {
+    var orig = btn.innerHTML;
+    btn.innerHTML = '&#x2705;';
+    setTimeout(function(){ btn.innerHTML = orig; input.style.borderColor=''; input.style.background=''; }, 2500);
+  }
+  showToast(raw ? 'Phone saved' : 'Phone cleared');
+}
+
+function loadSettingsPhone() {
+  var input = document.getElementById('settings-phone');
+  if (input) input.value = localStorage.getItem('hk_user_phone') || '';
 }
 
 
