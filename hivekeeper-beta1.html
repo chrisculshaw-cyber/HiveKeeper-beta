@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 11:05</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 11:35</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3524,6 +3524,11 @@ function startFreshInspection(){
 }
 
 function renderInspectHeader(){
+  // ALWAYS clear the notes field when entering Inspect, even if no hive is selected yet.
+  // Previously this returned early if no hive was found, leaving stale notes visible.
+  var _n = document.getElementById('inspect-notes'); if (_n) _n.value = '';
+  var _tb = document.getElementById('transcript-box'); if (_tb) _tb.style.display = 'none';
+  var _es = document.getElementById('extracted-section'); if (_es) _es.style.display = 'none';
   const hive = loadHives().find(h=>h.id===currentHiveId);
   if(!hive){ return; } // hive-name now handled by dropdown
   // hive-name now handled by populateHiveSelector()
@@ -3577,6 +3582,7 @@ function renderInspectHeader(){
 function toggleRecord(){ recording ? stopRecording() : startRecording(); }
 
 function startRecording(){
+  if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('voice')) return;
   recording=true;
   var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.add('recording');
   document.getElementById('rec-btn').textContent='⏹️';
@@ -3955,6 +3961,7 @@ async function uploadSinglePhoto(dataUrl, hiveId, index, label) {
 }
 
 async function analyseFramePhoto(thumbEl) {
+  if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('ai_frame')) return;
   var img = thumbEl.querySelector('img');
   if (!img) return;
   var dataUrl = img.src;
@@ -4369,6 +4376,7 @@ async function sendAI(){
   const input=document.getElementById('ai-input');
   const msg=input.value.trim();
   if(!msg) return;
+  if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('ai_chat')) return;
   input.value='';
   addMessage('user',msg);
   showTyping(true);
@@ -8020,6 +8028,8 @@ function selectApiaryItem(id) {
   switchApiary(id);
 }
 function switchApiary(id) {
+  // Close the switcher IMMEDIATELY for instant feedback (before data work)
+  try { closeModalEl('modal-apiary-switcher'); } catch(e) {}
   localStorage.setItem(CURRENT_APIARY_KEY, id);
   currentApiaryId = id;
   var apiary = getCurrentApiary();
@@ -8030,7 +8040,6 @@ function switchApiary(id) {
   renderDashboard();
   renderApiary();
   renderMap();
-  closeModalEl('modal-apiary-switcher');
   showToast('Switched to ' + (apiary ? apiary.name : 'apiary'));
 }
 
@@ -12224,10 +12233,7 @@ function loadRows() {
       }
     });
     if (!rows.length) rows = [
-      { id: 'Row 1', name: 'Row 1' },
-      { id: 'Row 2', name: 'Row 2' },
-      { id: 'Row 3', name: 'Row 3' },
-      { id: 'Row 4', name: 'Row 4' }
+      { id: 'Row 1', name: 'Row 1' }
     ];
     saveRows(rows);
     return rows;
@@ -12458,9 +12464,15 @@ async function checkFoundingBadge() {
     if (data && data.is_founding_beekeeper) {
       localStorage.setItem('hk_founding_beekeeper', '1');
       renderFoundingBadge();
-      try { renderTrialBanners(); } catch(e) {}
     }
-  } catch(e) {}
+    // Mark founding status as verified so trial banner can safely render
+    localStorage.setItem('hk_founding_checked', '1');
+    try { renderTrialBanners(); } catch(e) {}
+  } catch(e) {
+    // Even on error, mark as checked so banner doesn't stay hidden forever
+    localStorage.setItem('hk_founding_checked', '1');
+    try { renderTrialBanners(); } catch(e) {}
+  }
 }
 
 function renderFoundingBadge() {
@@ -14035,6 +14047,60 @@ function canUsePremiumFeature(feature) {
   return false;
 }
 
+// ─── USAGE LIMITS (Free tier) ────────────────────────────────
+// Tracks counts per feature per period in localStorage.
+// Free tier limits per FEATURE_LIMITS table; Pro/Commercial/Trial/Founder = unlimited.
+var FREE_LIMITS = {
+  voice:    { count: 3,  per: 'month', label: 'voice inspections' },
+  ai_chat:  { count: 5,  per: 'day',   label: 'AI messages' },
+  ai_frame: { count: 1,  per: 'month', label: 'AI frame analyses' }
+};
+
+function _usagePeriodKey(per) {
+  var d = new Date();
+  if (per === 'day') return d.getUTCFullYear() + '-' + (d.getUTCMonth()+1) + '-' + d.getUTCDate();
+  return d.getUTCFullYear() + '-' + (d.getUTCMonth()+1); // month
+}
+
+function _usageStorageKey(feature) {
+  return 'hk_usage_' + feature + '_' + _usagePeriodKey(FREE_LIMITS[feature].per);
+}
+
+function getUsageCount(feature) {
+  if (!FREE_LIMITS[feature]) return 0;
+  return parseInt(localStorage.getItem(_usageStorageKey(feature)) || '0', 10);
+}
+
+function incrementUsage(feature) {
+  if (!FREE_LIMITS[feature]) return;
+  var k = _usageStorageKey(feature);
+  localStorage.setItem(k, (getUsageCount(feature) + 1).toString());
+}
+
+// Returns true if the user can use the feature now. Shows upgrade modal if not.
+// Increments usage automatically for Free users. Founders/paid/trial bypass everything.
+function checkFeatureLimit(feature) {
+  if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return true;
+  var tier = localStorage.getItem('hk_tier') || _userTier || '';
+  if (tier === 'pro' || tier === 'commercial') return true;
+  if (typeof isInTrial === 'function' && isInTrial()) return true;
+  // Free tier — enforce limit
+  var limit = FREE_LIMITS[feature];
+  if (!limit) return true; // unknown feature, fail open
+  var used = getUsageCount(feature);
+  if (used >= limit.count) {
+    var period = limit.per === 'day' ? 'today' : 'this month';
+    showToast('Free limit reached: ' + limit.count + ' ' + limit.label + '/' + limit.per + ' (used ' + used + ' ' + period + ')');
+    setTimeout(function(){ try { showUpgradeModal(feature); } catch(e) {} }, 600);
+    return false;
+  }
+  incrementUsage(feature);
+  // Friendly heads-up when nearing the limit
+  var remaining = limit.count - (used + 1);
+  if (remaining === 1) showToast('1 ' + limit.label.replace(/s$/, '') + ' left ' + (limit.per === 'day' ? 'today' : 'this month'));
+  return true;
+}
+
 function renderTrialBanner() {
   var banner = document.getElementById('trial-status-banner');
   if (!banner) return;
@@ -14062,6 +14128,10 @@ function renderTrialBanners() {
   var b = document.getElementById('trial-footer-banner');
   if (!b) return;
   if (isFounder || isPaid) { b.style.display = 'none'; return; }
+  // Don't flash the banner while founding status is still being verified
+  // checkFoundingBadge sets hk_founding_checked=1 once the Supabase check completes
+  var foundingChecked = localStorage.getItem('hk_founding_checked') === '1';
+  if (!foundingChecked && getUserId()) { b.style.display = 'none'; return; }
   var inTrial = typeof isInTrial === 'function' && isInTrial();
   if (inTrial) {
     var dLeft = typeof trialDaysLeft === 'function' ? trialDaysLeft() : 30;
