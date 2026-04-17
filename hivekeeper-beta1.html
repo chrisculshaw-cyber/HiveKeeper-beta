@@ -919,7 +919,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 19:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 19:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1154,6 +1154,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="map-canvas" style="display:none;"></div>
       <!-- Hive count overlay -->
       <div id="map-hive-count" style="position:absolute;top:10px;right:10px;background:rgba(31,56,18,0.85);color:white;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;pointer-events:none;backdrop-filter:blur(4px);z-index:500;"></div>
+      <!-- Recenter button — always visible, snaps the map back to the hives -->
+      <div id="map-recenter-btn" onclick="recenterMapOnHives()" title="Centre map on my hives" style="position:absolute;top:48px;right:10px;background:rgba(255,255,255,0.95);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:500;box-shadow:0 2px 8px rgba(0,0,0,0.25);border:1px solid rgba(31,56,18,0.2);">🎯</div>
       <!-- Save positions button — shown in edit mode -->
       <!-- Touch blocker overlay for locked mode -->
       <div id="map-touch-blocker" style="position:absolute;inset:0;z-index:400;background:transparent;display:block;" ontouchstart="return false;" onmousedown="return false;"></div>
@@ -13737,8 +13739,8 @@ function goToApiaryAlerts() {
 var _leafletMap = null;
 var _hiveMarkers = {};
 var _landmarkMarkers = {};
-var MAP_DEFAULT_LAT = 52.4;   // UK centre default
-var MAP_DEFAULT_LNG = -0.9;
+var MAP_DEFAULT_LAT = 53.0;  // UK centre default (near Stoke-on-Trent) — used only if no apiary location set
+var MAP_DEFAULT_LNG = -2.0;
 var MAP_DEFAULT_ZOOM = 19;
 
 // Metres per hive spacing in grid layout
@@ -14427,6 +14429,41 @@ async function pullMapPositions() {
     }
   } catch(e) { hkLog('PULL EX: '+e.message); }
 }
+
+// Snap the map back to encompass all current hives (and landmarks if any).
+// Falls back to the apiary centre if no hives exist yet.
+function recenterMapOnHives() {
+  if (!_leafletMap) return;
+  var points = [];
+  // Collect every hive marker position
+  Object.values(_hiveMarkers || {}).forEach(function(m) {
+    if (m && m.getLatLng) points.push(m.getLatLng());
+  });
+  // Also include landmarks
+  Object.values(_landmarkMarkers || {}).forEach(function(m) {
+    if (m && m.getLatLng) points.push(m.getLatLng());
+  });
+  if (points.length > 1) {
+    // Multiple points — fit bounds with padding
+    var bounds = L.latLngBounds(points);
+    _leafletMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 20 });
+    showToast('Centred on your hives');
+  } else if (points.length === 1) {
+    // Single hive — centre and zoom in close
+    _leafletMap.setView(points[0], 19);
+    showToast('Centred on your hive');
+  } else {
+    // No hives yet — fall back to apiary centre
+    var ap = getCurrentApiary();
+    if (ap && ap.lat && ap.lng) {
+      _leafletMap.setView([parseFloat(ap.lat), parseFloat(ap.lng)], 19);
+      showToast('Centred on apiary');
+    } else {
+      showToast('No apiary location set — set one in Apiary Settings');
+    }
+  }
+}
+
 function saveHivePositions() {
   hkLog('saveHivePositions called, markers='+Object.keys(_hiveMarkers).length);
   var saved = 0;
