@@ -12449,6 +12449,7 @@ async function checkFoundingBadge() {
     if (data && data.is_founding_beekeeper) {
       localStorage.setItem('hk_founding_beekeeper', '1');
       renderFoundingBadge();
+      try { renderTrialBanners(); } catch(e) {}
     }
   } catch(e) {}
 }
