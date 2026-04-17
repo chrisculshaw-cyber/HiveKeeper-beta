@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 12:04</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 12:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -11746,6 +11746,56 @@ function deleteLandmark(id) {
   showToast('Landmark removed');
 }
 
+// Edit sheet for landmarks — rotate / resize / rename / delete (edit mode only)
+function openLandmarkEditSheet(id) {
+  var all = loadLandmarks();
+  var lm = all.find(function(l){ return l.id === id; });
+  if (!lm) return;
+  var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
+  var sheet = document.querySelector('#modal-sos .modal-sheet');
+  if (!sheet) return;
+
+  var curScale = typeof lm.scale === 'number' ? lm.scale : 1;
+  var curR = typeof lm.r === 'number' ? lm.r : 0;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div class="modal-title">Edit ' + (lm.label || def.label) + ' ' + (def.emoji || '📍') + '</div>'
+    + '<div class="form-group"><label>Label</label><input id="lm-edit-label" type="text" value="' + (lm.label || def.label).replace(/"/g, '&quot;') + '" style="width:100%;"></div>'
+    + '<div class="form-group"><label>Size <span id="lm-size-val" style="color:var(--honey);font-weight:700;">' + curScale.toFixed(1) + '&times;</span></label>'
+    + '<input id="lm-edit-scale" type="range" min="0.6" max="3" step="0.1" value="' + curScale + '" style="width:100%;" oninput="document.getElementById(\'lm-size-val\').innerHTML=parseFloat(this.value).toFixed(1)+\'&times;\'"></div>'
+    + '<div class="form-group"><label>Rotation <span id="lm-rot-val" style="color:var(--honey);font-weight:700;">' + curR + '&deg;</span></label>'
+    + '<input id="lm-edit-rot" type="range" min="0" max="360" step="15" value="' + curR + '" style="width:100%;" oninput="document.getElementById(\'lm-rot-val\').innerHTML=this.value+\'&deg;\'"></div>'
+    + '<div style="display:flex;gap:8px;margin-top:16px;">'
+    +   '<button onclick="saveLandmarkEdits(\'' + id + '\')" style="flex:2;background:var(--honey);color:white;border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Save</button>'
+    +   '<button onclick="confirmDeleteLandmark(\'' + id + '\')" style="flex:1;background:#fdecea;color:#C62828;border:1px solid #f5c6c6;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Delete</button>'
+    + '</div>'
+    + '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
+  openModalEl('modal-sos');
+}
+
+function saveLandmarkEdits(id) {
+  var all = loadLandmarks();
+  var lm = all.find(function(l){ return l.id === id; });
+  if (!lm) { closeModalEl('modal-sos'); return; }
+  var labelEl = document.getElementById('lm-edit-label');
+  var scaleEl = document.getElementById('lm-edit-scale');
+  var rotEl = document.getElementById('lm-edit-rot');
+  if (labelEl && labelEl.value.trim()) lm.label = labelEl.value.trim();
+  if (scaleEl) lm.scale = parseFloat(scaleEl.value);
+  if (rotEl) lm.r = parseInt(rotEl.value, 10);
+  saveLandmarks(all);
+  closeModalEl('modal-sos');
+  try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
+  showToast('Landmark updated');
+}
+
+function confirmDeleteLandmark(id) {
+  if (confirm('Delete this landmark?')) {
+    closeModalEl('modal-sos');
+    deleteLandmark(id);
+  }
+}
+
 function openLandmarkPicker() {
   var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
@@ -13657,16 +13707,22 @@ function renderLeafletHives(editMode) {
       lm.mapLng = lmLng;
     }
 
-    var iconHtml = '<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:1000;">'
-      + '<div style="font-size:26px;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.5);filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));">' + (def.emoji || '📍') + '</div>'
-      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);">' + (lm.label || def.label) + '</div>'
+    var lmScale = typeof lm.scale === 'number' ? lm.scale : 1;
+    var lmRot = typeof lm.r === 'number' ? lm.r : 0;
+    var emojiSize = Math.round(26 * lmScale);
+    var labelFontSize = Math.max(9, Math.round(10 * Math.min(lmScale, 1.4)));
+    var iconHtml = '<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:1000;transform:rotate(' + lmRot + 'deg);transform-origin:center center;">'
+      + '<div style="font-size:' + emojiSize + 'px;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.5);filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));">' + (def.emoji || '📍') + '</div>'
+      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:' + labelFontSize + 'px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);transform:rotate(' + (-lmRot) + 'deg);">' + (lm.label || def.label) + '</div>'
       + '</div>';
 
+    // Scale icon container to accommodate bigger emoji
+    var iconSize = Math.round(60 * Math.max(1, lmScale * 0.9));
     var icon = L.divIcon({
       className: 'hk-landmark-marker',
       html: iconHtml,
-      iconSize: [60, 44],
-      iconAnchor: [30, 22]
+      iconSize: [iconSize, Math.round(44 * Math.max(1, lmScale * 0.9))],
+      iconAnchor: [Math.round(iconSize / 2), Math.round(22 * Math.max(1, lmScale * 0.9))]
     });
 
     var marker = L.marker([lmLat, lmLng], {
@@ -13688,12 +13744,10 @@ function renderLeafletHives(editMode) {
       }
     });
 
-    // Click in edit mode: offer to delete
+    // Click in edit mode: open edit sheet (rotate / resize / rename / delete)
     marker.on('click', function() {
       if (editMode) {
-        if (confirm('Delete "' + (lm.label || def.label) + '"?')) {
-          deleteLandmark(lm.id);
-        }
+        openLandmarkEditSheet(lm.id);
       }
     });
 
