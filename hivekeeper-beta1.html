@@ -965,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 23:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 23:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6966,7 +6966,8 @@ async function submitHornetReport() {
 
   } catch(err) {
     console.error('Hornet report failed:', err);
-    showToast('Could not send report — please try again or email alertnonnative@ceh.ac.uk directly');
+    // Show actual error message in test mode so we can debug Resend/Supabase issues
+    showToast('Report error: ' + (err.message || 'Unknown').substring(0, 100));
   } finally {
     if (btn) { btn.textContent = 'Submit report to Defra/NBU'; btn.disabled = false; btn.style.opacity = '1'; }
   }
@@ -7042,12 +7043,30 @@ function renderAsianHornetWatch(lat, lng) {
   var nearestMiles = Math.round(nearest.distKm * 0.621371);
 
   // Recent = last 2 years. Old sightings are informational only, not alert-driving.
+  // Robust year extraction: prefer s.year, fall back to parsing from s.date, then to s.loc text
   var thisYear = new Date().getFullYear();
+  function getYearSafe(s) {
+    if (s.year && typeof s.year === 'number') return s.year;
+    if (s.year && !isNaN(parseInt(s.year, 10))) return parseInt(s.year, 10);
+    if (s.date) {
+      var m = String(s.date).match(/(20\d{2})/);
+      if (m) return parseInt(m[1], 10);
+    }
+    return null;
+  }
   var recent = withDist.filter(function(s){
-    return s.year && (thisYear - s.year) <= 1;
+    var yr = getYearSafe(s);
+    return yr && (thisYear - yr) <= 1;
   });
   var nearestRecent = recent[0] || null;
   var nearestRecentMiles = nearestRecent ? Math.round(nearestRecent.distKm * 0.621371) : null;
+
+  // Debug: log first few sightings to console so we can verify year extraction
+  if (AH_SIGHTINGS.length > 0 && typeof console !== 'undefined') {
+    console.log('[AH Debug] Total sightings:', AH_SIGHTINGS.length);
+    console.log('[AH Debug] Nearest 3:', withDist.slice(0, 3).map(function(s){ return {loc: s.loc, dist: Math.round(s.distKm*0.621371)+'mi', year: s.year, date: s.date, derivedYear: getYearSafe(s), type: s.type}; }));
+    console.log('[AH Debug] Nearest recent:', nearestRecent ? {loc: nearestRecent.loc, dist: nearestRecentMiles+'mi'} : 'NONE');
+  }
 
   // Nearest confirmed NEST (for ELEVATED messaging — more serious than a lone sighting)
   var nests = withDist.filter(function(s){ return s.type === 'nest'; });
