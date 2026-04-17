@@ -369,6 +369,10 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-badge-alert { background: #FDECEA; color: var(--red); }
 .ah-badge-watch { background: #FFF3CD; color: #B07800; }
 .ah-badge-clear { background: #EAFAF1; color: var(--green); }
+/* Footer credit inside AH panel — readable on any panel background */
+.ah-footer-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+.ah-footer-note a { color: #FFD54F; text-decoration: underline; }
+.ah-footer-note a:hover { color: #FFE082; }
 /* Flashing border when a confirmed Asian Hornet nest is within 20 miles (critical) */
 .ah-panel-flash { animation: ahCriticalPulse 1.4s ease-in-out infinite; }
 @keyframes ahCriticalPulse {
@@ -935,7 +939,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 22:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 22:40</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6700,33 +6704,42 @@ function renderAsianHornetWatch(lat, lng) {
   var nearestKm = Math.round(nearest.distKm);
   var nearestMiles = Math.round(nearest.distKm * 0.621371);
 
-  // Nearest CONFIRMED nest (more serious than a sighting) — drives the main alert level
+  // Recent = last 2 years. Old sightings are informational only, not alert-driving.
+  var thisYear = new Date().getFullYear();
+  var recent = withDist.filter(function(s){
+    return s.year && (thisYear - s.year) <= 1;
+  });
+  var nearestRecent = recent[0] || null;
+  var nearestRecentMiles = nearestRecent ? Math.round(nearestRecent.distKm * 0.621371) : null;
+
+  // Nearest confirmed NEST (for ELEVATED messaging — more serious than a lone sighting)
   var nests = withDist.filter(function(s){ return s.type === 'nest'; });
   var nearestNest = nests[0] || null;
   var nearestNestMiles = nearestNest ? Math.round(nearestNest.distKm * 0.621371) : null;
 
-  // Determine alert level — NESTS drive critical/elevated, sightings only trigger watch
+  // Determine alert level
+  // Priority: any RECENT sighting within 20mi → critical + flash
+  // Then: recent nest within 50mi → elevated
+  // Then: any recent sighting within 100mi → watch
+  // Else: low risk
   var level, badgeClass, badgeText, statusText, panelBg, panelBorder, panelFlash;
-  if (nearestNest && nearestNest.distKm < 32) {  // ~20 miles, CONFIRMED NEST → critical, flash
+  if (nearestRecent && nearestRecent.distKm < 32) {  // ~20 miles, any recent sighting — CRITICAL FLASH
     level='critical'; badgeClass='ah-badge-alert'; badgeText='CRITICAL';
     panelBg='#8B0000'; panelBorder='#FF1744'; panelFlash=true;
-    statusText='Confirmed nest only '+nearestNestMiles+' miles away ('+nearestNest.loc+'). Check hive entrances multiple times per day. Set monitoring traps now.';
-  } else if (nearestNest && nearestNest.distKm < 80) {  // ~50 miles confirmed nest
+    var recentTypeLabel = nearestRecent.type === 'nest' ? 'Nest' : 'Sighting';
+    statusText=recentTypeLabel+' only '+nearestRecentMiles+' miles away ('+nearestRecent.loc+'). Check hive entrances multiple times per day. Set monitoring traps immediately.';
+  } else if (nearestNest && nearestNest.distKm < 80) {  // ~50 miles, confirmed nest
     level='alert'; badgeClass='ah-badge-alert'; badgeText='ELEVATED RISK';
     panelBg='#7B1515'; panelBorder='#C62828'; panelFlash=false;
     statusText='Confirmed nest '+nearestNestMiles+' miles from your apiary ('+nearestNest.loc+'). Heightened vigilance required — check hive entrances daily.';
-  } else if (nearestKm < 80) {  // ~50 miles sighting (not nest)
+  } else if (nearestRecent && nearestRecent.distKm < 161) {  // ~100 miles, recent sighting
     level='watch'; badgeClass='ah-badge-watch'; badgeText='WATCH';
     panelBg='#7A4A00'; panelBorder='#E65100'; panelFlash=false;
-    statusText='Unconfirmed sighting '+nearestMiles+' miles away ('+nearest.loc+'). Stay alert — a sighting may indicate a nearby nest.';
-  } else if (nearestKm < 161) {  // ~100 miles — any type
-    level='watch'; badgeClass='ah-badge-watch'; badgeText='WATCH';
-    panelBg='#7A4A00'; panelBorder='#E65100'; panelFlash=false;
-    statusText='Nearest report '+nearestMiles+' miles away. Monitor your hive entrances during warm afternoons (Aug-Oct).';
+    statusText='Recent sighting '+nearestRecentMiles+' miles away ('+nearestRecent.loc+'). Monitor your hive entrances during warm afternoons (Aug-Oct).';
   } else {
     level='clear'; badgeClass='ah-badge-clear'; badgeText='LOW RISK';
     panelBg='#1A3A1A'; panelBorder='#2E7D32'; panelFlash=false;
-    statusText='No confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
+    statusText='No recent confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
   }
 
   // Update header subtitle — show nearest CONFIRMED NEST if any within 100 miles, else generic nearest
