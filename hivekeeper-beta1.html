@@ -369,7 +369,29 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-badge-alert { background: #FDECEA; color: var(--red); }
 .ah-badge-watch { background: #FFF3CD; color: #B07800; }
 .ah-badge-clear { background: #EAFAF1; color: var(--green); }
-/* Footer credit inside AH panel — readable on any panel background */
+/* Status pill shown in the COLLAPSED banner header */
+.ah-header-pill { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+.ah-pill-critical { background: #FFD54F; color: #8B0000; animation: ahPillFlash 1.4s ease-in-out infinite; }
+.ah-pill-alert { background: #FDECEA; color: #C62828; }
+.ah-pill-watch { background: #FFF3CD; color: #B07800; }
+.ah-pill-clear { background: #EAFAF1; color: #2E7D32; }
+@keyframes ahPillFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+/* Force all panel text to be readable on dark panel backgrounds — panels switch between red/orange/green but ALL are dark */
+.ah-panel .ah-status-text { color: rgba(255,255,255,0.92); }
+.ah-panel .ah-status-row { border-color: rgba(255,255,255,0.18); }
+.ah-panel .ah-sighting-loc { color: white; }
+.ah-panel .ah-sighting-date { color: rgba(255,255,255,0.7); font-size: 11px; }
+.ah-panel .ah-sighting { border-color: rgba(255,255,255,0.12); }
+.ah-panel .ah-section-head { color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin: 12px 0 8px; }
+.ah-panel .ah-actions { background: rgba(0,0,0,0.18); border-radius: 10px; padding: 12px; margin-top: 12px; }
+.ah-panel .ah-action-title { color: white; font-size: 12px; font-weight: 800; margin-bottom: 8px; }
+.ah-panel .ah-action-item { color: rgba(255,255,255,0.85); font-size: 12px; line-height: 1.6; margin-bottom: 4px; }
+/* My reports badge — sits below Report button */
+.ah-my-reports-btn { width: 100%; background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; padding: 10px; font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; margin-bottom: 14px; }
+.ah-my-reports-btn:hover { background: rgba(255,255,255,0.18); }
 .ah-footer-note { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; color: rgba(255,255,255,0.85); line-height: 1.6; }
 .ah-footer-note a { color: #FFD54F; text-decoration: underline; }
 .ah-footer-note a:hover { color: #FFE082; }
@@ -943,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 23:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 23:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1081,7 +1103,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="ah-header" onclick="toggleAHPanel()">
         <div class="ah-header-icon">🐝</div>
         <div class="ah-header-text">
-          <div class="ah-header-title">Asian Hornet Watch</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="ah-header-title">Asian Hornet Watch</div>
+            <span id="ah-header-pill" class="ah-header-pill ah-pill-clear">LOW</span>
+          </div>
           <div class="ah-header-sub" id="ah-header-sub">Loading nearest sightings...</div>
         </div>
         <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
@@ -1778,6 +1803,21 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <button onclick="closeModalEl('modal-share-apiary')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Close</button>
     </div>
   </div>
+  <!-- MODAL: MY HORNET REPORTS (user's submission history) -->
+  <div class="modal-overlay" id="modal-my-hornet-reports" onclick="closeModal(event,'modal-my-hornet-reports')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="modal-title">📋 My sighting reports</div>
+        <div onclick="closeModalEl('modal-my-hornet-reports')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-m);margin-bottom:14px;line-height:1.5;">
+        Your previously submitted sightings. All reports have been forwarded to Defra/NBU. Tap "View map" to see the exact location.
+      </div>
+      <div id="my-reports-list"></div>
+    </div>
+  </div>
+
   <!-- MODAL: HORNET SIGHTING REPORT -->
   <div class="modal-overlay" id="modal-hornet-report" onclick="closeModal(event,'modal-hornet-report')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
@@ -6888,6 +6928,26 @@ async function submitHornetReport() {
     var data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Report failed');
 
+    // Store locally so user can see their submission history
+    try {
+      var stored = JSON.parse(localStorage.getItem('hk_my_hornet_reports') || '[]');
+      stored.unshift({
+        id: data.recordId || ('local_' + Date.now()),
+        submittedAt: new Date().toISOString(),
+        reportedAt: payload.reportedAt,
+        lat: lat,
+        lng: lng,
+        locationName: locationName,
+        description: desc,
+        reporterName: payload.reporterName,
+        reporterEmail: email,
+        photoThumb: 'data:image/jpeg;base64,' + _hornetPhotoBase64.substring(0, 20000) // small thumb
+      });
+      // Keep last 50 reports max
+      stored = stored.slice(0, 50);
+      localStorage.setItem('hk_my_hornet_reports', JSON.stringify(stored));
+    } catch(e) { console.log('Could not save report locally:', e); }
+
     // Success — clear form and close modal
     _hornetPhotoBase64 = null;
     _hornetPhotoMime = null;
@@ -6900,7 +6960,9 @@ async function submitHornetReport() {
     var disp = document.getElementById('hr-coords-display'); if (disp) disp.textContent = '';
     var gpsBtn = document.getElementById('hr-gps-btn'); if (gpsBtn) gpsBtn.textContent = '📍 Use my current location';
     closeModalEl('modal-hornet-report');
-    showToast('✓ Sighting report sent to Defra/NBU. Thank you for reporting.');
+    showToast('✓ Report submitted. Thank you for reporting.');
+    // Refresh panel to show updated count
+    try { initAsianHornetWatch(); } catch(e) {}
 
   } catch(err) {
     console.error('Hornet report failed:', err);
@@ -6908,6 +6970,46 @@ async function submitHornetReport() {
   } finally {
     if (btn) { btn.textContent = 'Submit report to Defra/NBU'; btn.disabled = false; btn.style.opacity = '1'; }
   }
+}
+
+// ── VIEW MY REPORTS ────────────────────────────────────────────
+function getMyHornetReports() {
+  try { return JSON.parse(localStorage.getItem('hk_my_hornet_reports') || '[]'); }
+  catch(e) { return []; }
+}
+
+function openMyHornetReports() {
+  var reports = getMyHornetReports();
+  var container = document.getElementById('my-reports-list');
+  if (!container) return;
+
+  if (reports.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:30px 16px;color:var(--text-l);font-size:13px;">You haven\'t submitted any sighting reports yet.</div>';
+  } else {
+    container.innerHTML = reports.map(function(r) {
+      var dReported = new Date(r.reportedAt);
+      var dSubmitted = new Date(r.submittedAt);
+      var mapsLink = 'https://www.google.com/maps?q=' + r.lat + ',' + r.lng;
+      var desc = r.description ? '<div style="font-size:12px;color:var(--text-m);margin-top:6px;line-height:1.5;">'+escapeHtmlSafe(r.description)+'</div>' : '';
+      return '<div style="background:var(--wax);border-radius:10px;padding:12px;margin-bottom:10px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">'
+        + '  <div style="flex:1;">'
+        + '    <div style="font-size:14px;font-weight:700;color:var(--forest);">'+escapeHtmlSafe(r.locationName)+'</div>'
+        + '    <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Seen: '+dReported.toLocaleString('en-GB', {dateStyle:'medium', timeStyle:'short'})+'</div>'
+        + '    <div style="font-size:11px;color:var(--text-l);">Submitted: '+dSubmitted.toLocaleDateString('en-GB', {dateStyle:'medium'})+'</div>'
+        + '  </div>'
+        + '  <a href="'+mapsLink+'" target="_blank" style="font-size:11px;color:var(--honey);text-decoration:none;font-weight:700;white-space:nowrap;">📍 View map</a>'
+        + '</div>'
+        + desc
+        + '</div>';
+    }).join('');
+  }
+  openModalEl('modal-my-hornet-reports');
+}
+
+// Small helper to safely escape HTML in user-provided text
+function escapeHtmlSafe(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function toggleAHPanel() {
@@ -6987,6 +7089,13 @@ function renderAsianHornetWatch(lat, lng) {
     }
   }
 
+  // Update header pill (shows alert level even when panel is collapsed)
+  var pill = document.getElementById('ah-header-pill');
+  if (pill) {
+    pill.textContent = badgeText;
+    pill.className = 'ah-header-pill ah-pill-' + level;
+  }
+
   // Update panel background colour + flash
   var ahPanel = document.querySelector('.ah-panel');
   if(ahPanel) {
@@ -7024,8 +7133,17 @@ function renderAsianHornetWatch(lat, lng) {
     +'<div class="ah-status-text">'+statusText+'</div>'
     +'<div class="ah-status-badge '+badgeClass+'">'+badgeText+'</div>'
     +'</div>'
-    +'<button onclick="openHornetReportForm()" class="ah-report-btn">&#x1F6A8; Report a sighting</button>'
-    +'<div class="ah-section-head">5 nearest reports</div>'
+    +'<button onclick="openHornetReportForm()" class="ah-report-btn">&#x1F6A8; Report a sighting</button>';
+
+  // My reports — only show button if they've submitted any
+  try {
+    var myReports = JSON.parse(localStorage.getItem('hk_my_hornet_reports') || '[]');
+    if (myReports.length > 0) {
+      html += '<button onclick="openMyHornetReports()" class="ah-my-reports-btn">📋 My reports ('+myReports.length+') — view history</button>';
+    }
+  } catch(e) {}
+
+  html += '<div class="ah-section-head">5 nearest reports</div>'
     +sightingsHtml
     +'<div class="ah-actions">'
       +'<div class="ah-action-title">If you see one</div>'
