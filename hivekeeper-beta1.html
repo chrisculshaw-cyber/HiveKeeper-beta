@@ -965,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 00:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 00:40</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1867,6 +1867,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="margin-bottom:14px;">
         <label style="display:block;font-size:11px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</label>
         <input id="hr-name" type="text" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:10px;font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:11px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your phone <span style="font-size:10px;color:var(--text-l);text-transform:none;letter-spacing:0;">(optional — NBU may call for significant sightings)</span></label>
+        <input id="hr-phone" type="tel" placeholder="e.g. 07700 900123" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:10px;font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
       </div>
       <div style="margin-bottom:16px;">
         <label style="display:block;font-size:11px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your email <span style="color:#C62828;">*</span></label>
@@ -6894,6 +6898,7 @@ async function submitHornetReport() {
   var desc = document.getElementById('hr-description').value.trim();
   var name = document.getElementById('hr-name').value.trim();
   var email = document.getElementById('hr-email').value.trim();
+  var phone = (document.getElementById('hr-phone') && document.getElementById('hr-phone').value.trim()) || '';
 
   // Validate
   if (!_hornetPhotoBase64) { showToast('Please add a photo — it is essential for species confirmation'); return; }
@@ -6922,6 +6927,7 @@ async function submitHornetReport() {
       description: desc,
       reporterName: name || 'HiveKeeper user',
       reporterEmail: email,
+      reporterPhone: phone,
       userId: (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.id) || null
     };
     var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/report-hornet-sighting', {
@@ -6960,6 +6966,7 @@ async function submitHornetReport() {
     document.getElementById('hr-photo-preview').innerHTML = '';
     document.getElementById('hr-photo-label').textContent = '📷 Take photo / choose from library';
     document.getElementById('hr-description').value = '';
+    var phoneEl = document.getElementById('hr-phone'); if (phoneEl) phoneEl.value = '';
     if (locInput) { locInput.value = ''; locInput.dataset.lat = ''; locInput.dataset.lng = ''; }
     var disp = document.getElementById('hr-coords-display'); if (disp) disp.textContent = '';
     var gpsBtn = document.getElementById('hr-gps-btn'); if (gpsBtn) gpsBtn.textContent = '📍 Use my current location';
@@ -7102,10 +7109,16 @@ function renderAsianHornetWatch(lat, lng) {
     statusText='No recent confirmed sightings within 100 miles of your apiary. Continue routine monitoring.';
   }
 
-  // Update header subtitle — show nearest CONFIRMED NEST if any within 100 miles, else generic nearest
+  // Update header subtitle — priority matches alert level:
+  // If there's a RECENT sighting within 100mi, show that (drives critical/watch).
+  // Else if there's a confirmed nest within 100mi, show that (drives elevated).
+  // Else show whatever is closest overall.
   var sub = document.getElementById('ah-header-sub');
   if(sub) {
-    if (nearestNest && nearestNest.distKm < 161) {
+    if (nearestRecent && nearestRecent.distKm < 161) {
+      var recentLabel = nearestRecent.type === 'nest' ? 'Recent nest' : 'Recent sighting';
+      sub.textContent = recentLabel + ': '+nearestRecentMiles+' miles · '+nearestRecent.loc;
+    } else if (nearestNest && nearestNest.distKm < 161) {
       sub.textContent = 'Nearest nest: '+nearestNestMiles+' miles · '+nearestNest.loc;
     } else {
       sub.textContent = 'Nearest report: '+nearestMiles+' miles · '+nearest.loc;
@@ -7162,7 +7175,7 @@ function renderAsianHornetWatch(lat, lng) {
     +'<div class="ah-status-text">'+statusText+'</div>'
     +'<div class="ah-status-badge '+badgeClass+'">'+badgeText+'</div>'
     +'</div>'
-    +'<button onclick="openHornetReportForm()" class="ah-report-btn">&#x1F6A8; Report a sighting</button>';
+    +'<button onclick="openHornetReportForm()" class="ah-report-btn">&#x1F6A8; I\'ve spotted an Asian Hornet</button>';
 
   // My reports — only show button if they've submitted any
   try {
@@ -7174,13 +7187,6 @@ function renderAsianHornetWatch(lat, lng) {
 
   html += '<div class="ah-section-head">5 nearest reports</div>'
     +sightingsHtml
-    +'<div class="ah-actions">'
-      +'<div class="ah-action-title">If you see one</div>'
-      +'<div class="ah-action-item">&#x1F4F8; Photograph it from a safe distance — do not disturb</div>'
-      +'<div class="ah-action-item">&#x1F4F1; Report via the Asian Hornet Watch app or email alertnonnative@ceh.ac.uk</div>'
-      +'<div class="ah-action-item">&#x1F4CD; Include photo, exact location and time — the NBU will respond within hours</div>'
-      +'<div class="ah-action-item">&#x1F6AB; Do not attempt to destroy a nest yourself</div>'
-    +'</div>'
     +'<div class="ah-footer-note">'
       +(AH_LIVE_FETCHED
         ? 'Data: <a href="https://www.google.com/maps/d/viewer?mid=1BGAdYHaIszxPKWrjX8dASHpU8mN-_2HV" target="_blank">Community-curated Asian Hornet Map UK</a>, sourced from BBKA / National Bee Unit rolling updates. Live \u2014 refreshed hourly. Peak risk: August\u2013October.'
