@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 12:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 12:21</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6411,6 +6411,9 @@ function toggleEditLayout(){
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
+    // Lock the map — disable pan/zoom/drag when leaving edit mode
+    try { setMapInteractive(false); } catch(e) {}
+    var tbEx=document.getElementById('map-touch-blocker'); if(tbEx) tbEx.style.display='block';
     var mec = document.getElementById('map-edit-controls'); if(mec) mec.style.display='none';
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
