@@ -639,17 +639,20 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   flex-direction: column;
   gap: 8px;
   padding: 8px 6px;
-  background: rgba(22,43,31,0.55);
+  background: rgba(22,43,31,0.92);
   border-radius: 16px 0 0 16px;
   min-height: 160px;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.25);
   z-index: 900;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   touch-action: none;
-  transition: opacity 0.2s;
+  transition: background 0.2s, opacity 0.2s;
+}
+#side-rail.collapsed {
+  background: rgba(22,43,31,0.92);
 }
 #side-rail:hover, #side-rail:active {
-  background: rgba(22,43,31,0.92);
+  background: rgba(22,43,31,0.96);
 }
 #side-rail.collapsed .side-rail-btn {
   display: none;
@@ -916,7 +919,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 17:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 18:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1196,8 +1199,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
   <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#4A2E0E 0%,#6A3A10 100%);">
+    <div style="padding:0 20px;"><div class="back-btn" onclick="goBack()" style="color:white;font-size:13px;cursor:pointer;padding:10px 0 6px 0;display:inline-block;">&#8249; Back</div></div>
     <div class="app-header bark">
-      <div class="back-btn" onclick="goBack()" style="margin-bottom:6px;">&#8249; Back</div>
       <div>
         <div class="dash-greeting" id="s-inspect-greeting">Good morning,</div>
         <div id="s-inspect-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
@@ -2526,7 +2529,7 @@ function goTo(id){
   if (id !== 's-home') { _userOnHome = false; _userLastNav = Date.now(); }
   else { _userOnHome = true; }
   // Persist last screen for resume after minimise
-  var _safeScreens = ['s-home','s-apiary','s-calendar','s-ai','s-market'];
+  var _safeScreens = ['s-home','s-apiary','s-calendar','s-ai','s-market','s-inspect','s-hive'];
   if (_safeScreens.indexOf(id) >= 0) {
     try { localStorage.setItem('hk_last_screen', id); } catch(e) {}
   }
@@ -2581,6 +2584,32 @@ function goBack(){
   if(prev==='s-apiary'){ renderApiary(); renderMap(); }
   if(prev==='s-hive') renderHiveDetail();
 }
+
+// ── BACKGROUND / FOREGROUND HANDLING ─────────────────────────
+// When the app is backgrounded (user switches apps, locks phone), save the current screen.
+// When it comes back, restore to that screen instead of snapping to home.
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) {
+    // Going to background — persist current screen
+    try { localStorage.setItem('hk_last_screen', currentScreen); } catch(e) {}
+  } else {
+    // Coming back — restore the saved screen if we're not already on it
+    try {
+      var saved = localStorage.getItem('hk_last_screen');
+      if (saved && saved !== currentScreen && document.getElementById(saved)) {
+        // Don't use goTo() because of the 15-second home guard; switch screens directly
+        var curEl = document.getElementById(currentScreen);
+        if (curEl) curEl.classList.remove('active');
+        var newEl = document.getElementById(saved);
+        if (newEl) newEl.classList.add('active');
+        currentScreen = saved;
+        document.querySelectorAll('.nav-btn').forEach(function(b) {
+          b.classList.toggle('active', b.dataset.screen === saved);
+        });
+      }
+    } catch(e) {}
+  }
+});
 
 function showToast(msg){
   const t = document.getElementById('toast');
