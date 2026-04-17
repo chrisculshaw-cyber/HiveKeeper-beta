@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 12:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 13:13</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -11770,31 +11770,37 @@ function openLandmarkEditSheet(id) {
 
   var panel = document.createElement('div');
   panel.id = 'lm-edit-panel';
-  panel.style.cssText = 'position:absolute;top:8px;left:8px;right:8px;z-index:650;background:rgba(255,255,255,0.97);border:1px solid var(--wax);border-radius:12px;padding:10px 12px;box-shadow:0 4px 14px rgba(0,0,0,0.18);font-family:Syne,sans-serif;max-width:360px;';
+  panel.style.cssText = 'background:rgba(255,255,255,0.98);border:1px solid var(--wax);border-radius:12px;padding:12px 14px;box-shadow:0 4px 14px rgba(0,0,0,0.12);font-family:Syne,sans-serif;margin:10px 14px;';
   panel.innerHTML = ''
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
-    +   '<div style="font-size:13px;font-weight:800;color:var(--forest);">' + (def.emoji || '📍') + ' ' + curLabel + '</div>'
-    +   '<div onclick="closeLandmarkEditPanel()" style="width:26px;height:26px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;">&times;</div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
+    +   '<div style="font-size:14px;font-weight:800;color:var(--forest);">Editing: ' + (def.emoji || '📍') + ' ' + curLabel + '</div>'
+    +   '<div onclick="closeLandmarkEditPanel()" style="width:28px;height:28px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;">&times;</div>'
     + '</div>'
-    + '<input id="lm-edit-label" type="text" value="' + curLabel + '" placeholder="Label" style="width:100%;padding:6px 8px;font-size:12px;border:1px solid var(--wax);border-radius:6px;margin-bottom:8px;box-sizing:border-box;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
-    +   '<span style="font-size:11px;font-weight:700;color:var(--text-l);min-width:36px;">Size</span>'
+    + '<input id="lm-edit-label" type="text" value="' + curLabel + '" placeholder="Label" style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--wax);border-radius:8px;margin-bottom:10px;box-sizing:border-box;" oninput="applyLandmarkLive(\'' + id + '\')">'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
+    +   '<span style="font-size:12px;font-weight:700;color:var(--text-l);min-width:44px;">Size</span>'
     +   '<input id="lm-edit-scale" type="range" min="0.6" max="3" step="0.1" value="' + curScale + '" style="flex:1;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    +   '<span id="lm-size-val" style="font-size:11px;color:var(--honey);font-weight:800;min-width:30px;text-align:right;">' + curScale.toFixed(1) + '&times;</span>'
+    +   '<span id="lm-size-val" style="font-size:12px;color:var(--honey);font-weight:800;min-width:36px;text-align:right;">' + curScale.toFixed(1) + '&times;</span>'
     + '</div>'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
-    +   '<span style="font-size:11px;font-weight:700;color:var(--text-l);min-width:36px;">Rotate</span>'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">'
+    +   '<span style="font-size:12px;font-weight:700;color:var(--text-l);min-width:44px;">Rotate</span>'
     +   '<input id="lm-edit-rot" type="range" min="0" max="360" step="15" value="' + curR + '" style="flex:1;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    +   '<span id="lm-rot-val" style="font-size:11px;color:var(--honey);font-weight:800;min-width:30px;text-align:right;">' + curR + '&deg;</span>'
+    +   '<span id="lm-rot-val" style="font-size:12px;color:var(--honey);font-weight:800;min-width:36px;text-align:right;">' + curR + '&deg;</span>'
     + '</div>'
-    + '<div style="display:flex;gap:6px;">'
-    +   '<button onclick="closeLandmarkEditPanel()" style="flex:2;background:var(--honey);color:white;border:none;border-radius:8px;padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:800;cursor:pointer;">Done</button>'
-    +   '<button onclick="confirmDeleteLandmark(\'' + id + '\')" style="flex:1;background:#fdecea;color:#C62828;border:1px solid #f5c6c6;border-radius:8px;padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Delete</button>'
+    + '<div style="display:flex;gap:8px;">'
+    +   '<button onclick="closeLandmarkEditPanel()" style="flex:2;background:var(--honey);color:white;border:none;border-radius:8px;padding:10px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Done</button>'
+    +   '<button onclick="confirmDeleteLandmark(\'' + id + '\')" style="flex:1;background:#fdecea;color:#C62828;border:1px solid #f5c6c6;border-radius:8px;padding:10px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Delete</button>'
     + '</div>';
 
-  // Attach to map container
-  var mapWrap = document.querySelector('.map-canvas-wrap') || document.getElementById('leaflet-map') || document.body;
-  mapWrap.appendChild(panel);
+  // Insert BELOW the map (as sibling after map-canvas-wrap), not inside/over it
+  var mapWrap = document.querySelector('.map-canvas-wrap');
+  if (mapWrap && mapWrap.parentNode) {
+    mapWrap.parentNode.insertBefore(panel, mapWrap.nextSibling);
+  } else {
+    document.body.appendChild(panel);
+  }
+  // Scroll into view so the user can see it on smaller screens
+  setTimeout(function() { try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {} }, 100);
 }
 
 // Apply slider/input changes to the landmark IMMEDIATELY so the user sees the effect.
@@ -13751,9 +13757,12 @@ function renderLeafletHives(editMode) {
     var lmRot = typeof lm.r === 'number' ? lm.r : 0;
     var emojiSize = Math.round(26 * lmScale);
     var labelFontSize = Math.max(9, Math.round(10 * Math.min(lmScale, 1.4)));
-    var iconHtml = '<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:1000;transform:rotate(' + lmRot + 'deg);transform-origin:bottom center;">'
+    // Negate rotation: the slider reads as clockwise in degrees, but CSS rotate visually went anticlockwise
+    // on the map (because the map's own bearing transform compounds). Negating makes slider+map feel consistent.
+    var cssRot = -lmRot;
+    var iconHtml = '<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:1000;transform:rotate(' + cssRot + 'deg);transform-origin:bottom center;">'
       + '<div style="font-size:' + emojiSize + 'px;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.5);filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));">' + (def.emoji || '📍') + '</div>'
-      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:' + labelFontSize + 'px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);transform:rotate(' + (-lmRot) + 'deg);">' + (lm.label || def.label) + '</div>'
+      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:' + labelFontSize + 'px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);transform:rotate(' + (-cssRot) + 'deg);">' + (lm.label || def.label) + '</div>'
       + '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgba(255,255,255,0.92);filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));margin-top:-1px;"></div>'
       + '</div>';
 
