@@ -919,7 +919,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 20:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 20:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1418,21 +1418,21 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
   </div>
   <div class="ai-messages" id="ai-messages">
-    <div class="msg ai">
+    <div class="msg ai" id="ai-welcome-msg">
       <div class="msg-sender">HiveKeeper AI</div>
-      Chris, I've processed your inspection notes from this week. This is a hard one to read — you've had significant winter losses. Of your 24 hives, roughly 13–15 colonies haven't made it. The good news: you have 8–9 strong survivors, plenty of stores to redistribute, and the April flow is starting. Let's focus on what you do now. What would you like to tackle first?
+      <span id="ai-welcome-text">Hello! I'm your HiveKeeper AI assistant. Ask me anything about beekeeping — inspections, treatments, swarm management, or specific issues with your hives.</span>
     </div>
     <div class="typing-indicator" id="typing-indicator">
       <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
     </div>
   </div>
   <div class="ai-suggestions">
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">Why did I lose so many?</div>
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">What do I do with the wax moth hives?</div>
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">How to redistribute the stores?</div>
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">Swarm risk on Row 3 Hive 4?</div>
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">How many nucs should I order?</div>
-    <div class="ai-suggestion" onclick="sendSuggestion(this)">Stop the robbing on Row 4</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">What should I look for in April?</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">How do I check for varroa?</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">When is swarm season?</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">Signs of a queenless hive?</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">How do I treat wax moth?</div>
+    <div class="ai-suggestion" onclick="sendSuggestion(this)">What's the best winter feed?</div>
   </div>
   <div class="ai-input-row">
     <button onclick="document.getElementById('ai-photo-input').click()" style="background:rgba(255,255,255,.15);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;" title="Upload a photo">📷</button>
@@ -2513,6 +2513,22 @@ function syncUniversalHeaders(screenId) {
   if (screenId === 's-ai') {
     var el = document.getElementById('ai-screen-title');
     if (el) el.textContent = 'HiveKeeper AI';
+    // Personalise the welcome message with the user's actual first name (or fall back to a neutral greeting)
+    try {
+      var welcomeEl = document.getElementById('ai-welcome-text');
+      if (welcomeEl) {
+        var firstName = '';
+        try {
+          var meta = (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.user_metadata) || {};
+          var full = meta.full_name || meta.name || localStorage.getItem('hk_display_name') || '';
+          firstName = (full || '').trim().split(' ')[0] || '';
+        } catch(e) {}
+        var greeting = firstName
+          ? ('Hello ' + firstName + "! I'm your HiveKeeper AI assistant. Ask me anything about beekeeping — inspections, treatments, swarm management, or specific issues with your hives.")
+          : "Hello! I'm your HiveKeeper AI assistant. Ask me anything about beekeeping — inspections, treatments, swarm management, or specific issues with your hives.";
+        welcomeEl.textContent = greeting;
+      }
+    } catch(e) {}
   }
 }
 
@@ -4446,8 +4462,6 @@ async function sendAI(){
     }catch(e){ showTyping(false); addMessage('ai','Photo analysis failed — check your connection and try again.'); }
     return;
   }
-  addMessage('user',msg);
-  showTyping(true);
   const lower=msg.toLowerCase();
   const key=Object.keys(AI_KB).find(k=>lower.includes(k));
   if(key){ setTimeout(()=>{ showTyping(false); addMessage('ai',AI_KB[key]); },900); return; }
