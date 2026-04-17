@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 13:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 14:15</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -10298,7 +10298,18 @@ async function pullFromSupabase() {
     var { data: landmarks, error: le } = await sb.from('landmarks').select('*').eq('user_id', uid);
     if (!le) {
       var mappedL = (landmarks || []).map(function(l) {
-        return { id: l.id, type: l.type, label: l.label, x: l.x, y: l.y, r: l.r || 0, scale: l.scale || 1.0 };
+        return {
+          id: l.id,
+          apiaryId: l.apiary_id || null,
+          type: l.type,
+          label: l.label,
+          x: l.x,
+          y: l.y,
+          r: l.r || 0,
+          scale: l.scale || 1.0,
+          mapLat: (typeof l.map_lat === 'number') ? l.map_lat : null,
+          mapLng: (typeof l.map_lng === 'number') ? l.map_lng : null
+        };
       });
       localStorage.setItem(LANDMARK_KEY, JSON.stringify(mappedL));
     }
@@ -11910,13 +11921,17 @@ async function pushLandmarks() {
     return {
       id: l.id,
       user_id: uid,
-      apiary_id: currentApiaryId || null,
+      // Use the landmark's own apiary_id so multi-apiary users don't lose their landmarks
+      apiary_id: l.apiaryId || currentApiaryId || null,
       type: l.type,
       label: l.label,
       x: l.x,
       y: l.y,
       r: l.r || 0,
-      scale: l.scale || 1.0
+      scale: l.scale || 1.0,
+      // GPS position — critical for Leaflet map rendering across devices
+      map_lat: (typeof l.mapLat === 'number') ? l.mapLat : null,
+      map_lng: (typeof l.mapLng === 'number') ? l.mapLng : null
     };
   });
   var result = await sb.from('landmarks').upsert(rows, { onConflict: 'id' });
@@ -13825,7 +13840,8 @@ function renderLeafletHives(editMode) {
       + '</div>';
 
     // Scale icon container to accommodate bigger emoji
-    var iconSize = Math.round(60 * Math.max(1, lmScale * 0.9));
+    // Width is generous to let long labels fit without wrapping; height scales with the emoji.
+    var iconSize = Math.max(80, Math.round(60 * lmScale));
     var iconHeight = Math.round(54 * Math.max(1, lmScale * 0.9));
     var icon = L.divIcon({
       className: 'hk-landmark-marker',
