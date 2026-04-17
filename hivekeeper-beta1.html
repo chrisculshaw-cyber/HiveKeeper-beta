@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 13:13</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 13:43</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6255,9 +6255,9 @@ function renderReferralModal() {
       bannerEl.innerHTML = '🐝 <strong>Your referrals earn you more hive slots.</strong>'
         + '<br>Current limit: <strong>' + limit + ' hives</strong>'
         + '<br>Next reward: ' + nextReward
-        + (localStorage.getItem('hk_pro_reward_pending') === '1' ? '<br>🎉 <strong>You\'ve earned 3 months free Pro! Contact chris@culshaw.consulting to claim.</strong>' : '');
+        + (localStorage.getItem('hk_pro_reward_pending') === '1' ? '<br>🎉 <strong>You\'ve earned 3 months free Pro! Contact billing@gethivekeeper.com to claim.</strong>' : '');
     } else {
-      bannerEl.innerHTML = '🐝 Each beekeeper who converts to a paid plan using your link earns you <strong>1 month subscription credit</strong>. 12 conversions = a free year.<br>Contact chris@culshaw.consulting to claim credits.';
+      bannerEl.innerHTML = '🐝 Each beekeeper who converts to a paid plan using your link earns you <strong>1 month subscription credit</strong>. 12 conversions = a free year.<br>Contact billing@gethivekeeper.com to claim credits.';
     }
   }
 
@@ -9826,7 +9826,13 @@ async function pushApiaries() {
   if (!apiaries.length) return;
   var sb = getSupabase();
   var rows = apiaries.map(function(a) {
-    return { id: a.id, user_id: uid, name: a.name, location: a.location || '', lat: a.lat || null, lng: a.lng || null, created_at: new Date(a.createdAt || Date.now()).toISOString() };
+    return {
+      id: a.id, user_id: uid, name: a.name, location: a.location || '',
+      lat: a.lat || null, lng: a.lng || null,
+      map_view_lat: (typeof a.mapViewLat === 'number') ? a.mapViewLat : null,
+      map_view_lng: (typeof a.mapViewLng === 'number') ? a.mapViewLng : null,
+      created_at: new Date(a.createdAt || Date.now()).toISOString()
+    };
   });
   // Upsert one at a time to avoid bulk conflicts
   for (var i = 0; i < rows.length; i++) {
@@ -9834,7 +9840,7 @@ async function pushApiaries() {
     if (error) {
       if (error.code === '23505') {
         // Duplicate key — row already exists, try plain update instead
-        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng }).eq('id', rows[i].id).eq('user_id', uid);
+        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng }).eq('id', rows[i].id).eq('user_id', uid);
       } else if (error.code === '42501') {
         // RLS error on this specific row — skip silently, likely a shared apiary
         console.warn('RLS error pushing apiary', rows[i].id, '— skipping');
@@ -10040,7 +10046,13 @@ async function pullFromSupabase() {
 
     if (!ae && apiaries && apiaries.length) {
       var mapped = apiaries.map(function(a) {
-        return { id: a.id, name: a.name, location: a.location, lat: a.lat || null, lng: a.lng || null, createdAt: new Date(a.created_at).getTime() };
+        return {
+          id: a.id, name: a.name, location: a.location,
+          lat: a.lat || null, lng: a.lng || null,
+          mapViewLat: (typeof a.map_view_lat === 'number') ? a.map_view_lat : null,
+          mapViewLng: (typeof a.map_view_lng === 'number') ? a.map_view_lng : null,
+          createdAt: new Date(a.created_at).getTime()
+        };
       });
       localStorage.setItem('hk_apiaries_v1', JSON.stringify(mapped));
     }
@@ -11264,7 +11276,7 @@ function handleUpgrade(targetTier) {
   // For now direct to email
   var subject = encodeURIComponent('HiveKeeper ' + tierNames[targetTier] + ' upgrade');
   var body = encodeURIComponent('Hi Chris,\n\nI would like to upgrade my HiveKeeper account to the ' + tierNames[targetTier] + ' plan (' + prices[targetTier] + ').\n\nMy account email is: ' + (_currentUser ? _currentUser.email : '') + '\n\nThanks');
-  window.open('mailto:chris@culshaw.consulting?subject=' + subject + '&body=' + body, '_blank');
+  window.open('mailto:billing@gethivekeeper.com?subject=' + subject + '&body=' + body, '_blank');
 }
 
 // ── SIDE RAIL TOGGLE ─────────────────────────────
@@ -11372,7 +11384,11 @@ var _adminTargetEmail = null;
 var _adminSnapshot = null; // snapshot of own data before entering admin mode
 
 function isAdminUser() {
-  return _currentUser && (_currentUser.email === 'chris@culshaw.consulting' || _currentUser.email === 'chris.culshaw@gmail.com');
+  return _currentUser && (
+    _currentUser.email === 'chris.culshaw@gethivekeeper.com' ||
+    _currentUser.email === 'chris@culshaw.consulting' ||
+    _currentUser.email === 'chris.culshaw@gmail.com'
+  );
 }
 
 function openAdminPanel() {
@@ -11770,26 +11786,22 @@ function openLandmarkEditSheet(id) {
 
   var panel = document.createElement('div');
   panel.id = 'lm-edit-panel';
-  panel.style.cssText = 'background:rgba(255,255,255,0.98);border:1px solid var(--wax);border-radius:12px;padding:12px 14px;box-shadow:0 4px 14px rgba(0,0,0,0.12);font-family:Syne,sans-serif;margin:10px 14px;';
+  panel.style.cssText = 'background:rgba(255,255,255,0.98);border:1px solid var(--wax);border-radius:10px;padding:8px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-family:Syne,sans-serif;margin:6px 14px;';
   panel.innerHTML = ''
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">'
-    +   '<div style="font-size:14px;font-weight:800;color:var(--forest);">Editing: ' + (def.emoji || '📍') + ' ' + curLabel + '</div>'
-    +   '<div onclick="closeLandmarkEditPanel()" style="width:28px;height:28px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;">&times;</div>'
+    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'
+    +   '<input id="lm-edit-label" type="text" value="' + curLabel + '" placeholder="Label" style="flex:1;padding:5px 8px;font-size:12px;border:1px solid var(--wax);border-radius:6px;box-sizing:border-box;" oninput="applyLandmarkLive(\'' + id + '\')">'
+    +   '<button onclick="confirmDeleteLandmark(\'' + id + '\')" style="background:#fdecea;color:#C62828;border:1px solid #f5c6c6;border-radius:6px;padding:5px 8px;font-family:Syne,sans-serif;font-size:11px;font-weight:700;cursor:pointer;">Delete</button>'
+    +   '<button onclick="closeLandmarkEditPanel()" style="background:var(--honey);color:white;border:none;border-radius:6px;padding:5px 10px;font-family:Syne,sans-serif;font-size:11px;font-weight:800;cursor:pointer;">Done</button>'
     + '</div>'
-    + '<input id="lm-edit-label" type="text" value="' + curLabel + '" placeholder="Label" style="width:100%;padding:8px 10px;font-size:13px;border:1px solid var(--wax);border-radius:8px;margin-bottom:10px;box-sizing:border-box;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">'
-    +   '<span style="font-size:12px;font-weight:700;color:var(--text-l);min-width:44px;">Size</span>'
-    +   '<input id="lm-edit-scale" type="range" min="0.6" max="3" step="0.1" value="' + curScale + '" style="flex:1;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    +   '<span id="lm-size-val" style="font-size:12px;color:var(--honey);font-weight:800;min-width:36px;text-align:right;">' + curScale.toFixed(1) + '&times;</span>'
+    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
+    +   '<span style="font-size:10px;font-weight:700;color:var(--text-l);min-width:32px;">Size</span>'
+    +   '<input id="lm-edit-scale" type="range" min="0.6" max="3" step="0.1" value="' + curScale + '" style="flex:1;height:18px;" oninput="applyLandmarkLive(\'' + id + '\')">'
+    +   '<span id="lm-size-val" style="font-size:10px;color:var(--honey);font-weight:800;min-width:28px;text-align:right;">' + curScale.toFixed(1) + '&times;</span>'
     + '</div>'
-    + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">'
-    +   '<span style="font-size:12px;font-weight:700;color:var(--text-l);min-width:44px;">Rotate</span>'
-    +   '<input id="lm-edit-rot" type="range" min="0" max="360" step="15" value="' + curR + '" style="flex:1;" oninput="applyLandmarkLive(\'' + id + '\')">'
-    +   '<span id="lm-rot-val" style="font-size:12px;color:var(--honey);font-weight:800;min-width:36px;text-align:right;">' + curR + '&deg;</span>'
-    + '</div>'
-    + '<div style="display:flex;gap:8px;">'
-    +   '<button onclick="closeLandmarkEditPanel()" style="flex:2;background:var(--honey);color:white;border:none;border-radius:8px;padding:10px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Done</button>'
-    +   '<button onclick="confirmDeleteLandmark(\'' + id + '\')" style="flex:1;background:#fdecea;color:#C62828;border:1px solid #f5c6c6;border-radius:8px;padding:10px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Delete</button>'
+    + '<div style="display:flex;align-items:center;gap:6px;">'
+    +   '<span style="font-size:10px;font-weight:700;color:var(--text-l);min-width:32px;">Rotate</span>'
+    +   '<input id="lm-edit-rot" type="range" min="0" max="360" step="15" value="' + curR + '" style="flex:1;height:18px;" oninput="applyLandmarkLive(\'' + id + '\')">'
+    +   '<span id="lm-rot-val" style="font-size:10px;color:var(--honey);font-weight:800;min-width:28px;text-align:right;">' + curR + '&deg;</span>'
     + '</div>';
 
   // Insert BELOW the map (as sibling after map-canvas-wrap), not inside/over it
@@ -11799,8 +11811,7 @@ function openLandmarkEditSheet(id) {
   } else {
     document.body.appendChild(panel);
   }
-  // Scroll into view so the user can see it on smaller screens
-  setTimeout(function() { try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {} }, 100);
+  // Do NOT scrollIntoView — it caused screen jumping. Panel is compact enough to stay visible.
 }
 
 // Apply slider/input changes to the landmark IMMEDIATELY so the user sees the effect.
@@ -13515,11 +13526,26 @@ function initLeafletMap() {
   var apiary = getCurrentApiary();
   var lat = (apiary && apiary.lat) ? parseFloat(apiary.lat) : MAP_DEFAULT_LAT;
   var lng = (apiary && apiary.lng) ? parseFloat(apiary.lng) : MAP_DEFAULT_LNG;
+  var zoom = MAP_DEFAULT_ZOOM;
+
+  // Map centre persists at the APIARY level (syncs across devices via Supabase).
+  // If the apiary row has map_view_lat/lng saved, use that. Falls back to apiary.lat/lng (the GPS origin).
+  if (apiary && typeof apiary.mapViewLat === 'number' && typeof apiary.mapViewLng === 'number') {
+    lat = apiary.mapViewLat;
+    lng = apiary.mapViewLng;
+  }
+
+  // Zoom is DEVICE-local — a phone and a desktop will naturally want different zoom levels.
+  try {
+    var _apId = apiary ? apiary.id : 'default';
+    var _savedZoom = parseInt(localStorage.getItem('hk_map_zoom_' + _apId) || '', 10);
+    if (!isNaN(_savedZoom) && _savedZoom >= 1 && _savedZoom <= 22) zoom = _savedZoom;
+  } catch(e) {}
 
   // Init map
   _leafletMap = L.map('leaflet-map', {
     center: [lat, lng],
-    zoom: MAP_DEFAULT_ZOOM,
+    zoom: zoom,
     zoomControl: false,
     attributionControl: true,
     dragging: false,
@@ -13527,6 +13553,33 @@ function initLeafletMap() {
     scrollWheelZoom: false,
     doubleClickZoom: false,
     keyboard: false,
+  });
+
+  // Persist map state on move/zoom
+  // Centre goes to Supabase via apiary record (syncs across devices).
+  // Zoom stays in localStorage (device-specific).
+  _leafletMap.on('moveend', function() {
+    try {
+      var ap = getCurrentApiary();
+      if (!ap) return;
+      var c = _leafletMap.getCenter();
+      ap.mapViewLat = c.lat;
+      ap.mapViewLng = c.lng;
+      // Update local copy + push to Supabase
+      var allA = loadApiaries();
+      var idx = allA.findIndex(function(x){ return x.id === ap.id; });
+      if (idx >= 0) { allA[idx].mapViewLat = c.lat; allA[idx].mapViewLng = c.lng; saveApiaries(allA); }
+      if (getUserId()) {
+        getSupabase().from('apiaries').update({ map_view_lat: c.lat, map_view_lng: c.lng }).eq('id', ap.id).eq('user_id', getUserId()).then(function(){}).catch(function(){});
+      }
+    } catch(e) {}
+  });
+  _leafletMap.on('zoomend', function() {
+    try {
+      var ap = getCurrentApiary();
+      var key = 'hk_map_zoom_' + (ap ? ap.id : 'default');
+      localStorage.setItem(key, String(_leafletMap.getZoom()));
+    } catch(e) {}
   });
 
   // Satellite tile layer — ESRI World Imagery (free, no API key)
@@ -13757,13 +13810,16 @@ function renderLeafletHives(editMode) {
     var lmRot = typeof lm.r === 'number' ? lm.r : 0;
     var emojiSize = Math.round(26 * lmScale);
     var labelFontSize = Math.max(9, Math.round(10 * Math.min(lmScale, 1.4)));
-    // Negate rotation: the slider reads as clockwise in degrees, but CSS rotate visually went anticlockwise
-    // on the map (because the map's own bearing transform compounds). Negating makes slider+map feel consistent.
+    // User's rotation for the landmark (negated so slider reads clockwise)
     var cssRot = -lmRot;
+    // Counter-rotate label & pointer to cancel both map bearing AND user rotation,
+    // so they always read upright at the bottom of the map (matching hive label behaviour).
+    var bearingCancel = -(typeof _mapBearing === 'number' ? _mapBearing : 0);
+    var labelCounter = (-cssRot + bearingCancel);
     var iconHtml = '<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:1000;transform:rotate(' + cssRot + 'deg);transform-origin:bottom center;">'
       + '<div style="font-size:' + emojiSize + 'px;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,0.5);filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));">' + (def.emoji || '📍') + '</div>'
-      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:' + labelFontSize + 'px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);transform:rotate(' + (-cssRot) + 'deg);">' + (lm.label || def.label) + '</div>'
-      + '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgba(255,255,255,0.92);filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));margin-top:-1px;"></div>'
+      + '<div style="background:rgba(255,255,255,0.92);color:#1F3812;font-size:' + labelFontSize + 'px;font-weight:700;padding:1px 6px;border-radius:6px;margin-top:2px;font-family:\'Syne\',sans-serif;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.25);transform:rotate(' + labelCounter + 'deg);">' + (lm.label || def.label) + '</div>'
+      + '<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid rgba(255,255,255,0.92);filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));margin-top:-1px;transform:rotate(' + labelCounter + 'deg);transform-origin:top center;"></div>'
       + '</div>';
 
     // Scale icon container to accommodate bigger emoji
