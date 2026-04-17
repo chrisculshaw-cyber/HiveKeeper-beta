@@ -639,20 +639,20 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   flex-direction: column;
   gap: 8px;
   padding: 8px 6px;
-  background: rgba(22,43,31,0.92);
+  background: rgba(22,43,31,0.55);
   border-radius: 16px 0 0 16px;
   min-height: 160px;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.25);
+  box-shadow: -2px 0 10px rgba(0,0,0,0.15);
   z-index: 900;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(4px);
   touch-action: none;
   transition: background 0.2s, opacity 0.2s;
 }
 #side-rail.collapsed {
-  background: rgba(22,43,31,0.92);
+  background: rgba(22,43,31,0.55);
 }
 #side-rail:hover, #side-rail:active {
-  background: rgba(22,43,31,0.96);
+  background: rgba(22,43,31,0.92);
 }
 #side-rail.collapsed .side-rail-btn {
   display: none;
@@ -919,7 +919,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 18:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 19:00</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1199,7 +1199,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
   <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#4A2E0E 0%,#6A3A10 100%);">
-    <div style="padding:0 20px;"><div class="back-btn" onclick="goBack()" style="color:white;font-size:13px;cursor:pointer;padding:10px 0 6px 0;display:inline-block;">&#8249; Back</div></div>
+    <div style="padding:6px 20px 0 20px;"><div class="back-btn" onclick="goBack()" style="color:white;font-size:13px;cursor:pointer;display:inline-block;">&#8249; Back</div></div>
     <div class="app-header bark">
       <div>
         <div class="dash-greeting" id="s-inspect-greeting">Good morning,</div>

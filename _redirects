@@ -1,0 +1,18 @@
+# HiveKeeper — Cloudflare Pages URL rewrites
+# Cleans up the URLs shown to web users while keeping original file paths
+# intact for the iOS and Android Median wrappers.
+#
+# Status codes:
+#   200 = REWRITE  (URL stays masked, content served silently from target)
+#   301 = REDIRECT (browser URL changes to the target path)
+
+# Root of site serves the app — gethivekeeper.com is now THE app
+/            /hivekeeper-beta1.html   200
+
+# Optional clean aliases in case you want to link to /app or /dev specifically
+/app         /hivekeeper-beta1.html   200
+/app/*       /hivekeeper-beta1.html   200
+
+# Development build for beta testers
+/dev         /hivekeeper-dev.html     200
+/dev/*       /hivekeeper-dev.html     200
