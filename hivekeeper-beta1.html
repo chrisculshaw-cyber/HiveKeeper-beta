@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 15:26</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 15:47</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -11292,28 +11292,29 @@ var STRIPE_PRICES = {
   pro:        { monthly: 'price_1TNCyAAh8P0KJ902MTxVDORr', yearly: 'price_1TNCyAAh8P0KJ902k9tO6tQp' },
   commercial: { monthly: 'price_1TND0jAh8P0KJ902RfPHztx5', yearly: 'price_1TND15Ah8P0KJ902AsaDBIAS' }
 };
-var _billingPeriod = 'monthly'; // toggled by pricing modal UI
+var _billingPeriod = 'yearly'; // default to annual — better value, better for revenue
 
 function setBillingPeriod(period) {
   _billingPeriod = period;
-  // Update toggle UI
   var monthly = document.getElementById('billing-toggle-monthly');
   var yearly  = document.getElementById('billing-toggle-yearly');
   var saveBadge = document.getElementById('billing-save-badge');
-  if (monthly) monthly.style.background = period === 'monthly' ? 'var(--honey)' : 'transparent';
-  if (monthly) monthly.style.color = period === 'monthly' ? 'white' : 'var(--text-l)';
-  if (yearly)  yearly.style.background = period === 'yearly' ? 'var(--honey)' : 'transparent';
-  if (yearly)  yearly.style.color = period === 'yearly' ? 'white' : 'var(--text-l)';
+  if (monthly) { monthly.style.background = period === 'monthly' ? 'var(--honey)' : 'transparent'; monthly.style.color = period === 'monthly' ? 'white' : 'var(--text-l)'; }
+  if (yearly)  { yearly.style.background  = period === 'yearly'  ? 'var(--honey)' : 'transparent'; yearly.style.color  = period === 'yearly'  ? 'white' : 'var(--text-l)'; }
   if (saveBadge) saveBadge.style.display = period === 'yearly' ? 'inline-block' : 'none';
-  // Update price displays
-  var proPrice   = document.getElementById('pricing-pro-price');
-  var comPrice   = document.getElementById('pricing-com-price');
-  var proSub     = document.getElementById('pricing-pro-sub');
-  var comSub     = document.getElementById('pricing-com-sub');
-  if (proPrice) proPrice.innerHTML = period === 'monthly' ? '&#xa3;3.99<span style="font-size:9px;">/mo</span>' : '&#xa3;39.99<span style="font-size:9px;">/yr</span>';
-  if (comPrice) comPrice.innerHTML = period === 'monthly' ? '&#xa3;19.99<span style="font-size:9px;">/mo</span>' : '&#xa3;199.99<span style="font-size:9px;">/yr</span>';
-  if (proSub)   proSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88</span> <strong>&#xa3;39.99/yr</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong>';
-  if (comSub)   comSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88</span> <strong>&#xa3;199.99/yr</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong>';
+  var proPrice = document.getElementById('pricing-pro-price');
+  var comPrice = document.getElementById('pricing-com-price');
+  var proSub   = document.getElementById('pricing-pro-sub');
+  var comSub   = document.getElementById('pricing-com-sub');
+  if (proPrice) proPrice.innerHTML = period === 'monthly' ? '&#xa3;3.99<span style="font-size:13px;">/mo</span>' : '&#xa3;39.99<span style="font-size:13px;">/yr</span>';
+  if (comPrice) comPrice.innerHTML = period === 'monthly' ? '&#xa3;19.99<span style="font-size:13px;">/mo</span>' : '&#xa3;199.99<span style="font-size:13px;">/yr</span>';
+  if (proSub)   proSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;Switch to annual to save' : '<strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong>';
+  if (comSub)   comSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;Switch to annual to save' : '<strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong>';
+  // Update monthly per-month equivalent
+  var proBtnEl = document.getElementById('btn-upgrade-pro');
+  var comBtnEl = document.getElementById('btn-upgrade-commercial');
+  if (proBtnEl) proBtnEl.innerHTML = period === 'monthly' ? 'Upgrade to Pro &#x2192;' : 'Upgrade to Pro &#x2192;';
+  if (comBtnEl) comBtnEl.innerHTML = period === 'monthly' ? 'Upgrade &#x2192;' : 'Upgrade &#x2192;';
 }
 
 async function handleUpgrade(targetTier) {
@@ -11340,6 +11341,12 @@ async function handleUpgrade(targetTier) {
   var priceId = STRIPE_PRICES[targetTier] && STRIPE_PRICES[targetTier][_billingPeriod];
   if (!priceId) { showToast('Something went wrong — please try again'); return; }
 
+  // Show loading state on button
+  var btnId = 'btn-upgrade-' + targetTier;
+  var btn = document.getElementById(btnId);
+  var originalText = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = 'Opening checkout... ⏳'; btn.disabled = true; btn.style.opacity = '0.7'; }
+
   showToast('Opening checkout...');
   try {
     var resp = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/create-checkout-session', {
@@ -11361,6 +11368,7 @@ async function handleUpgrade(targetTier) {
     }
   } catch(err) {
     console.error('Stripe checkout error:', err);
+    if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = '1'; }
     showToast('Could not start checkout — please try again or contact billing@gethivekeeper.com');
   }
 }
@@ -13491,19 +13499,19 @@ function goToApiaryAlerts() {
       </div>
 
       <!-- BILLING TOGGLE -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
         <div style="display:flex;background:var(--wax);border-radius:20px;padding:3px;gap:2px;">
-          <button id="billing-toggle-monthly" onclick="setBillingPeriod('monthly')" style="background:var(--honey);color:white;border:none;border-radius:16px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Monthly</button>
-          <button id="billing-toggle-yearly" onclick="setBillingPeriod('yearly')" style="background:transparent;color:var(--text-l);border:none;border-radius:16px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Annual</button>
+          <button id="billing-toggle-monthly" onclick="setBillingPeriod('monthly')" style="background:transparent;color:var(--text-l);border:none;border-radius:16px;padding:7px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Monthly</button>
+          <button id="billing-toggle-yearly" onclick="setBillingPeriod('yearly')" style="background:var(--honey);color:white;border:none;border-radius:16px;padding:7px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Annual</button>
         </div>
-        <span id="billing-save-badge" style="display:none;background:#2E7D32;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;font-family:'Syne',sans-serif;">Save up to £40</span>
+        <span id="billing-save-badge" style="display:inline-block;background:#2E7D32;color:white;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;font-family:'Syne',sans-serif;">Save up to £40</span>
       </div>
 
       <div id="pricing-reason-msg" style="display:none;background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:10px 14px;font-size:13px;color:#633806;font-weight:600;margin-bottom:12px;line-height:1.5;"></div>
 
       <!-- COMPARISON TABLE -->
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:16px;border:1px solid var(--wax);border-radius:12px;">
-        <table style="width:100%;border-collapse:collapse;font-size:11px;font-family:'Syne',sans-serif;min-width:280px;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Syne',sans-serif;min-width:280px;">
           <thead>
             <tr>
               <th style="text-align:left;padding:10px 8px;font-size:10px;color:var(--text-l);font-weight:700;border-bottom:1px solid var(--wax);width:42%;"></th>
@@ -13538,39 +13546,32 @@ function goToApiaryAlerts() {
       </div>
 
       <!-- PRICING CARDS -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:stretch;">
-        <!-- Free -->
-        <div style="flex:1;border:1px solid var(--wax);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;">
-          <div style="font-size:20px;">&#x1F331;</div>
-          <div style="font-size:12px;font-weight:800;color:var(--text);margin:4px 0;">Free</div>
-          <div style="font-size:15px;font-weight:800;color:var(--text);">&#xa3;0</div>
-          <div style="font-size:9px;color:var(--text-l);margin:4px 0;min-height:13px;">3 hives forever</div>
-          <div style="flex:1;"></div>
-          <div style="background:var(--wax);border-radius:8px;padding:8px 4px;font-size:10px;color:var(--text-l);font-weight:700;margin-top:8px;">Your plan</div>
-        </div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;align-items:stretch;">
         <!-- Pro -->
-        <div style="flex:1;border:2px solid #185FA5;border-radius:12px;padding:12px 6px;text-align:center;background:#F0F6FF;display:flex;flex-direction:column;">
-          <div style="font-size:9px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:2px 5px;margin-bottom:4px;display:inline-block;align-self:center;">POPULAR</div>
-          <div style="font-size:20px;">&#x1F41D;</div>
-          <div style="font-size:12px;font-weight:800;color:#185FA5;margin:4px 0;">Pro</div>
-          <div id="pricing-pro-price" style="font-size:15px;font-weight:800;color:#185FA5;">&#xa3;3.99<span style="font-size:9px;">/mo</span></div>
-          <div id="pricing-pro-sub" style="font-size:9px;color:#185FA5;opacity:0.85;margin:4px 0;min-height:13px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88</span> <strong>&#xa3;39.99/yr</strong></div>
+        <div style="flex:1;border:2px solid #185FA5;border-radius:14px;padding:18px 12px;text-align:center;background:#F0F6FF;display:flex;flex-direction:column;">
+          <div style="font-size:11px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:3px 8px;margin-bottom:8px;display:inline-block;align-self:center;letter-spacing:.04em;">POPULAR</div>
+          <div style="font-size:28px;margin-bottom:4px;">&#x1F41D;</div>
+          <div style="font-size:16px;font-weight:800;color:#185FA5;margin-bottom:6px;">Pro</div>
+          <div id="pricing-pro-price" style="font-size:26px;font-weight:800;color:#185FA5;line-height:1;">&#xa3;39.99<span style="font-size:13px;">/yr</span></div>
+          <div id="pricing-pro-sub" style="font-size:12px;color:#185FA5;opacity:0.8;margin:6px 0;min-height:16px;line-height:1.4;"><strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong></div>
+          <div style="font-size:12px;color:#185FA5;opacity:0.7;margin-bottom:12px;">≈ £3.33/month</div>
           <div style="flex:1;"></div>
-          <button onclick="handleUpgrade('pro')" style="width:100%;background:#185FA5;color:white;border:none;border-radius:8px;padding:8px 4px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
+          <button onclick="handleUpgrade('pro')" id="btn-upgrade-pro" style="width:100%;background:#185FA5;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade to Pro &#x2192;</button>
         </div>
         <!-- Commercial -->
-        <div style="flex:1;border:2px solid #3B6D11;border-radius:12px;padding:12px 6px;text-align:center;background:#F2F9EA;display:flex;flex-direction:column;">
-          <div style="font-size:9px;color:transparent;padding:2px 5px;margin-bottom:4px;display:inline-block;align-self:center;">.</div>
-          <div style="font-size:20px;">&#x1F36F;</div>
-          <div style="font-size:12px;font-weight:800;color:#3B6D11;margin:4px 0;">Commercial</div>
-          <div id="pricing-com-price" style="font-size:15px;font-weight:800;color:#3B6D11;">&#xa3;19.99<span style="font-size:9px;">/mo</span></div>
-          <div id="pricing-com-sub" style="font-size:9px;color:#3B6D11;opacity:0.85;margin:4px 0;min-height:13px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88</span> <strong>&#xa3;199.99/yr</strong></div>
+        <div style="flex:1;border:2px solid #3B6D11;border-radius:14px;padding:18px 12px;text-align:center;background:#F2F9EA;display:flex;flex-direction:column;">
+          <div style="font-size:11px;color:transparent;padding:3px 8px;margin-bottom:8px;display:inline-block;align-self:center;">.</div>
+          <div style="font-size:28px;margin-bottom:4px;">&#x1F36F;</div>
+          <div style="font-size:16px;font-weight:800;color:#3B6D11;margin-bottom:6px;">Commercial</div>
+          <div id="pricing-com-price" style="font-size:26px;font-weight:800;color:#3B6D11;line-height:1;">&#xa3;199.99<span style="font-size:13px;">/yr</span></div>
+          <div id="pricing-com-sub" style="font-size:12px;color:#3B6D11;opacity:0.8;margin:6px 0;min-height:16px;line-height:1.4;"><strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong></div>
+          <div style="font-size:12px;color:#3B6D11;opacity:0.7;margin-bottom:12px;">≈ £16.67/month</div>
           <div style="flex:1;"></div>
-          <button onclick="handleUpgrade('commercial')" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:8px;padding:8px 4px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
+          <button onclick="handleUpgrade('commercial')" id="btn-upgrade-commercial" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
       </div>
-      
-      <div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.6;padding-bottom:4px;">Cancel anytime &middot; Billed via Apple / Google &middot; Prices inc. VAT</div>
+
+      <div style="font-size:12px;color:var(--text-l);text-align:center;line-height:1.6;padding-bottom:4px;">Cancel anytime &middot; Secure payment via Stripe &middot; Prices inc. VAT</div>
       <button onclick="closeModalEl('modal-pricing')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Maybe later</button>
     </div>
   </div>
