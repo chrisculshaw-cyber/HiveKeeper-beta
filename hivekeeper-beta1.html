@@ -916,7 +916,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 15:47</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17 April 2026 at 17:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -986,6 +986,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
           <div id="founding-header-badge" style="display:none;margin-top:3px;">
             <span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span>
+          </div>
+          <div id="pro-header-badge" style="display:none;margin-top:3px;">
+            <span style="background:linear-gradient(90deg,#185FA5,#4A90D9);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🐝 HiveKeeper Pro</span>
+          </div>
+          <div id="commercial-header-badge" style="display:none;margin-top:3px;">
+            <span style="background:linear-gradient(90deg,#3B6D11,#6BA23A);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🍯 HiveKeeper Commercial</span>
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
           <div id="offline-indicator" style="display:none;font-size:10px;color:#FFB74D;margin-top:2px;">&#x1F4F5; Offline — inspections will sync when online</div>
@@ -8599,12 +8605,17 @@ async function loadUserProfile() {
   const sb = getSupabase();
   const { data } = await sb.from('profiles').select('name, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus').eq('id', _currentUser.id).single();
   if (data) {
-    // Store tier for paywall checks
-    if (data.tier) _userTier = data.tier;
+    // Store tier for paywall checks — both in-memory and localStorage (canUsePremiumFeature reads from localStorage)
+    if (data.tier) {
+      _userTier = data.tier;
+      localStorage.setItem('hk_tier', data.tier);
+    }
     if (data.is_founding_beekeeper) localStorage.setItem('hk_founding_beekeeper', '1');
     if (data.referral_code) _referralCode = data.referral_code;
     if (data.referral_hive_bonus) _referralHiveBonus = data.referral_hive_bonus || 0;
     updatePlanBadge();
+    // Re-render tier-dependent UI so upgrades reflect immediately
+    try { renderTrialBanners(); } catch(e) {}
   }
   if (data && data.name) {
     // Update any name displays
@@ -11217,10 +11228,15 @@ function updatePlanBadge() {
   var labels = {
     beta: { name: 'Beta (unlimited)', limits: 'All features unlocked' },
     free: { name: 'Free', limits: '1 apiary · 5 hives' },
+    trial: { name: 'Free trial (Pro)', limits: 'Unlimited during trial' },
     pro: { name: 'Pro', limits: 'Unlimited hives & apiaries' },
     commercial: { name: 'Commercial', limits: 'Full access · ad-free' }
   };
-  var label = labels[tier] || labels.beta;
+  // Founders always display as Pro
+  if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
+    tier = 'pro';
+  }
+  var label = labels[tier] || labels.free;
   nameEl.textContent = label.name;
   if (limitsEl) limitsEl.textContent = label.limits;
 
@@ -11229,8 +11245,9 @@ function updatePlanBadge() {
     var el = document.getElementById('plan-badge-' + t);
     if (el) el.style.display = 'none';
   });
-  var activeTier = tier === 'beta' ? 'beta' : tier;
-  var activeBadge = document.getElementById('plan-badge-' + activeTier);
+  // Map trial to pro badge since they have Pro features
+  var activeBadgeKey = tier === 'trial' ? 'pro' : tier;
+  var activeBadge = document.getElementById('plan-badge-' + activeBadgeKey);
   if (activeBadge) activeBadge.style.display = 'flex';
 
   // Show founding badge if earned
@@ -11244,6 +11261,9 @@ function updatePlanBadge() {
     var isNative = window.median || /Median/i.test(navigator.userAgent);
     manageBtn.style.display = (isPaid && !isNative && !isFoundingBeekeeper()) ? 'block' : 'none';
   }
+
+  // Re-render header badges too
+  try { renderFoundingBadge(); } catch(e) {}
 }
 
 // ── PRICING / UPGRADE MODAL ───────────────────────────────
@@ -11403,11 +11423,27 @@ function checkUpgradeReturn() {
   if (params.get('upgrade') === 'success') {
     // Clean URL
     window.history.replaceState({}, '', window.location.pathname);
-    // Pull fresh tier from Supabase
-    setTimeout(async function() {
-      try { await pullData(); } catch(e) {}
-      showUpgradeSuccessModal();
-    }, 1000);
+    // Poll profile a few times — webhook may take a few seconds to propagate
+    // Try immediately, then again at 2s and 5s to catch late webhooks
+    var attempts = 0;
+    function refreshTier() {
+      attempts++;
+      if (typeof loadUserProfile === 'function') {
+        loadUserProfile().then(function(){
+          var tier = localStorage.getItem('hk_tier') || _userTier;
+          if ((tier === 'pro' || tier === 'commercial') || attempts >= 3) {
+            showUpgradeSuccessModal();
+          } else {
+            // Try again in 2 seconds
+            setTimeout(refreshTier, 2000);
+          }
+        }).catch(function(){
+          if (attempts < 3) setTimeout(refreshTier, 2000);
+          else showUpgradeSuccessModal();
+        });
+      }
+    }
+    setTimeout(refreshTier, 1500);
   } else if (params.get('upgrade') === 'cancelled') {
     window.history.replaceState({}, '', window.location.pathname);
     showToast('Upgrade cancelled — you can upgrade any time from Settings');
@@ -12747,9 +12783,16 @@ function renderFoundingBadge() {
   // Settings badge
   var fbSection = document.getElementById('founding-badge-section');
   if (fbSection) fbSection.style.display = isFounding ? 'block' : 'none';
-  // Header badge
-  var headerBadge = document.getElementById('founding-header-badge');
-  if (headerBadge) headerBadge.style.display = isFounding ? 'block' : 'none';
+
+  // Header badges — founder takes priority over Pro/Commercial
+  var tier = localStorage.getItem('hk_tier') || _userTier || '';
+  var founderBadge = document.getElementById('founding-header-badge');
+  var proBadge = document.getElementById('pro-header-badge');
+  var commercialBadge = document.getElementById('commercial-header-badge');
+
+  if (founderBadge) founderBadge.style.display = isFounding ? 'block' : 'none';
+  if (proBadge) proBadge.style.display = (!isFounding && tier === 'pro') ? 'block' : 'none';
+  if (commercialBadge) commercialBadge.style.display = (!isFounding && tier === 'commercial') ? 'block' : 'none';
 }
 
 async function awardFoundingBadge(userId) {
