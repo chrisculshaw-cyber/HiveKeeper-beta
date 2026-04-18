@@ -1143,6 +1143,88 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 .harvest-stat-label { font-size: 9px; color: #854F0B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 .harvest-empty { text-align: center; padding: 16px 8px; color: var(--text-l); font-size: 12px; line-height: 1.5; }
 
+/* ═══ CROP SPRAYING ═══════════════════════════════════════ */
+.spray-compact {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-left: 4px solid #639922;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.spray-compact:active { background: #F8F9F5; }
+.spray-compact.severity-watch     { border-left-color: #378ADD; }
+.spray-compact.severity-alert     { border-left-color: #EF9F27; background: #FFF9EF; }
+.spray-compact.severity-critical  { border-left-color: #A32D2D; background: #FFF4F3; }
+.spray-compact-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: #EAF5DC;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.spray-compact.severity-watch    .spray-compact-icon { background: #E6F1FB; }
+.spray-compact.severity-alert    .spray-compact-icon { background: #FDF2E0; }
+.spray-compact.severity-critical .spray-compact-icon { background: #FCEBEB; }
+.spray-compact-text { flex: 1; min-width: 0; }
+.spray-compact-title {
+  font-size: 13px; font-weight: 800; color: #2C2C2A;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.spray-compact-pill {
+  font-size: 9px; font-weight: 800;
+  padding: 2px 8px; border-radius: 10px;
+  background: #EAF5DC; color: #3B6D11;
+  letter-spacing: 0.04em;
+}
+.spray-compact.severity-watch    .spray-compact-pill { background: #E6F1FB; color: #1D5A9C; }
+.spray-compact.severity-alert    .spray-compact-pill { background: #FDF2E0; color: #8C5C0A; }
+.spray-compact.severity-critical .spray-compact-pill { background: #FCEBEB; color: #8B1A1A; }
+.spray-compact-sub {
+  font-size: 11px; color: #5F5E5A;
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spray-compact-arrow {
+  font-size: 18px; color: #8A8A87;
+  flex-shrink: 0;
+}
+
+/* Spray log button */
+.spray-log-btn {
+  background: #639922; color: #fff;
+  border: none; border-radius: 18px;
+  padding: 6px 14px; font-weight: 700; font-size: 12px;
+  cursor: pointer;
+}
+.spray-log-btn:active { background: #4E7C1A; }
+
+/* Spray list items */
+.spray-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; margin-bottom: 8px;
+  background: #fff; border-radius: 10px;
+  border-left: 3px solid #378ADD;
+}
+.spray-item.spray-sev-watch    { border-left-color: #378ADD; background: #F4F9FF; }
+.spray-item.spray-sev-alert    { border-left-color: #EF9F27; background: #FFF9EF; }
+.spray-item.spray-sev-critical { border-left-color: #A32D2D; background: #FFF4F3; }
+.spray-empty { text-align: center; padding: 16px 8px; }
+
+/* Spray modal */
+.spray-modal-form label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--text-l); text-transform: uppercase;
+  letter-spacing: 0.04em; margin: 10px 0 4px;
+}
+.spray-modal-form select, .spray-modal-form input, .spray-modal-form textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--wax); border-radius: 8px;
+  font-size: 14px; font-family: inherit; background: #fff;
+  box-sizing: border-box;
+}
+.spray-modal-form textarea { resize: vertical; min-height: 60px; }
+/* ═══ END CROP SPRAYING ═══════════════════════════════════ */
+
 /* ═══ BOTTOM HALF COLOUR-UP ═══════════════════════════════ */
 /* Priority alerts — tinted backgrounds */
 .alert-v2.sev-red {
@@ -1565,6 +1647,29 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div style="text-align:center;padding:16px;font-size:12px;color:rgba(255,255,255,0.65);">Loading...</div>
         </div>
       </div>
+    </div>
+
+    <!-- CROP SPRAYING STATUS (compact) -->
+    <div id="spray-compact" class="spray-compact severity-low" onclick="goToForageSprays()">
+      <div class="spray-compact-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="8" y="7" width="8" height="13" rx="2" fill="#639922"/>
+          <rect x="9" y="3" width="6" height="5" rx="1" fill="#8FB347"/>
+          <path d="M12 7v-2M10 5h4" stroke="#3B6D11" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="6" cy="4" r="0.8" fill="#8FB347"/>
+          <circle cx="18" cy="4" r="0.8" fill="#8FB347"/>
+          <circle cx="5" cy="7" r="0.6" fill="#8FB347"/>
+          <circle cx="19" cy="7" r="0.6" fill="#8FB347"/>
+        </svg>
+      </div>
+      <div class="spray-compact-text">
+        <div class="spray-compact-title">
+          Crop Spraying
+          <span id="spray-header-pill" class="spray-compact-pill">NONE</span>
+        </div>
+        <div class="spray-compact-sub" id="spray-header-sub">No sprays reported nearby</div>
+      </div>
+      <div class="spray-compact-arrow">›</div>
     </div>
 
     <!-- PARTNER AD CARD (premium product card) -->
@@ -2378,6 +2483,63 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
   </div>
 
+  <!-- MODAL: LOG SPRAY -->
+  <div class="modal-overlay" id="modal-spray" onclick="closeModal(event,'modal-spray')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
+        <div class="modal-title">🌾 Log a spray</div>
+        <div onclick="closeModalEl('modal-spray')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:10px;">
+        Log pesticide or crop spraying near your apiaries. Helps track exposure risk and informs inspection decisions.
+      </div>
+      <form class="spray-modal-form" onsubmit="event.preventDefault();saveSprayForm();return false;">
+        <label for="spray-date">When</label>
+        <input type="date" id="spray-date" required />
+
+        <label for="spray-crop">Crop type</label>
+        <select id="spray-crop" required>
+          <option value="">— Select —</option>
+          <option value="Oilseed rape">Oilseed rape</option>
+          <option value="Field beans">Field beans</option>
+          <option value="Wheat">Wheat</option>
+          <option value="Barley">Barley</option>
+          <option value="Potatoes">Potatoes</option>
+          <option value="Vegetables">Vegetables</option>
+          <option value="Orchard">Orchard / fruit trees</option>
+          <option value="Maize">Maize</option>
+          <option value="Grass / pasture">Grass / pasture</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label for="spray-distance">Distance from apiary</label>
+        <select id="spray-distance" required>
+          <option value="">— Select —</option>
+          <option value="0.2">Adjacent (< 500m)</option>
+          <option value="0.8">Close (< 1km)</option>
+          <option value="2">Nearby (1–3km)</option>
+          <option value="4">Moderate (3–5km)</option>
+          <option value="7">Distant (5–10km)</option>
+        </select>
+
+        <label for="spray-chemical">Chemical (if known)</label>
+        <input type="text" id="spray-chemical" placeholder="e.g. Neonicotinoid, glyphosate, unknown" />
+
+        <label for="spray-notes">Notes</label>
+        <textarea id="spray-notes" placeholder="Any details — time of day, weather, who reported it…"></textarea>
+
+        <div style="display:flex;gap:10px;margin-top:16px;">
+          <button type="button" onclick="closeModalEl('modal-spray')" style="flex:1;background:var(--wax);color:var(--text);border:none;border-radius:10px;padding:12px;font-weight:700;cursor:pointer;">Cancel</button>
+          <button type="submit" style="flex:2;background:#639922;color:#fff;border:none;border-radius:10px;padding:12px;font-weight:800;cursor:pointer;">Save</button>
+        </div>
+      </form>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;">
+        💡 <b>Tip:</b> The UK's free <b>BeeConnected</b> service sends automatic alerts when farmers plan to spray near your hives. <a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Sign up</a>.
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: HELP -->
   <div class="modal-overlay" id="modal-help" onclick="closeModal(event,'modal-help')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
@@ -2870,6 +3032,15 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="forage-conditions-body" style="font-size:12px;color:var(--text);line-height:1.6;">
         Weather and flow conditions update when online.
       </div>
+    </div>
+
+    <!-- CROP SPRAYING -->
+    <div class="forage-card" id="forage-sprays-card">
+      <div class="forage-card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Crop spraying reports</span>
+        <button class="spray-log-btn" onclick="openSprayModal()">+ Log</button>
+      </div>
+      <div id="forage-sprays-body"></div>
     </div>
 
     <div style="height:30px;"></div>
@@ -3785,6 +3956,9 @@ function renderV2Homescreen() {
       momCard.style.display = 'none';
     }
   } catch(e) { console.warn('momentum render:', e); }
+
+  // --- Spray status pill ---
+  try { renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
 }
 
 // ──────────────────────────────────────────────
@@ -3945,7 +4119,193 @@ function renderForage() {
       }
     } catch(e) { condBody.innerHTML = 'Forage conditions unavailable offline.'; }
   }
+
+  // --- Render sprays section ---
+  try { renderSprays(); } catch(e) { console.warn('renderSprays:', e); }
 }
+
+// ═══ CROP SPRAYING ═══════════════════════════════════════
+function loadSprays() {
+  try { return JSON.parse(localStorage.getItem('hk_sprays') || '[]'); }
+  catch(e) { return []; }
+}
+function saveSprays(sprays) {
+  try { localStorage.setItem('hk_sprays', JSON.stringify(sprays)); } catch(e) {}
+}
+function addSpray(spray) {
+  var sprays = loadSprays();
+  spray.id = 'spray_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  spray.createdAt = new Date().toISOString();
+  sprays.push(spray);
+  saveSprays(sprays);
+  return spray;
+}
+function deleteSprayById(id) {
+  saveSprays(loadSprays().filter(function(s){ return s.id !== id; }));
+}
+function deleteSprayConfirm(id) {
+  if (confirm('Delete this spray report?')) {
+    deleteSprayById(id);
+    renderSprays();
+    try { renderSprayStatus(); } catch(e) {}
+  }
+}
+
+// Severity: red if <1km in last 48h, amber if <5km in last 7d, blue otherwise
+function getSpraySeverity(spray) {
+  var daysAgo = (Date.now() - new Date(spray.date).getTime()) / (24*60*60*1000);
+  var km = parseFloat(spray.distanceKm) || 0;
+  if (daysAgo <= 2 && km < 1) return 'critical';
+  if (daysAgo <= 7 && km < 5) return 'alert';
+  return 'watch';
+}
+function getSprayStatusSummary() {
+  var sprays = loadSprays();
+  if (!sprays.length) return { level: 'none', count: 0, summary: 'No sprays reported nearby', pill: 'NONE' };
+  var now = Date.now();
+  var recent = sprays.filter(function(s) {
+    return (now - new Date(s.date).getTime()) <= 7*24*60*60*1000;
+  });
+  if (!recent.length) return { level: 'none', count: 0, summary: 'No sprays in last 7 days · ' + sprays.length + ' older', pill: 'CLEAR' };
+
+  recent.sort(function(a,b){ return new Date(b.date).getTime() - new Date(a.date).getTime(); });
+  var worst = 'watch';
+  recent.forEach(function(s) {
+    var sev = getSpraySeverity(s);
+    if (sev === 'critical') worst = 'critical';
+    else if (sev === 'alert' && worst !== 'critical') worst = 'alert';
+  });
+  var nearest = recent[0];
+  var daysAgo = Math.floor((now - new Date(nearest.date).getTime()) / (24*60*60*1000));
+  var ago = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + 'd ago';
+  var km = parseFloat(nearest.distanceKm) || 0;
+  var distTxt = km < 1 ? '<1km' : km < 5 ? Math.round(km) + 'km' : Math.round(km) + 'km+';
+  var pill = worst === 'critical' ? 'CRITICAL' : worst === 'alert' ? 'ALERT' : 'WATCH';
+  var summary = recent.length + ' in 7d · nearest ' + distTxt + ' · ' + ago;
+  return { level: worst, count: recent.length, summary: summary, pill: pill };
+}
+
+function renderSprayStatus() {
+  var card = document.getElementById('spray-compact');
+  var pill = document.getElementById('spray-header-pill');
+  var sub = document.getElementById('spray-header-sub');
+  if (!card || !pill || !sub) return;
+  var info = getSprayStatusSummary();
+  // Reset severity classes
+  card.classList.remove('severity-low','severity-watch','severity-alert','severity-critical');
+  if (info.level === 'critical') card.classList.add('severity-critical');
+  else if (info.level === 'alert') card.classList.add('severity-alert');
+  else if (info.level === 'watch') card.classList.add('severity-watch');
+  else card.classList.add('severity-low');
+  pill.textContent = info.pill;
+  sub.textContent = info.summary;
+}
+
+function renderSprays() {
+  var body = document.getElementById('forage-sprays-body');
+  if (!body) return;
+  var sprays = loadSprays().sort(function(a,b) {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  if (!sprays.length) {
+    body.innerHTML = '<div class="spray-empty">'
+      + '<div style="font-size:32px;margin-bottom:8px;">🌾</div>'
+      + '<div style="font-weight:700;margin-bottom:4px;">No sprays reported</div>'
+      + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;">Log spraying events near your apiaries to track exposure risk</div>'
+      + '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;">'
+      + 'Subscribe to the UK\'s free <b>BeeConnected</b> service for automatic pesticide alerts.<br/>'
+      + '<a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Learn more →</a>'
+      + '</div>'
+      + '</div>';
+    return;
+  }
+
+  var html = sprays.map(function(s) {
+    var daysAgo = Math.floor((Date.now() - new Date(s.date).getTime()) / (24*60*60*1000));
+    var ago = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo + 'd ago';
+    var km = parseFloat(s.distanceKm) || 0;
+    var distLabel = km < 0.5 ? 'Adjacent' : km < 1 ? '< 1km' : km < 3 ? '1–3km' : km < 5 ? '3–5km' : '5–10km';
+    var sev = getSpraySeverity(s);
+    var esc = function(t){ return (t||'').replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); };
+    return '<div class="spray-item spray-sev-' + sev + '">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-weight:700;font-size:13px;color:var(--text);">' + esc(s.cropType || 'Unknown crop') + '</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">'
+          + ago + ' · ' + distLabel
+          + (s.chemical ? ' · ' + esc(s.chemical) : '')
+        + '</div>'
+        + (s.notes ? '<div style="font-size:11px;color:var(--text-l);margin-top:4px;font-style:italic;">' + esc(s.notes) + '</div>' : '')
+      + '</div>'
+      + '<button onclick="deleteSprayConfirm(\'' + s.id + '\')" aria-label="Delete" style="background:none;border:none;color:var(--text-l);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;">×</button>'
+    + '</div>';
+  }).join('');
+
+  body.innerHTML = html
+    + '<div style="margin-top:10px;padding-top:12px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">'
+    + 'Sign up for <b>BeeConnected</b> UK for automatic spray alerts · '
+    + '<a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Learn more</a>'
+    + '</div>';
+}
+
+function openSprayModal() {
+  var dateEl = document.getElementById('spray-date');
+  if (dateEl) {
+    var today = new Date().toISOString().slice(0,10);
+    dateEl.value = today;
+    dateEl.max = today;
+  }
+  // Reset other fields
+  ['spray-crop','spray-distance','spray-chemical','spray-notes'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  try { openModalEl('modal-spray'); } catch(e) {
+    var m = document.getElementById('modal-spray');
+    if (m) m.classList.add('open');
+  }
+}
+
+function saveSprayForm() {
+  var date = document.getElementById('spray-date').value;
+  var cropType = document.getElementById('spray-crop').value;
+  var distanceKm = document.getElementById('spray-distance').value;
+  var chemical = document.getElementById('spray-chemical').value.trim();
+  var notes = document.getElementById('spray-notes').value.trim();
+
+  if (!date || !cropType || !distanceKm) {
+    alert('Please fill in date, crop type and distance.');
+    return;
+  }
+
+  addSpray({
+    date: date,
+    cropType: cropType,
+    distanceKm: parseFloat(distanceKm),
+    chemical: chemical,
+    notes: notes
+  });
+
+  try { closeModalEl('modal-spray'); } catch(e) {
+    var m = document.getElementById('modal-spray');
+    if (m) m.classList.remove('open');
+  }
+  renderSprays();
+  try { renderSprayStatus(); } catch(e) {}
+}
+
+// Deep link from home widget → Forage tab, scroll to sprays
+function goToForageSprays() {
+  try {
+    goTo('s-forage');
+    if (typeof renderForage === 'function') renderForage();
+    setTimeout(function() {
+      var el = document.getElementById('forage-sprays-card');
+      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 150);
+  } catch(e) { console.warn('goToForageSprays:', e); }
+}
+// ═══ END CROP SPRAYING ═══════════════════════════════════
 
 function renderDashboard(){
   updateApiaryNameDisplays();
