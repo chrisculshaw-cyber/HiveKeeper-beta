@@ -1167,18 +1167,18 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 .spray-compact.severity-critical .spray-compact-icon { background: #FCEBEB; }
 .spray-compact-text { flex: 1; min-width: 0; }
 .spray-compact-title {
-  font-size: 13px; font-weight: 800; color: #2C2C2A;
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 12px; font-weight: 800; color: var(--text);
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; gap: 8px;
 }
 .spray-compact-pill {
-  font-size: 9px; font-weight: 800;
-  padding: 2px 8px; border-radius: 10px;
-  background: #EAF5DC; color: #3B6D11;
-  letter-spacing: 0.04em;
+  font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 20px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  background: #EAF5DC; color: #2E7D32;
 }
 .spray-compact.severity-watch    .spray-compact-pill { background: #E6F1FB; color: #1D5A9C; }
-.spray-compact.severity-alert    .spray-compact-pill { background: #FDF2E0; color: #8C5C0A; }
-.spray-compact.severity-critical .spray-compact-pill { background: #FCEBEB; color: #8B1A1A; }
+.spray-compact.severity-alert    .spray-compact-pill { background: #FAE5DC; color: #993C1D; }
+.spray-compact.severity-critical .spray-compact-pill { background: #F5C4B3; color: #78160F; animation: ahPillFlash 1.4s ease-in-out infinite; }
 .spray-compact-sub {
   font-size: 11px; color: #5F5E5A;
   margin-top: 2px;
@@ -2978,7 +2978,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div>
         <div class="dash-greeting" id="s-forage-greeting" style="color:white;font-size:12px;opacity:0.9;">Good morning,</div>
         <div id="s-forage-badge" style="display:none;margin-top:3px;"><span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
-        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Forage</div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Environment</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
@@ -3062,7 +3062,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div class="nav-icon">&#x1F6D2;</div><div class="nav-label">Market</div>
     </button>
     <button class="nav-btn" data-screen="s-forage" onclick="goTo('s-forage');try{renderForage();}catch(e){console.warn('forage',e);}">
-      <div class="nav-icon">🌻</div><div class="nav-label">Forage</div>
+      <div class="nav-icon">🌻</div><div class="nav-label">Environment</div>
     </button>
     <button class="nav-btn" onclick="triggerSOS()" style="flex:0.8;">
       <div class="nav-icon" style="background:#C62828;border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:15px;">🆘</div>
@@ -4294,15 +4294,30 @@ function saveSprayForm() {
   try { renderSprayStatus(); } catch(e) {}
 }
 
-// Deep link from home widget → Forage tab, scroll to sprays
+// Deep link from home widget → Environment tab, scroll to sprays
 function goToForageSprays() {
   try {
     goTo('s-forage');
     if (typeof renderForage === 'function') renderForage();
+    // Wait for render, then scroll the scroll-area container itself (not the element)
+    // This avoids the viewport shift that scrollIntoView causes in mobile webviews
     setTimeout(function() {
-      var el = document.getElementById('forage-sprays-card');
-      if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 150);
+      var screen = document.getElementById('s-forage');
+      if (!screen) return;
+      var scrollArea = screen.querySelector('.scroll-area');
+      var target = document.getElementById('forage-sprays-card');
+      if (!scrollArea || !target) return;
+      // Calculate offset of target within scroll-area
+      var scrollAreaRect = scrollArea.getBoundingClientRect();
+      var targetRect = target.getBoundingClientRect();
+      var offset = (targetRect.top - scrollAreaRect.top) + scrollArea.scrollTop - 12; // 12px breathing room
+      // Use smooth scroll if supported, otherwise instant
+      try {
+        scrollArea.scrollTo({ top: offset, behavior: 'smooth' });
+      } catch(e) {
+        scrollArea.scrollTop = offset;
+      }
+    }, 200);
   } catch(e) { console.warn('goToForageSprays:', e); }
 }
 // ═══ END CROP SPRAYING ═══════════════════════════════════
