@@ -991,6 +991,55 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* V2 Priority alerts — match AH compact style */
+.alert-v2 {
+  margin: 0 16px 8px;
+  background: white;
+  border: 1px solid var(--wax);
+  border-left: 4px solid #9CBE3E;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: transform .15s;
+}
+.alert-v2:active { transform: scale(0.98); }
+.alert-v2.sev-red     { border-left-color: #A32D2D; }
+.alert-v2.sev-amber   { border-left-color: #EF9F27; }
+.alert-v2.sev-blue    { border-left-color: #378ADD; }
+.alert-v2-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: 10px;
+  background: #F0F6E0;
+  display: flex; align-items: center; justify-content: center;
+}
+.alert-v2.sev-red   .alert-v2-icon { background: #F7D8D2; }
+.alert-v2.sev-amber .alert-v2-icon { background: #FDF2E0; }
+.alert-v2.sev-blue  .alert-v2-icon { background: #DDE9F7; }
+.alert-v2-text { flex: 1; min-width: 0; }
+.alert-v2-title {
+  font-size: 12px; font-weight: 800; color: var(--text);
+  letter-spacing: 0.01em;
+}
+.alert-v2-sub {
+  font-size: 11px; color: var(--text-l); margin-top: 3px;
+  line-height: 1.4;
+}
+.alert-v2-arrow {
+  color: var(--text-l); font-size: 18px; flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Priority alerts section header — override section-head to match V2 spacing */
+#s-home .section-head {
+  margin: 14px 16px 8px;
+  padding: 0;
+}
 /* ═══ END HOMESCREEN V2 REDESIGN ══════════════════════════ */
 
 /* Global font fix - prevent Times New Roman fallback */
@@ -1365,8 +1414,19 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div id="ad-tagline" style="display:none;"></div>
     <div id="ad-cta" style="display:none;"></div>
 
-    <div class="section-head"><div class="section-title">Priority alerts</div><button class="section-action" onclick="goTo('s-apiary')">All hives →</button></div>
+    <div class="section-head" style="padding: 14px 16px 10px;"><div class="section-title" style="display:flex;align-items:center;gap:8px;">Priority alerts <span id="alerts-count-pill" style="display:none;font-size:10px;font-weight:800;background:#A32D2D;color:white;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;">0</span></div><button class="section-action" onclick="goTo('s-apiary')">All hives →</button></div>
     <div id="alerts-container"></div>
+    <div id="alerts-empty-state" style="display:none;margin:0 16px 8px;background:white;border:1px solid var(--wax);border-radius:12px;padding:14px 16px;font-family:'Syne',sans-serif;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:#E8F5E0;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12 L10 17 L19 7" stroke="#3B6D11" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);">All clear</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:2px;">No priority issues across your hives</div>
+        </div>
+      </div>
+    </div>
 
     <!-- APIARY HEALTH SCORE + STRONGEST HIVE -->
     <div id="health-score-section" style="display:none;padding:12px 20px 0;">
@@ -3070,6 +3130,54 @@ function viewHive(id){
 // V2 HOMESCREEN — hero weather, seasonal banner, narrative stats, momentum card
 // ──────────────────────────────────────────────
 
+function getAlertIconSVG(emoji, title) {
+  // Return appropriate SVG icon based on emoji or title keywords
+  var t = (title || '').toLowerCase();
+
+  // Wax moth — butterfly/moth
+  if (emoji === '🦋' || t.indexOf('wax moth') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 6 L12 18" stroke="#712B13" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="7" cy="10" rx="5" ry="3.5" fill="#D85A30" opacity="0.85"/><ellipse cx="17" cy="10" rx="5" ry="3.5" fill="#D85A30" opacity="0.85"/><ellipse cx="7" cy="15" rx="4" ry="2.5" fill="#F0997B" opacity="0.75"/><ellipse cx="17" cy="15" rx="4" ry="2.5" fill="#F0997B" opacity="0.75"/><circle cx="12" cy="7" r="1" fill="#2C2C2A"/></svg>';
+  }
+  // Swarm — bee
+  if (emoji === '🐝' || t.indexOf('swarm') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="5" ry="6.5" fill="#2C2C2A"/><path d="M7 10 Q12 8 17 10 M7 13 Q12 11 17 13 M7 16 Q12 14 17 16" stroke="#EF9F27" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="6" cy="9" rx="4" ry="2.2" fill="rgba(255,255,255,0.8)" transform="rotate(-25 6 9)"/><ellipse cx="18" cy="9" rx="4" ry="2.2" fill="rgba(255,255,255,0.8)" transform="rotate(25 18 9)"/></svg>';
+  }
+  // Robbing — warning triangle
+  if (emoji === '⚠️' || emoji === '⚠' || t.indexOf('robbing') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 L22 20 L2 20 Z" fill="#D85A30" stroke="#712B13" stroke-width="1"/><rect x="11" y="9" width="2" height="6" fill="white"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>';
+  }
+  // Feed — honey jar
+  if (emoji === '🍯' || t.indexOf('feed') >= 0 || t.indexOf('stores') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 4 L16 4 L16 7 L8 7 Z" fill="#854F0B"/><path d="M6 8 L18 8 L17 21 L7 21 Z" fill="#EF9F27"/><path d="M6 8 L18 8 L17 12 L7 12 Z" fill="#FAC775"/><path d="M9 14 Q12 12 15 14 Q13 16 12 15 Q11 16 9 14 Z" fill="#854F0B" opacity="0.6"/></svg>';
+  }
+  // Blocked — lock
+  if (emoji === '🔒' || t.indexOf('blocked') >= 0 || t.indexOf('stuck') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="1.5" fill="#854F0B"/><path d="M8 11 L8 7 Q8 4 12 4 Q16 4 16 7 L16 11" stroke="#854F0B" stroke-width="2" fill="none"/><circle cx="12" cy="15.5" r="1.5" fill="#FAC775"/><rect x="11.3" y="16" width="1.4" height="3" fill="#FAC775"/></svg>';
+  }
+  // Redistribute — recycle arrows
+  if (emoji === '♻️' || emoji === '♻' || t.indexOf('redistribute') >= 0 || t.indexOf('stores') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4 Q5 5 5 12 L2 10 M5 12 L8 10" stroke="#185FA5" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 20 Q19 19 19 12 L22 14 M19 12 L16 14" stroke="#185FA5" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  // Seasonal / flower — OSR flower
+  if (emoji === '🌸' || emoji === '🌻' || emoji === '🌼' || t.indexOf('osr') >= 0 || t.indexOf('flow') >= 0 || t.indexOf('flower') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#854F0B"/><ellipse cx="12" cy="5" rx="3" ry="4" fill="#FAC775"/><ellipse cx="19" cy="12" rx="4" ry="3" fill="#FAC775"/><ellipse cx="12" cy="19" rx="3" ry="4" fill="#FAC775"/><ellipse cx="5" cy="12" rx="4" ry="3" fill="#FAC775"/><ellipse cx="17" cy="7" rx="3" ry="2.5" fill="#EF9F27" transform="rotate(-45 17 7)"/><ellipse cx="7" cy="17" rx="3" ry="2.5" fill="#EF9F27" transform="rotate(-45 7 17)"/><ellipse cx="17" cy="17" rx="3" ry="2.5" fill="#EF9F27" transform="rotate(45 17 17)"/><ellipse cx="7" cy="7" rx="3" ry="2.5" fill="#EF9F27" transform="rotate(45 7 7)"/></svg>';
+  }
+  // Varroa — mite
+  if (t.indexOf('varroa') >= 0 || t.indexOf('mite') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="13" rx="7" ry="5" fill="#993C1D"/><ellipse cx="12" cy="13" rx="7" ry="5" fill="none" stroke="#4A1B0C" stroke-width="0.5"/><circle cx="9" cy="11" r="0.8" fill="#4A1B0C"/><circle cx="15" cy="11" r="0.8" fill="#4A1B0C"/><path d="M5 13 L3 11 M5 15 L3 16 M19 13 L21 11 M19 15 L21 16 M7 10 L5 8 M17 10 L19 8" stroke="#4A1B0C" stroke-width="1" stroke-linecap="round"/></svg>';
+  }
+  // Queen — crown
+  if (t.indexOf('queen') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10 L7 15 L12 8 L17 15 L20 10 L20 19 L4 19 Z" fill="#C8730A"/><circle cx="4" cy="10" r="1.5" fill="#F4D03F"/><circle cx="12" cy="8" r="1.5" fill="#F4D03F"/><circle cx="20" cy="10" r="1.5" fill="#F4D03F"/></svg>';
+  }
+  // Inspection due — calendar
+  if (t.indexOf('inspect') >= 0 || t.indexOf('due') >= 0 || t.indexOf('overdue') >= 0) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" fill="#378ADD"/><rect x="3" y="5" width="18" height="5" fill="#185FA5"/><rect x="7" y="3" width="2" height="4" rx="0.5" fill="#042C53"/><rect x="15" y="3" width="2" height="4" rx="0.5" fill="#042C53"/><circle cx="8" cy="14" r="1.5" fill="white"/><circle cx="12" cy="14" r="1.5" fill="white"/><circle cx="16" cy="14" r="1.5" fill="white" opacity="0.5"/><circle cx="8" cy="18" r="1.5" fill="white" opacity="0.5"/></svg>';
+  }
+  // Default — bell for generic alert
+  return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3 C8 3 6 6 6 10 L6 15 L4 17 L4 19 L20 19 L20 17 L18 15 L18 10 C18 6 16 3 12 3 Z" fill="#888780"/><circle cx="12" cy="21" r="1.5" fill="#888780"/></svg>';
+}
+
 // Seasonal banner config per month — Unsplash photo URLs
 var SEASONAL_BANNERS = {
   0:  { tag: 'JANUARY · QUIET SEASON',     title: 'Cluster management · check stores', img: 'https://images.unsplash.com/photo-1511966361767-c9327fcd3ed7?w=800&q=60' },
@@ -3085,6 +3193,82 @@ var SEASONAL_BANNERS = {
   10: { tag: 'NOVEMBER · WINTER STARTS',   title: 'Mouse guards on · hefting for stores', img: 'https://images.unsplash.com/photo-1481622912849-cccd18bfb1b5?w=800&q=60' },
   11: { tag: 'DECEMBER · DEEP WINTER',     title: 'Oxalic treatment window · keep disturbance minimal', img: 'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=800&q=60' }
 };
+
+function getAlertIconSVG(emoji, title) {
+  // Map alert emoji/title to V2 SVG icons — clean monochrome fills, 20x20
+  var t = (title || '').toLowerCase();
+  var e = emoji || '';
+
+  // Wax moth — butterfly
+  if (e === '🦋' || t.indexOf('wax moth') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<ellipse cx="7" cy="10" rx="5" ry="6" fill="#78160F"/>' +
+      '<ellipse cx="17" cy="10" rx="5" ry="6" fill="#78160F"/>' +
+      '<ellipse cx="7" cy="16" rx="4" ry="5" fill="#78160F" opacity="0.8"/>' +
+      '<ellipse cx="17" cy="16" rx="4" ry="5" fill="#78160F" opacity="0.8"/>' +
+      '<rect x="11.5" y="6" width="1" height="14" rx="0.5" fill="#2C2C2A"/>' +
+      '<circle cx="12" cy="5" r="1.2" fill="#2C2C2A"/>' +
+      '</svg>';
+  }
+  // Swarm / bees
+  if (e === '🐝' || t.indexOf('swarm') !== -1 || t.indexOf('bee') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<ellipse cx="12" cy="13" rx="5" ry="7" fill="#2C2C2A"/>' +
+      '<path d="M7 11 Q12 9 17 11 M7 15 Q12 13 17 15" stroke="#C8730A" stroke-width="1.8" fill="none"/>' +
+      '<ellipse cx="6" cy="10" rx="4" ry="2.5" fill="rgba(255,255,255,0.75)" transform="rotate(-25 6 10)"/>' +
+      '<ellipse cx="18" cy="10" rx="4" ry="2.5" fill="rgba(255,255,255,0.75)" transform="rotate(25 18 10)"/>' +
+      '</svg>';
+  }
+  // Robbing / warning — triangle alert
+  if (e === '⚠️' || t.indexOf('robb') !== -1 || t.indexOf('warn') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<path d="M12 3 L22 20 L2 20 Z" fill="#A32D2D"/>' +
+      '<rect x="11" y="9" width="2" height="6" rx="1" fill="white"/>' +
+      '<circle cx="12" cy="17.5" r="1.2" fill="white"/>' +
+      '</svg>';
+  }
+  // Feed / honey jar
+  if (e === '🍯' || t.indexOf('feed') !== -1 || t.indexOf('stores') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<path d="M7 8 L17 8 L16 20 Q16 21 15 21 L9 21 Q8 21 8 20 Z" fill="#C8730A"/>' +
+      '<rect x="6" y="5" width="12" height="3" rx="1" fill="#854F0B"/>' +
+      '<path d="M10 11 Q12 13 14 11 Q14 15 12 16 Q10 15 10 11 Z" fill="rgba(255,255,255,0.35)"/>' +
+      '</svg>';
+  }
+  // Blocked / locked
+  if (e === '🔒' || t.indexOf('blocked') !== -1 || t.indexOf('stuck') !== -1 || t.indexOf('inspect') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<rect x="5" y="11" width="14" height="10" rx="2" fill="#854F0B"/>' +
+      '<path d="M8 11 V7 Q8 4 12 4 Q16 4 16 7 V11" stroke="#854F0B" stroke-width="2" fill="none"/>' +
+      '<circle cx="12" cy="16" r="1.5" fill="#FDF2E0"/>' +
+      '</svg>';
+  }
+  // Redistribute / recycle
+  if (e === '♻️' || t.indexOf('redistrib') !== -1 || t.indexOf('dead hives') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<path d="M7 10 L10 5 L13 10 L11 10 L11 14 L9 14 L9 10 Z" fill="#185FA5"/>' +
+      '<path d="M17 14 L14 19 L11 14 L13 14 L13 10 L15 10 L15 14 Z" fill="#185FA5" transform="rotate(120 12 12)"/>' +
+      '<path d="M17 14 L14 19 L11 14 L13 14 L13 10 L15 10 L15 14 Z" fill="#185FA5" transform="rotate(240 12 12)"/>' +
+      '</svg>';
+  }
+  // Seasonal / flower / OSR
+  if (e === '🌸' || e === '🌻' || t.indexOf('flow') !== -1 || t.indexOf('osr') !== -1 || t.indexOf('season') !== -1) {
+    return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+      '<circle cx="12" cy="7" r="3" fill="#EF9F27"/>' +
+      '<circle cx="7" cy="11" r="3" fill="#EF9F27"/>' +
+      '<circle cx="17" cy="11" r="3" fill="#EF9F27"/>' +
+      '<circle cx="9" cy="16" r="3" fill="#EF9F27"/>' +
+      '<circle cx="15" cy="16" r="3" fill="#EF9F27"/>' +
+      '<circle cx="12" cy="12" r="2.5" fill="#854F0B"/>' +
+      '</svg>';
+  }
+  // Default — info circle
+  return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none">' +
+    '<circle cx="12" cy="12" r="9" fill="#378ADD"/>' +
+    '<rect x="11" y="10" width="2" height="7" rx="1" fill="white"/>' +
+    '<circle cx="12" cy="7.5" r="1.2" fill="white"/>' +
+    '</svg>';
+}
 
 function getTimeOfDayBand() {
   var h = new Date().getHours();
@@ -3375,16 +3559,43 @@ function renderDashboard(){
 
   // Alerts
   const alerts = runAlertEngine();
-  document.getElementById('alerts-container').innerHTML = alerts.map(a => `
-    <div class="alert-item ${a.severity}" onclick="${a.hiveId ? 'viewHive(\'' + a.hiveId + '\''  + ')' : 'goToApiaryAlerts()'}">
-      <div class="alert-icon">${a.icon}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="alert-title">${a.title}</div>
-        <div class="alert-sub">${a.sub}</div>
-      </div>
-      <div class="alert-arrow">›</div>
-    </div>
-  `).join('');
+  // V2 alert rendering — SVG icons, severity borders, count pill, empty state
+  var alertsContainer = document.getElementById('alerts-container');
+  var alertsCountPill = document.getElementById('alerts-count-pill');
+  var alertsEmpty = document.getElementById('alerts-empty-state');
+
+  if (alerts.length === 0) {
+    if (alertsContainer) alertsContainer.innerHTML = '';
+    if (alertsCountPill) alertsCountPill.style.display = 'none';
+    if (alertsEmpty) alertsEmpty.style.display = 'block';
+  } else {
+    if (alertsEmpty) alertsEmpty.style.display = 'none';
+    if (alertsCountPill) {
+      // Colour by highest severity present
+      var hasRed = alerts.some(function(a){ return a.severity === 'red'; });
+      var hasAmber = alerts.some(function(a){ return a.severity === 'amber'; });
+      alertsCountPill.textContent = alerts.length;
+      alertsCountPill.style.display = 'inline-block';
+      alertsCountPill.style.background = hasRed ? '#A32D2D' : hasAmber ? '#C8730A' : '#185FA5';
+    }
+    if (alertsContainer) {
+      alertsContainer.innerHTML = alerts.map(a => {
+        var sevClass = a.severity === 'red' ? 'sev-red' : a.severity === 'amber' ? 'sev-amber' : 'sev-blue';
+        var iconSVG = getAlertIconSVG(a.icon, a.title);
+        var click = a.hiveId ? "viewHive('" + a.hiveId + "')" : 'goToApiaryAlerts()';
+        return `
+          <div class="alert-v2 ${sevClass}" onclick="${click}">
+            <div class="alert-v2-icon">${iconSVG}</div>
+            <div class="alert-v2-text">
+              <div class="alert-v2-title">${a.title}</div>
+              <div class="alert-v2-sub">${a.sub}</div>
+            </div>
+            <div class="alert-v2-arrow">›</div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
 
   // Apiary health score + strongest hive
   var healthData = calcApiaryHealthScore();
