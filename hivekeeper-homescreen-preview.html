@@ -873,6 +873,124 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 .momentum-dot.empty  { background: white; border: 2px solid var(--wax); }
 .momentum-bar { flex: 1; height: 3px; background: var(--wax); border-radius: 2px; }
 .momentum-next { margin-top: 12px; text-align: center; padding: 10px; background: #FAEEDA; border-radius: 10px; color: #854F0B; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+/* Compact Asian Hornet card — single-tap expand */
+.ah-compact {
+  margin: 10px 16px 0;
+  background: white;
+  border: 1px solid var(--wax);
+  border-left: 4px solid #9CBE3E;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: border-left-color 0.2s;
+}
+.ah-compact.severity-watch  { border-left-color: #EF9F27; }
+.ah-compact.severity-alert  { border-left-color: #D85A30; }
+.ah-compact.severity-critical { border-left-color: #A32D2D; background: #FFF8F7; }
+.ah-compact-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: 10px;
+  background: #F0F6E0;
+  display: flex; align-items: center; justify-content: center;
+}
+.ah-compact.severity-watch .ah-compact-icon  { background: #FDF2E0; }
+.ah-compact.severity-alert .ah-compact-icon  { background: #FAE5DC; }
+.ah-compact.severity-critical .ah-compact-icon { background: #F7D8D2; }
+.ah-compact-text { flex: 1; min-width: 0; }
+.ah-compact-title {
+  font-size: 12px; font-weight: 800; color: var(--text);
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; gap: 8px;
+}
+.ah-compact-pill {
+  font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 20px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  background: #EAF5DC; color: #2E7D32;
+}
+.ah-compact.severity-watch  .ah-compact-pill { background: #FDF2E0; color: #854F0B; }
+.ah-compact.severity-alert  .ah-compact-pill { background: #FAE5DC; color: #993C1D; }
+.ah-compact.severity-critical .ah-compact-pill { background: #F5C4B3; color: #78160F; animation: ahPillFlash 1.4s ease-in-out infinite; }
+.ah-compact-sub {
+  font-size: 11px; color: var(--text-l); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ah-compact-arrow {
+  color: var(--text-l); font-size: 18px; flex-shrink: 0;
+  opacity: 0.5;
+}
+
+/* Premium product ad card with imagery */
+.ad-premium {
+  margin: 10px 16px 0;
+  background: white;
+  border: 1px solid var(--wax);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  font-family: 'Syne', sans-serif;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.ad-premium-image {
+  width: 100%; height: 120px;
+  background-size: cover; background-position: center;
+  background-color: #F4EDE0;
+  position: relative;
+}
+.ad-premium-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.35) 100%);
+}
+.ad-premium-tag {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(0,0,0,0.55); color: white;
+  padding: 3px 9px; border-radius: 12px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ad-premium-label {
+  position: absolute; top: 10px; right: 10px;
+  background: rgba(255,255,255,0.9); color: #5F5E5A;
+  padding: 2px 7px; border-radius: 10px;
+  font-size: 9px; font-weight: 700;
+}
+.ad-premium-brand-overlay {
+  position: absolute; bottom: 10px; left: 12px; right: 12px;
+  color: white;
+}
+.ad-premium-brand {
+  font-size: 10px; font-weight: 700; opacity: 0.9;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.ad-premium-product {
+  font-size: 16px; font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  margin-top: 2px;
+}
+.ad-premium-body {
+  padding: 12px 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.ad-premium-offer {
+  flex: 1;
+  font-size: 12px; color: var(--text-m); line-height: 1.4;
+}
+.ad-premium-offer strong { color: var(--text); font-weight: 800; }
+.ad-premium-cta {
+  background: #C8730A; color: white;
+  padding: 8px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 /* ═══ END HOMESCREEN V2 REDESIGN ══════════════════════════ */
 
 /* Global font fix - prevent Times New Roman fallback */
@@ -1196,36 +1314,56 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
     </div>
 
-    <!-- ASIAN HORNET WATCH -->
-    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;border:1px solid rgba(184,50,40,.3);box-shadow:var(--shadow);">
-      <div class="ah-header" onclick="toggleAHPanel()">
-        <div class="ah-header-icon">🐝</div>
-        <div class="ah-header-text">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div class="ah-header-title">Asian Hornet Watch</div>
-            <span id="ah-header-pill" class="ah-header-pill ah-pill-clear">LOW</span>
-          </div>
-          <div class="ah-header-sub" id="ah-header-sub">Loading nearest sightings...</div>
+    <!-- ASIAN HORNET WATCH (compact) -->
+    <div class="ah-banner" id="ah-banner" style="margin:0;border:none;box-shadow:none;overflow:visible;border-radius:0;">
+      <div id="ah-compact" class="ah-compact" onclick="toggleAHPanel()">
+        <div class="ah-compact-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L8 8H16L12 2Z" fill="#C8730A"/>
+            <ellipse cx="12" cy="14" rx="5" ry="7" fill="#2C2C2A"/>
+            <path d="M7 12 Q12 10 17 12 M7 16 Q12 14 17 16" stroke="#C8730A" stroke-width="1.5" fill="none"/>
+            <ellipse cx="7" cy="11" rx="4" ry="2" fill="rgba(255,255,255,0.7)" transform="rotate(-20 7 11)"/>
+            <ellipse cx="17" cy="11" rx="4" ry="2" fill="rgba(255,255,255,0.7)" transform="rotate(20 17 11)"/>
+          </svg>
         </div>
-        <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
+        <div class="ah-compact-text">
+          <div class="ah-compact-title">
+            Asian Hornet Watch
+            <span id="ah-header-pill" class="ah-compact-pill">LOW</span>
+          </div>
+          <div class="ah-compact-sub" id="ah-header-sub">Loading nearest sightings...</div>
+        </div>
+        <div class="ah-compact-arrow" id="ah-toggle-arrow">›</div>
       </div>
-      <div class="ah-body" id="ah-body" style="display:none;">
+      <div class="ah-body" id="ah-body" style="display:none;background:linear-gradient(135deg, #5C1010, #8B1A1A);padding:14px 16px;margin:0 16px;border-radius:0 0 12px 12px;margin-top:-8px;padding-top:20px;">
         <div id="ah-content">
-          <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
+          <div style="text-align:center;padding:16px;font-size:12px;color:rgba(255,255,255,0.65);">Loading...</div>
         </div>
       </div>
     </div>
 
-    <!-- PARTNER AD CARD — shown on all tiers, rotates per load -->
-    <div id="ad-card" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px dashed var(--honey);padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="adCardClick()">
-      <div id="ad-logo" style="width:40px;height:40px;background:var(--cream);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🍯</div>
-      <div style="flex:1;min-width:0;">
-        <div id="ad-headline" style="font-size:12px;font-weight:700;color:var(--text);">HiveKeeper Partner</div>
-        <div id="ad-tagline" style="font-size:11px;color:var(--text-m);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Supporting UK beekeepers</div>
-        <div id="ad-cta" style="font-size:10px;font-weight:700;color:var(--honey);margin-top:2px;">Find out more →</div>
+    <!-- PARTNER AD CARD (premium product card) -->
+    <div id="ad-card" class="ad-premium" onclick="adCardClick()">
+      <div class="ad-premium-image" id="ad-premium-image">
+        <div class="ad-premium-overlay"></div>
+        <div class="ad-premium-tag" id="ad-premium-tag">FEATURED</div>
+        <div class="ad-premium-label">Ad</div>
+        <div class="ad-premium-brand-overlay">
+          <div class="ad-premium-brand" id="ad-premium-brand">HiveKeeper Partner</div>
+          <div class="ad-premium-product" id="ad-premium-product">Supporting UK beekeepers</div>
+        </div>
       </div>
-      <div style="font-size:9px;color:var(--text-l);flex-shrink:0;align-self:flex-start;">Ad</div>
+      <div class="ad-premium-body">
+        <div class="ad-premium-offer" id="ad-premium-offer">Tap to find out more</div>
+        <div class="ad-premium-cta" id="ad-premium-cta">Shop →</div>
+      </div>
     </div>
+
+    <!-- Keep old IDs hidden for JS back-compat -->
+    <div id="ad-logo" style="display:none;"></div>
+    <div id="ad-headline" style="display:none;"></div>
+    <div id="ad-tagline" style="display:none;"></div>
+    <div id="ad-cta" style="display:none;"></div>
 
     <div class="section-head"><div class="section-title">Priority alerts</div><button class="section-action" onclick="goTo('s-apiary')">All hives →</button></div>
     <div id="alerts-container"></div>
@@ -1274,11 +1412,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
 
     <div class="hive-scroll" id="dash-hives"></div>
-    <div class="section-head" style="margin-top:10px;"><div class="section-title" id="nectar-title">Nectar calendar</div><button class="section-action" onclick="goTo('s-ai')">Ask AI</button></div>
-    <div id="nectar-calendar" style="margin:0 20px;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
-      <div style="padding:16px;text-align:center;color:var(--text-l);font-size:12px;">Loading nectar calendar…</div>
-    </div>
     <div style="height:20px;"></div>
+    <!-- Nectar calendar moved to Calendar page -->
+    <div id="nectar-calendar" style="display:none;"></div>
+    <div id="nectar-title" style="display:none;"></div>
   </div>
 </div>
 
@@ -7473,7 +7610,7 @@ function toggleAHPanel() {
   if (!body) return;
   AH_PANEL_OPEN = !AH_PANEL_OPEN;
   body.style.display = AH_PANEL_OPEN ? 'block' : 'none';
-  if(arrow) arrow.style.transform = AH_PANEL_OPEN ? 'rotate(180deg)' : 'rotate(0deg)';
+  if(arrow) arrow.style.transform = AH_PANEL_OPEN ? 'rotate(90deg)' : 'rotate(0deg)';
 }
 
 // Ensure AH body is closed on load
@@ -7572,7 +7709,15 @@ function renderAsianHornetWatch(lat, lng) {
   var pill = document.getElementById('ah-header-pill');
   if (pill) {
     pill.textContent = badgeText;
-    pill.className = 'ah-header-pill ah-pill-' + level;
+    pill.className = 'ah-compact-pill ah-pill-' + level;
+  }
+  // Also set severity class on compact card for left-border colour
+  var ahCompact = document.getElementById('ah-compact');
+  if (ahCompact) {
+    ahCompact.className = 'ah-compact';
+    if (level === 'critical') ahCompact.className += ' severity-critical';
+    else if (level === 'alert') ahCompact.className += ' severity-alert';
+    else if (level === 'watch') ahCompact.className += ' severity-watch';
   }
 
   // Update panel background colour + flash — apply to the CONTENT area (.ah-body), not the outer banner
@@ -12157,6 +12302,11 @@ function saveUserLocation(lat, lng, name) {
 var HK_ADS = [
   {
     icon: '🏠',
+    image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=60',
+    tag: 'SPRING SALE',
+    brand: 'E.H. Thorne',
+    product: 'National cedar hives',
+    offer: '<strong>15% off</strong> all National hives this April',
     headline: 'E.H. Thorne — Spring Sale',
     tagline: '15% off National hives this April',
     cta: 'Shop now →',
@@ -12164,6 +12314,11 @@ var HK_ADS = [
   },
   {
     icon: '🐝',
+    image: 'https://images.unsplash.com/photo-1557646571-df59cef47e00?w=800&q=60',
+    tag: 'QUALITY BUILT',
+    brand: 'Maisemore Apiaries',
+    product: 'Hives, frames & foundation',
+    offer: 'Trusted by British beekeepers since 1946',
     headline: 'Maisemore Apiaries',
     tagline: 'Quality hives, frames & foundation',
     cta: 'Visit store →',
@@ -12171,6 +12326,11 @@ var HK_ADS = [
   },
   {
     icon: '🦺',
+    image: 'https://images.unsplash.com/photo-1596443686116-3bbf5ff95a9f?w=800&q=60',
+    tag: 'BRITISH MADE',
+    brand: 'B.J. Sherriff',
+    product: 'Professional bee suits',
+    offer: '<strong>Made in Cornwall</strong> since 1967',
     headline: 'B.J. Sherriff Bee Suits',
     tagline: 'British-made suits since 1967',
     cta: 'View range →',
@@ -12178,6 +12338,11 @@ var HK_ADS = [
   },
   {
     icon: '💊',
+    image: 'https://images.unsplash.com/photo-1556228578-dd7e0e8fe2e1?w=800&q=60',
+    tag: 'VARROA CONTROL',
+    brand: 'Vita Europe',
+    product: 'Apiguard & Api-Bioxal',
+    offer: 'Proven treatments for healthy colonies',
     headline: 'Vita Europe — Varroa Control',
     tagline: 'Apiguard & Api-Bioxal treatments',
     cta: 'Learn more →',
@@ -12185,6 +12350,11 @@ var HK_ADS = [
   },
   {
     icon: '📦',
+    image: 'https://images.unsplash.com/photo-1568526381923-caf3fd520382?w=800&q=60',
+    tag: 'FREE DELIVERY',
+    brand: 'National Bee Supplies',
+    product: 'Everything for UK beekeepers',
+    offer: '<strong>Free UK delivery</strong> on orders over £75',
     headline: 'National Bee Supplies',
     tagline: 'Everything for the UK beekeeper',
     cta: 'Shop now →',
@@ -12203,14 +12373,31 @@ function renderAdCard() {
   var available = HK_ADS.filter(function(a){ return a !== _currentAd; });
   _currentAd = available[Math.floor(Math.random() * available.length)];
   var ad = _currentAd;
+
+  // Premium style elements
+  var imgEl = document.getElementById('ad-premium-image');
+  var tagEl = document.getElementById('ad-premium-tag');
+  var brandEl = document.getElementById('ad-premium-brand');
+  var productEl = document.getElementById('ad-premium-product');
+  var offerEl = document.getElementById('ad-premium-offer');
+  var ctaEl = document.getElementById('ad-premium-cta');
+  if (imgEl && ad.image) imgEl.style.backgroundImage = 'url(' + ad.image + ')';
+  if (tagEl) tagEl.textContent = ad.tag || 'FEATURED';
+  if (brandEl) brandEl.textContent = ad.brand || ad.headline || '';
+  if (productEl) productEl.textContent = ad.product || ad.tagline || '';
+  if (offerEl) offerEl.innerHTML = ad.offer || ad.tagline || '';
+  if (ctaEl) ctaEl.textContent = (ad.cta || 'Shop →').replace(/→$/, '').trim() + ' →';
+
+  // Legacy hidden elements (kept in case any other code reads them)
   var logoEl = document.getElementById('ad-logo');
   var headlineEl = document.getElementById('ad-headline');
   var taglineEl = document.getElementById('ad-tagline');
-  var ctaEl = document.getElementById('ad-cta');
-  if (logoEl) logoEl.textContent = ad.icon;
-  if (headlineEl) headlineEl.textContent = ad.headline;
-  if (taglineEl) taglineEl.textContent = ad.tagline;
-  if (ctaEl) ctaEl.textContent = ad.cta;
+  var legacyCtaEl = document.getElementById('ad-cta');
+  if (logoEl) logoEl.textContent = ad.icon || '';
+  if (headlineEl) headlineEl.textContent = ad.headline || '';
+  if (taglineEl) taglineEl.textContent = ad.tagline || '';
+  if (legacyCtaEl) legacyCtaEl.textContent = ad.cta || '';
+
   card.style.display = 'flex';
 }
 
