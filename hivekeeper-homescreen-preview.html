@@ -1142,6 +1142,80 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 .harvest-stat-val { font-size: 20px; font-weight: 800; color: #412402; }
 .harvest-stat-label { font-size: 9px; color: #854F0B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
 .harvest-empty { text-align: center; padding: 16px 8px; color: var(--text-l); font-size: 12px; line-height: 1.5; }
+
+/* ═══ BOTTOM HALF COLOUR-UP ═══════════════════════════════ */
+/* Priority alerts — tinted backgrounds */
+.alert-v2.sev-red {
+  background: linear-gradient(135deg, #FFF4F3 0%, #FCEBEB 100%);
+  border-color: rgba(163,45,45,0.2);
+}
+.alert-v2.sev-amber {
+  background: linear-gradient(135deg, #FFF9EF 0%, #FDF2E0 100%);
+  border-color: rgba(239,159,39,0.25);
+}
+.alert-v2.sev-blue {
+  background: linear-gradient(135deg, #F4F9FF 0%, #E6F1FB 100%);
+  border-color: rgba(55,138,221,0.2);
+}
+
+/* Empty state — warmer */
+#alerts-empty-state {
+  background: linear-gradient(135deg, #F4FAEB 0%, #EAF5DC 100%) !important;
+  border-color: rgba(99,153,34,0.25) !important;
+}
+
+/* Apiary health + Top colony cards — restyled with gradients */
+#health-score-section { padding: 10px 16px 0 !important; }
+#apiary-health-card {
+  background: linear-gradient(135deg, #FAEEDA 0%, #FEF6E8 100%) !important;
+  border: 1px solid rgba(186,117,23,0.2) !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+}
+#strongest-hive-card {
+  background: linear-gradient(135deg, #F4FAEB 0%, #EAF5DC 100%) !important;
+  border: 1px solid rgba(99,153,34,0.2) !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+}
+#apiary-health-card > div:first-child {
+  color: #854F0B !important;
+}
+#strongest-hive-card > div:first-child {
+  color: #3B6D11 !important;
+}
+
+/* Hive mini cards v2 — upgraded backgrounds */
+.hive-mini-v2 {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F7F9F4 100%);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.hive-mini-v2.status-active {
+  background: linear-gradient(135deg, #F4FAEB 0%, #E8F3DB 100%);
+}
+.hive-mini-v2.status-active.health-strong {
+  background: linear-gradient(135deg, #EAF5DC 0%, #D4E8B8 100%);
+}
+.hive-mini-v2.status-active.health-warn {
+  background: linear-gradient(135deg, #FFF9EF 0%, #FDF2E0 100%);
+  border-left-color: #EF9F27;
+}
+.hive-mini-v2.status-active.health-poor {
+  background: linear-gradient(135deg, #FFF4F3 0%, #FCEBEB 100%);
+  border-left-color: #A32D2D;
+}
+.hive-mini-v2-name { font-size: 13px; font-weight: 800; line-height: 1.25; color: #2C2C2A; }
+.hive-mini-v2-meta { font-size: 10px; color: #5F5E5A; font-weight: 500; }
+
+/* Active hives section header — match the new spacing */
+#s-home .section-head { padding: 14px 16px 8px !important; }
+
+/* Momentum card — warm gradient */
+.momentum-card {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FAEEDA 100%) !important;
+  border: 1px solid rgba(200,115,10,0.15) !important;
+}
+/* ═══ END BOTTOM HALF COLOUR-UP ═══════════════════════════ */
 /* ═══ END HOMESCREEN V2 REDESIGN ══════════════════════════ */
 
 /* Global font fix - prevent Times New Roman fallback */
@@ -1935,7 +2009,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </select>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="nuc">Nuc box</option></select></div>
+      <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="commercial">Commercial</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="smith">Smith</option><option value="top-bar">Top Bar</option><option value="warre">Warré</option><option value="nuc">Nuc box</option></select></div>
       <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
     </div>
     <div class="form-group"><label>Queen status</label>
@@ -2059,7 +2133,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </select>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option></select></div>
+        <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="commercial">Commercial</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="smith">Smith</option><option value="top-bar">Top Bar</option><option value="warre">Warré</option></select></div>
         <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
       </div>
       <div class="form-group"><label>Queen status</label>
@@ -4029,6 +4103,7 @@ function renderDashboard(){
     var health = (typeof h.healthScore === 'number' && h.healthScore > 0) ? h.healthScore : 0;
     var dashArray = (health / 100) * 69; // 69 = circumference of r=11
     var ringColour = health >= 70 ? '#639922' : health >= 45 ? '#EF9F27' : '#A32D2D';
+    var healthCls = health >= 70 ? 'health-strong' : health >= 45 ? 'health-warn' : (health > 0 ? 'health-poor' : '');
     var statusCls = 'good', statusText = 'Healthy';
     if (h.swarmRisk === 'high') { statusCls = 'high'; statusText = '● Swarm risk high'; }
     else if (h.waxMoth) { statusCls = 'high'; statusText = '● Wax moth'; }
@@ -4051,7 +4126,7 @@ function renderDashboard(){
       }
     } catch(e) { lastInsp = ''; }
     return `
-      <div class="hive-mini-v2 status-active" onclick="viewHive('${h.id}')">
+      <div class="hive-mini-v2 status-active ${healthCls}" onclick="viewHive('${h.id}')">
         <div class="hive-mini-v2-top">
           <div class="hive-mini-v2-name">${h.name}</div>
           <svg class="hive-mini-v2-ring" viewBox="0 0 28 28">
