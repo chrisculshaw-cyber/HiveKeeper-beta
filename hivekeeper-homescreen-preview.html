@@ -1145,26 +1145,32 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
 
 /* ═══ CROP SPRAYING ═══════════════════════════════════════ */
 .spray-compact {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px;
-  background: #fff;
-  border-left: 4px solid #639922;
+  margin: 10px 16px 0;
+  background: white;
+  border: 1px solid var(--wax);
+  border-left: 4px solid #9CBE3E;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   cursor: pointer;
-  transition: background 0.2s;
+  font-family: 'Syne', sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  transition: border-left-color 0.2s;
 }
-.spray-compact:active { background: #F8F9F5; }
 .spray-compact.severity-watch     { border-left-color: #378ADD; }
-.spray-compact.severity-alert     { border-left-color: #EF9F27; background: #FFF9EF; }
-.spray-compact.severity-critical  { border-left-color: #A32D2D; background: #FFF4F3; }
+.spray-compact.severity-alert     { border-left-color: #EF9F27; }
+.spray-compact.severity-critical  { border-left-color: #A32D2D; background: #FFF8F7; }
 .spray-compact-icon {
   width: 36px; height: 36px; flex-shrink: 0;
-  background: #EAF5DC;
   border-radius: 10px;
+  background: #F0F6E0;
   display: flex; align-items: center; justify-content: center;
 }
 .spray-compact.severity-watch    .spray-compact-icon { background: #E6F1FB; }
 .spray-compact.severity-alert    .spray-compact-icon { background: #FDF2E0; }
-.spray-compact.severity-critical .spray-compact-icon { background: #FCEBEB; }
+.spray-compact.severity-critical .spray-compact-icon { background: #F7D8D2; }
 .spray-compact-text { flex: 1; min-width: 0; }
 .spray-compact-title {
   font-size: 12px; font-weight: 800; color: var(--text);
@@ -1176,17 +1182,16 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
   letter-spacing: 0.04em; text-transform: uppercase;
   background: #EAF5DC; color: #2E7D32;
 }
-.spray-compact.severity-watch    .spray-compact-pill { background: #E6F1FB; color: #1D5A9C; }
+.spray-compact.severity-watch    .spray-compact-pill { background: #FDF2E0; color: #854F0B; }
 .spray-compact.severity-alert    .spray-compact-pill { background: #FAE5DC; color: #993C1D; }
 .spray-compact.severity-critical .spray-compact-pill { background: #F5C4B3; color: #78160F; animation: ahPillFlash 1.4s ease-in-out infinite; }
 .spray-compact-sub {
-  font-size: 11px; color: #5F5E5A;
-  margin-top: 2px;
+  font-size: 11px; color: var(--text-l); margin-top: 2px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .spray-compact-arrow {
-  font-size: 18px; color: #8A8A87;
-  flex-shrink: 0;
+  color: var(--text-l); font-size: 18px; flex-shrink: 0;
+  opacity: 0.5;
 }
 
 /* Spray log button */
@@ -2976,7 +2981,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#BA7517 0%,#C8730A 100%);">
     <div class="app-header" style="padding:16px;">
       <div>
-        <div class="dash-greeting" id="s-forage-greeting" style="color:white;font-size:12px;opacity:0.9;">Good morning,</div>
+        <div class="dash-greeting" id="s-forage-greeting" style="color:white;font-size:10px;opacity:0.8;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;">Your apiary area</div>
         <div id="s-forage-badge" style="display:none;margin-top:3px;"><span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Environment</div>
       </div>
