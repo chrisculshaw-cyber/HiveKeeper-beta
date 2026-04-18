@@ -51,7 +51,7 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
 .screen.active{opacity:1;pointer-events:all;transform:translateX(0);z-index:10}
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;max-width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:80px}
 .scroll-area::-webkit-scrollbar{display:none}
-#bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--wax);display:flex;align-items:flex-start;padding-top:8px;box-shadow:0 -4px 20px rgba(26,18,8,.06);z-index:100}
+#bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--wax);display:flex;align-items:flex-start;padding-top:8px;box-shadow:0 -4px 20px rgba(26,18,8,.06);z-index:100}
 .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;cursor:pointer;border:none;background:none;transition:transform .15s}
 .nav-btn:active{transform:scale(.9)}
 .nav-btn.primary-action{flex:1.6;}
@@ -807,15 +807,14 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 
 /* Full screen layout fix */
 html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
-#app-container {
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  min-height: 100dvh;
-  position: relative;
-  overflow: hidden;
-}
+#app-container, 
+
+
+
+
+
+
+
 
 /* Global font fix - prevent Times New Roman fallback */
 .market-card-body, .market-card-footer, .market-card-loc, .market-card-dist,
@@ -966,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 18:05</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 17:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
