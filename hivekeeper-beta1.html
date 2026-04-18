@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:15 18 April 2026 · Environment tab full port (hero + visual nectar + harvest + conditions + spray) -->
+<!-- HiveKeeper · Last updated: 22:40 18 April 2026 · SAFETY FIX: disabled rapid pulse animations -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -371,13 +371,14 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-badge-clear { background: #EAFAF1; color: var(--green); }
 /* Status pill shown in the COLLAPSED banner header */
 .ah-header-pill { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
-.ah-pill-critical { background: #FFD54F; color: #8B0000; animation: ahPillFlash 1.4s ease-in-out infinite; }
+/* SAFETY: No animations on critical pills — solid red/colour only. Flashing animations disabled globally to prevent any seizure risk. */
+.ah-pill-critical { background: #C62828; color: white; border: 2px solid #8B0000; }
 .ah-pill-alert { background: #FDECEA; color: #C62828; }
 .ah-pill-watch { background: #FFF3CD; color: #B07800; }
 .ah-pill-clear { background: #EAFAF1; color: #2E7D32; }
 @keyframes ahPillFlash {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  50% { opacity: 1; }
 }
 /* Force all panel text to be readable on dark panel backgrounds — panels switch between red/orange/green but ALL are dark */
 .ah-body .ah-status-text { color: rgba(255,255,255,0.92); }
@@ -399,11 +400,11 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .ah-report-btn { width: 100%; background: linear-gradient(135deg, #C62828, #8B0000); color: white; border: none; border-radius: 12px; padding: 14px 16px; font-size: 14px; font-weight: 800; font-family: 'Syne', sans-serif; cursor: pointer; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(198,40,40,0.35); letter-spacing: 0.02em; text-align: center; }
 .ah-report-btn:hover { background: linear-gradient(135deg, #D32F2F, #9B0000); box-shadow: 0 3px 10px rgba(198,40,40,0.5); }
 .ah-report-btn:active { transform: scale(0.98); }
-/* Flashing border when a confirmed Asian Hornet nest is within 20 miles (critical) */
-.ah-banner-flash { animation: ahCriticalPulse 1.4s ease-in-out infinite; }
+/* Flashing border when a confirmed Asian Hornet nest is within 20 miles (critical) — DISABLED for safety, use solid border instead */
+.ah-banner-flash { border: 3px solid #FF1744 !important; box-shadow: 0 0 12px rgba(255, 23, 68, 0.4), 0 2px 8px rgba(0,0,0,0.25) !important; }
 @keyframes ahCriticalPulse {
   0%   { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.65), 0 2px 8px rgba(0,0,0,0.25); }
-  50%  { box-shadow: 0 0 0 10px rgba(255, 23, 68, 0.0), 0 2px 8px rgba(0,0,0,0.25); }
+  50%  { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.0), 0 2px 8px rgba(0,0,0,0.25); }
   100% { box-shadow: 0 0 0 0 rgba(255, 23, 68, 0.0), 0 2px 8px rgba(0,0,0,0.25); }
 }
 /* Respect user preference for reduced motion — never flash */
@@ -455,7 +456,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .env-pill-clear    { background: #EAFAF1; color: #2E7D32; }
 .env-pill-watch    { background: #E6F1FB; color: #1D5A9C; }
 .env-pill-alert    { background: #FFF3CD; color: #B07800; }
-.env-pill-critical { background: #FFD54F; color: #8B0000; animation: ahPillFlash 1.4s ease-in-out infinite; }
+.env-pill-critical { background: #C62828; color: white; border: 2px solid #8B0000; }
 .env-header-arrow { color: rgba(255,255,255,.6); font-size: 18px; flex-shrink: 0; }
 
 /* Spray log button */
@@ -6287,21 +6288,24 @@ function highlightHiveOnMap(hiveId) {
     el.classList.remove('highlighted');
     if(el.dataset.hiveid===hiveId) el.classList.add('highlighted');
   });
-  // Pulse the Leaflet marker
+  // Pulse the Leaflet marker — SAFETY: use static glow, not rapid scale (was 6.6Hz which is seizure-risky)
   var marker = _hiveMarkers ? _hiveMarkers[hiveId] : null;
   if(marker) {
     var el = marker.getElement();
     var innerEl = el ? el.querySelector('div') : null;
     var target = innerEl || el;
     if(target) {
-      var pulseCount = 0;
-      var origTransform = target.style.transform || '';
-      var pulseInterval = setInterval(function(){
-        pulseCount++;
-        target.style.transform = origTransform + (pulseCount%2===0 ? ' scale(1.4)' : ' scale(1)');
-        target.style.transition = 'transform 0.15s';
-        if(pulseCount >= 6) { clearInterval(pulseInterval); target.style.transform = origTransform; clearHighlight(); }
-      }, 150);
+      var origFilter = target.style.filter || '';
+      var origBoxShadow = target.style.boxShadow || '';
+      // Apply gentle static highlight
+      target.style.filter = 'drop-shadow(0 0 8px #FFD54F) brightness(1.15)';
+      target.style.boxShadow = '0 0 12px 4px rgba(255, 213, 79, 0.8)';
+      target.style.transition = 'filter 0.3s ease, box-shadow 0.3s ease';
+      // Remove after 2.5 seconds
+      setTimeout(function(){
+        target.style.filter = origFilter;
+        target.style.boxShadow = origBoxShadow;
+      }, 2500);
     }
   }
   setTimeout(function(){ clearHighlight(); }, 2000);
