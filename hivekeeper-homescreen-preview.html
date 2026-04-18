@@ -1041,6 +1041,45 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
   padding: 0;
 }
 
+/* Bottom-half card colour upgrades */
+#apiary-health-card {
+  background: linear-gradient(135deg, #F0F7EE 0%, #E0EFD4 100%) !important;
+  border: 1px solid #C8DBB4 !important;
+  box-shadow: 0 2px 8px rgba(99,153,34,0.10);
+}
+#apiary-health-card .health-score-inner-label,
+#apiary-health-card > div:first-child {
+  color: #3B6D11 !important;
+}
+#strongest-hive-card {
+  background: linear-gradient(135deg, #FAEEDA 0%, #F7E4C3 100%) !important;
+  border: 1px solid #EFC88A !important;
+  box-shadow: 0 2px 8px rgba(200,115,10,0.10);
+}
+#strongest-hive-card > div:first-child {
+  color: #854F0B !important;
+}
+#strongest-hive-name {
+  color: #412402 !important;
+}
+#strongest-hive-meta {
+  color: #854F0B !important;
+}
+
+/* Momentum card — honey tint */
+.momentum-card {
+  background: linear-gradient(135deg, #FFFEF7 0%, #FDF2E0 100%) !important;
+  border: 1px solid #EFC88A !important;
+  box-shadow: 0 2px 8px rgba(200,115,10,0.08) !important;
+}
+.momentum-label { color: #854F0B !important; }
+.momentum-value { color: #412402 !important; }
+
+/* Hive cards — subtle tinted background matching status */
+.hive-mini-v2.status-active { background: linear-gradient(135deg, #FFFFFF 0%, #F7FBF2 100%) !important; }
+.hive-mini-v2.status-dead   { background: linear-gradient(135deg, #FCFAFA 0%, #FFF4F4 100%) !important; }
+.hive-mini-v2.status-unclear{ background: linear-gradient(135deg, #FFFEFC 0%, #FDF2E0 100%) !important; }
+
 /* Icon pop — distinct accents + sizes per alert type */
 .alert-v2 { margin-bottom: 10px; }
 .alert-v2-icon { border: 2px solid transparent; position: relative; }
@@ -3331,19 +3370,20 @@ function getAlertIconSVGInner(emoji, title) {
 }
 
 // Seasonal banner config per month — Unsplash photo URLs
+// Seasonal banners — each has a photo URL + a gradient fallback so it stays beautiful even if the image 404s
 var SEASONAL_BANNERS = {
-  0:  { tag: 'JANUARY · QUIET SEASON',     title: 'Cluster management · check stores', img: 'https://images.unsplash.com/photo-1511966361767-c9327fcd3ed7?w=800&q=60' },
-  1:  { tag: 'FEBRUARY · LATE WINTER',     title: 'First cleansing flights · monitor stores', img: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=800&q=60' },
-  2:  { tag: 'MARCH · SPRING STIRS',       title: 'First inspections · queen right?', img: 'https://images.unsplash.com/photo-1502136969935-8d8eef54d77b?w=800&q=60' },
-  3:  { tag: 'APRIL · SPRING BUILD-UP',    title: 'Dandelions on — first major nectar flow', img: 'https://images.unsplash.com/photo-1552252714-6ef1ed71bd2d?w=800&q=60' },
-  4:  { tag: 'MAY · SWARM SEASON',         title: 'Oilseed rape flowering · watch for queen cells', img: 'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&q=60' },
-  5:  { tag: 'JUNE · PEAK SEASON',         title: 'Main flow · supers on, swarms managed', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=60' },
-  6:  { tag: 'JULY · HONEY HARVEST',       title: 'Lavender & clover · extract main crop', img: 'https://images.unsplash.com/photo-1594071480070-9f9a8e7f4e67?w=800&q=60' },
-  7:  { tag: 'AUGUST · LATE SUMMER',       title: 'Varroa treatment window opens', img: 'https://images.unsplash.com/photo-1564417947365-8dbc9d0e720f?w=800&q=60' },
-  8:  { tag: 'SEPTEMBER · AUTUMN PREP',    title: 'Feed for winter · combine weak colonies', img: 'https://images.unsplash.com/photo-1501436513145-30f24e19fcc8?w=800&q=60' },
-  9:  { tag: 'OCTOBER · LAST FORAGE',      title: 'Ivy flowers · last nectar of the year', img: 'https://images.unsplash.com/photo-1507113302817-dc0e48fe7557?w=800&q=60' },
-  10: { tag: 'NOVEMBER · WINTER STARTS',   title: 'Mouse guards on · hefting for stores', img: 'https://images.unsplash.com/photo-1481622912849-cccd18bfb1b5?w=800&q=60' },
-  11: { tag: 'DECEMBER · DEEP WINTER',     title: 'Oxalic treatment window · keep disturbance minimal', img: 'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=800&q=60' }
+  0:  { tag: 'JANUARY · QUIET SEASON',     title: 'Cluster management · check stores',                 img: 'https://images.unsplash.com/photo-1454789548928-9efd52dc4031?w=800&q=70', fallback: 'linear-gradient(135deg, #5a7a9c 0%, #94b0d4 60%, #d4e4f5 100%)' },
+  1:  { tag: 'FEBRUARY · LATE WINTER',     title: 'First cleansing flights · monitor stores',          img: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800&q=70', fallback: 'linear-gradient(135deg, #7a8a7c 0%, #a8b5a0 60%, #d0d4b8 100%)' },
+  2:  { tag: 'MARCH · SPRING STIRS',       title: 'First inspections · queen right?',                  img: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800&q=70', fallback: 'linear-gradient(135deg, #9cb078 0%, #c4d48a 60%, #e8e4a0 100%)' },
+  3:  { tag: 'APRIL · SPRING BUILD-UP',    title: 'Dandelions on — first major nectar flow',           img: 'https://images.unsplash.com/photo-1557175062-1ddd2b8d9d91?w=800&q=70', fallback: 'linear-gradient(135deg, #7FB069 0%, #9FCA6E 40%, #D4C84A 70%, #E8C547 100%)' },
+  4:  { tag: 'MAY · SWARM SEASON',         title: 'Oilseed rape flowering · watch for queen cells',    img: 'https://images.unsplash.com/photo-1527684651001-731c474bbb5a?w=800&q=70', fallback: 'linear-gradient(135deg, #a8c94a 0%, #e8d834 50%, #f5d82e 100%)' },
+  5:  { tag: 'JUNE · PEAK SEASON',         title: 'Main flow · supers on, swarms managed',             img: 'https://images.unsplash.com/photo-1562690868-60bbe7293e94?w=800&q=70', fallback: 'linear-gradient(135deg, #6ba23a 0%, #a8c94a 50%, #e0d860 100%)' },
+  6:  { tag: 'JULY · HONEY HARVEST',       title: 'Lavender & clover · extract main crop',             img: 'https://images.unsplash.com/photo-1499002238440-d264edd596ec?w=800&q=70', fallback: 'linear-gradient(135deg, #8b6fb5 0%, #b091c9 50%, #e8c547 100%)' },
+  7:  { tag: 'AUGUST · LATE SUMMER',       title: 'Varroa treatment window opens',                     img: 'https://images.unsplash.com/photo-1470093851219-69951fcbb533?w=800&q=70', fallback: 'linear-gradient(135deg, #b08040 0%, #d4a050 60%, #e8c070 100%)' },
+  8:  { tag: 'SEPTEMBER · AUTUMN PREP',    title: 'Feed for winter · combine weak colonies',           img: 'https://images.unsplash.com/photo-1507371341162-763b5e419408?w=800&q=70', fallback: 'linear-gradient(135deg, #b06030 0%, #d48040 50%, #e8a050 100%)' },
+  9:  { tag: 'OCTOBER · LAST FORAGE',      title: 'Ivy flowers — last nectar of the year',             img: 'https://images.unsplash.com/photo-1477414348463-c0eb7f1359b6?w=800&q=70', fallback: 'linear-gradient(135deg, #8b5a2b 0%, #b87333 50%, #d49840 100%)' },
+  10: { tag: 'NOVEMBER · WINTER STARTS',   title: 'Mouse guards on · hefting for stores',              img: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=70', fallback: 'linear-gradient(135deg, #6a5c4d 0%, #8c7a65 50%, #b09880 100%)' },
+  11: { tag: 'DECEMBER · DEEP WINTER',     title: 'Oxalic treatment · keep disturbance minimal',       img: 'https://images.unsplash.com/photo-1482517967863-00e15c9b44be?w=800&q=70', fallback: 'linear-gradient(135deg, #2c3e50 0%, #4a6278 50%, #7a94ae 100%)' }
 };
 
 function getAlertIconSVG(emoji, title) {
@@ -3545,9 +3585,22 @@ function renderV2Homescreen() {
     var month = new Date().getMonth();
     var seasonal = SEASONAL_BANNERS[month];
     if (seasonal) {
-      banner.style.backgroundImage = 'url(' + seasonal.img + ')';
+      // Set gradient fallback first — so the banner looks good even if image fails
+      banner.style.background = seasonal.fallback;
+      banner.style.backgroundSize = 'cover';
+      banner.style.backgroundPosition = 'center';
       if (bannerTag) bannerTag.textContent = seasonal.tag;
       if (bannerTitle) bannerTitle.textContent = seasonal.title;
+      // Preload the image — only set it as background if it loads successfully
+      var testImg = new Image();
+      testImg.onload = function() {
+        banner.style.backgroundImage = 'url(' + seasonal.img + '), ' + seasonal.fallback;
+      };
+      testImg.onerror = function() {
+        // Image failed — keep gradient fallback, no action needed
+        console.log('Seasonal banner image failed, using gradient fallback');
+      };
+      testImg.src = seasonal.img;
     }
   }
 
