@@ -1040,6 +1040,69 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
   margin: 14px 16px 8px;
   padding: 0;
 }
+
+/* Icon pop — distinct accents + sizes per alert type */
+.alert-v2 { margin-bottom: 10px; }
+.alert-v2-icon { border: 2px solid transparent; position: relative; }
+.alert-v2-icon.type-wax     { background: #FAE5DC !important; border-color: #D85A30 !important; }
+.alert-v2-icon.type-swarm   { background: #FDF2E0 !important; border-color: #EF9F27 !important; }
+.alert-v2-icon.type-robbing { background: #F7D8D2 !important; border-color: #A32D2D !important; }
+.alert-v2-icon.type-feed    { background: #FDF2E0 !important; border-color: #C8730A !important; }
+.alert-v2-icon.type-blocked { background: #F1EFE8 !important; border-color: #888780 !important; }
+.alert-v2-icon.type-redistribute { background: #DDE9F7 !important; border-color: #185FA5 !important; }
+.alert-v2-icon.type-flow    { background: #FDF2E0 !important; border-color: #BA7517 !important; }
+.alert-v2-icon.type-varroa  { background: #F7D8D2 !important; border-color: #993C1D !important; }
+.alert-v2-icon.type-queen   { background: #FAEEDA !important; border-color: #C8730A !important; }
+.alert-v2-icon.type-inspect { background: #DDE9F7 !important; border-color: #185FA5 !important; }
+.alert-v2-icon.size-lg { width: 46px; height: 46px; }
+.alert-v2-icon.size-md { width: 40px; height: 40px; }
+.alert-v2-icon.size-sm { width: 36px; height: 36px; }
+
+/* Forage screen */
+.forage-hero {
+  margin: 12px 16px 0;
+  border-radius: 16px;
+  padding: 18px;
+  color: white;
+  background: linear-gradient(135deg, #BA7517 0%, #C8730A 50%, #EF9F27 100%);
+  font-family: 'Syne', sans-serif;
+}
+.forage-hero-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; opacity: 0.9; }
+.forage-hero-title { font-size: 20px; font-weight: 800; margin-top: 4px; line-height: 1.2; }
+.forage-hero-sub { font-size: 12px; opacity: 0.9; margin-top: 6px; line-height: 1.45; }
+.forage-hero-stats { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.25); }
+.forage-hero-stat { flex: 1; }
+.forage-hero-stat-val { font-size: 18px; font-weight: 800; }
+.forage-hero-stat-label { font-size: 10px; opacity: 0.85; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.nectar-row { padding: 10px 0; border-bottom: 1px solid var(--wax); font-family: 'Syne', sans-serif; }
+.nectar-row:last-child { border-bottom: none; }
+.nectar-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.nectar-name { font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.nectar-state { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.nectar-state.active { background: #E8F5E0; color: #3B6D11; }
+.nectar-state.coming { background: #FAEEDA; color: #854F0B; }
+.nectar-state.past   { background: #F1EFE8; color: #5F5E5A; }
+.nectar-bar-wrap { display: flex; gap: 2px; }
+.nectar-bar-month { flex: 1; height: 10px; border-radius: 2px; background: var(--wax); position: relative; }
+.nectar-bar-month.lo  { background: #FAEEDA; }
+.nectar-bar-month.mid { background: #FAC775; }
+.nectar-bar-month.hi  { background: #EF9F27; }
+.nectar-bar-month.peak { background: #BA7517; }
+.nectar-bar-month.current-marker::after { content: ''; position: absolute; top: -3px; bottom: -3px; left: 50%; width: 2px; background: #A32D2D; border-radius: 1px; transform: translateX(-50%); }
+.nectar-labels { display: flex; gap: 2px; margin-top: 4px; }
+.nectar-label { flex: 1; font-size: 8px; font-weight: 700; color: var(--text-l); text-align: center; letter-spacing: 0.04em; }
+.forage-card {
+  margin: 10px 16px 0;
+  background: white; border: 1px solid var(--wax); border-radius: 14px;
+  padding: 14px 16px; font-family: 'Syne', sans-serif;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.forage-card-title { font-size: 11px; font-weight: 800; color: var(--text-l); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.harvest-stat-row { display: flex; gap: 10px; margin-top: 10px; }
+.harvest-stat { flex: 1; background: #FAEEDA; border-radius: 10px; padding: 10px 12px; text-align: center; }
+.harvest-stat-val { font-size: 20px; font-weight: 800; color: #412402; }
+.harvest-stat-label { font-size: 9px; color: #854F0B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.harvest-empty { text-align: center; padding: 16px 8px; color: var(--text-l); font-size: 12px; line-height: 1.5; }
 /* ═══ END HOMESCREEN V2 REDESIGN ══════════════════════════ */
 
 /* Global font fix - prevent Times New Roman fallback */
@@ -1495,6 +1558,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button>
+        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="WhatsApp community" style="width:34px;height:34px;background:rgba(37,211,102,.25);border:1px solid rgba(37,211,102,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;">💬</div>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
@@ -1574,6 +1638,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
+        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="WhatsApp community" style="width:34px;height:34px;background:rgba(37,211,102,.25);border:1px solid rgba(37,211,102,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;">💬</div>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
@@ -2631,6 +2696,73 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 </div>
 
 
+<!-- FORAGE SCREEN -->
+<div class="screen" id="s-forage">
+  <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#BA7517 0%,#C8730A 100%);">
+    <div class="app-header" style="padding:16px;">
+      <div>
+        <div class="dash-greeting" id="s-forage-greeting" style="color:white;font-size:12px;opacity:0.9;">Good morning,</div>
+        <div id="s-forage-badge" style="display:none;margin-top:3px;"><span style="background:rgba(255,255,255,0.2);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Forage</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <!-- Forage hero — what's flowering now -->
+    <div id="forage-hero" class="forage-hero">
+      <div class="forage-hero-label" id="forage-hero-label">APRIL · SPRING BUILD-UP</div>
+      <div class="forage-hero-title" id="forage-hero-title">Dandelions on — first major flow</div>
+      <div class="forage-hero-sub" id="forage-hero-sub">Bees are bringing in nectar and pollen from dandelions and blackthorn. Watch for colony build-up.</div>
+      <div class="forage-hero-stats">
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-active">—</div>
+          <div class="forage-hero-stat-label">Active sources</div>
+        </div>
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-next">—</div>
+          <div class="forage-hero-stat-label">Days to peak</div>
+        </div>
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-yield">—</div>
+          <div class="forage-hero-stat-label">Yield window</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nectar calendar — full year view -->
+    <div class="forage-card" id="forage-nectar-card">
+      <div class="forage-card-title">UK Nectar calendar</div>
+      <div id="nectar-calendar-rows"></div>
+      <div class="nectar-labels" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--wax);">
+        <div class="nectar-label">J</div><div class="nectar-label">F</div><div class="nectar-label">M</div>
+        <div class="nectar-label">A</div><div class="nectar-label">M</div><div class="nectar-label">J</div>
+        <div class="nectar-label">J</div><div class="nectar-label">A</div><div class="nectar-label">S</div>
+        <div class="nectar-label">O</div><div class="nectar-label">N</div><div class="nectar-label">D</div>
+      </div>
+    </div>
+
+    <!-- Harvest log -->
+    <div class="forage-card" id="forage-harvest-card">
+      <div class="forage-card-title">Your harvest · 2026</div>
+      <div id="forage-harvest-body"></div>
+    </div>
+
+    <!-- Forage conditions -->
+    <div class="forage-card" id="forage-conditions-card">
+      <div class="forage-card-title">Forage conditions</div>
+      <div id="forage-conditions-body" style="font-size:12px;color:var(--text);line-height:1.6;">
+        Weather and flow conditions update when online.
+      </div>
+    </div>
+
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
   <!-- BOTTOM NAV -->
   <nav id="bottom-nav">
     <button class="nav-btn active" data-screen="s-home" onclick="_userOnHome=true;goTo('s-home')">
@@ -2645,8 +2777,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <button class="nav-btn" data-screen="s-market" onclick="goTo('s-market');renderMarketplace();">
       <div class="nav-icon">&#x1F6D2;</div><div class="nav-label">Market</div>
     </button>
-    <button class="nav-btn" onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')">
-      <div class="nav-icon">💬</div><div class="nav-label">In The Apiary</div>
+    <button class="nav-btn" data-screen="s-forage" onclick="goTo('s-forage');try{renderForage();}catch(e){console.warn('forage',e);}">
+      <div class="nav-icon">🌻</div><div class="nav-label">Forage</div>
     </button>
     <button class="nav-btn" onclick="triggerSOS()" style="flex:0.8;">
       <div class="nav-icon" style="background:#C62828;border-radius:8px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:15px;">🆘</div>
@@ -3131,6 +3263,26 @@ function viewHive(id){
 // ──────────────────────────────────────────────
 
 function getAlertIconSVG(emoji, title) {
+  var svg = getAlertIconSVGInner(emoji, title);
+  return svg;
+}
+
+function getAlertIconType(emoji, title) {
+  var t = (title || '').toLowerCase();
+  if (emoji === '🦋' || t.indexOf('wax moth') >= 0) return { type: 'wax', size: 'lg' };
+  if (emoji === '🐝' || t.indexOf('swarm') >= 0) return { type: 'swarm', size: 'lg' };
+  if (emoji === '⚠️' || emoji === '⚠' || t.indexOf('robbing') >= 0) return { type: 'robbing', size: 'lg' };
+  if (emoji === '🍯' || t.indexOf('feed') >= 0) return { type: 'feed', size: 'md' };
+  if (emoji === '🔒' || t.indexOf('blocked') >= 0 || t.indexOf('stuck') >= 0) return { type: 'blocked', size: 'md' };
+  if (emoji === '♻️' || emoji === '♻' || t.indexOf('redistribute') >= 0) return { type: 'redistribute', size: 'md' };
+  if (emoji === '🌸' || emoji === '🌻' || emoji === '🌼' || t.indexOf('osr') >= 0 || t.indexOf('flow') >= 0 || t.indexOf('flower') >= 0) return { type: 'flow', size: 'sm' };
+  if (t.indexOf('varroa') >= 0 || t.indexOf('mite') >= 0) return { type: 'varroa', size: 'lg' };
+  if (t.indexOf('queen') >= 0) return { type: 'queen', size: 'md' };
+  if (t.indexOf('inspect') >= 0 || t.indexOf('due') >= 0 || t.indexOf('overdue') >= 0) return { type: 'inspect', size: 'md' };
+  return { type: 'default', size: 'md' };
+}
+
+function getAlertIconSVGInner(emoji, title) {
   // Return appropriate SVG icon based on emoji or title keywords
   var t = (title || '').toLowerCase();
 
@@ -3508,6 +3660,166 @@ function renderV2Homescreen() {
   } catch(e) { console.warn('momentum render:', e); }
 }
 
+// ──────────────────────────────────────────────
+// FORAGE SCREEN — nectar calendar, harvest log, conditions
+// ──────────────────────────────────────────────
+
+// UK nectar calendar data — intensity per month (0=none, 1=low, 2=mid, 3=high, 4=peak)
+var UK_NECTAR_SOURCES = [
+  { name: '🌿 Willow',        months: [0,0,2,3,1,0,0,0,0,0,0,0] },
+  { name: '🌸 Blackthorn',    months: [0,0,1,3,1,0,0,0,0,0,0,0] },
+  { name: '🌼 Dandelion',     months: [0,0,1,4,3,1,0,0,0,0,0,0] },
+  { name: '🌳 Hawthorn',      months: [0,0,0,1,4,1,0,0,0,0,0,0] },
+  { name: '🌻 Oilseed Rape',  months: [0,0,0,3,4,2,0,0,0,0,0,0] },
+  { name: '🌳 Sycamore',      months: [0,0,0,2,3,1,0,0,0,0,0,0] },
+  { name: '🌸 Horse Chestnut',months: [0,0,0,1,4,1,0,0,0,0,0,0] },
+  { name: '🌿 Clover',        months: [0,0,0,0,2,3,4,2,1,0,0,0] },
+  { name: '🫐 Blackberry',    months: [0,0,0,0,1,3,4,2,0,0,0,0] },
+  { name: '💜 Lavender',      months: [0,0,0,0,0,2,4,3,1,0,0,0] },
+  { name: '🌳 Lime (linden)', months: [0,0,0,0,0,2,4,1,0,0,0,0] },
+  { name: '🌾 Field Beans',   months: [0,0,0,0,2,3,1,0,0,0,0,0] },
+  { name: '🌸 Rosebay Willowherb', months: [0,0,0,0,0,1,3,2,0,0,0,0] },
+  { name: '🍀 Heather',       months: [0,0,0,0,0,0,1,4,2,0,0,0] },
+  { name: '🌿 Himalayan Balsam', months: [0,0,0,0,0,0,1,3,3,1,0,0] },
+  { name: '🍃 Ivy',           months: [0,0,0,0,0,0,0,0,2,4,1,0] }
+];
+
+function renderForage() {
+  var currentMonth = new Date().getMonth();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var seasonLabels = ['QUIET SEASON','LATE WINTER','SPRING STIRS','SPRING BUILD-UP','SWARM SEASON','PEAK FLOW','HONEY HARVEST','LATE SUMMER','AUTUMN PREP','LAST FORAGE','WINTER STARTS','DEEP WINTER'];
+  var heroMessages = [
+    'Bees clustered. Brood minimal. Leave undisturbed.',
+    'First cleansing flights. Stores critical.',
+    'Colonies stirring. Willow and blackthorn starting.',
+    'Dandelions and blackthorn driving spring build-up.',
+    'Oilseed rape in full flow — watch for swarm cells.',
+    'Main flow — hawthorn, sycamore, clover. Supers on.',
+    'Peak extraction — clover, lime, lavender bringing honey.',
+    'Heather beginning. Varroa treatment window opens.',
+    'Ivy starting. Last flow before winter prep.',
+    'Ivy flow — final forage of the year. Feed if needed.',
+    'Forage ending. Consolidate and prep for winter.',
+    'Winter cluster. No forage. Oxalic treatment window.'
+  ];
+
+  // Hero
+  var heroLabel = document.getElementById('forage-hero-label');
+  var heroTitle = document.getElementById('forage-hero-title');
+  var heroSub = document.getElementById('forage-hero-sub');
+  if (heroLabel) heroLabel.textContent = monthNames[currentMonth].toUpperCase() + ' · ' + seasonLabels[currentMonth];
+
+  // Count active + compute days-to-peak
+  var activeNow = UK_NECTAR_SOURCES.filter(function(s){ return s.months[currentMonth] >= 2; });
+  var activeTitles = activeNow.slice(0,3).map(function(s){ return s.name.replace(/^[^\s]+\s/,''); });
+  if (heroTitle) heroTitle.textContent = activeTitles.length ? (activeTitles.join(', ') + ' flowing') : 'Bees resting · no major flow';
+  if (heroSub) heroSub.textContent = heroMessages[currentMonth];
+
+  // Hero stats
+  var activeCount = activeNow.length;
+  document.getElementById('forage-stat-active').textContent = activeCount;
+  // Days to next peak
+  var daysToPeak = '—';
+  for (var i = 0; i < 365; i++) {
+    var d = new Date(); d.setDate(d.getDate() + i);
+    var m = d.getMonth();
+    var anyPeak = UK_NECTAR_SOURCES.some(function(s){ return s.months[m] === 4; });
+    if (anyPeak && i > 0) { daysToPeak = i; break; }
+    if (i === 0 && anyPeak) { daysToPeak = 'Now'; break; }
+  }
+  document.getElementById('forage-stat-next').textContent = daysToPeak;
+  // Yield window — months ahead where peak sources flow
+  var yieldMonths = 0;
+  for (var k = 0; k < 4; k++) {
+    var m = (currentMonth + k) % 12;
+    if (UK_NECTAR_SOURCES.some(function(s){ return s.months[m] >= 3; })) yieldMonths++;
+  }
+  document.getElementById('forage-stat-yield').textContent = yieldMonths > 0 ? yieldMonths + ' mo' : '—';
+
+  // Nectar calendar rows
+  var rowsEl = document.getElementById('nectar-calendar-rows');
+  if (rowsEl) {
+    // Filter to only show sources that flow somewhere in the year + sort by peak month
+    var sources = UK_NECTAR_SOURCES.slice().sort(function(a,b){
+      var aPeak = a.months.indexOf(Math.max.apply(null, a.months));
+      var bPeak = b.months.indexOf(Math.max.apply(null, b.months));
+      return aPeak - bPeak;
+    });
+    rowsEl.innerHTML = sources.map(function(src) {
+      var now = src.months[currentMonth];
+      var peak = Math.max.apply(null, src.months);
+      var peakMonth = src.months.indexOf(peak);
+      var state, stateCls;
+      if (now >= 2) { state = 'Active'; stateCls = 'active'; }
+      else if (peakMonth > currentMonth && peakMonth - currentMonth <= 2) { state = 'Coming soon'; stateCls = 'coming'; }
+      else if (peakMonth < currentMonth && currentMonth - peakMonth <= 2) { state = 'Just finished'; stateCls = 'past'; }
+      else { state = 'Out of season'; stateCls = 'past'; }
+      var bars = src.months.map(function(val, idx) {
+        var cls = val === 0 ? '' : val === 1 ? 'lo' : val === 2 ? 'mid' : val === 3 ? 'hi' : 'peak';
+        var marker = idx === currentMonth ? ' current-marker' : '';
+        return '<div class="nectar-bar-month ' + cls + marker + '"></div>';
+      }).join('');
+      return '<div class="nectar-row">' +
+        '<div class="nectar-row-top">' +
+          '<div class="nectar-name">' + src.name + '</div>' +
+          '<div class="nectar-state ' + stateCls + '">' + state + '</div>' +
+        '</div>' +
+        '<div class="nectar-bar-wrap">' + bars + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Harvest log
+  var harvestBody = document.getElementById('forage-harvest-body');
+  if (harvestBody) {
+    try {
+      var harvests = [];
+      var hives = loadHives();
+      hives.forEach(function(h){ if (h.harvests && Array.isArray(h.harvests)) harvests = harvests.concat(h.harvests); });
+      var thisYear = new Date().getFullYear();
+      var yearHarvests = harvests.filter(function(h){ return new Date(h.date).getFullYear() === thisYear; });
+      var totalKg = yearHarvests.reduce(function(sum, h){ return sum + (parseFloat(h.weight) || 0); }, 0);
+      var harvestCount = yearHarvests.length;
+      var estValue = Math.round(totalKg * 12); // £12/kg rough estimate
+      if (harvestCount === 0) {
+        harvestBody.innerHTML = '<div class="harvest-empty">No harvests logged yet this year.<br><span style="color:var(--honey);font-weight:700;">Tap a hive → Harvest to log your first</span></div>';
+      } else {
+        harvestBody.innerHTML =
+          '<div class="harvest-stat-row">' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">' + totalKg.toFixed(1) + 'kg</div><div class="harvest-stat-label">Total honey</div></div>' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">' + harvestCount + '</div><div class="harvest-stat-label">Harvests</div></div>' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">£' + estValue + '</div><div class="harvest-stat-label">Est. value</div></div>' +
+          '</div>';
+      }
+    } catch(e) {
+      harvestBody.innerHTML = '<div class="harvest-empty">Harvest data unavailable</div>';
+    }
+  }
+
+  // Forage conditions — weather-driven
+  var condBody = document.getElementById('forage-conditions-body');
+  if (condBody) {
+    try {
+      var w = null;
+      var cached = localStorage.getItem('hk_weather_cache');
+      if (cached) w = JSON.parse(cached);
+      if (w && typeof w.temperature === 'number') {
+        var msg = '';
+        if (w.temperature >= 16 && (!w.windSpeed || w.windSpeed < 15) && (!w.rain || w.rain < 0.5)) {
+          msg = '<strong style="color:#3B6D11;">Excellent foraging conditions</strong> — ' + Math.round(w.temperature) + '°C, light wind. Bees will be out in force.';
+        } else if (w.temperature >= 12) {
+          msg = '<strong style="color:#854F0B;">Moderate conditions</strong> — ' + Math.round(w.temperature) + '°C. Bees active but not peak.';
+        } else {
+          msg = '<strong style="color:#A32D2D;">Poor foraging</strong> — ' + Math.round(w.temperature) + '°C. Bees staying close to the hive.';
+        }
+        condBody.innerHTML = msg;
+      } else {
+        condBody.innerHTML = 'Weather and flow conditions update when online.';
+      }
+    } catch(e) { condBody.innerHTML = 'Forage conditions unavailable offline.'; }
+  }
+}
+
 function renderDashboard(){
   updateApiaryNameDisplays();
   // ═══ V2 HOME: populate new components ═══
@@ -3582,10 +3894,11 @@ function renderDashboard(){
       alertsContainer.innerHTML = alerts.map(a => {
         var sevClass = a.severity === 'red' ? 'sev-red' : a.severity === 'amber' ? 'sev-amber' : 'sev-blue';
         var iconSVG = getAlertIconSVG(a.icon, a.title);
+        var iconMeta = getAlertIconType(a.icon, a.title);
         var click = a.hiveId ? "viewHive('" + a.hiveId + "')" : 'goToApiaryAlerts()';
         return `
           <div class="alert-v2 ${sevClass}" onclick="${click}">
-            <div class="alert-v2-icon">${iconSVG}</div>
+            <div class="alert-v2-icon type-${iconMeta.type} size-${iconMeta.size}">${iconSVG}</div>
             <div class="alert-v2-text">
               <div class="alert-v2-title">${a.title}</div>
               <div class="alert-v2-sub">${a.sub}</div>
