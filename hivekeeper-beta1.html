@@ -965,7 +965,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 00:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 17:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -984,6 +984,11 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <label onclick="toggleRemember()" style="font-size:13px;color:rgba(255,255,255,.8);cursor:pointer;font-weight:600;">Keep me signed in</label>
       <input type="checkbox" id="auth-remember" checked style="display:none;">
+    </div>
+
+    <!-- Forgot password link -->
+    <div style="text-align:right;margin-top:-4px;margin-bottom:8px;">
+      <a onclick="handleForgotPassword()" style="font-size:12px;color:var(--honey);cursor:pointer;font-weight:600;text-decoration:underline;">Forgot password?</a>
     </div>
 
     <!-- Credit -->
@@ -2261,6 +2266,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
 
+      <!-- ACCOUNT -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;">🔐 Change password</button>
+
       <!-- EMERGENCY -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
       <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">🆘 Set emergency contact</button>
@@ -2366,6 +2375,21 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <!-- MODAL: SOS -->
   <div class="modal-overlay" id="modal-sos" onclick="closeModal(event,'modal-sos')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Change Password -->
+  <div class="modal-overlay" id="modal-change-password" onclick="closeModal(event,'modal-change-password')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);">🔐 Change password</div>
+        <div onclick="closeModalEl('modal-change-password')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">&#x2715;</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-l);line-height:1.5;margin-bottom:16px;">Enter a new password for your account. Minimum 8 characters.</div>
+      <input id="cp-new" type="password" placeholder="New password" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;margin-bottom:10px;">
+      <input id="cp-confirm" type="password" placeholder="Confirm new password" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;margin-bottom:16px;" onkeydown="if(event.key==='Enter')submitChangePassword()">
+      <button onclick="submitChangePassword()" id="cp-submit-btn" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;margin-bottom:8px;">Update password</button>
+      <button onclick="closeModalEl('modal-change-password')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>
     </div>
   </div>
 
@@ -8929,18 +8953,31 @@ function triggerSOS() {
   }
 
   var apiary = typeof getCurrentApiary === 'function' ? getCurrentApiary() : null;
-  var apiaryName = apiary ? apiary.name : 'my apiary';
+  var apiaryName = apiary ? apiary.name : null;
   var apiaryLocation = apiary && apiary.location ? apiary.location : '';
   var myName = contact.myName || 'Me';
 
-  function buildMessage(lat, lng) {
-    var locationLine = apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '');
-    // Use live coords if available, otherwise fall back to stored apiary coords
+  function buildMessage(lat, lng, usedLiveGPS) {
+    // PRIORITY: live GPS is the truth. Apiary is only a fallback description.
+    // When live GPS is available, the apiary name becomes context ("likely near apiary X")
+    // not the primary location.
     var mapLat = lat || (apiary && apiary.lat ? apiary.lat : null);
     var mapLng = lng || (apiary && apiary.lng ? apiary.lng : null);
     var mapsUrl = mapLat && mapLng
       ? 'https://maps.google.com/maps?daddr=' + mapLat + ',' + mapLng
       : null;
+
+    // Location line depends on whether we have a real GPS fix
+    var locationLine;
+    if (usedLiveGPS) {
+      // Live GPS: show coords directly — apiary name may be misleading if user has moved
+      locationLine = 'Current GPS: ' + mapLat + ', ' + mapLng;
+      if (apiaryName) locationLine += ' (usually at: ' + apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '') + ')';
+    } else {
+      // No GPS: we only know the apiary
+      locationLine = apiaryName ? apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '') : 'Location unavailable — GPS failed';
+    }
+
     // Beekeeper's own phone — helps emergency contact call back directly
     var myPhone = localStorage.getItem('hk_user_phone') || '';
     var msg = '\uD83D\uDEA8 URGENT \u2014 ' + myName + ' needs help!\n\n'
@@ -8956,6 +8993,7 @@ function triggerSOS() {
   }
 
   function sendWithGeocoding() {
+    // Fallback only — no live GPS. Use apiary location.
     if (apiaryLocation && typeof geocodeLocation === 'function') {
       geocodeLocation(apiaryLocation).then(function(coords) {
         if (coords && coords.lat && coords.lng) {
@@ -8964,27 +9002,28 @@ function triggerSOS() {
             var a = aps.find(function(x){ return x.id === apiary.id; });
             if (a) { a.lat = coords.lat; a.lng = coords.lng; saveApiaries(aps); }
           }
-          sendSOSMessages(contact, buildMessage(coords.lat, coords.lng));
+          sendSOSMessages(contact, buildMessage(coords.lat, coords.lng, false));
         } else {
-          sendSOSMessages(contact, buildMessage(null, null));
+          sendSOSMessages(contact, buildMessage(null, null, false));
         }
-      }).catch(function() { sendSOSMessages(contact, buildMessage(null, null)); });
+      }).catch(function() { sendSOSMessages(contact, buildMessage(null, null, false)); });
     } else {
-      sendSOSMessages(contact, buildMessage(null, null));
+      sendSOSMessages(contact, buildMessage(null, null, false));
     }
   }
 
-  showToast('\uD83D\uDCCD Getting location...');
+  showToast('\uD83D\uDCCD Getting your current location...');
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         var lat = pos.coords.latitude.toFixed(6);
         var lng = pos.coords.longitude.toFixed(6);
-        sendSOSMessages(contact, buildMessage(lat, lng));
+        sendSOSMessages(contact, buildMessage(lat, lng, true));
       },
       function(err) {
         console.warn('SOS GPS error:', err.code, err.message);
+        showToast('GPS unavailable — using apiary location');
         sendWithGeocoding();
       },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
@@ -9329,6 +9368,86 @@ async function authResetPassword() {
   const sb = getSupabase();
   await sb.auth.resetPasswordForEmail(email);
   showAuthMessage('Password reset email sent — check your inbox.');
+}
+
+// Forgot Password — called from login screen link
+async function handleForgotPassword() {
+  // Login screen uses different input IDs to the older auth screen
+  var emailEl = document.getElementById('signin-email') || document.getElementById('auth-email');
+  var email = emailEl ? emailEl.value.trim() : '';
+
+  if (!email) {
+    // Prompt if the field is empty
+    email = (prompt('Enter your email address and we\'ll send you a password reset link:') || '').trim();
+    if (!email) return;
+  }
+
+  // Basic email format check
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('That doesn\'t look like a valid email address');
+    return;
+  }
+
+  try {
+    var sb = getSupabase();
+    var redirectTo = window.location.origin + window.location.pathname;
+    var { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectTo });
+    if (error) {
+      console.warn('Password reset error:', error.message);
+      showToast('Couldn\'t send reset email — please try again');
+      return;
+    }
+    showToast('✉️ Password reset email sent to ' + email + ' — check your inbox (and spam folder)');
+  } catch (e) {
+    console.error('Password reset failed:', e);
+    showToast('Something went wrong — please try again');
+  }
+}
+
+// Change Password — opens modal from Settings
+function openChangePassword() {
+  var newEl = document.getElementById('cp-new');
+  var confEl = document.getElementById('cp-confirm');
+  if (newEl) newEl.value = '';
+  if (confEl) confEl.value = '';
+  openModalEl('modal-change-password');
+  setTimeout(function(){ if (newEl) newEl.focus(); }, 300);
+}
+
+// Change Password — submit handler
+async function submitChangePassword() {
+  var newPwd = document.getElementById('cp-new').value;
+  var confirm = document.getElementById('cp-confirm').value;
+  var btn = document.getElementById('cp-submit-btn');
+
+  if (!newPwd || newPwd.length < 8) {
+    showToast('Password must be at least 8 characters');
+    return;
+  }
+  if (newPwd !== confirm) {
+    showToast('Passwords don\'t match');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating...'; }
+
+  try {
+    var sb = getSupabase();
+    var { data, error } = await sb.auth.updateUser({ password: newPwd });
+    if (error) {
+      console.warn('Password update error:', error.message);
+      showToast('Couldn\'t update password: ' + error.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Update password'; }
+      return;
+    }
+    closeModalEl('modal-change-password');
+    showToast('✓ Password updated successfully');
+    if (btn) { btn.disabled = false; btn.textContent = 'Update password'; }
+  } catch (e) {
+    console.error('Password update failed:', e);
+    showToast('Something went wrong — please try again');
+    if (btn) { btn.disabled = false; btn.textContent = 'Update password'; }
+  }
 }
 
 // ── UI HELPERS ───────────────────────────────────
@@ -13818,20 +13937,6 @@ function setHiveRow(hiveId, rowName) {
   renderApiary();
   renderMap();
   if (currentScreen === 's-hive') renderHiveDetail();
-  showToast(rowName ? 'Moved to ' + rowName + ' ✓' : 'Row removed ✓');
-}
-
-function setHiveRow(hiveId, rowName) {
-  var hives = loadHives();
-  var hive = hives.find(function(h){ return h.id === hiveId; });
-  if (!hive) return;
-  hive.row = rowName;
-  saveHives(hives);
-  closeModalEl('modal-sos');
-  renderRowTabs();
-  renderApiary();
-  renderMap();
-  renderHiveDetail();
   showToast(rowName ? 'Moved to ' + rowName + ' ✓' : 'Row removed ✓');
 }
 
