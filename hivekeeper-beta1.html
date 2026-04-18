@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:55 18 April 2026 · Environment tab + Crop Spraying + Commercial hive type -->
+<!-- HiveKeeper · Last updated: 22:15 18 April 2026 · Environment tab full port (hero + visual nectar + harvest + conditions + spray) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -506,6 +506,51 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   font-size: 11px; font-weight: 800; color: var(--text-l);
   text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;
 }
+
+/* Forage hero — seasonal banner */
+.forage-hero {
+  margin: 12px 20px 0;
+  border-radius: var(--rs);
+  padding: 18px;
+  color: white;
+  background: linear-gradient(135deg, #BA7517 0%, #C8730A 50%, #EF9F27 100%);
+  font-family: 'Syne', sans-serif;
+  background-size: cover;
+  background-position: center;
+}
+.forage-hero-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; opacity: 0.9; text-transform: uppercase; }
+.forage-hero-title { font-size: 20px; font-weight: 800; margin-top: 4px; line-height: 1.2; }
+.forage-hero-sub { font-size: 12px; opacity: 0.9; margin-top: 6px; line-height: 1.45; }
+.forage-hero-stats { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.25); }
+.forage-hero-stat { flex: 1; }
+.forage-hero-stat-val { font-size: 18px; font-weight: 800; }
+.forage-hero-stat-label { font-size: 10px; opacity: 0.85; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+/* Visual nectar calendar — 16 sources × 12 months intensity */
+.nectar-row { padding: 10px 0; border-bottom: 1px solid var(--wax); font-family: 'Syne', sans-serif; }
+.nectar-row:last-child { border-bottom: none; }
+.nectar-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.nectar-name { font-size: 13px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.nectar-state { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.nectar-state.active { background: #E8F5E0; color: #3B6D11; }
+.nectar-state.coming { background: #FAEEDA; color: #854F0B; }
+.nectar-state.past   { background: #F1EFE8; color: #5F5E5A; }
+.nectar-bar-wrap { display: flex; gap: 2px; }
+.nectar-bar-month { flex: 1; height: 10px; border-radius: 2px; background: var(--wax); position: relative; }
+.nectar-bar-month.lo  { background: #FAEEDA; }
+.nectar-bar-month.mid { background: #FAC775; }
+.nectar-bar-month.hi  { background: #EF9F27; }
+.nectar-bar-month.peak { background: #BA7517; }
+.nectar-bar-month.current-marker::after { content: ''; position: absolute; top: -3px; bottom: -3px; left: 50%; width: 2px; background: #A32D2D; border-radius: 1px; transform: translateX(-50%); }
+.nectar-labels { display: flex; gap: 2px; margin-top: 4px; }
+.nectar-label { flex: 1; font-size: 8px; font-weight: 700; color: var(--text-l); text-align: center; letter-spacing: 0.04em; }
+
+/* Harvest stats row */
+.harvest-stat-row { display: flex; gap: 10px; margin-top: 10px; }
+.harvest-stat { flex: 1; background: #FAEEDA; border-radius: 10px; padding: 10px 12px; text-align: center; }
+.harvest-stat-val { font-size: 20px; font-weight: 800; color: #412402; }
+.harvest-stat-label { font-size: 9px; color: #854F0B; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.harvest-empty { text-align: center; padding: 16px 8px; color: var(--text-l); font-size: 12px; line-height: 1.5; }
 /* ═══ END ENVIRONMENT ═══════════════════════════════════════ */
 
 
@@ -2497,6 +2542,39 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
   <div class="scroll-area">
 
+    <!-- SEASONAL HERO -->
+    <div id="forage-hero" class="forage-hero">
+      <div class="forage-hero-label" id="forage-hero-label">APRIL · SPRING BUILD-UP</div>
+      <div class="forage-hero-title" id="forage-hero-title">Loading seasonal focus…</div>
+      <div class="forage-hero-sub" id="forage-hero-sub">Bees are bringing in nectar and pollen from dandelions and blackthorn.</div>
+      <div class="forage-hero-stats">
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-active">—</div>
+          <div class="forage-hero-stat-label">Active sources</div>
+        </div>
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-next">—</div>
+          <div class="forage-hero-stat-label">Days to peak</div>
+        </div>
+        <div class="forage-hero-stat">
+          <div class="forage-hero-stat-val" id="forage-stat-yield">—</div>
+          <div class="forage-hero-stat-label">Yield window</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VISUAL NECTAR CALENDAR -->
+    <div class="forage-card" id="forage-nectar-card">
+      <div class="forage-card-title">UK Nectar calendar</div>
+      <div id="nectar-calendar-rows"></div>
+      <div class="nectar-labels" style="margin-top:8px;padding-top:6px;border-top:1px solid var(--wax);">
+        <div class="nectar-label">J</div><div class="nectar-label">F</div><div class="nectar-label">M</div>
+        <div class="nectar-label">A</div><div class="nectar-label">M</div><div class="nectar-label">J</div>
+        <div class="nectar-label">J</div><div class="nectar-label">A</div><div class="nectar-label">S</div>
+        <div class="nectar-label">O</div><div class="nectar-label">N</div><div class="nectar-label">D</div>
+      </div>
+    </div>
+
     <!-- CROP SPRAYING REPORTS -->
     <div class="forage-card" id="forage-sprays-card">
       <div class="forage-card-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -2506,10 +2584,18 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div id="forage-sprays-body"></div>
     </div>
 
-    <!-- NECTAR CALENDAR (moved from home) -->
-    <div class="section-head" style="margin-top:10px;"><div class="section-title" id="nectar-title">Nectar calendar</div><button class="section-action" onclick="goTo('s-ai')">Ask AI</button></div>
-    <div id="nectar-calendar" style="margin:0 20px;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
-      <div style="padding:16px;text-align:center;color:var(--text-l);font-size:12px;">Loading nectar calendar…</div>
+    <!-- HARVEST LOG -->
+    <div class="forage-card" id="forage-harvest-card">
+      <div class="forage-card-title">Your harvest · 2026</div>
+      <div id="forage-harvest-body"></div>
+    </div>
+
+    <!-- FORAGE CONDITIONS -->
+    <div class="forage-card" id="forage-conditions-card">
+      <div class="forage-card-title">Forage conditions</div>
+      <div id="forage-conditions-body" style="font-size:12px;color:var(--text);line-height:1.6;">
+        Weather and flow conditions update when online.
+      </div>
     </div>
 
     <div style="height:30px;"></div>
@@ -3316,9 +3402,160 @@ function saveSprayForm() {
 }
 
 // Render Environment page (called when nav button tapped)
+var UK_NECTAR_SOURCES = [
+  { name: '🌿 Willow',        months: [0,0,2,3,1,0,0,0,0,0,0,0] },
+  { name: '🌸 Blackthorn',    months: [0,0,1,3,1,0,0,0,0,0,0,0] },
+  { name: '🌼 Dandelion',     months: [0,0,1,4,3,1,0,0,0,0,0,0] },
+  { name: '🌳 Hawthorn',      months: [0,0,0,1,4,1,0,0,0,0,0,0] },
+  { name: '🌻 Oilseed Rape',  months: [0,0,0,3,4,2,0,0,0,0,0,0] },
+  { name: '🌳 Sycamore',      months: [0,0,0,2,3,1,0,0,0,0,0,0] },
+  { name: '🌸 Horse Chestnut',months: [0,0,0,1,4,1,0,0,0,0,0,0] },
+  { name: '🌿 Clover',        months: [0,0,0,0,2,3,4,2,1,0,0,0] },
+  { name: '🫐 Blackberry',    months: [0,0,0,0,1,3,4,2,0,0,0,0] },
+  { name: '💜 Lavender',      months: [0,0,0,0,0,2,4,3,1,0,0,0] },
+  { name: '🌳 Lime (linden)', months: [0,0,0,0,0,2,4,1,0,0,0,0] },
+  { name: '🌾 Field Beans',   months: [0,0,0,0,2,3,1,0,0,0,0,0] },
+  { name: '🌸 Rosebay Willowherb', months: [0,0,0,0,0,1,3,2,0,0,0,0] },
+  { name: '🍀 Heather',       months: [0,0,0,0,0,0,1,4,2,0,0,0] },
+  { name: '🌿 Himalayan Balsam', months: [0,0,0,0,0,0,1,3,3,1,0,0] },
+  { name: '🍃 Ivy',           months: [0,0,0,0,0,0,0,0,2,4,1,0] }
+];
+
 function renderEnvironment() {
+  var currentMonth = new Date().getMonth();
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var seasonLabels = ['QUIET SEASON','LATE WINTER','SPRING STIRS','SPRING BUILD-UP','SWARM SEASON','PEAK FLOW','HONEY HARVEST','LATE SUMMER','AUTUMN PREP','LAST FORAGE','WINTER STARTS','DEEP WINTER'];
+  var heroMessages = [
+    'Bees clustered. Brood minimal. Leave undisturbed.',
+    'First cleansing flights. Stores critical.',
+    'Colonies stirring. Willow and blackthorn starting.',
+    'Dandelions and blackthorn driving spring build-up.',
+    'Oilseed rape in full flow — watch for swarm cells.',
+    'Main flow — hawthorn, sycamore, clover. Supers on.',
+    'Peak extraction — clover, lime, lavender bringing honey.',
+    'Heather beginning. Varroa treatment window opens.',
+    'Ivy starting. Last flow before winter prep.',
+    'Ivy flow — final forage of the year. Feed if needed.',
+    'Forage ending. Consolidate and prep for winter.',
+    'Winter cluster. No forage. Oxalic treatment window.'
+  ];
+
+  // Hero
+  var heroLabel = document.getElementById('forage-hero-label');
+  var heroTitle = document.getElementById('forage-hero-title');
+  var heroSub = document.getElementById('forage-hero-sub');
+  if (heroLabel) heroLabel.textContent = monthNames[currentMonth].toUpperCase() + ' · ' + seasonLabels[currentMonth];
+  var activeNow = UK_NECTAR_SOURCES.filter(function(s){ return s.months[currentMonth] >= 2; });
+  var activeTitles = activeNow.slice(0,3).map(function(s){ return s.name.replace(/^[^\s]+\s/,''); });
+  if (heroTitle) heroTitle.textContent = activeTitles.length ? (activeTitles.join(', ') + ' flowing') : 'Bees resting · no major flow';
+  if (heroSub) heroSub.textContent = heroMessages[currentMonth];
+
+  // Hero stats
+  var activeCount = activeNow.length;
+  var statActive = document.getElementById('forage-stat-active');
+  if (statActive) statActive.textContent = activeCount;
+  var daysToPeak = '—';
+  for (var i = 0; i < 365; i++) {
+    var d = new Date(); d.setDate(d.getDate() + i);
+    var m = d.getMonth();
+    var anyPeak = UK_NECTAR_SOURCES.some(function(s){ return s.months[m] === 4; });
+    if (anyPeak && i > 0) { daysToPeak = i; break; }
+    if (i === 0 && anyPeak) { daysToPeak = 'Now'; break; }
+  }
+  var statNext = document.getElementById('forage-stat-next');
+  if (statNext) statNext.textContent = daysToPeak;
+  var yieldMonths = 0;
+  for (var k = 0; k < 4; k++) {
+    var mm = (currentMonth + k) % 12;
+    if (UK_NECTAR_SOURCES.some(function(s){ return s.months[mm] >= 3; })) yieldMonths++;
+  }
+  var statYield = document.getElementById('forage-stat-yield');
+  if (statYield) statYield.textContent = yieldMonths > 0 ? yieldMonths + ' mo' : '—';
+
+  // Visual nectar calendar
+  var rowsEl = document.getElementById('nectar-calendar-rows');
+  if (rowsEl) {
+    var sources = UK_NECTAR_SOURCES.slice().sort(function(a,b){
+      var aPeak = a.months.indexOf(Math.max.apply(null, a.months));
+      var bPeak = b.months.indexOf(Math.max.apply(null, b.months));
+      return aPeak - bPeak;
+    });
+    rowsEl.innerHTML = sources.map(function(src) {
+      var now = src.months[currentMonth];
+      var peak = Math.max.apply(null, src.months);
+      var peakMonth = src.months.indexOf(peak);
+      var state, stateCls;
+      if (now >= 2) { state = 'Active'; stateCls = 'active'; }
+      else if (peakMonth > currentMonth && peakMonth - currentMonth <= 2) { state = 'Coming soon'; stateCls = 'coming'; }
+      else if (peakMonth < currentMonth && currentMonth - peakMonth <= 2) { state = 'Just finished'; stateCls = 'past'; }
+      else { state = 'Out of season'; stateCls = 'past'; }
+      var bars = src.months.map(function(val, idx) {
+        var cls = val === 0 ? '' : val === 1 ? 'lo' : val === 2 ? 'mid' : val === 3 ? 'hi' : 'peak';
+        var marker = idx === currentMonth ? ' current-marker' : '';
+        return '<div class="nectar-bar-month ' + cls + marker + '"></div>';
+      }).join('');
+      return '<div class="nectar-row">' +
+        '<div class="nectar-row-top">' +
+          '<div class="nectar-name">' + src.name + '</div>' +
+          '<div class="nectar-state ' + stateCls + '">' + state + '</div>' +
+        '</div>' +
+        '<div class="nectar-bar-wrap">' + bars + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Harvest log
+  var harvestBody = document.getElementById('forage-harvest-body');
+  if (harvestBody) {
+    try {
+      var harvests = [];
+      var hives = (typeof loadHives === 'function') ? loadHives() : [];
+      hives.forEach(function(h){ if (h.harvests && Array.isArray(h.harvests)) harvests = harvests.concat(h.harvests); });
+      var thisYear = new Date().getFullYear();
+      var yearHarvests = harvests.filter(function(h){ return new Date(h.date).getFullYear() === thisYear; });
+      var totalKg = yearHarvests.reduce(function(sum, h){ return sum + (parseFloat(h.weight) || 0); }, 0);
+      var harvestCount = yearHarvests.length;
+      var estValue = Math.round(totalKg * 12);
+      if (harvestCount === 0) {
+        harvestBody.innerHTML = '<div class="harvest-empty">No harvests logged yet this year.<br><span style="color:var(--honey);font-weight:700;">Tap a hive → Harvest to log your first</span></div>';
+      } else {
+        harvestBody.innerHTML =
+          '<div class="harvest-stat-row">' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">' + totalKg.toFixed(1) + 'kg</div><div class="harvest-stat-label">Total honey</div></div>' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">' + harvestCount + '</div><div class="harvest-stat-label">Harvests</div></div>' +
+            '<div class="harvest-stat"><div class="harvest-stat-val">£' + estValue + '</div><div class="harvest-stat-label">Est. value</div></div>' +
+          '</div>';
+      }
+    } catch(e) {
+      harvestBody.innerHTML = '<div class="harvest-empty">Harvest data unavailable</div>';
+    }
+  }
+
+  // Forage conditions — weather-driven
+  var condBody = document.getElementById('forage-conditions-body');
+  if (condBody) {
+    try {
+      var w = null;
+      var cached = localStorage.getItem('hk_weather_cache');
+      if (cached) w = JSON.parse(cached);
+      if (w && typeof w.temperature === 'number') {
+        var msg = '';
+        if (w.temperature >= 16 && (!w.windSpeed || w.windSpeed < 15) && (!w.rain || w.rain < 0.5)) {
+          msg = '<strong style="color:#3B6D11;">Excellent foraging conditions</strong> — ' + Math.round(w.temperature) + '°C, light wind. Bees will be out in force.';
+        } else if (w.temperature >= 12) {
+          msg = '<strong style="color:#854F0B;">Moderate conditions</strong> — ' + Math.round(w.temperature) + '°C. Bees active but not peak.';
+        } else {
+          msg = '<strong style="color:#A32D2D;">Poor foraging</strong> — ' + Math.round(w.temperature) + '°C. Bees staying close to the hive.';
+        }
+        condBody.innerHTML = msg;
+      } else {
+        condBody.innerHTML = 'Weather and flow conditions update when online.';
+      }
+    } catch(e) { condBody.innerHTML = 'Forage conditions unavailable offline.'; }
+  }
+
+  // Crop spraying reports
   try { renderSprays(); } catch(e) { console.warn('renderSprays:', e); }
-  try { if (typeof renderNectarCalendar === 'function') renderNectarCalendar(); } catch(e) { console.warn('renderNectarCalendar:', e); }
 }
 
 // Deep link from home spray banner → Environment tab, scroll to sprays
