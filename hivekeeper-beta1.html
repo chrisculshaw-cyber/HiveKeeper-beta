@@ -9339,7 +9339,7 @@ function openApiarySwitcher() {
 
 function addNewApiary() {
   if (!canAddApiary()) { showUpgradeModal('apiary'); return; }
-  var name = prompt('New apiary name:', 'My Second Apiary');
+  var name = prompt('Name your new apiary\n(e.g. Home Apiary, Wood Farm, Top Field)', '');
   if (!name || !name.trim()) return;
   var newId = uid();
   var newApiary = { id: newId, name: name.trim(), location: '', lat: null, lng: null, createdAt: Date.now() };
@@ -12369,6 +12369,11 @@ function saveUserLocation(lat, lng, name) {
 
 
 // ── PARTNER ADS ──────────────────────────────────────────
+// Master switch — set to true only when real paying sponsors are live.
+// While false, both the home Partner Ad card and the Marketplace banner are hidden
+// on all tiers. Ad data, click handlers, and tier logic below remain intact.
+var HK_ADS_ENABLED = false;
+
 var HK_ADS = [
   {
     icon: '🏠',
@@ -12412,6 +12417,8 @@ var _currentAd = null;
 function renderAdCard() {
   var card = document.getElementById('ad-card');
   if (!card) return;
+  // Master switch — hide on all tiers until real sponsors are live
+  if (!HK_ADS_ENABLED) { card.style.display = 'none'; return; }
   // Hide ads for Commercial tier
   if (getUserTier() === 'commercial') { card.style.display = 'none'; return; }
   // Pick a random ad, different from last time
@@ -12441,6 +12448,9 @@ var _currentMarketAd = null;
 function renderMarketBanner() {
   var banner = document.getElementById('market-banner');
   if (!banner) return;
+  // Master switch — hide on all tiers until real sponsors are live
+  if (!HK_ADS_ENABLED) { banner.style.display = 'none'; return; }
+  banner.style.display = 'flex';
   // Pick different ad from current home ad if possible
   var available = HK_ADS.filter(function(a){ return a !== _currentMarketAd; });
   if (!available.length) available = HK_ADS;
