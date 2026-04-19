@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 20:13 19 April 2026 · Trial reframed as "Pro on us" + pricing bug fixes -->
+<!-- HiveKeeper · Last updated: 20:45 19 April 2026 · Landmark remove in-place + apiary-switch-from-Inspect fix + pricing defaults to monthly -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:13</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -9423,6 +9423,19 @@ function switchApiary(id) {
   renderDashboard();
   renderApiary();
   renderMap();
+  // Reset Inspect screen state — the previously-selected hive almost certainly belongs
+  // to the OLD apiary, so we clear it and rebuild the hive selector with the new apiary's hives.
+  // Without this, a user on Inspect who switches apiaries sees stale hives and could log an
+  // inspection against the wrong hive — a real data-integrity bug.
+  try {
+    currentHiveId = null;
+    var selName = document.getElementById('inspect-hive-selected-name');
+    if (selName) selName.textContent = 'Select a hive...';
+    hiveListOpen = false;
+    var list = document.getElementById('inspect-hive-list'); if (list) list.style.display = 'none';
+    renderInspectHeader();
+    renderHiveListDropdown(); // Rebuild dropdown contents for new apiary
+  } catch(e) { console.warn('Inspect reset on apiary switch failed:', e); }
   showToast('Switched to ' + (apiary ? apiary.name : 'apiary'));
 }
 
@@ -12814,7 +12827,7 @@ var STRIPE_PRICES = {
   pro:        { monthly: 'price_1TNCyAAh8P0KJ902MTxVDORr', yearly: 'price_1TNCyAAh8P0KJ902k9tO6tQp' },
   commercial: { monthly: 'price_1TND0jAh8P0KJ902RfPHztx5', yearly: 'price_1TND15Ah8P0KJ902AsaDBIAS' }
 };
-var _billingPeriod = 'yearly'; // default to annual — better value, better for revenue
+var _billingPeriod = 'monthly'; // default to monthly so Pro price reads as cheap (£3.99/mo); annual toggle prominently advertises savings
 
 function setBillingPeriod(period) {
   _billingPeriod = period;
@@ -12823,15 +12836,15 @@ function setBillingPeriod(period) {
   var saveBadge = document.getElementById('billing-save-badge');
   if (monthly) { monthly.style.background = period === 'monthly' ? 'var(--honey)' : 'transparent'; monthly.style.color = period === 'monthly' ? 'white' : 'var(--text-l)'; }
   if (yearly)  { yearly.style.background  = period === 'yearly'  ? 'var(--honey)' : 'transparent'; yearly.style.color  = period === 'yearly'  ? 'white' : 'var(--text-l)'; }
-  if (saveBadge) saveBadge.style.display = period === 'yearly' ? 'inline-block' : 'none';
+  if (saveBadge) saveBadge.style.display = period === 'monthly' ? 'block' : 'none';
   var proPrice = document.getElementById('pricing-pro-price');
   var comPrice = document.getElementById('pricing-com-price');
   var proSub   = document.getElementById('pricing-pro-sub');
   var comSub   = document.getElementById('pricing-com-sub');
   if (proPrice) proPrice.innerHTML = period === 'monthly' ? '&#xa3;3.99<span style="font-size:13px;">/mo</span>' : '&#xa3;39.99<span style="font-size:13px;">/yr</span>';
   if (comPrice) comPrice.innerHTML = period === 'monthly' ? '&#xa3;19.99<span style="font-size:13px;">/mo</span>' : '&#xa3;199.99<span style="font-size:13px;">/yr</span>';
-  if (proSub)   proSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;Switch to annual to save' : '<strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong>';
-  if (comSub)   comSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;Switch to annual to save' : '<strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong>';
+  if (proSub)   proSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;7.89</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong> &nbsp;(≈ &#xa3;3.33/mo)';
+  if (comSub)   comSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;39.89</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong> &nbsp;(≈ &#xa3;16.67/mo)';
   // Update monthly per-month equivalent
   var proBtnEl = document.getElementById('btn-upgrade-pro');
   var comBtnEl = document.getElementById('btn-upgrade-commercial');
@@ -13459,7 +13472,33 @@ function deleteLandmark(id) {
   try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
   if (getUserId()) deleteLandmarkFromCloud(id).catch(function(){});
   renderMap();
+  // Update the Existing Landmarks list in-place if the picker modal is open
+  try { renderExistingLandmarksList(); } catch(e) {}
   showToast('Landmark removed');
+}
+
+// Render the "Existing landmarks" list inside the landmark picker modal.
+// Split out so that deleteLandmark() can re-render in-place without reopening the modal,
+// which was leaving stale DOM behind.
+function renderExistingLandmarksList() {
+  var container = document.getElementById('lm-existing-list');
+  if (!container) return; // picker not open
+  var existing = loadLandmarks();
+  if (!existing.length) {
+    container.innerHTML = '';
+    return;
+  }
+  var html = '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Existing landmarks</div>';
+  html += existing.map(function(l) {
+    var def = LANDMARK_TYPES[l.type] || LANDMARK_TYPES.custom;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--wax);">' +
+      '<div style="font-size:18px;">' + def.emoji + '</div>' +
+      '<div style="flex:1;font-size:13px;font-weight:600;color:var(--text);">' + l.label + '</div>' +
+      '<button onclick="deleteLandmark(\'' + l.id + '\')" ' +
+      'style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;font-weight:700;cursor:pointer;padding:4px 8px;">Remove</button>' +
+      '</div>';
+  }).join('');
+  container.innerHTML = html;
 }
 
 // Edit panel for landmarks — compact floating control docked at top of map.
@@ -13562,34 +13601,19 @@ function openLandmarkPicker() {
       '</div>';
   }).join('');
 
-  // Show existing landmarks with delete option
-  var existing = loadLandmarks();
-  var existingHtml = existing.length ? (
-    '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;' +
-    'letter-spacing:.04em;margin:16px 0 8px;">Existing landmarks</div>' +
-    existing.map(function(l) {
-      var def = LANDMARK_TYPES[l.type] || LANDMARK_TYPES.custom;
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;' +
-        'border-bottom:1px solid var(--wax);">' +
-        '<div style="font-size:18px;">' + def.emoji + '</div>' +
-        '<div style="flex:1;font-size:13px;font-weight:600;color:var(--text);">' + l.label + '</div>' +
-        '<button onclick="deleteLandmark(\'' + l.id + '\');openLandmarkPicker()" ' +
-        'style="background:transparent;border:none;color:var(--red,#e53935);font-size:11px;' +
-        'font-weight:700;cursor:pointer;padding:4px 8px;">Remove</button>' +
-        '</div>';
-    }).join('')
-  ) : '';
-
   sheet.innerHTML = '<div class="modal-handle"></div>' +
     '<div class="modal-title">Apiary landmarks</div>' +
     '<p style="font-size:12px;color:var(--text-l);margin-bottom:12px;line-height:1.5;">' +
     'Tap to add a landmark. Drag it into position on the map in Edit Layout mode.</p>' +
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;">' +
     grid + '</div>' +
-    existingHtml +
+    '<div id="lm-existing-list"></div>' +
     '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;margin-top:16px;' +
     'background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;' +
     'font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  // Populate existing landmarks via the shared helper (same function deleteLandmark calls)
+  try { renderExistingLandmarksList(); } catch(e) {}
 
   openModalEl('modal-sos');
 }
@@ -15042,12 +15066,12 @@ function goToApiaryAlerts() {
       </div>
 
       <!-- BILLING TOGGLE -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
-        <div style="display:flex;background:var(--wax);border-radius:20px;padding:3px;gap:2px;">
-          <button id="billing-toggle-monthly" onclick="setBillingPeriod('monthly')" style="background:transparent;color:var(--text-l);border:none;border-radius:16px;padding:7px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Monthly</button>
-          <button id="billing-toggle-yearly" onclick="setBillingPeriod('yearly')" style="background:var(--honey);color:white;border:none;border-radius:16px;padding:7px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Annual</button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px;">
+        <div style="display:flex;background:var(--wax);border-radius:20px;padding:3px;gap:2px;align-items:center;">
+          <button id="billing-toggle-monthly" onclick="setBillingPeriod('monthly')" style="background:var(--honey);color:white;border:none;border-radius:16px;padding:7px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;">Monthly</button>
+          <button id="billing-toggle-yearly" onclick="setBillingPeriod('yearly')" style="background:transparent;color:var(--text-l);border:none;border-radius:16px;padding:7px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s;display:flex;align-items:center;gap:6px;">Annual<span style="background:#2E7D32;color:white;font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px;letter-spacing:0.02em;">SAVE 17%</span></button>
         </div>
-        <span id="billing-save-badge" style="display:inline-block;background:#2E7D32;color:white;font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;font-family:'Syne',sans-serif;">Save up to £40</span>
+        <div id="billing-save-badge" style="font-size:11px;color:#2E7D32;font-weight:700;font-family:'Syne',sans-serif;display:none;">💰 Switch to annual and save £7.89 on Pro</div>
       </div>
 
       <div id="pricing-reason-msg" style="display:none;background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;padding:10px 14px;font-size:13px;color:#633806;font-weight:600;margin-bottom:12px;line-height:1.5;"></div>
@@ -15095,9 +15119,9 @@ function goToApiaryAlerts() {
           <div style="font-size:11px;font-weight:800;color:white;background:#185FA5;border-radius:6px;padding:3px 8px;margin-bottom:8px;display:inline-block;align-self:center;letter-spacing:.04em;">POPULAR</div>
           <div style="font-size:28px;margin-bottom:4px;">&#x1F41D;</div>
           <div style="font-size:16px;font-weight:800;color:#185FA5;margin-bottom:6px;">Pro</div>
-          <div id="pricing-pro-price" style="font-size:26px;font-weight:800;color:#185FA5;line-height:1;">&#xa3;39.99<span style="font-size:13px;">/yr</span></div>
-          <div id="pricing-pro-sub" style="font-size:12px;color:#185FA5;opacity:0.8;margin:6px 0;min-height:16px;line-height:1.4;"><strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong></div>
-          <div style="font-size:12px;color:#185FA5;opacity:0.7;margin-bottom:12px;">≈ £3.33/month</div>
+          <div id="pricing-pro-price" style="font-size:26px;font-weight:800;color:#185FA5;line-height:1;">&#xa3;3.99<span style="font-size:13px;">/mo</span></div>
+          <div id="pricing-pro-sub" style="font-size:12px;color:#185FA5;opacity:0.9;margin:6px 0;min-height:16px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;7.89</strong></div>
+          <div style="font-size:12px;color:#185FA5;opacity:0.7;margin-bottom:12px;">Billed monthly · cancel any time</div>
           <div style="flex:1;"></div>
           <button onclick="handleUpgrade('pro')" id="btn-upgrade-pro" style="width:100%;background:#185FA5;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade to Pro &#x2192;</button>
         </div>
@@ -15106,9 +15130,9 @@ function goToApiaryAlerts() {
           <div style="font-size:11px;color:transparent;padding:3px 8px;margin-bottom:8px;display:inline-block;align-self:center;">.</div>
           <div style="font-size:28px;margin-bottom:4px;">&#x1F36F;</div>
           <div style="font-size:16px;font-weight:800;color:#3B6D11;margin-bottom:6px;">Commercial</div>
-          <div id="pricing-com-price" style="font-size:26px;font-weight:800;color:#3B6D11;line-height:1;">&#xa3;199.99<span style="font-size:13px;">/yr</span></div>
-          <div id="pricing-com-sub" style="font-size:12px;color:#3B6D11;opacity:0.8;margin:6px 0;min-height:16px;line-height:1.4;"><strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong></div>
-          <div style="font-size:12px;color:#3B6D11;opacity:0.7;margin-bottom:12px;">≈ £16.67/month</div>
+          <div id="pricing-com-price" style="font-size:26px;font-weight:800;color:#3B6D11;line-height:1;">&#xa3;19.99<span style="font-size:13px;">/mo</span></div>
+          <div id="pricing-com-sub" style="font-size:12px;color:#3B6D11;opacity:0.9;margin:6px 0;min-height:16px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;39.89</strong></div>
+          <div style="font-size:12px;color:#3B6D11;opacity:0.7;margin-bottom:12px;">Billed monthly · cancel any time</div>
           <div style="flex:1;"></div>
           <button onclick="handleUpgrade('commercial')" id="btn-upgrade-commercial" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
