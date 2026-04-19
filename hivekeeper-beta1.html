@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:28 19 April 2026 · Drag handle now SVG three-lines on honey-pale background -->
+<!-- HiveKeeper · Last updated: 19:50 19 April 2026 · Zoom syncs to Supabase + Rows button removed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:28</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1364,7 +1364,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="apiary-export-btn" onclick="exportApiaryMap()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
         <button id="apiary-hive-btn" onclick="openAddHive()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
-        <button id="apiary-rows-btn" onclick="openRowEditor()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5C2;<br>Rows</button>
       </div>
   </div>
   <div class="scroll-area">
@@ -7348,7 +7347,6 @@ function toggleEditLayout(){
     if(canvas) canvas.classList.add('edit-mode');
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='';
     var hiveBtn=document.getElementById('apiary-hive-btn'); if(hiveBtn) hiveBtn.style.display='';
-    var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='';
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='';
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
@@ -7382,7 +7380,6 @@ function toggleEditLayout(){
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
     // apiary-hive-btn stays visible always
-    var rowsBtn=document.getElementById('apiary-rows-btn'); if(rowsBtn) rowsBtn.style.display='none';
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='none';
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     saveHives(loadHives()); showToast('Layout saved');
@@ -11321,6 +11318,7 @@ async function pushApiaries() {
       lat: a.lat || null, lng: a.lng || null,
       map_view_lat: (typeof a.mapViewLat === 'number') ? a.mapViewLat : null,
       map_view_lng: (typeof a.mapViewLng === 'number') ? a.mapViewLng : null,
+      map_zoom: (typeof a.mapZoom === 'number') ? a.mapZoom : null,
       is_default: a.isDefault === true,
       created_at: new Date(a.createdAt || Date.now()).toISOString()
     };
@@ -11331,7 +11329,7 @@ async function pushApiaries() {
     if (error) {
       if (error.code === '23505') {
         // Duplicate key — row already exists, try plain update instead
-        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng, is_default: rows[i].is_default }).eq('id', rows[i].id).eq('user_id', uid);
+        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng, map_zoom: rows[i].map_zoom, is_default: rows[i].is_default }).eq('id', rows[i].id).eq('user_id', uid);
       } else if (error.code === '42501') {
         // RLS error on this specific row — skip silently, likely a shared apiary
         console.warn('RLS error pushing apiary', rows[i].id, '— skipping');
@@ -11553,6 +11551,7 @@ async function pullFromSupabase() {
           // Prefer Supabase value if it's a valid number; otherwise preserve local value
           mapViewLat: (typeof a.map_view_lat === 'number') ? a.map_view_lat : (typeof local.mapViewLat === 'number' ? local.mapViewLat : null),
           mapViewLng: (typeof a.map_view_lng === 'number') ? a.map_view_lng : (typeof local.mapViewLng === 'number' ? local.mapViewLng : null),
+          mapZoom: (typeof a.map_zoom === 'number') ? a.map_zoom : (typeof local.mapZoom === 'number' ? local.mapZoom : null),
           // is_default: same defensive pattern — if Supabase column doesn't exist, preserve local value
           isDefault: (typeof a.is_default === 'boolean') ? a.is_default : (local.isDefault === true),
           createdAt: new Date(a.created_at).getTime()
@@ -15240,11 +15239,18 @@ function initLeafletMap() {
     lng = apiary.mapViewLng;
   }
 
-  // Zoom is DEVICE-local — a phone and a desktop will naturally want different zoom levels.
+  // Zoom persists at the APIARY level (syncs across devices via Supabase).
+  // Priority: apiary.mapZoom (from Supabase) > localStorage key (device-local fallback) > default.
   try {
     var _apId = apiary ? apiary.id : 'default';
-    var _savedZoom = parseInt(localStorage.getItem('hk_map_zoom_' + _apId) || '', 10);
-    if (!isNaN(_savedZoom) && _savedZoom >= 1 && _savedZoom <= 22) zoom = _savedZoom;
+    // 1st priority: Supabase-backed apiary.mapZoom
+    if (apiary && typeof apiary.mapZoom === 'number' && apiary.mapZoom >= 1 && apiary.mapZoom <= 22) {
+      zoom = apiary.mapZoom;
+    } else {
+      // 2nd priority: localStorage (device-local, for offline/pre-sync)
+      var _savedZoom = parseInt(localStorage.getItem('hk_map_zoom_' + _apId) || '', 10);
+      if (!isNaN(_savedZoom) && _savedZoom >= 1 && _savedZoom <= 22) zoom = _savedZoom;
+    }
   } catch(e) {}
 
   // Init map
@@ -15261,8 +15267,8 @@ function initLeafletMap() {
   });
 
   // Persist map state on move/zoom
-  // Centre goes to Supabase via apiary record (syncs across devices).
-  // Zoom stays in localStorage (device-specific).
+  // Centre AND zoom both sync to Supabase via apiary record (cross-device).
+  // localStorage is used as a device-local fallback.
   _leafletMap.on('moveend', function() {
     try {
       var ap = getCurrentApiary();
@@ -15282,8 +15288,16 @@ function initLeafletMap() {
   _leafletMap.on('zoomend', function() {
     try {
       var ap = getCurrentApiary();
-      var key = 'hk_map_zoom_' + (ap ? ap.id : 'default');
-      localStorage.setItem(key, String(_leafletMap.getZoom()));
+      if (!ap) return;
+      var zm = _leafletMap.getZoom();
+      var key = 'hk_map_zoom_' + ap.id;
+      localStorage.setItem(key, String(zm));
+      // Also push to Supabase so zoom persists across devices / fresh logins
+      if (getUserId()) {
+        try {
+          getSupabase().from('apiaries').update({ map_zoom: zm }).eq('id', ap.id).eq('user_id', getUserId()).then(function(){}, function(){});
+        } catch(e) {}
+      }
     } catch(e) {}
   });
 
@@ -15968,6 +15982,7 @@ function saveHivePositions() {
         if (idx >= 0) {
           allA[idx].mapViewLat = ctr.lat;
           allA[idx].mapViewLng = ctr.lng;
+          allA[idx].mapZoom = zm;
           saveApiaries(allA);
         }
         // Push explicit update to Supabase (direct update, not via pushApiaries, to avoid wiping other fields)
@@ -15975,7 +15990,8 @@ function saveHivePositions() {
           try {
             getSupabase().from('apiaries').update({
               map_view_lat: ctr.lat,
-              map_view_lng: ctr.lng
+              map_view_lng: ctr.lng,
+              map_zoom: zm
             }).eq('id', ap.id).eq('user_id', getUserId()).then(function(){ hkLog('SAVE VIEW: pushed to Supabase'); }, function(e){ hkLog('SAVE VIEW ERR: '+e); });
           } catch(e) { hkLog('SAVE VIEW EX: '+e.message); }
         }
