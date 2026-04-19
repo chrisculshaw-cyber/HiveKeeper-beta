@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:15 19 April 2026 · Mic permission help modal + diagnostic alert removed -->
+<!-- HiveKeeper · Last updated: 23:16 19 April 2026 · Mic permission help modal + diagnostic alert removed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 22:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:16</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4741,6 +4741,21 @@ function showTranscript(t){
 
 function extractData(text){
   const t=text.toLowerCase(); const d={};
+
+  // Helper: returns true if phrase appears in text but NOT immediately preceded by "no", "not", "without", "no sign of" etc.
+  // Fixes naive t.includes() bug where "no play cups" was treated as containing "play cup".
+  function hasUnnegated(haystack, phrase) {
+    var idx = haystack.indexOf(phrase);
+    if (idx < 0) return false;
+    while (idx !== -1) {
+      var pre = haystack.substring(Math.max(0, idx - 20), idx);
+      var negated = /\b(no|not|without|didn['\u2019]?t|couldn['\u2019]?t|wasn['\u2019]?t|weren['\u2019]?t|haven['\u2019]?t|hasn['\u2019]?t|none|zero|any sign of|no sign of)\s*$/.test(pre);
+      if (!negated) return true;
+      idx = haystack.indexOf(phrase, idx + 1);
+    }
+    return false;
+  }
+
   d.queenSeen=t.includes('queen spot')||t.includes('queen on frame')||t.includes('found the queen')
     ||t.includes('queen seen')||t.includes('saw the queen')||t.includes('queen present')
     ||t.includes('queen is present')||t.includes('marked queen')||t.includes('queen marked')
@@ -4749,13 +4764,20 @@ function extractData(text){
     ||(t.includes('queen') && (t.includes('frame') || t.includes('seen') || t.includes('spotted')));
   if(t.includes('queen not seen')||t.includes("couldn't find the queen")) d.queenSeen=false;
   const qfm=t.match(/queen (?:on|spotted on|found on) frame (\w+)/);
-  if(qfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8}; d.queenFrame=m[qfm[1]]||parseInt(qfm[1])||null; }
-  const bfm=t.match(/(\w+) frame[s]? of brood/);
-  if(bfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8}; d.broodFrames=m[bfm[1]]||parseInt(bfm[1])||null; }
+  if(qfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.queenFrame=m[qfm[1]]||parseInt(qfm[1])||null; }
+
+  // Brood frames — allow an adjective between "frames" and "brood" (e.g. "eight frames of SOLID brood")
+  const bfm=t.match(/(\w+)\s+frame[s]?\s+of\s+(?:\w+\s+)?brood/);
+  if(bfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.broodFrames=m[bfm[1]]||parseInt(bfm[1])||null; }
+
   if(t.includes('patchy')) d.broodPattern='patchy'; else if(t.includes('poor')) d.broodPattern='poor'; else if(t.includes('good')||t.includes('solid')||t.includes('tight')) d.broodPattern='good';
   if(t.includes('stores very low')||t.includes('completely empty')) d.storesLevel='empty'; else if(t.includes('stores low')||t.includes('getting low')||t.includes('need to feed')) d.storesLevel='low'; else if(t.includes('stores adequate')||t.includes('half full')||t.includes('stores okay')) d.storesLevel='adequate'; else if(t.includes('stores full')||t.includes('completely full')) d.storesLevel='full';
-  d.playCups=t.includes('play cup'); d.queenCells=t.includes('queen cell');
+
+  // FIXED: Use hasUnnegated() so "no play cups" / "no queen cells" correctly register as FALSE
+  d.playCups = hasUnnegated(t, 'play cup');
+  d.queenCells = hasUnnegated(t, 'queen cell');
   if(t.includes('no swarm')&&!d.playCups&&!d.queenCells) d.swarmRisk='none'; else if(d.queenCells) d.swarmRisk='high'; else if(d.playCups) d.swarmRisk='medium'; else d.swarmRisk='none';
+
   const vcm=t.match(/(\d+)\s*(?:mites|on the wash|varroa count)/);
   if(vcm) d.varroaCount=parseInt(vcm[1]);
   if(t.includes('varroa high')||(d.varroaCount&&d.varroaCount>30)) d.varroaLevel='high'; else if(t.includes('no varroa')) d.varroaLevel='none'; else d.varroaLevel='low';
