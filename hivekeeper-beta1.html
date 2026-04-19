@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 23:16 19 April 2026 · Mic permission help modal + diagnostic alert removed -->
+<!-- HiveKeeper · Last updated: 23:30 19 April 2026 · Frame composition auto-populates from voice (brood/stores/foundation/empty) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:16</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4770,6 +4770,22 @@ function extractData(text){
   const bfm=t.match(/(\w+)\s+frame[s]?\s+of\s+(?:\w+\s+)?brood/);
   if(bfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.broodFrames=m[bfm[1]]||parseInt(bfm[1])||null; }
 
+  // Stores frames — "N frames of stores/honey/food" (optionally with an adjective)
+  const sfm=t.match(/(\w+)\s+frame[s]?\s+of\s+(?:\w+\s+)?(?:stores|honey|food)/);
+  if(sfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.storesFrames=m[sfm[1]]||parseInt(sfm[1])||null; }
+
+  // Foundation frames — "N frames of foundation" OR "N foundation frames"
+  const ffm1=t.match(/(\w+)\s+frame[s]?\s+of\s+foundation/);
+  const ffm2=t.match(/(\w+)\s+foundation\s+frame[s]?/);
+  const ffm=ffm1||ffm2;
+  if(ffm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.foundationFrames=m[ffm[1]]||parseInt(ffm[1])||null; }
+
+  // Empty frames — "N empty frames" OR "N frames empty"
+  const efm1=t.match(/(\w+)\s+empty\s+frame[s]?/);
+  const efm2=t.match(/(\w+)\s+frame[s]?\s+empty/);
+  const efm=efm1||efm2;
+  if(efm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.emptyFrames=m[efm[1]]||parseInt(efm[1])||null; }
+
   if(t.includes('patchy')) d.broodPattern='patchy'; else if(t.includes('poor')) d.broodPattern='poor'; else if(t.includes('good')||t.includes('solid')||t.includes('tight')) d.broodPattern='good';
   if(t.includes('stores very low')||t.includes('completely empty')) d.storesLevel='empty'; else if(t.includes('stores low')||t.includes('getting low')||t.includes('need to feed')) d.storesLevel='low'; else if(t.includes('stores adequate')||t.includes('half full')||t.includes('stores okay')) d.storesLevel='adequate'; else if(t.includes('stores full')||t.includes('completely full')) d.storesLevel='full';
 
@@ -4802,6 +4818,38 @@ function showExtractedData(data){
       ${f.sub?`<div class="data-chip-sub">${f.sub}</div>`:''}
     </div>
   `).join('');
+  // Also update the Frame composition counters at the bottom of the form from extracted data.
+  // This makes voice-extracted frame counts flow through to the counter UI, removing duplication
+  // where users were entering "8 frames of brood" via voice AND tapping + eight times manually.
+  try { updateFrameCompositionFromExtract(data); } catch(e) { console.warn('frame update from extract failed:', e); }
+}
+
+// Populate the Frame composition tracker (brood/stores/foundation/empty +/- counters)
+// from data extracted by extractData(). Only overwrites values that are explicitly stated in
+// the transcript — silent/unmentioned frame types keep their current count so users can still
+// tap + or − to adjust them manually after.
+function updateFrameCompositionFromExtract(data) {
+  if (typeof frameData === 'undefined') return;
+  var changed = false;
+  if (typeof data.broodFrames === 'number' && data.broodFrames > 0) {
+    frameData.brood = data.broodFrames;
+    changed = true;
+  }
+  if (typeof data.storesFrames === 'number' && data.storesFrames > 0) {
+    frameData.stores = data.storesFrames;
+    changed = true;
+  }
+  if (typeof data.foundationFrames === 'number' && data.foundationFrames > 0) {
+    frameData.foundation = data.foundationFrames;
+    changed = true;
+  }
+  if (typeof data.emptyFrames === 'number' && data.emptyFrames > 0) {
+    frameData.empty = data.emptyFrames;
+    changed = true;
+  }
+  if (changed && typeof updateFrameDisplay === 'function') {
+    updateFrameDisplay();
+  }
 }
 
 function editChip(key,label,val){ editingChipKey=key; document.getElementById('edit-chip-title').textContent='Edit: '+label; document.getElementById('edit-chip-label').textContent=label; document.getElementById('edit-chip-input').value=val; openModalEl('modal-edit-chip'); }
