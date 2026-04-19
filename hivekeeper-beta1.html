@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:25 19 April 2026 · Hive list reorder + map zoom persistence + active hives alignment -->
+<!-- HiveKeeper · Last updated: 19:12 19 April 2026 · Default apiary + reorder + zoom fixes -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1092,7 +1092,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:12</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -7314,6 +7314,7 @@ function toggleEditLayout(){
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
+    try { renderApiary(); } catch(e) {} // Re-render hive list so reorder arrows appear
     try { setMapInteractive(true); } catch(e) {}
     var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
 
@@ -7328,6 +7329,7 @@ function toggleEditLayout(){
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
+    try { renderApiary(); } catch(e) {} // Re-render hive list so reorder arrows disappear
     // Close any open landmark edit panel
     try { closeLandmarkEditPanel(); } catch(e) {}
     // Lock the map — disable pan/zoom/drag when leaving edit mode
@@ -9310,8 +9312,49 @@ function saveApiaries(a) { localStorage.setItem(APIARY_KEY, JSON.stringify(a)); 
 function getCurrentApiary() {
   var apiaries = loadApiaries();
   if (!apiaries.length) return null;
-  var id = localStorage.getItem(CURRENT_APIARY_KEY) || apiaries[0].id;
-  return apiaries.find(function(a){ return a.id === id; }) || apiaries[0];
+  // Priority order:
+  // 1. On APP LOAD (fresh session): default apiary (isDefault===true) wins — respects user's "always open this first" preference
+  // 2. After user explicitly switches: that selection persists for the rest of the session
+  // 3. No default + no explicit switch: first apiary as fallback
+  // The _sessionApiaryLocked flag is set to true when user explicitly switches via selectApiaryItem/switchApiary.
+  // On page load, this flag is false, so default takes priority.
+  if (window._sessionApiaryLocked) {
+    var lastUsedId = localStorage.getItem(CURRENT_APIARY_KEY);
+    if (lastUsedId) {
+      var lastUsed = apiaries.find(function(a){ return a.id === lastUsedId; });
+      if (lastUsed) return lastUsed;
+    }
+  }
+  // Fresh session OR no explicit switch: prefer default
+  var def = apiaries.find(function(a){ return a.isDefault === true; });
+  if (def) return def;
+  // No default set: use last-used if available, otherwise first
+  var lastUsedId2 = localStorage.getItem(CURRENT_APIARY_KEY);
+  if (lastUsedId2) {
+    var lastUsed2 = apiaries.find(function(a){ return a.id === lastUsedId2; });
+    if (lastUsed2) return lastUsed2;
+  }
+  return apiaries[0];
+}
+
+// Set an apiary as the default — untoggles default on all others
+function setDefaultApiary(apiaryId) {
+  try {
+    var apiaries = loadApiaries();
+    var target = apiaries.find(function(a){ return a.id === apiaryId; });
+    if (!target) return;
+    var alreadyDefault = target.isDefault === true;
+    apiaries.forEach(function(a){ a.isDefault = false; });
+    if (!alreadyDefault) {
+      target.isDefault = true;
+      showToast('⭐ ' + target.name + ' set as default');
+    } else {
+      showToast('Default apiary cleared');
+    }
+    saveApiaries(apiaries);
+    // Re-render switcher if it's open
+    try { openApiarySwitcher(); } catch(e) {}
+  } catch(e) { console.warn('setDefaultApiary error:', e); }
 }
 
 function selectApiaryItem(id) {
@@ -9331,6 +9374,8 @@ function switchApiary(id) {
   try { closeModalEl('modal-apiary-switcher'); } catch(e) {}
   localStorage.setItem(CURRENT_APIARY_KEY, id);
   currentApiaryId = id;
+  // Flag that user has explicitly chosen an apiary this session — stops default from overriding
+  window._sessionApiaryLocked = true;
   var apiary = getCurrentApiary();
   // Apply this apiary's location for weather/AH Watch
   if (apiary) applyApiaryLocation(apiary);
@@ -9397,10 +9442,14 @@ function openApiarySwitcher() {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
     var isCurrent = current && a.id === current.id;
+    var isDefault = a.isDefault === true;
+    var starIcon = isDefault ? '⭐' : '☆';
+    var starTitle = isDefault ? 'Remove default' : 'Set as default (opens first on app start)';
     return '<div id="apiary-opt-' + a.id + '" onclick="selectApiaryItem(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
+      + '<div data-def-id="' + a.id + '" onclick="event.stopPropagation();setDefaultApiary(this.dataset.defId)" title="' + starTitle + '" style="font-size:22px;cursor:pointer;user-select:none;padding:4px;line-height:1;color:' + (isDefault ? '#F5A623' : 'var(--text-l)') + ';">' + starIcon + '</div>'
       + '<div style="font-size:28px;">🏡</div>'
       + '<div style="flex:1;">'
-        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + '</div>'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
       + '</div>'
       + '<div onclick="event.stopPropagation();renameApiary(\'' + a.id + '\')" style="font-size:11px;color:var(--honey);font-weight:700;padding:4px 8px;">Rename</div>'
@@ -11230,6 +11279,7 @@ async function pushApiaries() {
       lat: a.lat || null, lng: a.lng || null,
       map_view_lat: (typeof a.mapViewLat === 'number') ? a.mapViewLat : null,
       map_view_lng: (typeof a.mapViewLng === 'number') ? a.mapViewLng : null,
+      is_default: a.isDefault === true,
       created_at: new Date(a.createdAt || Date.now()).toISOString()
     };
   });
@@ -11239,7 +11289,7 @@ async function pushApiaries() {
     if (error) {
       if (error.code === '23505') {
         // Duplicate key — row already exists, try plain update instead
-        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng }).eq('id', rows[i].id).eq('user_id', uid);
+        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng, is_default: rows[i].is_default }).eq('id', rows[i].id).eq('user_id', uid);
       } else if (error.code === '42501') {
         // RLS error on this specific row — skip silently, likely a shared apiary
         console.warn('RLS error pushing apiary', rows[i].id, '— skipping');
@@ -11461,6 +11511,8 @@ async function pullFromSupabase() {
           // Prefer Supabase value if it's a valid number; otherwise preserve local value
           mapViewLat: (typeof a.map_view_lat === 'number') ? a.map_view_lat : (typeof local.mapViewLat === 'number' ? local.mapViewLat : null),
           mapViewLng: (typeof a.map_view_lng === 'number') ? a.map_view_lng : (typeof local.mapViewLng === 'number' ? local.mapViewLng : null),
+          // is_default: same defensive pattern — if Supabase column doesn't exist, preserve local value
+          isDefault: (typeof a.is_default === 'boolean') ? a.is_default : (local.isDefault === true),
           createdAt: new Date(a.created_at).getTime()
         };
       });
@@ -15855,6 +15907,40 @@ function saveHivePositions() {
     saved++;
   });
   hkLog('saveHivePositions: '+saved+' to localStorage');
+
+  // ═══ Explicit view/zoom save on Save & Exit ═══
+  // Event handlers (moveend, zoomend) save during editing, but this is belt-and-braces:
+  // on explicit save, capture the CURRENT map state and persist it reliably.
+  try {
+    if (_leafletMap) {
+      var ap = getCurrentApiary();
+      if (ap && ap.id) {
+        var ctr = _leafletMap.getCenter();
+        var zm = _leafletMap.getZoom();
+        hkLog('SAVE VIEW: zoom='+zm+' centre='+ctr.lat.toFixed(5)+','+ctr.lng.toFixed(5));
+        // Zoom → localStorage (device-local)
+        try { localStorage.setItem('hk_map_zoom_' + ap.id, String(zm)); } catch(e) {}
+        // View center → localStorage + Supabase
+        var allA = loadApiaries();
+        var idx = allA.findIndex(function(x){ return x.id === ap.id; });
+        if (idx >= 0) {
+          allA[idx].mapViewLat = ctr.lat;
+          allA[idx].mapViewLng = ctr.lng;
+          saveApiaries(allA);
+        }
+        // Push explicit update to Supabase (direct update, not via pushApiaries, to avoid wiping other fields)
+        if (getUserId()) {
+          try {
+            getSupabase().from('apiaries').update({
+              map_view_lat: ctr.lat,
+              map_view_lng: ctr.lng
+            }).eq('id', ap.id).eq('user_id', getUserId()).then(function(){ hkLog('SAVE VIEW: pushed to Supabase'); }, function(e){ hkLog('SAVE VIEW ERR: '+e); });
+          } catch(e) { hkLog('SAVE VIEW EX: '+e.message); }
+        }
+      }
+    }
+  } catch(e) { hkLog('SAVE VIEW outer ex: '+e.message); }
+
   var msb = document.getElementById('map-save-btn');
   if (msb) { msb.innerHTML = 'Syncing...'; msb.style.opacity='0.7'; }
   pushMapPositions().then(function() {
