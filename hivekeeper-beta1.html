@@ -1,12 +1,12 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:55 18 April 2026 · Viewport-shift fix for priority alerts + map invalidateSize -->
+<!-- HiveKeeper · Last updated: 10:50 19 April 2026 · Kevin feedback: ads gated, apiary name prompt fix, view mode toggle, default apiary feature -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260413-1646">
+  <meta name="app-version" content="20260419-1050">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -1092,7 +1092,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18 April 2026 at 22:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 10:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1383,6 +1383,14 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div onclick="rotateMapBy(15)" style="background:var(--wax);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">↻</div>
           <div onclick="resetMapRotation()" style="background:var(--wax);border-radius:20px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;margin-left:2px;">Reset</div>
         </div>
+      </div>
+    </div>
+    <!-- View mode toggle — Both / List / Map (Kevin feedback Apr 2026) -->
+    <div id="view-mode-toggle" style="display:flex;align-items:center;justify-content:center;padding:6px 12px 4px;background:white;">
+      <div style="display:inline-flex;background:var(--cream);border-radius:20px;padding:3px;border:1px solid var(--wax);">
+        <button id="view-mode-both" onclick="setApiaryViewMode('both')" style="background:var(--forest);color:white;border:none;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">🗺️ Both</button>
+        <button id="view-mode-list" onclick="setApiaryViewMode('list')" style="background:transparent;color:var(--text-l);border:none;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">📋 List</button>
+        <button id="view-mode-map" onclick="setApiaryViewMode('map')" style="background:transparent;color:var(--text-l);border:none;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">🗺️ Map</button>
       </div>
     </div>
     <!-- Row filter tabs — between canvas and hive list -->
@@ -3767,6 +3775,57 @@ function renderApiary(){
     apiaryAlertsEl.innerHTML = html;
   }
 
+  // Apply saved view mode (Both / List / Map)
+  try { applyApiaryViewMode(); } catch(e) {}
+}
+
+// ── APIARY VIEW MODE (Kevin feedback Apr 2026) ───────────
+// Three modes: 'both' (map + list, default), 'list' (hive list only — map hidden),
+// 'map' (map only — list hidden). Persisted per-browser in localStorage.
+function getApiaryViewMode() {
+  try {
+    var m = localStorage.getItem('hk_apiary_view_mode');
+    return (m === 'list' || m === 'map' || m === 'both') ? m : 'both';
+  } catch(e) { return 'both'; }
+}
+
+function setApiaryViewMode(mode) {
+  if (mode !== 'list' && mode !== 'map' && mode !== 'both') mode = 'both';
+  try { localStorage.setItem('hk_apiary_view_mode', mode); } catch(e) {}
+  applyApiaryViewMode();
+}
+
+function applyApiaryViewMode() {
+  var mode = getApiaryViewMode();
+  var mapWrap   = document.querySelector('.map-canvas-wrap');
+  var mapTipEl  = document.getElementById('map-tip-text');
+  var mapTipRow = mapTipEl ? mapTipEl.parentElement : null;
+  var listEl    = document.getElementById('hive-list-container');
+  var btnBoth   = document.getElementById('view-mode-both');
+  var btnList   = document.getElementById('view-mode-list');
+  var btnMap    = document.getElementById('view-mode-map');
+
+  // Show/hide map canvas
+  if (mapWrap)   mapWrap.style.display   = (mode === 'list') ? 'none' : '';
+  // Show/hide map tip/rotation row
+  if (mapTipRow) mapTipRow.style.display = (mode === 'list') ? 'none' : 'flex';
+  // Show/hide hive list
+  if (listEl)    listEl.style.display    = (mode === 'map')  ? 'none' : '';
+
+  // Segmented control highlight
+  function setBtn(btn, active) {
+    if (!btn) return;
+    btn.style.background = active ? 'var(--forest)' : 'transparent';
+    btn.style.color      = active ? 'white' : 'var(--text-l)';
+  }
+  setBtn(btnBoth, mode === 'both');
+  setBtn(btnList, mode === 'list');
+  setBtn(btnMap,  mode === 'map');
+
+  // If the map has just become visible, it needs a size refresh
+  if (mode !== 'list' && typeof _leafletMap !== 'undefined' && _leafletMap) {
+    setTimeout(function(){ try { _leafletMap.invalidateSize(); } catch(e) {} }, 150);
+  }
 }
 
 function renderMap(){
@@ -9225,6 +9284,56 @@ function loadApiaries() {
 }
 function saveApiaries(a) { localStorage.setItem(APIARY_KEY, JSON.stringify(a)); if (getUserId()) pushApiaries().catch(function(){}); }
 
+// ── DEFAULT APIARY ───────────────────────────────────────
+// is_default flag on apiaries table (Supabase). Unique partial index ensures
+// at most one per user. Managed ONLY by setDefaultApiary() to avoid constraint
+// conflicts during bulk sync.
+function getDefaultApiary() {
+  var apiaries = loadApiaries();
+  return apiaries.find(function(a){ return a.isDefault === true; }) || null;
+}
+
+async function setDefaultApiary(id) {
+  var apiaries = loadApiaries();
+  var target = apiaries.find(function(a){ return a.id === id; });
+  if (!target) return;
+  if (target.sharedWith) { showToast('Shared apiaries cannot be set as default'); return; }
+
+  // Update local first so UI feels instant
+  apiaries.forEach(function(a){ a.isDefault = (a.id === id); });
+  // Save without triggering pushApiaries' is_default-free upsert (we handle it below)
+  localStorage.setItem(APIARY_KEY, JSON.stringify(apiaries));
+
+  // Sync to Supabase in the right order to respect the unique partial index:
+  // 1) clear any existing default for this user, 2) set the new one.
+  var uid = getUserId();
+  if (uid) {
+    try {
+      var sb = getSupabase();
+      var { error: e1 } = await sb.from('apiaries')
+        .update({ is_default: false })
+        .eq('user_id', uid)
+        .eq('is_default', true);
+      if (e1) console.warn('Clear default error:', e1.message);
+      var { error: e2 } = await sb.from('apiaries')
+        .update({ is_default: true })
+        .eq('id', id)
+        .eq('user_id', uid);
+      if (e2) {
+        console.warn('Set default error:', e2.message);
+        showToast('Default not saved to cloud — will retry');
+        return;
+      }
+    } catch(e) {
+      console.warn('setDefaultApiary sync error:', e);
+    }
+  }
+
+  showToast('🏠 ' + target.name + ' is now your default');
+  // Refresh switcher if open
+  try { if (document.getElementById('modal-apiary-switcher').classList.contains('open')) openApiarySwitcher(); } catch(e) {}
+}
+
 function getCurrentApiary() {
   var apiaries = loadApiaries();
   if (!apiaries.length) return null;
@@ -9267,8 +9376,10 @@ function initCurrentApiary() {
     var defaultId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16);
     });
-    var defaultApiary = {id: defaultId, name: 'My Apiary', location: '', createdAt: Date.now()};
+    var defaultApiary = {id: defaultId, name: 'My Apiary', location: '', createdAt: Date.now(), isDefault: true};
     saveApiaries([defaultApiary]);
+    // First-ever apiary is also the default — sync that flag up once the user is signed in
+    setTimeout(function(){ try { setDefaultApiary(defaultId); } catch(e) {} }, 1500);
     // Tag all existing hives with this apiary
     var hives = loadHives();
     hives.forEach(function(h){ if(!h.apiaryId) h.apiaryId = defaultId; });
@@ -9276,6 +9387,14 @@ function initCurrentApiary() {
     localStorage.setItem(CURRENT_APIARY_KEY, defaultId);
     currentApiaryId = defaultId;
   } else {
+    // If no explicit selection stored, open to the user's default apiary
+    var stored = localStorage.getItem(CURRENT_APIARY_KEY);
+    if (!stored) {
+      var def = apiaries.find(function(a){ return a.isDefault === true; });
+      if (def) {
+        localStorage.setItem(CURRENT_APIARY_KEY, def.id);
+      }
+    }
     var current = getCurrentApiary();
     currentApiaryId = current ? current.id : apiaries[0].id;
     localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
@@ -9315,14 +9434,21 @@ function openApiarySwitcher() {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
     var isCurrent = current && a.id === current.id;
-    return '<div id="apiary-opt-' + a.id + '" onclick="selectApiaryItem(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
+    var isDefault = a.isDefault === true;
+    var canBeDefault = !a.sharedWith; // shared apiaries can't be defaults
+    return '<div id="apiary-opt-' + a.id + '" onclick="selectApiaryItem(\'' + a.id + '\')" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
       + '<div style="font-size:28px;">🏡</div>'
-      + '<div style="flex:1;">'
-        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + '</div>'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name
+          + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '')
+          + (isCurrent ? ' ✓' : '')
+          + (isDefault ? ' <span title="Default apiary" style="font-size:11px;">🏠</span>' : '')
+        + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
       + '</div>'
       + '<div onclick="event.stopPropagation();renameApiary(\'' + a.id + '\')" style="font-size:11px;color:var(--honey);font-weight:700;padding:4px 8px;">Rename</div>'
       + '<div data-apiary-id="' + a.id + '" onclick="event.stopPropagation();setApiaryLocation(this.dataset.apiaryId)" style="font-size:11px;color:var(--forest);font-weight:700;padding:4px 8px;border-radius:8px;background:var(--cream);cursor:pointer;">📍 Location</div>'
+      + ((!isDefault && canBeDefault) ? '<div data-def-id="' + a.id + '" onclick="event.stopPropagation();setDefaultApiary(this.dataset.defId)" style="font-size:11px;color:var(--forest);font-weight:700;padding:4px 8px;border-radius:8px;background:var(--cream);cursor:pointer;">🏠 Set default</div>' : '')
       + (apiaries.length > 1 ? '<div data-del-id="' + a.id + '" onclick="event.stopPropagation();event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="font-size:11px;color:var(--red,#e53935);font-weight:700;padding:4px 8px;border-radius:8px;background:#fdecea;cursor:pointer;">Delete</div>' : '')
       + '</div>';
   }).join('');
@@ -9344,8 +9470,15 @@ function addNewApiary() {
   var newId = uid();
   var newApiary = { id: newId, name: name.trim(), location: '', lat: null, lng: null, createdAt: Date.now() };
   var apiaries = loadApiaries();
+  // If the user has no default apiary yet, make this one the default
+  var hasDefault = apiaries.some(function(a){ return a.isDefault === true; });
+  if (!hasDefault) newApiary.isDefault = true;
   apiaries.push(newApiary);
   saveApiaries(apiaries);
+  // If this new apiary was promoted to default, sync that flag up
+  if (newApiary.isDefault) {
+    setTimeout(function(){ try { setDefaultApiary(newId); } catch(e) {} }, 800);
+  }
   switchApiary(newId);
   showToast('Created ' + name.trim());
   // Ask for location using in-app modal
@@ -11368,6 +11501,7 @@ async function pullFromSupabase() {
           lat: a.lat || null, lng: a.lng || null,
           mapViewLat: (typeof a.map_view_lat === 'number') ? a.map_view_lat : null,
           mapViewLng: (typeof a.map_view_lng === 'number') ? a.map_view_lng : null,
+          isDefault: !!a.is_default,
           createdAt: new Date(a.created_at).getTime()
         };
       });
@@ -12872,6 +13006,14 @@ async function deleteApiary(id) {
 
   var remaining = apiaries.filter(function(a){ return a.id !== id; });
   saveApiaries(remaining);
+
+  // If we just deleted the default, promote the oldest remaining apiary
+  if (apiary.isDefault === true && remaining.length) {
+    var oldest = remaining.slice().sort(function(a,b){ return (a.createdAt||0) - (b.createdAt||0); })[0];
+    if (oldest) {
+      setTimeout(function(){ try { setDefaultApiary(oldest.id); } catch(e) {} }, 400);
+    }
+  }
 
   // Switch to first remaining apiary
   switchApiary(remaining[0].id);
