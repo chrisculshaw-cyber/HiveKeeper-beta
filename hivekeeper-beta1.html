@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 20:55 19 April 2026 · Landmark list refresh decoupled from renderMap + Inspect opens with Select a hive prompt -->
+<!-- HiveKeeper · Last updated: 21:31 19 April 2026 · Voice: no silent fallback + loud errors + online check + mic permission handling -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 21:31</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4534,39 +4534,92 @@ function toggleRecord(){ recording ? stopRecording() : startRecording(); }
 
 function startRecording(){
   if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('voice')) return;
-  recording=true;
-  var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.add('recording');
-  document.getElementById('rec-btn').textContent='⏹️';
-  document.getElementById('voice-status').textContent='Recording… speak clearly 🎙️';
-  document.querySelectorAll('.w-bar').forEach(b=>b.classList.add('active'));
-  recSeconds=0;
-  recTimer=setInterval(()=>{
-    recSeconds++;
-    document.getElementById('rec-time').textContent=String(Math.floor(recSeconds/60)).padStart(2,'0')+':'+String(recSeconds%60).padStart(2,'0');
-  },1000);
-  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
-    navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
-      mediaRecorder=new MediaRecorder(s); audioChunks=[];
-      mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
-      mediaRecorder.start();
-    }).catch(()=>{});
+
+  // ── FIX A: ONLINE CHECK ──
+  // Whisper transcription needs internet. If offline, explain clearly and don't pretend to record.
+  // TODO (next build): queue audio blob in IndexedDB and transcribe on reconnect
+  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+    showToast('⚠️ Voice needs internet — connect and try again, or type notes manually');
+    document.getElementById('voice-status').textContent = 'Offline — connect to internet to use voice';
+    return;
   }
+
+  // ── FIX B: CHECK MIC API EXISTS BEFORE STARTING ──
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('⚠️ Microphone not available on this device — please type notes manually');
+    document.getElementById('voice-status').textContent = 'Microphone not supported — type notes manually';
+    return;
+  }
+
+  // Set UI to "requesting mic" state — NOT "recording". Don't start timer until mic is live.
+  document.getElementById('voice-status').textContent = 'Requesting microphone access…';
+
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    // Mic permission granted — NOW we can actually start recording
+    try {
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onerror = function(e){
+        console.error('MediaRecorder error:', e);
+        showToast('⚠️ Recording error — please try again');
+        document.getElementById('voice-status').textContent = 'Recording failed — please try again';
+        recording = false;
+        clearInterval(recTimer);
+        var _rb2 = document.getElementById('rec-btn'); if (_rb2) { _rb2.classList.remove('recording'); _rb2.textContent = '\uD83C\uDFA4'; }
+      };
+      mediaRecorder.start();
+
+      // Mic is live — now flip UI to "recording" state
+      recording = true;
+      var _rb = document.getElementById('rec-btn'); if (_rb) _rb.classList.add('recording');
+      document.getElementById('rec-btn').textContent = '⏹️';
+      document.getElementById('voice-status').textContent = 'Recording… speak clearly 🎙️';
+      document.querySelectorAll('.w-bar').forEach(function(b){ b.classList.add('active'); });
+      recSeconds = 0;
+      recTimer = setInterval(function(){
+        recSeconds++;
+        document.getElementById('rec-time').textContent = String(Math.floor(recSeconds/60)).padStart(2,'0')+':'+String(recSeconds%60).padStart(2,'0');
+      }, 1000);
+    } catch(err) {
+      console.error('MediaRecorder setup failed:', err);
+      showToast('⚠️ Could not start recording: ' + (err.message || 'unknown error'));
+      document.getElementById('voice-status').textContent = 'Recording failed — please type notes manually';
+      // Make sure we release the stream
+      try { stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
+    }
+  }).catch(function(err){
+    // ── FIX A continued: LOUD ERROR on permission denial ──
+    console.error('getUserMedia error:', err);
+    var msg;
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      msg = '🎙️ Microphone access denied. Please enable microphone in your device settings and try again.';
+    } else if (err && err.name === 'NotFoundError') {
+      msg = '🎙️ No microphone found on this device.';
+    } else if (err && err.name === 'NotReadableError') {
+      msg = '🎙️ Microphone is in use by another app. Close it and try again.';
+    } else {
+      msg = '🎙️ Could not access microphone: ' + (err && err.message ? err.message : 'unknown error');
+    }
+    showToast(msg);
+    document.getElementById('voice-status').textContent = 'Microphone unavailable — type notes manually';
+    recording = false;
+  });
 }
 
 function stopRecording(){
   recording=false; clearInterval(recTimer);
   var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.remove('recording');
   document.getElementById('rec-btn').textContent='🎙️';
-  document.querySelectorAll('.w-bar').forEach(b=>b.classList.remove('active'));
-  document.getElementById('voice-status').textContent='✓ Processing… transcribing with AI';
-  if(mediaRecorder&&mediaRecorder.state!=='inactive'){ mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(t=>t.stop()); }
-  setTimeout(()=>{
-    const t=SAMPLE_TRANSCRIPTS[Math.floor(Math.random()*SAMPLE_TRANSCRIPTS.length)];
-    const ext=extractData(t);
-    currentInspData={transcript:t,...ext};
-    document.getElementById('voice-status').textContent='✓ Transcript ready · Data extracted';
-    showTranscript(t); showExtractedData(ext);
-  },1800);
+  document.querySelectorAll('.w-bar').forEach(function(b){b.classList.remove('active');});
+  // NOTE: This is the ORIGINAL stopRecording. It gets overwritten by the monkey-patched
+  // Whisper version later in the file. This body should never actually run in production.
+  // If it does, we show a clear error rather than silently serving fake data.
+  showToast('⚠️ Recording stopped but transcription not wired up — please type notes manually');
+  document.getElementById('voice-status').textContent = 'Transcription not available — type notes manually';
+  if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    try { mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(function(t){t.stop();}); } catch(e) {}
+  }
 }
 
 function highlightText(t){
@@ -6345,34 +6398,49 @@ renderHiveDetail=function(){
 
 // ── WHISPER TRANSCRIPTION ──
 async function transcribeWithWhisper(audioBlob) {
-  document.getElementById('voice-status').textContent = 'Transcribing... please wait';
+  document.getElementById('voice-status').textContent = 'Transcribing… please wait (uploading ' + Math.round(audioBlob.size/1024) + 'KB)';
   var formData = new FormData();
   formData.append('audio', audioBlob, 'inspection.webm');
+
+  console.log('transcribeWithWhisper: uploading to Worker, blob size=' + audioBlob.size);
 
   fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
     method: 'POST',
     body: formData
   })
-  .then(function(r){ return r.json(); })
+  .then(function(r){
+    console.log('transcribeWithWhisper: Worker responded, status=' + r.status);
+    if (!r.ok) {
+      throw new Error('Worker returned HTTP ' + r.status);
+    }
+    return r.json();
+  })
   .then(function(data) {
-    if (data.text) {
-      var t = data.text;
+    console.log('transcribeWithWhisper: response', data);
+    if (data.text && data.text.trim().length > 0) {
+      var t = data.text.trim();
       var ext = extractData(t);
       currentInspData = Object.assign({transcript:t}, ext);
-      document.getElementById('voice-status').textContent = 'Transcript ready — review below';
+      document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
       showTranscript(t);
       showExtractedData(ext);
-    } else {
-      var errMsg = data.error || 'Unknown error';
+    } else if (data.error) {
+      var errMsg = data.error;
       console.error('Whisper error response:', data);
-      document.getElementById('voice-status').textContent = 'Transcription failed — please type notes';
-      showToast('Transcription error: ' + errMsg.substring(0, 60));
+      document.getElementById('voice-status').textContent = 'Transcription failed — ' + errMsg.substring(0, 50);
+      showToast('Transcription error: ' + errMsg.substring(0, 80));
+    } else {
+      // Empty response — Whisper couldn't transcribe (silence, unintelligible, etc.)
+      console.error('Whisper returned empty text:', data);
+      document.getElementById('voice-status').textContent = 'No speech detected — please try again';
+      showToast('⚠️ No speech detected. Try recording again in a quieter place.');
     }
   })
   .catch(function(err) {
     console.error('Whisper fetch error:', err);
     document.getElementById('voice-status').textContent = 'Transcription unavailable — please type notes';
-    showToast('Voice unavailable — please type your inspection notes');
+    var errStr = err && err.message ? err.message : 'network error';
+    showToast('⚠️ Voice unavailable (' + errStr + ') — please type your notes manually');
   });
 }
 
@@ -6383,18 +6451,52 @@ stopRecording = function() {
   var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.remove('recording');
   document.getElementById('rec-btn').textContent='\uD83C\uDFA4';
   document.querySelectorAll('.w-bar').forEach(function(b){b.classList.remove('active');});
+
+  // ── FIX D: ONLINE CHECK BEFORE TRANSCRIPTION ──
+  // Even if recording worked, we need internet to transcribe. Check here before starting upload.
+  // TODO (next build): if offline, queue audio blob in IndexedDB and transcribe on reconnect.
+  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+    showToast('⚠️ Went offline during recording — audio lost. Type notes manually or retry when online.');
+    document.getElementById('voice-status').textContent = 'Offline — type notes manually';
+    try {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); });
+      }
+    } catch(e) {}
+    return;
+  }
+
   document.getElementById('voice-status').textContent='Processing...';
   if(mediaRecorder && mediaRecorder.state!=='inactive'){
+    // HAPPY PATH — real Whisper transcription
     mediaRecorder.stop();
     mediaRecorder.onstop = function(){
       mediaRecorder.stream.getTracks().forEach(function(t){t.stop();});
-      transcribeWithWhisper(new Blob(audioChunks, {type:'audio/webm'}));
+      // Check we actually have audio data
+      if (!audioChunks || audioChunks.length === 0) {
+        console.error('stopRecording: no audio chunks captured');
+        showToast('⚠️ No audio captured — please check microphone and try again');
+        document.getElementById('voice-status').textContent = 'No audio captured — type notes manually';
+        return;
+      }
+      var blob = new Blob(audioChunks, {type:'audio/webm'});
+      console.log('stopRecording: audio blob ready, size=' + blob.size + ' bytes, chunks=' + audioChunks.length);
+      if (blob.size < 1000) {
+        showToast('⚠️ Recording too short or silent — please try again');
+        document.getElementById('voice-status').textContent = 'Recording too short — try again';
+        return;
+      }
+      transcribeWithWhisper(blob);
     };
   } else {
-    var t=SAMPLE_TRANSCRIPTS[Math.floor(Math.random()*SAMPLE_TRANSCRIPTS.length)];
-    var ext=extractData(t); currentInspData=Object.assign({transcript:t},ext);
-    setTimeout(function(){ document.getElementById('voice-status').textContent='Demo transcript loaded';
-      showTranscript(t); showExtractedData(ext); },800);
+    // ── FIX C: KILL SILENT SAMPLE_TRANSCRIPTS FALLBACK ──
+    // Previously this served one of 3 hardcoded fake transcripts as if it were the user's voice,
+    // which caused major user confusion (see Davey's 4 inspections 19 April 2026).
+    // Now: show a clear, honest error that tells the user WHY it failed.
+    console.error('stopRecording: mediaRecorder not ready. state=' + (mediaRecorder ? mediaRecorder.state : 'null'));
+    showToast('⚠️ Microphone wasn\'t recording — check permissions and try again, or type notes manually');
+    document.getElementById('voice-status').textContent = 'Recording failed — microphone may be blocked';
   }
 };
 
@@ -9485,6 +9587,13 @@ saveHives = function(hives) {
 };
 
 function openApiarySwitcher() {
+  // Close the Inspect hive dropdown if it's open — otherwise it sits under the modal
+  // still showing the PREVIOUS apiary's hives, which is confusing when switching.
+  try {
+    hiveListOpen = false;
+    var _dropdownList = document.getElementById('inspect-hive-list');
+    if (_dropdownList) _dropdownList.style.display = 'none';
+  } catch(e) {}
   var apiaries = loadApiaries();
   var current = getCurrentApiary();
   var sheet = document.querySelector('#modal-apiary-switcher .modal-sheet');
