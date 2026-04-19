@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 23:30 19 April 2026 · Frame composition auto-populates from voice (brood/stores/foundation/empty) -->
+<!-- HiveKeeper · Last updated: 23:40 19 April 2026 · Live re-extraction on transcript edit + robust temper detection -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:40</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4797,7 +4797,19 @@ function extractData(text){
   const vcm=t.match(/(\d+)\s*(?:mites|on the wash|varroa count)/);
   if(vcm) d.varroaCount=parseInt(vcm[1]);
   if(t.includes('varroa high')||(d.varroaCount&&d.varroaCount>30)) d.varroaLevel='high'; else if(t.includes('no varroa')) d.varroaLevel='none'; else d.varroaLevel='low';
-  if(t.includes('aggressive')) d.temper='aggressive'; else if(t.includes('nervy')||t.includes('nervous')) d.temper='nervous'; else if(t.includes('calm')) d.temper='calm'; else d.temper='good';
+  // Temper — robust keyword matching. Don't default to "good" if nothing matches — return null so
+  // the UI shows "?" rather than a misleading positive value the user never actually said.
+  if (t.includes('aggressive') || t.includes('defensive') || t.includes('fierce') || t.includes('stung') || t.includes('stingy') || t.includes('angry') || t.includes('feisty') || t.includes('hostile')) {
+    d.temper = 'aggressive';
+  } else if (t.includes('nervy') || t.includes('nervous') || t.includes('jittery') || t.includes('runny') || t.includes('flighty')) {
+    d.temper = 'nervous';
+  } else if (t.includes('calm') || t.includes('gentle') || t.includes('placid') || t.includes('docile') || t.includes('well behaved') || t.includes('nicely behaved')) {
+    d.temper = 'calm';
+  } else if (t.includes('good temper') || t.includes('nice temper')) {
+    d.temper = 'good';
+  } else {
+    d.temper = null;
+  }
   return d;
 }
 
@@ -4850,6 +4862,37 @@ function updateFrameCompositionFromExtract(data) {
   if (changed && typeof updateFrameDisplay === 'function') {
     updateFrameDisplay();
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+// LIVE RE-EXTRACTION ON TRANSCRIPT EDIT
+// If user edits the transcript text (to fix a Whisper mishearing like "brew" → "brood"),
+// re-run extractData and refresh the chips + Frame composition counter.
+// Debounced so we don't thrash on every keystroke.
+// ═══════════════════════════════════════════════════════════
+var _transcriptEditDebounce = null;
+function initTranscriptLiveExtract() {
+  var ttEl = document.getElementById('transcript-text');
+  if (!ttEl || ttEl._liveExtractHooked) return;
+  ttEl._liveExtractHooked = true;
+  ttEl.addEventListener('input', function() {
+    clearTimeout(_transcriptEditDebounce);
+    _transcriptEditDebounce = setTimeout(function() {
+      try {
+        var newText = (ttEl.innerText || ttEl.textContent || '').trim();
+        if (!newText) return;
+        var newExt = extractData(newText);
+        currentInspData = Object.assign({transcript: newText}, newExt);
+        showExtractedData(newExt); // Also calls updateFrameCompositionFromExtract internally
+      } catch(e) { console.warn('live transcript re-extract failed:', e); }
+    }, 450); // 450ms debounce — re-extract fires after user pauses typing
+  });
+}
+// Hook on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTranscriptLiveExtract);
+} else {
+  initTranscriptLiveExtract();
 }
 
 function editChip(key,label,val){ editingChipKey=key; document.getElementById('edit-chip-title').textContent='Edit: '+label; document.getElementById('edit-chip-label').textContent=label; document.getElementById('edit-chip-input').value=val; openModalEl('modal-edit-chip'); }
