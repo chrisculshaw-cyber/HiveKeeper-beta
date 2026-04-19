@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 23:46 19 April 2026 · Wake lock keeps screen on during voice recording + interruption warnings -->
+<!-- HiveKeeper · Last updated: 00:10 20 April 2026 · Inspect back button goes to Apiary + edit inspection frame fix + screen restore on load -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 23:46</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 00:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1421,7 +1421,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 <!-- INSPECT -->
 <div class="screen" id="s-inspect">
   <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#4A2E0E 0%,#6A3A10 100%);">
-    <div style="padding:6px 20px 0 20px;"><div class="back-btn" onclick="goBack()" style="color:white;font-size:13px;cursor:pointer;display:inline-block;">&#8249; Back</div></div>
+    <div style="padding:6px 20px 0 20px;"><div class="back-btn" onclick="goTo('s-apiary')" style="color:white;font-size:13px;cursor:pointer;display:inline-block;">&#8249; Apiary</div></div>
     <div class="app-header bark">
       <div>
         <div class="dash-greeting" id="s-inspect-greeting">Good morning,</div>
@@ -3133,6 +3133,10 @@ function goBack(){
 // ── BACKGROUND / FOREGROUND HANDLING ─────────────────────────
 // When the app is backgrounded (user switches apps, locks phone), save the current screen.
 // When it comes back, restore to that screen instead of snapping to home.
+// TWO paths to restore:
+//   A. visibilitychange fires if the JS context survived the minimise (short backgrounding)
+//   B. Full page reload — mobile browsers often re-run the page after prolonged backgrounding.
+//      For that case, we also check hk_last_screen on DOMContentLoaded and restore.
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) {
     // Going to background — persist current screen
@@ -3155,6 +3159,34 @@ document.addEventListener('visibilitychange', function() {
     } catch(e) {}
   }
 });
+
+// ── LOAD-TIME SCREEN RESTORE ─────────────────────────────
+// Handles the case where the browser fully reloaded the page (e.g., iOS Safari / WebView
+// killed the tab after prolonged backgrounding). visibilitychange doesn't fire on a fresh
+// load, so without this the user always snaps to home. Delay is needed so auth & data pulls
+// complete first — otherwise the restored screen shows empty state.
+function restoreLastScreenOnLoad() {
+  try {
+    var saved = localStorage.getItem('hk_last_screen');
+    if (!saved || saved === 's-home' || saved === 's-dashboard') return;
+    // Only restore "safe" screens that don't require context (e.g. a specific hive that might have been deleted)
+    var _safeScreensForRestore = ['s-apiary', 's-calendar', 's-ai', 's-market', 's-inspect'];
+    if (_safeScreensForRestore.indexOf(saved) < 0) return;
+    // Safe to restore — wait long enough for auth & initial data pulls to complete
+    setTimeout(function() {
+      try {
+        if (typeof goTo === 'function' && document.getElementById(saved)) {
+          goTo(saved);
+        }
+      } catch(e) { console.warn('load-time screen restore failed:', e); }
+    }, 1500);
+  } catch(e) {}
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', restoreLastScreenOnLoad);
+} else {
+  restoreLastScreenOnLoad();
+}
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -4832,8 +4864,9 @@ function extractData(text){
   const sfm=t.match(/(\w+)\s+frame[s]?\s+of\s+(?:\w+\s+)?(?:stores|honey|food)/);
   if(sfm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.storesFrames=m[sfm[1]]||parseInt(sfm[1])||null; }
 
-  // Foundation frames — "N frames of foundation" OR "N foundation frames"
-  const ffm1=t.match(/(\w+)\s+frame[s]?\s+of\s+foundation/);
+  // Foundation frames — "N frames of [adjective] foundation" OR "N foundation frames"
+  // The (?:\w+\s+)? allows an optional adjective like "fresh", "new", "drawn" between "of" and "foundation"
+  const ffm1=t.match(/(\w+)\s+frame[s]?\s+of\s+(?:\w+\s+)?foundation/);
   const ffm2=t.match(/(\w+)\s+foundation\s+frame[s]?/);
   const ffm=ffm1||ffm2;
   if(ffm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.foundationFrames=m[ffm[1]]||parseInt(ffm[1])||null; }
@@ -4845,7 +4878,17 @@ function extractData(text){
   if(efm){ const m={'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12}; d.emptyFrames=m[efm[1]]||parseInt(efm[1])||null; }
 
   if(t.includes('patchy')) d.broodPattern='patchy'; else if(t.includes('poor')) d.broodPattern='poor'; else if(t.includes('good')||t.includes('solid')||t.includes('tight')) d.broodPattern='good';
-  if(t.includes('stores very low')||t.includes('completely empty')) d.storesLevel='empty'; else if(t.includes('stores low')||t.includes('getting low')||t.includes('need to feed')) d.storesLevel='low'; else if(t.includes('stores adequate')||t.includes('half full')||t.includes('stores okay')) d.storesLevel='adequate'; else if(t.includes('stores full')||t.includes('completely full')) d.storesLevel='full';
+  // Stores level — flexible matching for natural phrasing like "stores are adequate", "stores are looking full" etc.
+  // Regex approach allows "stores" + optional filler words ("are", "look", "looking", "very", "completely") + qualifier
+  if (/stores\s+(?:are\s+|look(?:ing)?\s+|very\s+|completely\s+)*(?:empty|very\s+low)/.test(t) || t.includes('completely empty')) {
+    d.storesLevel = 'empty';
+  } else if (/stores\s+(?:are\s+|look(?:ing)?\s+|getting\s+|very\s+)*low/.test(t) || t.includes('need to feed') || t.includes('getting low')) {
+    d.storesLevel = 'low';
+  } else if (/stores\s+(?:are\s+|look(?:ing)?\s+)*(?:adequate|ok(?:ay)?|fine|sufficient)/.test(t) || t.includes('half full')) {
+    d.storesLevel = 'adequate';
+  } else if (/stores\s+(?:are\s+|look(?:ing)?\s+|completely\s+)*full/.test(t)) {
+    d.storesLevel = 'full';
+  }
 
   // FIXED: Use hasUnnegated() so "no play cups" / "no queen cells" correctly register as FALSE
   d.playCups = hasUnnegated(t, 'play cup');
@@ -9979,6 +10022,7 @@ function editInspection(inspId) {
 
   goTo('s-inspect');
 
+  // Populate after the screen has rendered — delay long enough for DOM + renderInspectHeader to settle
   setTimeout(function() {
     // Set hive name in selector
     var nameEl = document.getElementById('inspect-hive-selected-name');
@@ -10005,13 +10049,12 @@ function editInspection(inspId) {
       framesBrood: insp.framesBrood || 0,
       framesStores: insp.framesStores || 0,
       framesFoundation: insp.framesFoundation || 0,
+      framesEmpty: insp.framesEmpty || 0, // was missing — now present
     };
 
     // Show the extracted data fields populated
-    // Re-extract from notes to ensure queen detection is current
     if (notesEl && notesEl.value) {
       var reExtracted = typeof extractData === 'function' ? extractData(notesEl.value) : {};
-      // Only override if re-extraction found something explicit
       if (reExtracted.queenSeen === true && currentInspData.queenSeen !== false) {
         currentInspData.queenSeen = true;
       }
@@ -10022,20 +10065,29 @@ function editInspection(inspId) {
     var statusEl = document.getElementById('voice-status');
     if (statusEl) statusEl.textContent = 'Editing existing inspection — update notes and save';
 
-    // Update frame tracker
-    frameData = {
-      brood: insp.framesBrood || 0,
-      stores: insp.framesStores || 0,
-      foundation: insp.framesFoundation || 0,
-      empty: insp.framesEmpty || 0
-    };
-    if (typeof updateFrameDisplay === 'function') updateFrameDisplay();
+    // ── FRAME COMPOSITION POPULATION ──
+    // Set frameData from the saved inspection. Do this AFTER showExtractedData so it's not
+    // overwritten by updateFrameCompositionFromExtract (which reads voice-extract fields only).
+    // Call updateFrameDisplay multiple times to handle any DOM-readiness timing quirks.
+    function applyFrameData() {
+      frameData = {
+        brood: insp.framesBrood || 0,
+        stores: insp.framesStores || 0,
+        foundation: insp.framesFoundation || 0,
+        empty: insp.framesEmpty || 0
+      };
+      if (typeof updateFrameDisplay === 'function') updateFrameDisplay();
+    }
+    applyFrameData();
+    // Safety re-run to handle any layout/DOM timing where elements weren't ready first pass
+    requestAnimationFrame(applyFrameData);
+    setTimeout(applyFrameData, 150);
 
     // Show history for this hive
     if (typeof showInspectHistory === 'function') showInspectHistory(insp.hiveId);
 
     showToast('Editing inspection from ' + new Date(insp.inspectedAt).toLocaleDateString('en-GB'));
-  }, 200);
+  }, 250); // Slightly longer delay than before (was 200ms) to ensure screen transitions complete
 }
 
 // Patch saveInspection to handle edit mode
