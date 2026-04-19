@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:12 19 April 2026 · Default apiary + reorder + zoom fixes -->
+<!-- HiveKeeper · Last updated: 19:20 19 April 2026 · Drag-to-reorder hives (SortableJS) replaces arrows -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -336,6 +336,11 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .edit-mode-banner.show{display:block;}
 #edit-layout-btn.active{background:var(--honey);border-color:var(--honey);}
 .hive-list-item.highlighted{background:var(--honey-pale)!important;border-color:var(--honey)!important;border-width:2px!important;}
+/* Drag-to-reorder states (SortableJS) */
+.hive-drag-handle:active { cursor:grabbing !important; }
+.hive-drag-ghost { opacity:0.35; background:var(--honey-pale) !important; }
+.hive-drag-chosen { background:var(--honey-pale) !important; }
+.hive-drag-dragging { opacity:0.95; box-shadow:0 6px 20px rgba(0,0,0,0.18) !important; transform:scale(1.02); }
 
 
 /* ASIAN HORNET ALERT */
@@ -1083,6 +1088,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 </head>
 <body>
 <!-- AUTH OVERLAY -->
@@ -1092,7 +1098,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:12</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:20</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2750,44 +2756,65 @@ const INSP_KEY = 'hk_inspections_v2';
 function loadHives(){ try{ return JSON.parse(localStorage.getItem(HIVE_KEY))||[]; }catch{ return []; } }
 function saveHives(h){ localStorage.setItem(HIVE_KEY, JSON.stringify(h)); if (getUserId()) pushHives().catch(function(){}); }
 
-// Move a hive up (-1) or down (+1) in the list by swapping listOrder with the
-// adjacent visible hive (respects current row filter + hidden visibility).
-// Saves immediately to localStorage; pushHives() auto-fires via saveHives().
-function moveHiveInList(hiveId, direction) {
+// ═══ DRAG-TO-REORDER HIVE LIST ═══
+// Uses SortableJS (loaded via CDN). In edit mode, initialises drag-and-drop on
+// the hive-list-container. The drag handle (⋮⋮) is the only element that
+// responds to drag — tapping anywhere else on a card still highlights/opens it.
+var _hiveSortable = null;
+
+function initHiveListSortable() {
   try {
-    var all = loadHives(true); // include hidden for consistent persistence
-    // Build the same visible list that renderApiary sees
-    var showHidden = (typeof _showHidden !== 'undefined') ? _showHidden : false;
-    var rowFilter = (typeof currentRowFilter !== 'undefined') ? currentRowFilter : 'all';
-    var visible = all.filter(function(h){ return showHidden || !h.isHidden; });
-    visible = rowFilter === 'all' ? visible
-      : rowFilter === 'unassigned' ? visible.filter(function(h){ return !h.row || h.row === ''; })
-      : visible.filter(function(h){ return h.row === rowFilter; });
-    visible.sort(function(a, b) {
-      var ao = typeof a.listOrder === 'number' ? a.listOrder : 999999;
-      var bo = typeof b.listOrder === 'number' ? b.listOrder : 999999;
-      if (ao !== bo) return ao - bo;
-      return (a.createdAt || 0) - (b.createdAt || 0);
+    destroyHiveListSortable(); // clean up any existing instance
+    if (typeof Sortable === 'undefined') { console.warn('Sortable not loaded'); return; }
+    var container = document.getElementById('hive-list-container');
+    if (!container) return;
+    _hiveSortable = new Sortable(container, {
+      handle: '.hive-drag-handle',
+      animation: 150,
+      ghostClass: 'hive-drag-ghost',
+      chosenClass: 'hive-drag-chosen',
+      dragClass: 'hive-drag-dragging',
+      forceFallback: true, // more consistent mobile behaviour
+      fallbackTolerance: 5,
+      scrollSensitivity: 80,
+      scrollSpeed: 20,
+      onEnd: function(evt) {
+        // Read new DOM order and persist listOrder to match
+        try {
+          var newOrder = [];
+          container.querySelectorAll('.hive-list-item').forEach(function(el) {
+            var hid = el.getAttribute('data-hiveid');
+            if (hid) newOrder.push(hid);
+          });
+          if (!newOrder.length) return;
+          var all = loadHives(true); // include hidden
+          // Find lowest listOrder in the reordered set to use as base
+          var visible = all.filter(function(h){ return newOrder.indexOf(h.id) >= 0; });
+          var baseOrder = visible.reduce(function(min, h) {
+            var lo = typeof h.listOrder === 'number' ? h.listOrder : Infinity;
+            return lo < min ? lo : min;
+          }, Infinity);
+          if (baseOrder === Infinity) baseOrder = 1;
+          // Reassign listOrder based on new DOM position
+          newOrder.forEach(function(hiveId, idx) {
+            var h = all.find(function(x){ return x.id === hiveId; });
+            if (h) h.listOrder = baseOrder + idx;
+          });
+          saveHives(all); // auto-pushes to Supabase
+          showToast('Hive order updated');
+        } catch(e) { console.warn('Sortable onEnd error:', e); }
+      }
     });
-    var idx = visible.findIndex(function(h){ return h.id === hiveId; });
-    if (idx < 0) return;
-    var targetIdx = idx + direction;
-    if (targetIdx < 0 || targetIdx >= visible.length) return; // at edge
-    // Swap listOrder values between the two visible hives
-    var a = visible[idx];
-    var b = visible[targetIdx];
-    var aOrder = typeof a.listOrder === 'number' ? a.listOrder : idx + 1;
-    var bOrder = typeof b.listOrder === 'number' ? b.listOrder : targetIdx + 1;
-    // Find in the full array and write back
-    var fullA = all.find(function(h){ return h.id === a.id; });
-    var fullB = all.find(function(h){ return h.id === b.id; });
-    if (!fullA || !fullB) return;
-    fullA.listOrder = bOrder;
-    fullB.listOrder = aOrder;
-    saveHives(all); // triggers pushHives automatically
-    // Re-render the apiary screen so new order appears
-    try { renderApiary(); } catch(e) {}
-  } catch(e) { console.warn('moveHiveInList error:', e); }
+  } catch(e) { console.warn('initHiveListSortable error:', e); }
+}
+
+function destroyHiveListSortable() {
+  try {
+    if (_hiveSortable) {
+      _hiveSortable.destroy();
+      _hiveSortable = null;
+    }
+  } catch(e) {}
 }
 function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch{ return []; } }
 function saveInspections(i){
@@ -3739,19 +3766,10 @@ function renderApiary(){
   document.getElementById('hive-list-container').innerHTML = hives.map(function(h, _idx) {
     const badge = getBadge(h);
     const isDead = h.status === 'dead';
-    var _isFirst = _idx === 0;
-    var _isLast = _idx === hives.length - 1;
-    // Reorder controls shown only in edit mode
-    var reorderControls = '';
+    // Drag handle shown only in edit mode — visual affordance for drag-to-reorder
+    var dragHandle = '';
     if (_editMode) {
-      reorderControls = '<div class="hive-reorder-ctrl" style="display:flex;flex-direction:column;gap:2px;margin-right:4px;">' +
-        '<button onclick="event.stopPropagation();moveHiveInList(\'' + h.id + '\',-1)" ' +
-          (_isFirst ? 'disabled ' : '') +
-          'aria-label="Move up" title="Move up" style="width:28px;height:20px;border:1px solid var(--wax);border-radius:6px;background:' + (_isFirst ? '#F5F5F5' : 'white') + ';cursor:' + (_isFirst ? 'not-allowed' : 'pointer') + ';font-size:12px;padding:0;line-height:1;opacity:' + (_isFirst ? '0.35' : '1') + ';color:var(--text);">&#x25B2;</button>' +
-        '<button onclick="event.stopPropagation();moveHiveInList(\'' + h.id + '\',1)" ' +
-          (_isLast ? 'disabled ' : '') +
-          'aria-label="Move down" title="Move down" style="width:28px;height:20px;border:1px solid var(--wax);border-radius:6px;background:' + (_isLast ? '#F5F5F5' : 'white') + ';cursor:' + (_isLast ? 'not-allowed' : 'pointer') + ';font-size:12px;padding:0;line-height:1;opacity:' + (_isLast ? '0.35' : '1') + ';color:var(--text);">&#x25BC;</button>' +
-      '</div>';
+      dragHandle = '<div class="hive-drag-handle" style="width:32px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--text-l);font-size:18px;cursor:grab;touch-action:none;user-select:none;flex-shrink:0;" title="Drag to reorder">⋮⋮</div>';
     }
     // Build alert icons from hive state
     const alerts = [];
@@ -3782,7 +3800,7 @@ function renderApiary(){
     var metaText = statusMeta || (h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : ''));
     return `
       <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
-        ${reorderControls}
+        ${dragHandle}
         <div class="hive-list-icon" style="position:relative;">
           ${h.coverPhoto ? '<img src="' + h.coverPhoto.split('?')[0] + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)}
           <div onclick="event.stopPropagation();uploadHiveCoverPhoto('${h.id}')" title="Add hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
@@ -7314,7 +7332,9 @@ function toggleEditLayout(){
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     showToast('Drag hives to reposition');
     window._editModeActive = true; try { renderLeafletHives(true); } catch(e) {}
-    try { renderApiary(); } catch(e) {} // Re-render hive list so reorder arrows appear
+    try { renderApiary(); } catch(e) {} // Re-render hive list so drag handles appear
+    // Init drag-to-reorder on the hive list (slight delay to ensure DOM is ready)
+    setTimeout(function(){ try { initHiveListSortable(); } catch(e) {} }, 50);
     try { setMapInteractive(true); } catch(e) {}
     var tb=document.getElementById('map-touch-blocker'); if(tb) tb.style.display='none';
 
@@ -7329,7 +7349,8 @@ function toggleEditLayout(){
     if(tip) tip.style.display='';
     if(canvas) canvas.classList.remove('edit-mode','dragging');
     window._editModeActive = false; try { renderLeafletHives(false); } catch(e) {}
-    try { renderApiary(); } catch(e) {} // Re-render hive list so reorder arrows disappear
+    try { destroyHiveListSortable(); } catch(e) {} // Clean up drag-to-reorder
+    try { renderApiary(); } catch(e) {} // Re-render hive list so drag handles disappear
     // Close any open landmark edit panel
     try { closeLandmarkEditPanel(); } catch(e) {}
     // Lock the map — disable pan/zoom/drag when leaving edit mode
