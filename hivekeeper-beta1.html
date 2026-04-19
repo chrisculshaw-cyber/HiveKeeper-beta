@@ -9387,17 +9387,19 @@ function initCurrentApiary() {
     localStorage.setItem(CURRENT_APIARY_KEY, defaultId);
     currentApiaryId = defaultId;
   } else {
-    // If no explicit selection stored, open to the user's default apiary
-    var stored = localStorage.getItem(CURRENT_APIARY_KEY);
-    if (!stored) {
-      var def = apiaries.find(function(a){ return a.isDefault === true; });
-      if (def) {
-        localStorage.setItem(CURRENT_APIARY_KEY, def.id);
-      }
+    // Sticky default: on every launch, open to the user's default apiary if one exists.
+    // Switching apiaries mid-session via the switcher still works — CURRENT_APIARY_KEY
+    // gets overwritten by switchApiary(). But next fresh launch, default takes over again.
+    var def = apiaries.find(function(a){ return a.isDefault === true; });
+    if (def) {
+      currentApiaryId = def.id;
+      localStorage.setItem(CURRENT_APIARY_KEY, def.id);
+    } else {
+      // No default set — fall back to last-viewed or first
+      var current = getCurrentApiary();
+      currentApiaryId = current ? current.id : apiaries[0].id;
+      localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
     }
-    var current = getCurrentApiary();
-    currentApiaryId = current ? current.id : apiaries[0].id;
-    localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
   }
 }
 
