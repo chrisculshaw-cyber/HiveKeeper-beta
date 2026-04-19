@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:50 19 April 2026 · Zoom syncs to Supabase + Rows button removed -->
+<!-- HiveKeeper · Last updated: 20:13 19 April 2026 · Trial reframed as "Pro on us" + pricing bug fixes -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 19:50</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:13</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12727,10 +12727,10 @@ function updatePlanBadge() {
   var tier = getUserTier();
   var labels = {
     beta: { name: 'Beta (unlimited)', limits: 'All features unlocked' },
-    free: { name: 'Free', limits: '1 apiary · 5 hives' },
-    trial: { name: 'Free trial (Pro)', limits: 'Unlimited during trial' },
-    pro: { name: 'Pro', limits: 'Unlimited hives & apiaries' },
-    commercial: { name: 'Commercial', limits: 'Full access · ad-free' }
+    free: { name: 'Free', limits: '1 apiary · 3 hives' },
+    trial: { name: 'Pro (on us)', limits: 'Full Pro features during your 14 days' },
+    pro: { name: 'Pro', limits: '5 apiaries · 50 hives' },
+    commercial: { name: 'Commercial', limits: 'Unlimited · ad-free · priority support' }
   };
   // Founders always display as Pro
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
@@ -12770,10 +12770,12 @@ function updatePlanBadge() {
 function openPricingModal(highlightTier) {
   // Show context message based on reason
   var reasonMessages = {
-    hive: "You've reached the 5 hive limit on the Free plan. Upgrade to Pro for unlimited hives.",
+    hive: "You've reached the 3 hive limit on the Free plan. Upgrade to Pro for 50 hives.",
     apiary: "Multiple apiaries require a Pro or Commercial plan.",
     share: "Apiary sharing requires a Pro or Commercial plan.",
-    photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline."
+    photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline.",
+    trial_banner: "You're on Pro while you try HiveKeeper — keep everything you're using by staying on Pro.",
+    trial_expired: "Your 14 days of Pro, on us, have ended. Keep full access by staying on Pro — or continue on the Free plan with the limits below."
   };
   var msgEl = document.getElementById('pricing-reason-msg');
   if (msgEl) {
@@ -16099,7 +16101,7 @@ function canUsePremiumFeature(feature) {
   if (isInTrial()) {
     var days = trialDaysLeft();
     if (days <= 5) {
-      showToast('Free trial: ' + days + ' day' + (days !== 1 ? 's' : '') + ' left — tap to upgrade');
+      showToast('Pro on us: ' + days + ' day' + (days !== 1 ? 's' : '') + ' left — tap to keep Pro');
     }
     return true;
   }
@@ -16170,12 +16172,12 @@ function renderTrialBanner() {
   if (isInTrial()) {
     var dLeft = trialDaysLeft();
     banner.style.display = 'flex';
-    banner.innerHTML = '<span style="flex:1;font-size:12px;">Free trial &mdash; <strong>' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + ' left</strong></span>'
-      + '<span onclick="openPricingModal(\'trial_banner\')" style="background:#BA7517;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Upgrade</span>';
+    banner.innerHTML = '<span style="flex:1;font-size:12px;">Pro on us &mdash; <strong>' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + ' left</strong></span>'
+      + '<span onclick="openPricingModal(\'trial_banner\')" style="background:#BA7517;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Keep Pro</span>';
   } else {
     banner.style.display = 'flex';
-    banner.innerHTML = '<span style="flex:1;font-size:12px;">&#x26A0;&#xFE0F; Your free trial has ended &mdash; some features are restricted</span>'
-      + '<span onclick="openPricingModal(\'trial_expired\')" style="background:#C62828;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Upgrade now</span>';
+    banner.innerHTML = '<span style="flex:1;font-size:12px;">&#x26A0;&#xFE0F; Your Pro access has ended &mdash; some features are restricted</span>'
+      + '<span onclick="openPricingModal(\'trial_expired\')" style="background:#C62828;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Get Pro</span>';
   }
 }
 
@@ -16197,16 +16199,16 @@ function renderTrialBanners() {
     b.style.display = 'block';
     b.style.background = dLeft <= 2 ? '#C62828' : dLeft <= 5 ? '#BA7517' : '#C8730A';
     b.style.padding = '9px 20px';
-    b.textContent = dLeft <= 2 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' left — your bees need you! Tap to upgrade' :
-                    dLeft <= 5 ? dLeft + ' days of free trial left — tap to upgrade' :
-                    'Free trial: ' + dLeft + ' days remaining — tap to upgrade';
+    b.textContent = dLeft <= 2 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' of Pro left — your bees need you! Tap to keep Pro' :
+                    dLeft <= 5 ? dLeft + ' days of Pro left — tap to keep Pro' :
+                    'HiveKeeper Pro on us — ' + dLeft + ' days remaining';
     b.style.cursor = 'pointer';
     b.style.pointerEvents = 'all';
     b.onclick = function(){ try{ openPricingModal('trial_banner'); }catch(e){} };
   } else {
     b.style.display = 'block';
     b.style.background = '#C62828';
-    b.textContent = 'Your free trial has ended — tap to upgrade and keep your hives';
+    b.textContent = 'Your Pro access has ended — tap to keep your hives on Pro';
     b.onclick = function(){ try{ openPricingModal('trial_expired'); }catch(e){} };
     if (!localStorage.getItem('hk_trial_expired_shown')) {
       localStorage.setItem('hk_trial_expired_shown', '1');
