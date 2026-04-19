@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 20:45 19 April 2026 · Landmark remove in-place + apiary-switch-from-Inspect fix + pricing defaults to monthly -->
+<!-- HiveKeeper · Last updated: 20:55 19 April 2026 · Landmark list refresh decoupled from renderMap + Inspect opens with Select a hive prompt -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 19 April 2026 at 20:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4459,18 +4459,18 @@ function startFreshInspection(){
     var d = document.getElementById('inspect-date');
     if (d && !d.value) d.value = new Date().toISOString().split('T')[0];
   }, 100);
-  if(!currentHiveId){
-    var h = loadHives().find(function(hv){ return hv.status==='active'; });
-    if (h) {
-      currentHiveId = h.id;
-    } else {
-      // No hives yet - prompt to add one first
-      if (confirm('You have no hives set up yet.\n\nTap OK to go to your apiary and add your first hive.')) {
-        goTo('s-apiary');
-      }
-      return;
+  // Guard: if there are no hives at all, redirect to Apiary so user can add one first
+  var anyHives = loadHives().some(function(hv){ return hv.status==='active'; });
+  if (!anyHives) {
+    if (confirm('You have no hives set up yet.\n\nTap OK to go to your apiary and add your first hive.')) {
+      goTo('s-apiary');
     }
+    return;
   }
+  // Always open Inspect with NO hive pre-selected — user must choose explicitly via the
+  // dropdown. Previously we auto-picked the first active hive which meant users could
+  // accidentally save an inspection against the wrong hive without noticing.
+  currentHiveId = null;
   goTo('s-inspect');
 }
 
@@ -13469,11 +13469,13 @@ function addLandmark(type) {
 function deleteLandmark(id) {
   var landmarks = loadLandmarks().filter(function(l){ return l.id !== id; });
   saveLandmarks(landmarks);
+  // Update the Existing Landmarks list FIRST — do the UI refresh before any map render
+  // that could throw. renderMap() has been observed to throw a canvas.getContext TypeError
+  // in some contexts; we must not let it halt the UI update.
+  try { renderExistingLandmarksList(); } catch(e) { console.warn('renderExistingLandmarksList failed:', e); }
   try { renderLeafletHives(window._editModeActive||false); } catch(e) {}
   if (getUserId()) deleteLandmarkFromCloud(id).catch(function(){});
-  renderMap();
-  // Update the Existing Landmarks list in-place if the picker modal is open
-  try { renderExistingLandmarksList(); } catch(e) {}
+  try { renderMap(); } catch(e) { console.warn('renderMap failed:', e); }
   showToast('Landmark removed');
 }
 
