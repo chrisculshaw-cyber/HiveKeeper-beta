@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 13:25 20 April 2026 · Screen-restore diagnostic logger (#diag to view) + pagehide fallback for hk_last_screen persistence -->
+<!-- HiveKeeper · Last updated: 13:49 20 April 2026 · Apiary indicator on Inspect + inspection timestamps show time of day + pagehide fallback for minimise + screen-restore diagnostic -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:25</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:49</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1444,6 +1444,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div id="inspect-hive-list" style="display:none;background:var(--white);border-radius:var(--rs);margin-top:4px;border:1px solid var(--wax);box-shadow:var(--shadow-l);max-height:280px;overflow-y:auto;position:relative;z-index:50;"></div>
       </div>
       <div class="screen-sub" id="inspect-meta" style="margin-top:6px;color:rgba(255,255,255,.7);"></div>
+      <div id="inspect-apiary-wrap" style="margin-top:4px;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:rgba(255,255,255,.5);">📍 Apiary:</span>
+        <span id="inspect-apiary-label" style="font-size:11px;color:rgba(255,255,255,.85);font-weight:700;font-family:'Syne',sans-serif;">—</span>
+      </div>
     </div>
   </div>
   <div class="scroll-area">
@@ -4448,7 +4452,7 @@ function renderHiveDetail(){
       </div>
       <div class="tl-card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div class="tl-date">${new Date(insp.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}</div>
+          <div class="tl-date">${new Date(insp.inspectedAt).toLocaleString('en-GB',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
           <button onclick="editInspection('${insp.id}')" style="background:transparent;border:none;color:var(--honey);font-size:11px;cursor:pointer;padding:0;font-family:'Syne',sans-serif;font-weight:700;margin-right:12px;">Edit</button>
           <button onclick="confirmDeleteInspection('${insp.id}')" style="background:transparent;border:none;color:var(--red);font-size:11px;cursor:pointer;padding:0;font-family:'Syne',sans-serif;font-weight:700;flex-shrink:0;">Delete</button>
         </div>
@@ -4602,6 +4606,8 @@ function startFreshInspection(){
 function renderInspectHeader(){
   // Update the online/offline status pill every time the Inspect screen renders.
   try { updateInspectConnPill(); } catch(e) {}
+  // Refresh the apiary name display — ensures label updates if user switched apiary from elsewhere.
+  try { updateApiaryNameDisplays(); } catch(e) {}
   // ALWAYS clear the notes field when entering Inspect, even if no hive is selected yet.
   // Previously this returned early if no hive was found, leaving stale notes visible.
   var _n = document.getElementById('inspect-notes'); if (_n) _n.value = '';
@@ -9494,7 +9500,7 @@ function showInspectHistory(hiveId) {
   if (!inspections.length) { panel.style.display = 'none'; return; }
 
   var last = inspections[0];
-  var dateStr = new Date(last.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  var dateStr = new Date(last.inspectedAt).toLocaleString('en-GB',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
   var daysAgo = Math.floor((Date.now() - last.inspectedAt) / 86400000);
   var daysStr = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
 
@@ -15245,7 +15251,7 @@ function loadLastInspectionForHive(hiveId) {
   }
 
   var ld = document.getElementById('inspect-last-date');
-  if (ld) ld.textContent = new Date(last.inspectedAt).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  if (ld) ld.textContent = new Date(last.inspectedAt).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
 
   var ls = document.getElementById('inspect-last-stats');
   if (ls) {
