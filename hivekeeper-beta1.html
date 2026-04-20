@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 16:45 20 April 2026 · Apiary screen header now has My Apiaries switcher button (previously missing) -->
+<!-- HiveKeeper · Last updated: 17:15 20 April 2026 · Full Settings redesign — 6 tiles (Your details / Reports / Preferences / Data / Tools / Support) + 2-step verified Start Fresh -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 16:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 17:15</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2413,8 +2413,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
-      <!-- TOP ROW: Your details + Reports (two tiles side-by-side) -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <!-- 6-TILE GRID: 3 rows of 2 -->
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
         <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
           <span style="font-size:24px;">👤</span>
           <span>Your details</span>
@@ -2425,7 +2425,29 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </button>
       </div>
 
-      <!-- FOUNDING BADGE -->
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openPreferencesModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">⚙️</span>
+          <span>Preferences</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(openDataModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">💾</span>
+          <span>Data</span>
+        </button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openToolsModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">🧰</span>
+          <span>Tools</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(openSupportModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">💬</span>
+          <span>Support</span>
+        </button>
+      </div>
+
+      <!-- FOUNDING BADGE (kept visible — it's a reward) -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
@@ -2435,6 +2457,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           </div>
         </div>
       </div>
+
+      <!-- CURRENT PLAN (kept visible — users need to see plan at a glance) -->
       <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
@@ -2447,49 +2471,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
       </div>
       <button id="manage-sub-btn" onclick="closeModalEl('modal-settings');openCustomerPortal();" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;display:none;">Manage subscription →</button>
-      <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">Sign out</button>
 
-      <!-- PREFERENCES -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Preferences</div>
-      <div class="settings-row" onclick="toggle24h()">
-        <div><div class="settings-label">24-hour clock</div><div class="settings-sub">14:30 instead of 2:30 PM</div></div>
-        <div class="settings-toggle" id="toggle-24h"></div>
-      </div>
-      <div class="settings-row" onclick="toggleLargeText()">
-        <div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout</div></div>
-        <div class="settings-toggle" id="toggle-large"></div>
-      </div>
-      <div class="settings-row" onclick="toggleColourBlind()">
-        <div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>
-        <div class="settings-toggle" id="toggle-cb"></div>
-      </div>
-      <div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">
-        <div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>
-        <div class="settings-toggle" id="toggle-push"></div>
-      </div>
-
-      <!-- TOOLS -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
-
-      <!-- DATA — single entry point that opens Export/Import sub-modal -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openDataModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-        <span style="display:flex;align-items:center;gap:8px;">📥 <span>Import / Export data</span></span>
-        <span style="font-size:14px;opacity:.6;">›</span>
-      </button>
-      <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud</button>
-      <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
-
-      <!-- SUPPORT -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Support</div>
-      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Send feedback to Chris</button>
-      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">❓ Help &amp; guide</button>
-
-      <!-- Change password and Subscribe to calendar now live inside the Account modal -->
+      <!-- SIGN OUT (kept visible — one tap always) -->
+      <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
@@ -2681,6 +2665,30 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: Data (import/export consolidated) -->
   <div class="modal-overlay" id="modal-data" onclick="closeModal(event,'modal-data')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Preferences (all toggles consolidated) -->
+  <div class="modal-overlay" id="modal-preferences" onclick="closeModal(event,'modal-preferences')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Tools (refer, share, inspector contacts) -->
+  <div class="modal-overlay" id="modal-tools" onclick="closeModal(event,'modal-tools')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Support (feedback, WhatsApp, help) -->
+  <div class="modal-overlay" id="modal-support" onclick="closeModal(event,'modal-support')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Confirm Start Fresh (destructive — 2-step verification) -->
+  <div class="modal-overlay" id="modal-confirm-wipe" onclick="closeModal(event,'modal-confirm-wipe')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
@@ -10460,11 +10468,18 @@ function openDataModal() {
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
-      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCE5 Import &amp; Export</div>'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCBE Data</div>'
       + '<div onclick="closeModalEl(\'modal-data\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
-    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Move your beekeeping data in or out of HiveKeeper. All exports include inspections, hives, apiaries, and notes.</p>'
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Manage your HiveKeeper data — sync, import, export, or start over.</p>'
+
+    // === SYNC ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Sync</div>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(pushAllToSupabase,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\u2601\uFE0F</span>'
+      + '<span style="flex:1;">Sync to cloud<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Force a push of everything to Supabase</div></span>'
+    + '</button>'
 
     // === IMPORT ===
     + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Import</div>'
@@ -10479,14 +10494,202 @@ function openDataModal() {
       + '<span style="font-size:20px;">\uD83D\uDCCB</span>'
       + '<span style="flex:1;">Export all data to CSV<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Full CSV of everything — inspections, hives, apiaries</div></span>'
     + '</button>'
-    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:20px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDCD1</span>'
       + '<span style="flex:1;">Export to BeeBase / NBU format<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">For Regional Bee Inspector compliance</div></span>'
+    + '</button>'
+
+    // === DANGER ZONE ===
+    + '<div style="font-size:11px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Danger zone</div>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openConfirmWipe,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDD04</span>'
+      + '<span style="flex:1;">Start fresh — clear all data<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Requires typed confirmation. Cannot be undone.</div></span>'
     + '</button>'
 
     + '<button onclick="closeModalEl(\'modal-data\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-data');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PREFERENCES MODAL — all toggles (24h clock, larger text, colour blind, push)
+// ═══════════════════════════════════════════════════════════════
+function openPreferencesModal() {
+  var sheet = document.querySelector('#modal-preferences .modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\u2699\uFE0F Preferences</div>'
+      + '<div onclick="closeModalEl(\'modal-preferences\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Customise how HiveKeeper looks and behaves.</p>'
+
+    + '<div class="settings-row" onclick="toggle24h()">'
+      + '<div><div class="settings-label">24-hour clock</div><div class="settings-sub">14:30 instead of 2:30 PM</div></div>'
+      + '<div class="settings-toggle" id="toggle-24h"></div>'
+    + '</div>'
+    + '<div class="settings-row" onclick="toggleLargeText()">'
+      + '<div><div class="settings-label">Larger text</div><div class="settings-sub">Increase font size throughout</div></div>'
+      + '<div class="settings-toggle" id="toggle-large"></div>'
+    + '</div>'
+    + '<div class="settings-row" onclick="toggleColourBlind()">'
+      + '<div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>'
+      + '<div class="settings-toggle" id="toggle-cb"></div>'
+    + '</div>'
+    + '<div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">'
+      + '<div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>'
+      + '<div class="settings-toggle" id="toggle-push"></div>'
+    + '</div>'
+
+    + '<button onclick="closeModalEl(\'modal-preferences\')" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-preferences');
+
+  // Restore toggle states after modal opens (these toggles set visual state based on localStorage)
+  try { if (typeof restore24hToggle === 'function') restore24hToggle(); } catch(e) {}
+  try { if (typeof restoreLargeTextToggle === 'function') restoreLargeTextToggle(); } catch(e) {}
+  try { if (typeof restoreColourBlindToggle === 'function') restoreColourBlindToggle(); } catch(e) {}
+  try { if (typeof restorePushNotifToggle === 'function') restorePushNotifToggle(); } catch(e) {}
+  // Fallback: apply the 'active' class based on localStorage keys directly
+  try {
+    var t24 = document.getElementById('toggle-24h');
+    if (t24 && localStorage.getItem('hk_24h') === '1') t24.classList.add('active');
+    var tlg = document.getElementById('toggle-large');
+    if (tlg && localStorage.getItem('hk_large_text') === '1') tlg.classList.add('active');
+    var tcb = document.getElementById('toggle-cb');
+    if (tcb && localStorage.getItem('hk_colour_blind') === '1') tcb.classList.add('active');
+    var tps = document.getElementById('toggle-push');
+    if (tps && localStorage.getItem('hk_push_notif') === '1') tps.classList.add('active');
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOOLS MODAL — Refer, Share apiary, Bee inspector contacts
+// ═══════════════════════════════════════════════════════════════
+function openToolsModal() {
+  var sheet = document.querySelector('#modal-tools .modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83E\uDDF0 Tools</div>'
+      + '<div onclick="closeModalEl(\'modal-tools\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Share HiveKeeper with other beekeepers, collaborate on apiaries, and find your local Bee Inspector.</p>'
+
+    + '<button onclick="closeModalEl(\'modal-tools\');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDC1D</span>'
+      + '<span style="flex:1;">Refer a beekeeper<div style="font-size:10px;font-weight:400;opacity:.9;margin-top:2px;">Invite a friend — both get extra hive slots</div></span>'
+    + '</button>'
+    + '<button onclick="closeModalEl(\'modal-tools\');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDC65</span>'
+      + '<span style="flex:1;">Share this apiary<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Co-manage with a friend or mentor</div></span>'
+    + '</button>'
+    + '<button onclick="closeModalEl(\'modal-tools\');setTimeout(function(){openModalEl(\'modal-inspector-contacts\');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDD0D</span>'
+      + '<span style="flex:1;">Bee inspector contacts<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Your Regional Bee Inspector details</div></span>'
+    + '</button>'
+
+    + '<button onclick="closeModalEl(\'modal-tools\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-tools');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPORT MODAL — Feedback, WhatsApp, Help
+// ═══════════════════════════════════════════════════════════════
+function openSupportModal() {
+  var sheet = document.querySelector('#modal-support .modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCAC Support</div>'
+      + '<div onclick="closeModalEl(\'modal-support\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Get help, send feedback, or join the beekeeper community.</p>'
+
+    + '<button onclick="closeModalEl(\'modal-support\');setTimeout(openFeedbackModal,200);" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\u2709\uFE0F</span>'
+      + '<span style="flex:1;">Send feedback to Chris<div style="font-size:10px;font-weight:400;opacity:.9;margin-top:2px;">Direct line to the founder — every message read</div></span>'
+    + '</button>'
+    + '<button onclick="window.open(\'https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8\',\'_blank\')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDCAC</span>'
+      + '<span style="flex:1;">WhatsApp community<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">Chat with other HiveKeeper beekeepers</div></span>'
+    + '</button>'
+    + '<button onclick="closeModalEl(\'modal-support\');setTimeout(function(){openModalEl(\'modal-help\')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\u2753</span>'
+      + '<span style="flex:1;">Help &amp; guide<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">How to use HiveKeeper</div></span>'
+    + '</button>'
+
+    + '<button onclick="closeModalEl(\'modal-support\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-support');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// START FRESH — 2-STEP VERIFICATION
+// Step 1: Warning modal with cancel/continue
+// Step 2: Type "DELETE" to confirm before actual wipe runs
+// ═══════════════════════════════════════════════════════════════
+function openConfirmWipe() {
+  var sheet = document.querySelector('#modal-confirm-wipe .modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="text-align:center;margin-bottom:16px;">'
+      + '<div style="font-size:48px;margin-bottom:8px;">\u26A0\uFE0F</div>'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:20px;font-weight:800;color:#B83228;">Wipe all data?</div>'
+    + '</div>'
+    + '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--rs);padding:14px;margin-bottom:16px;">'
+      + '<div style="font-size:13px;font-weight:700;color:#B83228;margin-bottom:8px;">This will permanently delete:</div>'
+      + '<ul style="margin:0 0 0 18px;padding:0;font-size:12px;color:var(--text);line-height:1.7;">'
+        + '<li>All hives and apiaries</li>'
+        + '<li>All inspections and photos</li>'
+        + '<li>All treatments and harvests</li>'
+        + '<li>All landmarks and map positions</li>'
+        + '<li>Your preferences and personal settings</li>'
+      + '</ul>'
+      + '<div style="font-size:12px;color:#B83228;font-weight:700;margin-top:10px;">This cannot be undone.</div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--text);margin-bottom:6px;font-weight:700;">To confirm, type <span style="background:#FEF2F2;padding:2px 6px;border-radius:4px;color:#B83228;font-family:monospace;">DELETE</span> below:</div>'
+    + '<input type="text" id="wipe-confirm-input" autocomplete="off" oninput="updateWipeButton()" placeholder="Type DELETE to confirm" style="width:100%;padding:14px;border:1.5px solid #B83228;border-radius:var(--rs);font-size:15px;font-family:\'Syne\',sans-serif;box-sizing:border-box;margin-bottom:12px;text-align:center;font-weight:700;letter-spacing:2px;">'
+    + '<button id="wipe-confirm-btn" onclick="executeWipe()" disabled style="width:100%;background:#B83228;border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:not-allowed;margin-bottom:8px;opacity:.4;">Permanently delete all data</button>'
+    + '<button onclick="closeModalEl(\'modal-confirm-wipe\')" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Cancel — keep my data</button>';
+
+  openModalEl('modal-confirm-wipe');
+  // Auto-focus the input so user can type immediately
+  setTimeout(function(){ var inp = document.getElementById('wipe-confirm-input'); if (inp) inp.focus(); }, 300);
+}
+
+function updateWipeButton() {
+  var input = document.getElementById('wipe-confirm-input');
+  var btn = document.getElementById('wipe-confirm-btn');
+  if (!input || !btn) return;
+  if (input.value === 'DELETE') {
+    btn.disabled = false;
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+  } else {
+    btn.disabled = true;
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '.4';
+  }
+}
+
+function executeWipe() {
+  var input = document.getElementById('wipe-confirm-input');
+  if (!input || input.value !== 'DELETE') {
+    showToast('Type DELETE exactly to confirm');
+    return;
+  }
+  closeModalEl('modal-confirm-wipe');
+  // Call the actual existing wipe function after a brief delay
+  setTimeout(function(){ try { confirmResetAndSignOut(); } catch(e) { console.error('Wipe failed:', e); showToast('Wipe failed — please try again'); } }, 200);
 }
 
 // ═══════════════════════════════════════════════
