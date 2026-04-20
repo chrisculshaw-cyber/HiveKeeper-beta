@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:55 20 April 2026 · Map rotation now properly persists — pullApiaries reads map_bearing from Supabase, pushApiaries writes it back. Fixes long-standing bug where rotation reset to 0 on Apiary screen entry and on apiary switch. -->
+<!-- HiveKeeper · Last updated: 23:20 20 April 2026 · Apiary switch map refresh fix — initLeafletMap now aggressively clears container DOM + _leaflet_id before re-init, and switchApiary fires init synchronously instead of at 300ms. Fixes "map shows old apiary tiles after switching" bug. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 22:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 23:20</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -10118,14 +10118,40 @@ function switchApiary(id) {
   // the old instance and builds a fresh one. Then we follow with the standard
   // invalidate → pullPositions → renderHives sequence from goTo('s-apiary').
   if (currentScreen === 's-apiary') {
-    setTimeout(function(){ try{ if (typeof applyApiaryLocation === 'function' && apiary) applyApiaryLocation(apiary); }catch(e){} }, 100);
-    setTimeout(function(){ try{ initLeafletMap(); }catch(e){ console.error('Map re-init on switch error:',e); } }, 300);
-    setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 600);
-    setTimeout(function(){ try{ if (typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 750);
-    setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 950);
+    // Fire init IMMEDIATELY — no setTimeout.
+    // The old 300ms delay was causing the "map doesn't refresh on apiary switch"
+    // bug: by the time the delayed init ran, something else had repainted the
+    // old map and the user's eye had already registered "nothing changed".
+    // Synchronous init guarantees the new map appears on the same tick as the
+    // hive list + header update.
+    try {
+      if (typeof applyApiaryLocation === 'function' && apiary) applyApiaryLocation(apiary);
+      initLeafletMap();
+    } catch(e) {
+      console.error('Map re-init on switch error:', e);
+    }
+    // Follow-ups still use setTimeout so the DOM has time to settle between steps.
+    setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 200);
+    // Explicit setView to NEW apiary's coords — without this, even though
+    // initLeafletMap was constructed with the right centre, the tiles can fail
+    // to repaint visually until something forces them. Belt-and-braces.
+    setTimeout(function(){
+      try {
+        if (_leafletMap && apiary) {
+          var newLat = (typeof apiary.mapViewLat === 'number') ? apiary.mapViewLat : (apiary.lat ? parseFloat(apiary.lat) : null);
+          var newLng = (typeof apiary.mapViewLng === 'number') ? apiary.mapViewLng : (apiary.lng ? parseFloat(apiary.lng) : null);
+          var newZoom = (typeof apiary.mapZoom === 'number') ? apiary.mapZoom : (typeof MAP_DEFAULT_ZOOM === 'number' ? MAP_DEFAULT_ZOOM : 18);
+          if (newLat !== null && newLng !== null) {
+            _leafletMap.setView([newLat, newLng], newZoom, { animate: false });
+          }
+        }
+      } catch(e) { console.warn('switchApiary setView failed:', e); }
+    }, 400);
+    setTimeout(function(){ try{ if (typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 500);
+    setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 700);
     // Final belt-and-braces invalidate — fixes the diagonal-strip/cream-corners
     // case where rotation or transform was applied but tiles weren't recomputed.
-    setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 1200);
+    setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 1000);
   }
   // Reset Inspect screen state — the previously-selected hive almost certainly belongs
   // to the OLD apiary, so we clear it and rebuild the hive selector with the new apiary's hives.
@@ -16594,13 +16620,30 @@ function initLeafletMap() {
   var container = document.getElementById('leaflet-map');
   if (!container) return;
 
-  // Destroy existing map if present
+  // Destroy existing map if present.
+  // We go further than just _leafletMap.remove() because:
+  //   1. Leaflet sometimes leaves residual DOM behind when the container has
+  //      a CSS `transform` property applied (which applyMapRotation sets).
+  //   2. The container has an internal `_leaflet_id` marker that L.map()
+  //      uses to detect "already initialised" — if it's still there, the
+  //      next init throws "Map container is already initialized."
+  // Clearing both guarantees a clean slate on every call, which is exactly
+  // what switchApiary needs: tear down old apiary's map, build new one.
   if (_leafletMap) {
-    _leafletMap.remove();
+    try { _leafletMap.remove(); } catch(e) { console.warn('Leaflet remove error:', e); }
     _leafletMap = null;
     _hiveMarkers = {};
     _landmarkMarkers = {};
   }
+  // Force-clear the container so Leaflet sees a fresh element
+  container.innerHTML = '';
+  if (container._leaflet_id != null) {
+    try { delete container._leaflet_id; } catch(e) { container._leaflet_id = null; }
+  }
+  // Preserve the user's rotation transform if the map should be rotated for
+  // the NEW apiary — loadMapBearing() will reapply it after init. For now,
+  // reset so the fresh map builds at bearing 0.
+  container.style.transform = 'rotate(0deg)';
 
   // Get apiary centre coords
   var apiary = getCurrentApiary();
