@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 09:30 20 April 2026 · Stay logged in bug fixed — removed beforeunload signOut that caused mobile webview logouts -->
+<!-- HiveKeeper · Last updated: 09:51 20 April 2026 · Stay logged in fix + screen restore now respects saved screen on auth success -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 09:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 09:51</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -10427,8 +10427,17 @@ async function onAuthSuccess() {
   // Now initCurrentApiary with fresh cloud data
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
 
-  // Render with cloud data
-  goTo('s-home');
+  // Render with cloud data — but respect any saved screen from before the reload.
+  // If the user was on Inspect/Apiary/Calendar etc when the OS killed the webview,
+  // don't bounce them back to Home after re-authenticating.
+  var _savedScreen = null;
+  try { _savedScreen = localStorage.getItem('hk_last_screen'); } catch(e) {}
+  var _safeRestoreScreens = ['s-apiary', 's-calendar', 's-ai', 's-market', 's-inspect'];
+  if (_savedScreen && _safeRestoreScreens.indexOf(_savedScreen) >= 0 && document.getElementById(_savedScreen)) {
+    goTo(_savedScreen);
+  } else {
+    goTo('s-home');
+  }
   try { initLiveData(); } catch(e) {}
   try { renderDashboard(); } catch(e) {}
   try { renderFoundingBadge(); } catch(e) {}
