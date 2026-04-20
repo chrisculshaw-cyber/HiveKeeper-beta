@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 12:30 20 April 2026 · ROLLBACK — reverted offline voice queue after data-loss incident. Retained: stay-logged-in fix, screen restore, home speedup. -->
+<!-- HiveKeeper · Last updated: 13:14 20 April 2026 · Rollback rebuild — offline voice queue removed (data-loss fix). Status pill, policy consent offline-trust, stay-logged-in, home speedup retained. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 12:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:14</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1463,6 +1463,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div id="inspect-tips-section" style="margin:10px 20px 0;background:#FFF8E7;border:1px solid #FAEEDA;border-radius:var(--rs);padding:12px 14px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:24px;">&#x1F50D;</span><div><div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;">What to look for</div><div style="font-size:10px;color:#854F0B;opacity:.7;">This week's inspection focus</div></div></div>
       <div id="inspect-tip-text" style="font-size:13px;color:#633806;line-height:1.5;"></div>
+    </div>
+    <div id="inspect-conn-pill" style="display:flex;align-items:center;gap:8px;background:#E8F5E9;border:2px solid #66BB6A;border-radius:10px;padding:10px 14px;margin:8px 20px;font-size:12px;color:#1B5E20;line-height:1.4;">
+      <span id="inspect-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#43A047;flex-shrink:0;"></span>
+      <span id="inspect-conn-text" style="flex:1;"><b>Online</b> · Voice recording available</span>
     </div>
     <div class="voice-recorder">
       <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
@@ -3130,6 +3134,41 @@ function goBack(){
   if(prev==='s-hive') renderHiveDetail();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ONLINE / OFFLINE STATUS PILL (Inspect screen)
+// Simple, always-visible indicator so the user knows voice will/won't work.
+// No queue, no processing — just a status reflection.
+// ═══════════════════════════════════════════════════════════════
+function updateInspectConnPill() {
+  var pill = document.getElementById('inspect-conn-pill');
+  var dot  = document.getElementById('inspect-conn-dot');
+  var text = document.getElementById('inspect-conn-text');
+  if (!pill || !dot || !text) return;
+  var isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
+  if (isOffline) {
+    pill.style.background   = '#FFEBEE';
+    pill.style.borderColor  = '#E53935';
+    pill.style.color        = '#B71C1C';
+    dot.style.background    = '#E53935';
+    text.innerHTML          = '<b>Offline</b> · Voice recording unavailable — connect to record';
+  } else {
+    pill.style.background   = '#E8F5E9';
+    pill.style.borderColor  = '#66BB6A';
+    pill.style.color        = '#1B5E20';
+    dot.style.background    = '#43A047';
+    text.innerHTML          = '<b>Online</b> · Voice recording available';
+  }
+}
+// React to connectivity changes live
+window.addEventListener('online',  function() { updateInspectConnPill(); });
+window.addEventListener('offline', function() { updateInspectConnPill(); });
+// Initial paint on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() { try { updateInspectConnPill(); } catch(e) {} });
+} else {
+  try { updateInspectConnPill(); } catch(e) {}
+}
+
 // ── BACKGROUND / FOREGROUND HANDLING ─────────────────────────
 // When the app is backgrounded (user switches apps, locks phone), save the current screen.
 // When it comes back, restore to that screen instead of snapping to home.
@@ -4483,6 +4522,8 @@ function startFreshInspection(){
 }
 
 function renderInspectHeader(){
+  // Update the online/offline status pill every time the Inspect screen renders.
+  try { updateInspectConnPill(); } catch(e) {}
   // ALWAYS clear the notes field when entering Inspect, even if no hive is selected yet.
   // Previously this returned early if no hive was found, leaving stale notes visible.
   var _n = document.getElementById('inspect-notes'); if (_n) _n.value = '';
@@ -11524,33 +11565,79 @@ var POLICY_VERSION = '1.0';
 
 async function checkPolicyConsent() {
   if (!_currentUser) return;
-  // Always check Supabase — localStorage is only a cache, not the source of truth
-  var sb = getSupabase();
-  var { data } = await sb.from('profiles')
-    .select('policies_accepted_at, policies_version')
-    .eq('id', _currentUser.id)
-    .single();
-  if (data && data.policies_version === POLICY_VERSION && data.policies_accepted_at) {
-    // Confirmed in Supabase — update localStorage cache
-    localStorage.setItem('hk_policies_accepted', POLICY_VERSION);
-    // If there's a pending invite, fire it now
-    var pendingInvite = localStorage.getItem('hk_pending_invite');
-    if (pendingInvite) {
-      setTimeout(function() { processInviteToken(pendingInvite); }, 500);
+  // Trust localStorage first — if user has accepted the current policy version locally,
+  // don't re-prompt. Only ever prompt when we can confirm in Supabase they haven't accepted.
+  // Previously this went straight to Supabase and treated "no response" as "not accepted",
+  // causing the modal to re-appear on slow/offline connections.
+  var localAccepted = localStorage.getItem('hk_policies_accepted') === POLICY_VERSION;
+
+  // If offline, trust local cache entirely. If user has never accepted and is offline,
+  // they'll be prompted next time they're online — we don't block the app with a modal
+  // they can't submit anyway.
+  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+    if (!localAccepted) {
+      console.log('checkPolicyConsent: offline with no local acceptance — deferring until online');
+    }
+    // Fire pending invite if applicable
+    if (localAccepted) {
+      var pendingInvite = localStorage.getItem('hk_pending_invite');
+      if (pendingInvite) setTimeout(function() { processInviteToken(pendingInvite); }, 500);
     }
     return;
   }
-  // Not accepted yet — clear any stale localStorage and show modal
-  localStorage.removeItem('hk_policies_accepted');
-  // Reset checkbox state
-  _consentState = { 'consent-privacy': false, 'consent-security': false, 'consent-age': false };
-  ['consent-privacy','consent-security','consent-age'].forEach(function(id) {
-    var cb = document.getElementById('cb-' + id);
-    var lbl = document.getElementById('label-' + id);
-    if (cb) { cb.style.background = 'white'; cb.style.borderColor = 'var(--wax)'; cb.textContent = ''; }
-    if (lbl) { lbl.style.borderColor = 'var(--wax)'; lbl.style.background = 'white'; }
-  });
-  openModalEl('modal-consent');
+
+  // Online — verify with Supabase, but only re-prompt on a CLEAR "not accepted" answer.
+  var sb = getSupabase();
+  var supabaseConfirmedAccepted = false;
+  var supabaseConfirmedNotAccepted = false;
+  try {
+    var resp = await sb.from('profiles')
+      .select('policies_accepted_at, policies_version')
+      .eq('id', _currentUser.id)
+      .single();
+    if (resp && !resp.error && resp.data) {
+      if (resp.data.policies_version === POLICY_VERSION && resp.data.policies_accepted_at) {
+        supabaseConfirmedAccepted = true;
+      } else {
+        supabaseConfirmedNotAccepted = true;
+      }
+    } else if (resp && resp.error) {
+      console.warn('checkPolicyConsent: Supabase query error — trusting local cache', resp.error);
+    }
+  } catch(e) {
+    console.warn('checkPolicyConsent: Supabase threw — trusting local cache', e);
+  }
+
+  if (supabaseConfirmedAccepted) {
+    localStorage.setItem('hk_policies_accepted', POLICY_VERSION);
+    var pendingInvite = localStorage.getItem('hk_pending_invite');
+    if (pendingInvite) setTimeout(function() { processInviteToken(pendingInvite); }, 500);
+    return;
+  }
+
+  if (supabaseConfirmedNotAccepted) {
+    // Clear local cache and show modal
+    localStorage.removeItem('hk_policies_accepted');
+    _consentState = { 'consent-privacy': false, 'consent-security': false, 'consent-age': false };
+    ['consent-privacy','consent-security','consent-age'].forEach(function(id) {
+      var cb = document.getElementById('cb-' + id);
+      var lbl = document.getElementById('label-' + id);
+      if (cb) { cb.style.background = 'white'; cb.style.borderColor = 'var(--wax)'; cb.textContent = ''; }
+      if (lbl) { lbl.style.borderColor = 'var(--wax)'; lbl.style.background = 'white'; }
+    });
+    openModalEl('modal-consent');
+    return;
+  }
+
+  // Supabase check failed (network error, timeout, etc.) — trust local cache
+  if (localAccepted) {
+    console.log('checkPolicyConsent: Supabase unreachable — trusting local acceptance');
+    var pendingInvite = localStorage.getItem('hk_pending_invite');
+    if (pendingInvite) setTimeout(function() { processInviteToken(pendingInvite); }, 500);
+  } else {
+    // No local acceptance and can't check Supabase — this will be resolved next login.
+    console.log('checkPolicyConsent: no local acceptance and Supabase unreachable — deferring');
+  }
 }
 
 var _consentState = { 'consent-privacy': false, 'consent-security': false, 'consent-age': false };
