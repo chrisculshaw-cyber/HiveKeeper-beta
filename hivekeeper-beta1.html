@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 11:30 20 April 2026 · Auto-save after transcription + persistent connection pill (green/red/amber) on Inspect -->
+<!-- HiveKeeper · Last updated: 11:55 20 April 2026 · Fix minimise-returns-to-home (popstate race) + queue hang protection + Apiary first-load empty fix -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 11:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 11:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3095,7 +3095,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); /* Re-render Apiary list after Supabase pull — fixes "no hives" on first visit */ if (typeof renderApiary === 'function') renderApiary(); }); }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -3105,8 +3105,18 @@ function goTo(id){
   try { syncUniversalHeaders(id); } catch(e) {}
 }
 
-// Intercept browser back button — navigate within app instead of leaving
+// Intercept browser back button — navigate within app instead of leaving.
+// EXCEPTION: when the app was just restored from minimise, the mobile webview can
+// fire a spurious popstate event that would pop the screen back to home. The
+// visibilitychange handler sets _suppressNextPopstate for a short window to prevent this.
+var _suppressNextPopstate = 0;
 window.addEventListener('popstate', function(e) {
+  if (_suppressNextPopstate && Date.now() < _suppressNextPopstate) {
+    console.log('popstate suppressed (within visibility-restore window)');
+    // Re-push state so the back button still works normally after the grace window
+    history.pushState({ screen: currentScreen }, '', window.location.pathname);
+    return;
+  }
   if (screenHistory.length > 1) {
     screenHistory.pop();
     var prev = screenHistory[screenHistory.length - 1] || 's-home';
@@ -3257,9 +3267,18 @@ function updateInspectOfflineBanner() {
 
 // Process all queued recordings one at a time. Shows progress in the banner.
 // Each recording becomes a full inspection (transcribed, extracted, saved to Supabase).
+// Fetch has a 30-second timeout and each iteration re-checks connectivity so we don't
+// hang indefinitely if the user goes offline mid-processing.
 var _queueProcessing = false;
 async function processVoiceQueue() {
-  if (_queueProcessing) { showToast('\u23F3 Already processing\u2026'); return; }
+  if (_queueProcessing) {
+    // User tapped Process now again — offer to reset rather than just saying "already processing"
+    if (confirm('Already processing a recording. If it seems stuck, tap OK to reset. Otherwise cancel.')) {
+      _queueProcessing = false;
+      updateInspectOfflineBanner();
+    }
+    return;
+  }
   if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
     showToast('\u26A0\uFE0F Still offline \u2014 connect to internet first');
     return;
@@ -3273,13 +3292,39 @@ async function processVoiceQueue() {
     var processed = 0;
     var failed = 0;
     for (var i = 0; i < queued.length; i++) {
+      // Before each recording, check we're still online. If user went offline during processing,
+      // bail out rather than hang on fetch.
+      if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+        console.warn('Queue processing interrupted — went offline at item ' + (i+1));
+        showToast('\u26A0\uFE0F Went offline \u2014 remaining recordings stay in queue');
+        break;
+      }
       var rec = queued[i];
       if (banner) banner.innerHTML = '\u23F3 Processing recording ' + (i+1) + ' of ' + total + '\u2026';
       try {
-        // Send blob to Whisper worker
+        // Send blob to Whisper worker — with a 30 second timeout so a bad connection
+        // can't hang us forever. AbortController is supported by all modern browsers.
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function(){ controller.abort(); }, 30000);
         var fd = new FormData();
         fd.append('audio', rec.blob, 'audio.webm');
-        var wr = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', { method: 'POST', body: fd });
+        var wr;
+        try {
+          wr = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
+            method: 'POST',
+            body: fd,
+            signal: controller.signal
+          });
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          if (fetchErr.name === 'AbortError') {
+            console.warn('Queue item ' + (i+1) + ' timed out after 30s');
+            failed++;
+            continue;
+          }
+          throw fetchErr;
+        }
+        clearTimeout(timeoutId);
         var wdata = await wr.json();
         if (!wr.ok || !wdata.text) { failed++; continue; }
         var transcript = wdata.text;
@@ -3316,9 +3361,9 @@ async function processVoiceQueue() {
         var all = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
         all.push(insp);
         localStorage.setItem('hk_inspections_v2', JSON.stringify(all));
-        // Push to Supabase if signed in
+        // Push to Supabase if signed in — don't await, let it complete in background
         if (typeof pushInspections === 'function' && getUserId && getUserId()) {
-          try { await pushInspections(); } catch(e) { console.warn('queue push failed:', e); }
+          pushInspections().catch(function(e){ console.warn('queue push failed:', e); });
         }
         // Remove from queue
         await deleteQueuedRecording(rec.id);
@@ -3330,10 +3375,12 @@ async function processVoiceQueue() {
     }
     _queueProcessing = false;
     updateInspectOfflineBanner();
-    if (failed === 0) {
+    if (failed === 0 && processed === total) {
       showToast('\u2705 ' + processed + ' recording' + (processed !== 1 ? 's' : '') + ' transcribed and saved');
+    } else if (processed > 0) {
+      showToast('\u2705 ' + processed + ' saved' + (failed > 0 ? ', \u26A0\uFE0F ' + failed + ' failed' : '') + ' \u2014 remaining items stay in queue');
     } else {
-      showToast('\u2705 ' + processed + ' saved, \u26A0\uFE0F ' + failed + ' failed \u2014 failed items remain in queue');
+      showToast('\u26A0\uFE0F Could not process recordings \u2014 they stay in queue, try again later');
     }
     // Refresh views so the new inspections appear
     try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
@@ -3362,7 +3409,11 @@ document.addEventListener('visibilitychange', function() {
     // Going to background — persist current screen
     try { localStorage.setItem('hk_last_screen', currentScreen); } catch(e) {}
   } else {
-    // Coming back — restore the saved screen if we're not already on it
+    // Coming back — suppress any spurious popstate from the webview for 1 second.
+    // Android webviews sometimes fire popstate on app resume, which would pop the user
+    // to home. This flag tells the popstate handler to ignore those.
+    _suppressNextPopstate = Date.now() + 1000;
+    // Restore the saved screen if we're not already on it
     try {
       var saved = localStorage.getItem('hk_last_screen');
       if (saved && saved !== currentScreen && document.getElementById(saved)) {
@@ -3375,6 +3426,8 @@ document.addEventListener('visibilitychange', function() {
         document.querySelectorAll('.nav-btn').forEach(function(b) {
           b.classList.toggle('active', b.dataset.screen === saved);
         });
+        // Push a fresh state entry so the browser history is aligned with where we actually are
+        try { history.pushState({ screen: saved }, '', window.location.pathname); } catch(e) {}
       }
     } catch(e) {}
   }
