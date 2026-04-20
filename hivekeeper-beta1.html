@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 18:20 20 April 2026 · Settings sub-modal Cancel/Close/X/overlay-tap all return to main Settings -->
+<!-- HiveKeeper · Last updated: 18:45 20 April 2026 · Imperial units toggle added (lb, °F, mph) — weather on inspection timeline now respects unit preference -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 18:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 18:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4487,7 +4487,7 @@ function renderHiveDetail(){
         </div>
         <div class="tl-type">📋 Inspection · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
-        <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}${insp.weather ? ' · ' + insp.weather.icon + ' ' + insp.weather.tempC + '°C ' + insp.weather.condition + (insp.weather.windMph ? ' · ' + insp.weather.windMph + 'mph wind' : '') : ''}</div>
+        <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}${insp.weather ? ' · ' + insp.weather.icon + ' ' + formatTemp(insp.weather.tempC) + ' ' + insp.weather.condition + (insp.weather.windKph ? ' · ' + formatSpeed(insp.weather.windKph) + ' wind' : (insp.weather.windMph ? ' · ' + insp.weather.windMph + 'mph wind' : '')) : ''}</div>
         ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
       </div>
     </div>
@@ -9166,6 +9166,37 @@ function toggleWeather() {
 
 var USE_24H = localStorage.getItem('hk_24h') === '1';
 var USE_LARGE_TEXT = localStorage.getItem('hk_large_text') === '1';
+// Imperial units (pounds, Fahrenheit) — default is metric for UK beekeepers.
+// When true: weights shown in lb, temperatures in °F, distances in miles.
+var USE_IMPERIAL = localStorage.getItem('hk_imperial') === '1';
+
+// Unit helpers. All internal storage stays metric (kg, °C, km) so data stays
+// consistent across devices with different display preferences. Only the
+// formatter output changes.
+function formatWeight(kg) {
+  if (kg === null || kg === undefined || isNaN(kg)) return '—';
+  var n = parseFloat(kg);
+  if (USE_IMPERIAL) {
+    return (n * 2.20462).toFixed(1) + ' lb';
+  }
+  return n.toFixed(n >= 10 ? 0 : 1) + ' kg';
+}
+function formatTemp(c) {
+  if (c === null || c === undefined || isNaN(c)) return '—';
+  var n = parseFloat(c);
+  if (USE_IMPERIAL) {
+    return Math.round(n * 9/5 + 32) + '°F';
+  }
+  return Math.round(n) + '°C';
+}
+function formatSpeed(kph) {
+  if (kph === null || kph === undefined || isNaN(kph)) return '—';
+  var n = parseFloat(kph);
+  if (USE_IMPERIAL) {
+    return Math.round(n * 0.621371) + ' mph';
+  }
+  return Math.round(n) + ' km/h';
+}
 
 function applySettings() {
   // 24h clock toggle indicator
@@ -9224,6 +9255,21 @@ function toggleLargeText() {
   localStorage.setItem('hk_large_text', USE_LARGE_TEXT ? '1' : '0');
   applySettings();
   showToast(USE_LARGE_TEXT ? 'Larger text on' : 'Normal text');
+  saveSettingsToCloud().catch(function(){});
+}
+
+function toggleImperial() {
+  USE_IMPERIAL = !USE_IMPERIAL;
+  localStorage.setItem('hk_imperial', USE_IMPERIAL ? '1' : '0');
+  // Update toggle visual state
+  var tim = document.getElementById('toggle-imperial');
+  if (tim) tim.classList.toggle('active', USE_IMPERIAL);
+  if (tim) tim.classList.toggle('on', USE_IMPERIAL);
+  showToast(USE_IMPERIAL ? 'Imperial units (lb, °F, mph)' : 'Metric units (kg, °C, km/h)');
+  // Re-render things that display units so change is immediate
+  try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
+  try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
+  try { if (typeof fetchWeather === 'function') fetchWeather(); } catch(e) {}
   saveSettingsToCloud().catch(function(){});
 }
 
@@ -10570,6 +10616,10 @@ function openPreferencesModal() {
       + '<div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>'
       + '<div class="settings-toggle" id="toggle-cb"></div>'
     + '</div>'
+    + '<div class="settings-row" onclick="toggleImperial()">'
+      + '<div><div class="settings-label">Imperial units</div><div class="settings-sub">Pounds, °F and mph instead of kg, °C and km/h</div></div>'
+      + '<div class="settings-toggle" id="toggle-imperial"></div>'
+    + '</div>'
     + '<div class="settings-row" id="push-notif-row" onclick="togglePushNotifications()" style="display:none;margin-bottom:16px;">'
       + '<div><div class="settings-label">Push notifications</div><div class="settings-sub">Reminders and swarm alerts</div></div>'
       + '<div class="settings-toggle" id="toggle-push"></div>'
@@ -10594,6 +10644,8 @@ function openPreferencesModal() {
     if (tcb && localStorage.getItem('hk_colour_blind') === '1') tcb.classList.add('active');
     var tps = document.getElementById('toggle-push');
     if (tps && localStorage.getItem('hk_push_notif') === '1') tps.classList.add('active');
+    var tim = document.getElementById('toggle-imperial');
+    if (tim && localStorage.getItem('hk_imperial') === '1') { tim.classList.add('active'); tim.classList.add('on'); }
   } catch(e) {}
 }
 
