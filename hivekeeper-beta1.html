@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 14:30 20 April 2026 · Inspect header cleanup — apiary name inline with Inspecting title, reduced top padding -->
+<!-- HiveKeeper · Last updated: 15:45 20 April 2026 · Ads hidden + Reports section + SOS 15s timeout + Apiary Leaflet refresh on switch + weather on inspections + Account modal (profile + SOS consolidated) + restored frame composition sync -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 14:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 15:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2475,10 +2475,16 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- TOOLS -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📊 Reports</button>
       <button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
+
+      <!-- REPORTS — own section so it's discoverable -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Reports</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">📊</span><span>View inspection reports</span></span>
+        <span style="font-size:16px;opacity:.7;">›</span>
+      </button>
 
       <!-- DATA -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
@@ -2496,11 +2502,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
       <!-- ACCOUNT -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;">🔐 Change password</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">👤</span><span>Your details &amp; emergency contact</span></span>
+        <span style="font-size:16px;opacity:.7;">›</span>
+      </button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;">🔐 Change password</button>
 
-      <!-- EMERGENCY -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Emergency</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openSOSSetup,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;">🆘 Set emergency contact</button>
+      <!-- EMERGENCY section removed — SOS setup now lives inside Account -->
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
@@ -2680,6 +2688,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: SOS -->
   <div class="modal-overlay" id="modal-sos" onclick="closeModal(event,'modal-sos')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Account (profile + contact + SOS) -->
+  <div class="modal-overlay" id="modal-account" onclick="closeModal(event,'modal-account')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
@@ -4478,7 +4492,7 @@ function renderHiveDetail(){
         </div>
         <div class="tl-type">📋 Inspection · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
-        <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}</div>
+        <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}${insp.weather ? ' · ' + insp.weather.icon + ' ' + insp.weather.tempC + '°C ' + insp.weather.condition + (insp.weather.windMph ? ' · ' + insp.weather.windMph + 'mph wind' : '') : ''}</div>
         ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
       </div>
     </div>
@@ -5657,7 +5671,8 @@ function saveInspection(){
     storesLevel:currentInspData.storesLevel||'adequate', storesLevelUserSet:!!currentInspData.storesLevel, swarmRisk:currentInspData.swarmRisk||'none',
     playCups:currentInspData.playCups||false, queenCells:currentInspData.queenCells||false,
     varroaLevel:currentInspData.varroaLevel||'low', varroaCount:currentInspData.varroaCount||null,
-    temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), syncStatus:'synced'
+    temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), syncStatus:'synced',
+    weather: (typeof getCurrentWeatherSnapshot === 'function' ? getCurrentWeatherSnapshot() : null)
   };
   let s=0;
   if(insp.queenSeen) s+=20; else s+=5;
@@ -6030,6 +6045,36 @@ async function fetchWeather() {
     if(_wi) _wi.textContent = '📡';
     if(_wm) _wm.textContent = 'Weather unavailable offline';
     if(_ws) _ws.textContent = 'Open with signal to refresh';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WEATHER SNAPSHOT FOR INSPECTIONS
+// Returns a compact weather object suitable for attaching to an inspection
+// record. Uses the cached weather data (freshest available, no extra API call).
+// Returns null if no cached data or cache is >6 hours old.
+// ═══════════════════════════════════════════════════════════════
+function getCurrentWeatherSnapshot() {
+  try {
+    var cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY));
+    if (!cached || !cached.data || !cached.data.current) return null;
+    // Don't use weather older than 6 hours — for an inspection, stale weather is misleading
+    if (Date.now() - cached.ts > 6 * 60 * 60 * 1000) return null;
+    var c = cached.data.current;
+    var wmo = (typeof WMO_CODES !== 'undefined' && WMO_CODES[c.weathercode]) || { icon: '🌡️', desc: 'Variable' };
+    return {
+      tempC: Math.round(c.temperature_2m),
+      condition: wmo.desc,
+      icon: wmo.icon,
+      windKph: Math.round(c.windspeed_10m),
+      windMph: Math.round(c.windspeed_10m * 0.621371),
+      precipitationMm: c.precipitation || 0,
+      humidity: c.relative_humidity_2m || null,
+      capturedAt: cached.ts
+    };
+  } catch(e) {
+    console.warn('getCurrentWeatherSnapshot failed:', e);
+    return null;
   }
 }
 
@@ -9987,6 +10032,15 @@ function switchApiary(id) {
   renderDashboard();
   renderApiary();
   renderMap();
+  // Leaflet map needs re-centring + marker refresh for the new apiary.
+  // This mirrors the initialisation chain in goTo('s-apiary') so switching apiaries
+  // while on the Apiary screen properly rebuilds the map for the new apiary.
+  if (currentScreen === 's-apiary') {
+    setTimeout(function(){ try{ if (typeof applyApiaryLocation === 'function' && apiary) applyApiaryLocation(apiary); }catch(e){} }, 100);
+    setTimeout(function(){ try{ if (_leafletMap && apiary && apiary.lat && apiary.lng) _leafletMap.setView([apiary.lat, apiary.lng], _leafletMap.getZoom()); }catch(e){} }, 300);
+    setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 500);
+    setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 700);
+  }
   // Reset Inspect screen state — the previously-selected hive almost certainly belongs
   // to the OLD apiary, so we clear it and rebuild the hive selector with the new apiary's hives.
   // Without this, a user on Inspect who switches apiaries sees stale hives and could log an
@@ -10267,6 +10321,141 @@ saveInspection = function() {
   }
 };
 
+// ═══════════════════════════════════════════════════════════════
+// ACCOUNT AREA — consolidated profile, contact, and SOS settings
+// Stores: display name, mobile number, home address, emergency contact (SOS).
+// Writes to localStorage immediately; syncs to Supabase profiles on save.
+// ═══════════════════════════════════════════════════════════════
+function openAccountModal() {
+  var sheet = document.querySelector('#modal-account .modal-sheet');
+  if (!sheet) return;
+
+  var displayName = localStorage.getItem('hk_display_name') || '';
+  var userPhone = localStorage.getItem('hk_user_phone') || '';
+  var userAddress = localStorage.getItem('hk_user_address') || '';
+  var sos = loadSOSContact();
+  var userEmail = (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.email || '' : '';
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDC64 Your account</div>'
+      + '<div onclick="closeModalEl(\'modal-account\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Your personal details and emergency contact. All fields are optional except where marked. Your address is used only for SOS fallback and never shared.</p>'
+
+    // === YOUR DETAILS ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Your details</div>'
+
+    + '<div style="margin-bottom:12px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Display name</label>'
+      + '<input type="text" id="acc-name" value="' + escapeAttr(displayName) + '" placeholder="e.g. Chris" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">Shown in greetings and inspection records</div>'
+    + '</div>'
+
+    + '<div style="margin-bottom:12px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Email</label>'
+      + '<input type="email" value="' + escapeAttr(userEmail) + '" disabled style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;background:var(--cream);color:var(--text-l);">'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">Your sign-in email (cannot be changed here)</div>'
+    + '</div>'
+
+    + '<div style="margin-bottom:12px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Mobile number</label>'
+      + '<input type="tel" id="acc-phone" value="' + escapeAttr(userPhone) + '" placeholder="e.g. 07700 900000" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">Included in SOS messages so your contact can call you back</div>'
+    + '</div>'
+
+    + '<div style="margin-bottom:20px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Home address <span style="color:var(--text-l);font-weight:400;">(optional)</span></label>'
+      + '<textarea id="acc-address" placeholder="Used as SOS fallback if GPS is unavailable" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;min-height:60px;resize:vertical;">' + escapeHtml(userAddress) + '</textarea>'
+    + '</div>'
+
+    // === EMERGENCY CONTACT (SOS) ===
+    + '<div style="font-size:11px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">\uD83C\uDD98 Emergency contact</div>'
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:12px;">When you tap the red SOS button, a message is sent instantly to this contact with your GPS location. Set up one or both methods below.</p>'
+
+    + '<div style="margin-bottom:12px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Contact name</label>'
+      + '<input type="text" id="acc-sos-name" value="' + escapeAttr(sos.name||'') + '" placeholder="e.g. Sarah" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
+    + '</div>'
+
+    + '<div style="margin-bottom:12px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">SMS number</label>'
+      + '<input type="tel" id="acc-sos-sms" value="' + escapeAttr(sos.number||'') + '" placeholder="e.g. 07700 900000" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
+    + '</div>'
+
+    + '<div style="margin-bottom:20px;">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">WhatsApp number <span style="color:var(--text-l);font-weight:400;">(optional)</span></label>'
+      + '<input type="tel" id="acc-sos-wa" value="' + escapeAttr(sos.whatsapp||'') + '" placeholder="e.g. 07700 900000" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;">'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">If set, SOS sends SMS and WhatsApp at the same time</div>'
+    + '</div>'
+
+    + '<button onclick="saveAccount()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Save account details</button>'
+    + '<button onclick="closeModalEl(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
+
+  openModalEl('modal-account');
+}
+
+function saveAccount() {
+  var name = (document.getElementById('acc-name')||{}).value || '';
+  var phone = (document.getElementById('acc-phone')||{}).value || '';
+  var address = (document.getElementById('acc-address')||{}).value || '';
+  var sosName = (document.getElementById('acc-sos-name')||{}).value || '';
+  var sosSms = (document.getElementById('acc-sos-sms')||{}).value || '';
+  var sosWa = (document.getElementById('acc-sos-wa')||{}).value || '';
+
+  name = name.trim(); phone = phone.trim(); address = address.trim();
+  sosName = sosName.trim(); sosSms = sosSms.trim(); sosWa = sosWa.trim();
+
+  // Basic validation — SOS is optional overall, but if any SOS field set, name + one number required
+  var anySos = sosName || sosSms || sosWa;
+  if (anySos) {
+    if (!sosName) { showToast('Emergency contact needs a name'); return; }
+    if (!sosSms && !sosWa) { showToast('Emergency contact needs at least one number'); return; }
+  }
+
+  // Persist to localStorage
+  try {
+    if (name) localStorage.setItem('hk_display_name', name); else localStorage.removeItem('hk_display_name');
+    if (phone) localStorage.setItem('hk_user_phone', phone); else localStorage.removeItem('hk_user_phone');
+    if (address) localStorage.setItem('hk_user_address', address); else localStorage.removeItem('hk_user_address');
+  } catch(e) { console.warn('Account localStorage save failed:', e); }
+
+  // Save SOS contact (reuse existing shape so triggerSOS still works unchanged)
+  saveSOSContact({ name: sosName, number: sosSms, whatsapp: sosWa, myName: name });
+
+  // Sync to Supabase profiles (best-effort — don't block on failure)
+  if (typeof getUserId === 'function' && getUserId() && typeof getSupabase === 'function') {
+    try {
+      var sb = getSupabase();
+      sb.from('profiles').update({
+        display_name: name || null,
+        phone: phone || null,
+        address: address || null,
+        sos_contact_name: sosName || null,
+        sos_sms: sosSms || null,
+        sos_whatsapp: sosWa || null
+      }).eq('id', getUserId()).then(function(resp){
+        if (resp && resp.error) console.warn('Profile sync failed:', resp.error.message);
+      });
+    } catch(e) { console.warn('Profile sync threw:', e); }
+  }
+
+  closeModalEl('modal-account');
+  showToast('\u2705 Account saved');
+
+  // Refresh greeting + display bits that use the name
+  try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
+}
+
+// Small helpers for safe attr/html insertion (in case not already defined)
+if (typeof escapeAttr !== 'function') {
+  window.escapeAttr = function(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+}
+if (typeof escapeHtml !== 'function') {
+  window.escapeHtml = function(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+}
+
 // ═══════════════════════════════════════════════
 // SOS EMERGENCY ALERT
 // ═══════════════════════════════════════════════
@@ -10394,21 +10583,23 @@ function triggerSOS() {
     }
   }
 
-  showToast('\uD83D\uDCCD Getting your current location...');
+  showToast('\uD83D\uDCCD Getting your current location... (up to 15 seconds)');
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         var lat = pos.coords.latitude.toFixed(6);
         var lng = pos.coords.longitude.toFixed(6);
+        var accuracy = pos.coords.accuracy ? Math.round(pos.coords.accuracy) + 'm accurate' : 'live GPS';
+        showToast('\u2705 Using live GPS (' + accuracy + ')');
         sendSOSMessages(contact, buildMessage(lat, lng, true));
       },
       function(err) {
         console.warn('SOS GPS error:', err.code, err.message);
-        showToast('GPS unavailable — using apiary location');
+        showToast('\u26A0\uFE0F GPS unavailable \u2014 using apiary location (message will say so)');
         sendWithGeocoding();
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   } else {
     sendWithGeocoding();
@@ -10596,7 +10787,7 @@ async function onAuthSuccess() {
 async function loadUserProfile() {
   if (!_currentUser) return;
   const sb = getSupabase();
-  const { data } = await sb.from('profiles').select('name, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus').eq('id', _currentUser.id).single();
+  const { data } = await sb.from('profiles').select('name, display_name, phone, address, sos_contact_name, sos_sms, sos_whatsapp, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus').eq('id', _currentUser.id).single();
   if (data) {
     // Store tier for paywall checks — both in-memory and localStorage (canUsePremiumFeature reads from localStorage)
     if (data.tier) {
@@ -10606,6 +10797,21 @@ async function loadUserProfile() {
     if (data.is_founding_beekeeper) localStorage.setItem('hk_founding_beekeeper', '1');
     if (data.referral_code) _referralCode = data.referral_code;
     if (data.referral_hive_bonus) _referralHiveBonus = data.referral_hive_bonus || 0;
+    // Restore personal details on this device (account sync)
+    if (data.display_name) localStorage.setItem('hk_display_name', data.display_name);
+    if (data.phone) localStorage.setItem('hk_user_phone', data.phone);
+    if (data.address) localStorage.setItem('hk_user_address', data.address);
+    // Restore SOS contact on this device
+    if (data.sos_contact_name || data.sos_sms || data.sos_whatsapp) {
+      try {
+        saveSOSContact({
+          name: data.sos_contact_name || '',
+          number: data.sos_sms || '',
+          whatsapp: data.sos_whatsapp || '',
+          myName: data.display_name || data.name || ''
+        });
+      } catch(e) {}
+    }
     updatePlanBadge();
     // Re-render tier-dependent UI so upgrades reflect immediately
     try { renderTrialBanners(); } catch(e) {}
@@ -12057,7 +12263,13 @@ async function pushInspections() {
       health_score: i.healthScore || null,
       notes: i.notes || '',
       transcript: i.transcript || '',
-      photo_urls: i.photoUrls || []
+      photo_urls: i.photoUrls || [],
+      // Frame composition columns (restored after rollback) + weather snapshot (new)
+      frames_brood: i.framesBrood || null,
+      frames_stores: i.framesStores || null,
+      frames_foundation: i.framesFoundation || null,
+      frames_empty: i.framesEmpty || null,
+      weather: i.weather || null
     };
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
@@ -12296,7 +12508,10 @@ async function pullFromSupabase() {
           queenFrame: i.queen_frame, broodFrames: i.brood_frames,
           storesLevel: i.stores_level, swarmRisk: i.swarm_risk,
           varroaLevel: i.varroa_level, temper: i.temper,
-          healthScore: i.health_score, notes: i.notes, transcript: i.transcript
+          healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
+          framesBrood: i.frames_brood, framesStores: i.frames_stores,
+          framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
+          weather: i.weather || null
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mapped));
@@ -12403,7 +12618,10 @@ async function pullFromSupabase() {
               existingInspections.push({ id: i.id, hiveId: i.hive_id, inspectedAt: new Date(i.inspected_at).getTime(),
                 inspectedBy: i.inspected_by, queenSeen: i.queen_seen, broodFrames: i.brood_frames,
                 storesLevel: i.stores_level, swarmRisk: i.swarm_risk, varroaLevel: i.varroa_level,
-                temper: i.temper, healthScore: i.health_score, notes: i.notes, transcript: i.transcript });
+                temper: i.temper, healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
+                framesBrood: i.frames_brood, framesStores: i.frames_stores,
+                framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
+                weather: i.weather || null });
             }
           });
           localStorage.setItem('hk_inspections_v2', JSON.stringify(existingInspections));
@@ -13249,6 +13467,10 @@ var _currentAd = null;
 function renderAdCard() {
   var card = document.getElementById('ad-card');
   if (!card) return;
+  // ADS HIDDEN — paused until we have a real user base on paid tiers.
+  // To re-enable: remove these two lines and the hiding logic restores.
+  card.style.display = 'none';
+  return;
   // Hide ads for Commercial tier
   if (getUserTier() === 'commercial') { card.style.display = 'none'; return; }
   // Pick a random ad, different from last time
@@ -13278,6 +13500,10 @@ var _currentMarketAd = null;
 function renderMarketBanner() {
   var banner = document.getElementById('market-banner');
   if (!banner) return;
+  // ADS HIDDEN — paused until we have a real user base on paid tiers.
+  // To re-enable: remove these two lines.
+  banner.style.display = 'none';
+  return;
   // Pick different ad from current home ad if possible
   var available = HK_ADS.filter(function(a){ return a !== _currentMarketAd; });
   if (!available.length) available = HK_ADS;
@@ -13925,7 +14151,10 @@ async function loadTesterData() {
           swarmRisk: i.swarm_risk, varroaLevel: i.varroa_level,
           temper: i.temper, healthScore: i.health_score,
           notes: i.notes, transcript: i.transcript,
-          photoUrls: i.photo_urls || []
+          photoUrls: i.photo_urls || [],
+          framesBrood: i.frames_brood, framesStores: i.frames_stores,
+          framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
+          weather: i.weather || null
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mappedI));
