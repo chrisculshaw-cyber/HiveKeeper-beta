@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 13:14 20 April 2026 · Rollback rebuild — offline voice queue removed (data-loss fix). Status pill, policy consent offline-trust, stay-logged-in, home speedup retained. -->
+<!-- HiveKeeper · Last updated: 13:25 20 April 2026 · Screen-restore diagnostic logger (#diag to view) + pagehide fallback for hk_last_screen persistence -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:14</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3069,6 +3069,45 @@ function syncUniversalHeaders(screenId) {
 var _userLastNav = Date.now();
 var _userOnHome = true;
 
+// ═══════════════════════════════════════════════════════════════
+// SCREEN-RESTORE DIAGNOSTIC LOGGER
+// Writes key screen-save and screen-restore events to localStorage so we can
+// diagnose why the app resumes on Home instead of the last-visited screen.
+// View the log via URL hash: gethivekeeper.com/hivekeeper-beta1.html#diag
+// Clear the log via URL hash: ...#diag-clear
+// Auto-trims to last 80 entries to avoid runaway growth.
+// ═══════════════════════════════════════════════════════════════
+function diagLog(msg) {
+  try {
+    var log = JSON.parse(localStorage.getItem('hk_screen_diag') || '[]');
+    log.push({ t: new Date().toISOString(), msg: String(msg) });
+    if (log.length > 80) log = log.slice(log.length - 80);
+    localStorage.setItem('hk_screen_diag', JSON.stringify(log));
+  } catch(e) {}
+}
+
+// Show the log as a copy-pastable alert when URL hash is #diag
+function diagShow() {
+  try {
+    var log = JSON.parse(localStorage.getItem('hk_screen_diag') || '[]');
+    if (!log.length) { alert('No diagnostic entries yet.'); return; }
+    var txt = log.map(function(e){ return e.t.substring(11,23) + ' ' + e.msg; }).join('\n');
+    // Use prompt so the text is selectable + copyable on mobile
+    prompt('Screen-restore diagnostic log (' + log.length + ' entries) — tap and hold to copy:', txt);
+  } catch(e) { alert('Could not read log: ' + e.message); }
+}
+function diagClear() {
+  try { localStorage.removeItem('hk_screen_diag'); alert('Diagnostic log cleared.'); } catch(e) {}
+}
+// Hash-based triggers so you don't need UI surface area
+window.addEventListener('hashchange', function() {
+  if (window.location.hash === '#diag') diagShow();
+  else if (window.location.hash === '#diag-clear') diagClear();
+});
+// Fire on load too if hash is already present
+if (window.location.hash === '#diag') setTimeout(diagShow, 1000);
+else if (window.location.hash === '#diag-clear') setTimeout(diagClear, 500);
+
 function goTo(id){
   // Guard: block programmatic goTo('s-home') if user has manually navigated away
   // _userOnHome is reset by the home nav button click directly
@@ -3080,7 +3119,12 @@ function goTo(id){
   // Persist last screen for resume after minimise
   var _safeScreens = ['s-home','s-apiary','s-calendar','s-ai','s-market','s-inspect','s-hive'];
   if (_safeScreens.indexOf(id) >= 0) {
-    try { localStorage.setItem('hk_last_screen', id); } catch(e) {}
+    try {
+      localStorage.setItem('hk_last_screen', id);
+      diagLog('goTo wrote ' + id);
+    } catch(e) { diagLog('goTo write FAILED: ' + e.message); }
+  } else {
+    diagLog('goTo skipped write (unsafe screen: ' + id + ')');
   }
   try { renderTrialBanners(); } catch(e) {}
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
@@ -3179,11 +3223,15 @@ if (document.readyState === 'loading') {
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) {
     // Going to background — persist current screen
-    try { localStorage.setItem('hk_last_screen', currentScreen); } catch(e) {}
+    try {
+      localStorage.setItem('hk_last_screen', currentScreen);
+      diagLog('visibility HIDDEN wrote ' + currentScreen);
+    } catch(e) { diagLog('visibility HIDDEN write FAILED: ' + e.message); }
   } else {
     // Coming back — restore the saved screen if we're not already on it
     try {
       var saved = localStorage.getItem('hk_last_screen');
+      diagLog('visibility VISIBLE, read ' + (saved || 'NULL') + ', current=' + currentScreen);
       if (saved && saved !== currentScreen && document.getElementById(saved)) {
         // Don't use goTo() because of the 15-second home guard; switch screens directly
         var curEl = document.getElementById(currentScreen);
@@ -3194,10 +3242,30 @@ document.addEventListener('visibilitychange', function() {
         document.querySelectorAll('.nav-btn').forEach(function(b) {
           b.classList.toggle('active', b.dataset.screen === saved);
         });
+        diagLog('visibility VISIBLE restored to ' + saved);
       }
-    } catch(e) {}
+    } catch(e) { diagLog('visibility VISIBLE FAILED: ' + e.message); }
   }
 });
+
+// ── PAGEHIDE FALLBACK ─────────────────────────────────────
+// Safety net — fires just before the webview process is killed on Android
+// and when the tab is backgrounded on iOS. This gives a final chance to write
+// hk_last_screen if somehow the earlier writes didn't stick.
+window.addEventListener('pagehide', function(e) {
+  try {
+    if (typeof currentScreen === 'string' && currentScreen) {
+      localStorage.setItem('hk_last_screen', currentScreen);
+      diagLog('pagehide (persisted=' + e.persisted + ') wrote ' + currentScreen);
+    }
+  } catch(err) { diagLog('pagehide FAILED: ' + err.message); }
+});
+
+// Also log page load events to bracket the session
+diagLog('=== PAGE LOAD (readyState=' + document.readyState + ') ===');
+try {
+  diagLog('pre-restore: hk_last_screen=' + (localStorage.getItem('hk_last_screen') || 'NULL'));
+} catch(e) {}
 
 // ── LOAD-TIME SCREEN RESTORE ─────────────────────────────
 // Handles the case where the browser fully reloaded the page (e.g., iOS Safari / WebView
@@ -3207,19 +3275,29 @@ document.addEventListener('visibilitychange', function() {
 function restoreLastScreenOnLoad() {
   try {
     var saved = localStorage.getItem('hk_last_screen');
-    if (!saved || saved === 's-home' || saved === 's-dashboard') return;
+    diagLog('restoreLastScreenOnLoad read=' + (saved || 'NULL'));
+    if (!saved || saved === 's-home' || saved === 's-dashboard') {
+      diagLog('restoreLastScreenOnLoad SKIPPED (null or home)');
+      return;
+    }
     // Only restore "safe" screens that don't require context (e.g. a specific hive that might have been deleted)
     var _safeScreensForRestore = ['s-apiary', 's-calendar', 's-ai', 's-market', 's-inspect'];
-    if (_safeScreensForRestore.indexOf(saved) < 0) return;
+    if (_safeScreensForRestore.indexOf(saved) < 0) {
+      diagLog('restoreLastScreenOnLoad SKIPPED (' + saved + ' not in safe list)');
+      return;
+    }
     // Safe to restore — wait long enough for auth & initial data pulls to complete
     setTimeout(function() {
       try {
         if (typeof goTo === 'function' && document.getElementById(saved)) {
+          diagLog('restoreLastScreenOnLoad calling goTo(' + saved + ')');
           goTo(saved);
+        } else {
+          diagLog('restoreLastScreenOnLoad FAILED (goTo or element missing)');
         }
-      } catch(e) { console.warn('load-time screen restore failed:', e); }
+      } catch(e) { diagLog('restoreLastScreenOnLoad threw: ' + e.message); }
     }, 1500);
-  } catch(e) {}
+  } catch(e) { diagLog('restoreLastScreenOnLoad outer threw: ' + e.message); }
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', restoreLastScreenOnLoad);
