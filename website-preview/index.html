@@ -373,6 +373,62 @@ p { font-size: 17px; line-height: 1.7; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* Extra bees — scattered across the page with distinct flight paths */
+.extra-bee {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.bee-why {
+  top: 40px;
+  right: 5%;
+  width: 48px;
+  height: 48px;
+  opacity: 0.75;
+  animation: beeDrift 11s ease-in-out infinite;
+}
+.bee-features {
+  top: 18%;
+  left: 7%;
+  width: 72px;
+  height: 72px;
+  opacity: 0.55;
+  animation: beeHover 9s ease-in-out infinite;
+}
+.bee-cta {
+  bottom: 20%;
+  right: 8%;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+  animation: beeCircle 13s linear infinite;
+}
+@keyframes beeDrift {
+  0%, 100% { transform: translate(0, 0) rotate(8deg); }
+  33% { transform: translate(-30px, 20px) rotate(-6deg); }
+  66% { transform: translate(-15px, 45px) rotate(12deg); }
+}
+@keyframes beeHover {
+  0%, 100% { transform: translate(0, 0) rotate(-12deg); }
+  20% { transform: translate(8px, -6px) rotate(-8deg); }
+  50% { transform: translate(-6px, 4px) rotate(-16deg); }
+  80% { transform: translate(4px, -2px) rotate(-10deg); }
+}
+@keyframes beeCircle {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-30px, -20px) rotate(-90deg); }
+  50%  { transform: translate(0, -40px) rotate(-180deg); }
+  75%  { transform: translate(30px, -20px) rotate(-270deg); }
+  100% { transform: translate(0, 0) rotate(-360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .extra-bee, .bee-float { animation: none; }
+}
+@media (max-width: 720px) {
+  .bee-features { display: none; }
+}
+
 .hex-deco {
   position: absolute;
   pointer-events: none;
@@ -1071,6 +1127,22 @@ footer {
 </section>
 
 <section class="why" id="why">
+  <svg class="extra-bee bee-why" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+  <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+  <circle cx="47" cy="35" r="1.5" fill="white"/>
+  <circle cx="53" cy="35" r="1.5" fill="white"/>
+  <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+  <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+  <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+</svg>
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Why HiveKeeper</span>
@@ -1107,6 +1179,22 @@ footer {
 </section>
 
 <section class="features" id="features">
+  <svg class="extra-bee bee-features" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+  <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+  <circle cx="47" cy="35" r="1.5" fill="white"/>
+  <circle cx="53" cy="35" r="1.5" fill="white"/>
+  <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+  <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+  <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+</svg>
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">What's actually in the app</span>
@@ -1330,6 +1418,22 @@ footer {
 </section>
 
 <section class="final-cta" id="download">
+  <svg class="extra-bee bee-cta" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+  <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+  <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+  <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+  <circle cx="47" cy="35" r="1.5" fill="white"/>
+  <circle cx="53" cy="35" r="1.5" fill="white"/>
+  <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+  <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+  <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+</svg>
   <div class="wrap final-cta-inner">
     <h2>Start keeping better records <em>this week.</em></h2>
     <p>14-day trial of the full thing. No credit card. Android now, iPhone coming shortly via TestFlight.</p>
