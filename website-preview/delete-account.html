@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delete your HiveKeeper account — HiveKeeper</title>
+<meta name="description" content="Request deletion of your HiveKeeper account and all associated data. No login required.">
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" href="hivekeeper-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --forest: #1F4E3A;
+  --forest-deep: #163527;
+  --honey: #C8730A;
+  --cream: #faf5e9;
+  --ink: #1a1612;
+  --muted: #6b6050;
+  --rule: #d9c9a8;
+  --danger: #B83228;
+  --ui: 'Syne', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--cream);
+  min-height: 100vh;
+  padding: 32px 20px;
+}
+
+.wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.brand img { width: 40px; height: 40px; border-radius: 8px; }
+.brand-name { font-size: 20px; font-weight: 800; color: var(--forest); }
+
+h1 { font-size: 28px; font-weight: 700; color: var(--forest); margin-bottom: 12px; }
+h2 { font-size: 18px; font-weight: 700; color: var(--forest); margin: 24px 0 8px; }
+p { margin-bottom: 12px; color: var(--ink); line-height: 1.7; }
+ul { margin: 8px 0 16px 24px; line-height: 1.8; }
+
+.warning-box {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.warning-box h3 { font-size: 14px; font-weight: 800; color: var(--danger); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
+
+.info-box {
+  background: var(--cream);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+input[type="email"], input[type="text"], textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--rule);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: var(--ui);
+  background: white;
+  color: var(--ink);
+}
+input[type="email"]:focus, input[type="text"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--forest);
+}
+textarea { min-height: 80px; resize: vertical; }
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-family: var(--ui);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-align: center;
+  text-decoration: none;
+}
+.btn-danger { background: var(--danger); color: white; margin-top: 16px; }
+.btn-danger:hover { background: #991b1b; }
+.btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary { background: white; color: var(--ink); border: 1.5px solid var(--rule); margin-top: 10px; }
+
+.contact-link { color: var(--honey); font-weight: 700; text-decoration: none; }
+.contact-link:hover { text-decoration: underline; }
+
+.success, .error {
+  padding: 16px;
+  border-radius: 10px;
+  margin-top: 20px;
+  display: none;
+}
+.success { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; }
+.error { background: #FEF2F2; border: 1px solid #FECACA; color: var(--danger); }
+
+footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 12px; color: var(--muted); text-align: center; }
+footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <img src="hivekeeper-icon.png" alt="HiveKeeper logo">
+    <div class="brand-name">HiveKeeper</div>
+  </div>
+
+  <h1>Delete your account</h1>
+  <p>This page lets you request deletion of your HiveKeeper account and all associated data. You do not need to be signed in, and you do not need to have the app installed.</p>
+
+  <div class="warning-box">
+    <h3>⚠ What gets deleted</h3>
+    <p style="font-weight:700; margin-bottom: 8px;">All of the following are permanently erased:</p>
+    <ul>
+      <li>Your account and sign-in credentials</li>
+      <li>All hives, apiaries, and row configurations</li>
+      <li>All inspections, voice transcripts, and photographs</li>
+      <li>All varroa treatments, harvests, and landmarks</li>
+      <li>All shared apiary invitations (yours and those shared with you)</li>
+      <li>All profile information including emergency contact details</li>
+      <li>Your subscription (active subscriptions will stop billing at the end of the current period)</li>
+    </ul>
+    <p style="font-weight:700; color: var(--danger); margin-top: 12px;">This cannot be undone.</p>
+  </div>
+
+  <div class="info-box">
+    <strong>💡 Want to keep your records?</strong> If you still have access to the app, you can export your data to CSV before deleting. Open the app and go to Settings → Data → Export all data to CSV.
+  </div>
+
+  <h2>Request deletion</h2>
+  <p>Fill in the form below. We'll send a confirmation email to the address on file within 24 hours. Once you confirm via that email, your account and all data will be deleted within 7 working days (GDPR requirement).</p>
+
+  <form id="delete-form" onsubmit="submitDeletion(event)">
+    <div class="form-group">
+      <label for="email">Account email address</label>
+      <input type="email" id="email" name="email" required placeholder="you@example.com">
+    </div>
+
+    <div class="form-group">
+      <label for="confirm-email">Confirm email address</label>
+      <input type="email" id="confirm-email" name="confirm-email" required placeholder="Retype to confirm">
+    </div>
+
+    <div class="form-group">
+      <label for="reason">Reason for deletion (optional)</label>
+      <textarea id="reason" name="reason" placeholder="Anything we could have done better? (Not required)"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="confirm-word">Type <strong style="color: var(--danger);">DELETE</strong> to confirm</label>
+      <input type="text" id="confirm-word" name="confirm-word" required autocomplete="off" oninput="checkConfirm()" placeholder="DELETE">
+    </div>
+
+    <button type="submit" class="btn btn-danger" id="submit-btn" disabled>Request account deletion</button>
+    <a href="/" class="btn btn-secondary">Cancel — keep my account</a>
+  </form>
+
+  <div class="success" id="success-msg">
+    <strong>✅ Request submitted.</strong><br>
+    We've received your deletion request. A confirmation email will be sent to the address you provided within 24 hours. Your account and all data will be deleted within 7 working days of confirmation.
+  </div>
+
+  <div class="error" id="error-msg">
+    <strong>⚠ Something went wrong.</strong><br>
+    Please email <a href="mailto:privacy@gethivekeeper.com" class="contact-link">privacy@gethivekeeper.com</a> with your account email and we'll process your deletion manually within 7 working days.
+  </div>
+
+  <h2>Need help?</h2>
+  <p>If you have trouble with this form or want to ask a question first, email <a href="mailto:privacy@gethivekeeper.com" class="contact-link">privacy@gethivekeeper.com</a>. We reply within 2 working days.</p>
+
+  <h2>Your rights</h2>
+  <p>Under UK GDPR, you have the right to erasure (Article 17). HiveKeeper processes your account data on the lawful basis of contract performance (Article 6(1)(b)). When you request deletion:</p>
+  <ul>
+    <li>We must delete your personal data without undue delay (within 1 month, per Article 12(3))</li>
+    <li>You can request a copy of your data before deletion — email us and we'll export it</li>
+    <li>If any data is retained (e.g. for legal/accounting reasons), we'll tell you what and why</li>
+  </ul>
+
+  <footer>
+    <div>© 2026 Culshaw Consulting Ltd · Company No. 16938477 · Trade Mark Filed UKIPO</div>
+    <div style="margin-top: 6px;">
+      <a href="/">Home</a> · <a href="/privacy">Privacy Policy</a> · <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+function checkConfirm() {
+  var word = document.getElementById('confirm-word').value;
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = (word !== 'DELETE');
+}
+
+async function submitDeletion(e) {
+  e.preventDefault();
+  var email = document.getElementById('email').value.trim();
+  var confirmEmail = document.getElementById('confirm-email').value.trim();
+  var reason = document.getElementById('reason').value.trim();
+  var word = document.getElementById('confirm-word').value;
+  var btn = document.getElementById('submit-btn');
+  var successMsg = document.getElementById('success-msg');
+  var errorMsg = document.getElementById('error-msg');
+
+  // Client-side validation
+  if (email !== confirmEmail) { alert('Email addresses do not match.'); return; }
+  if (word !== 'DELETE') { alert('Type DELETE exactly to confirm.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    // This POSTs to a Cloudflare Worker or Supabase edge function that:
+    //   1. Logs the deletion request
+    //   2. Sends a confirmation email to the user via Resend
+    //   3. Upon email click, triggers the actual deletion (same logic as in-app flow)
+    // Endpoint to be deployed separately. Until then, this falls through to the
+    // error state which directs users to email privacy@gethivekeeper.com.
+    var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/delete-account-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, reason: reason })
+    });
+
+    if (res.ok) {
+      document.getElementById('delete-form').style.display = 'none';
+      successMsg.style.display = 'block';
+      successMsg.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      throw new Error('Request failed with status ' + res.status);
+    }
+  } catch(err) {
+    console.error('Delete request error:', err);
+    document.getElementById('delete-form').style.display = 'none';
+    errorMsg.style.display = 'block';
+    errorMsg.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+</script>
+</body>
+</html>
