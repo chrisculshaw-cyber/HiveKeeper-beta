@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 13:49 20 April 2026 · Apiary indicator on Inspect + inspection timestamps show time of day + pagehide fallback for minimise + screen-restore diagnostic -->
+<!-- HiveKeeper · Last updated: 14:10 20 April 2026 · Inspections now preserve real time-of-day + display helper hides 00:00 times for legacy records -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 13:49</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 14:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3090,6 +3090,30 @@ function diagLog(msg) {
   } catch(e) {}
 }
 
+// ═══════════════════════════════════════════════════════════════
+// INSPECTION TIMESTAMP DISPLAY HELPER
+// Returns a formatted date+time string, or date-only for older inspections
+// whose timestamps were saved as midnight (00:00) before the fix on 20 April 2026.
+// Logic: only show the time if it looks meaningful (not exactly 00:00:00).
+// This means older inspections show date-only (as before) and new ones
+// (saved after this build) show the actual recorded time.
+// ═══════════════════════════════════════════════════════════════
+function formatInspectionWhen(ts, opts) {
+  opts = opts || {};
+  if (!ts) return '';
+  var d = new Date(ts);
+  // Build the date portion first
+  var dateOpts = { day: 'numeric', month: opts.shortMonth ? 'short' : 'long', year: 'numeric' };
+  var datePart = d.toLocaleDateString('en-GB', dateOpts);
+  // Only append time if it's meaningful — i.e., not 00:00 local time (which indicates
+  // legacy data or a date-only pick that got parsed as midnight).
+  if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() === 0) {
+    return datePart;
+  }
+  var timePart = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  return datePart + ', ' + timePart;
+}
+
 // Show the log as a copy-pastable alert when URL hash is #diag
 function diagShow() {
   try {
@@ -4452,7 +4476,7 @@ function renderHiveDetail(){
       </div>
       <div class="tl-card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div class="tl-date">${new Date(insp.inspectedAt).toLocaleString('en-GB',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+          <div class="tl-date">${formatInspectionWhen(insp.inspectedAt)}</div>
           <button onclick="editInspection('${insp.id}')" style="background:transparent;border:none;color:var(--honey);font-size:11px;cursor:pointer;padding:0;font-family:'Syne',sans-serif;font-weight:700;margin-right:12px;">Edit</button>
           <button onclick="confirmDeleteInspection('${insp.id}')" style="background:transparent;border:none;color:var(--red);font-size:11px;cursor:pointer;padding:0;font-family:'Syne',sans-serif;font-weight:700;flex-shrink:0;">Delete</button>
         </div>
@@ -5614,8 +5638,15 @@ function saveInspection(){
       var d = document.getElementById('inspect-date');
       if (d && d.value) {
         var parts = d.value.split('-');
-        // Parse as LOCAL date to avoid UTC midnight shifting the date by timezone offset
-        return new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2])).getTime();
+        var y = parseInt(parts[0]), m = parseInt(parts[1])-1, day = parseInt(parts[2]);
+        // If user picked today's date — use full current time (preserves hours/minutes).
+        // If user picked a different date — fall back to midday of that date so display isn't 00:00.
+        var todayKey = new Date().toISOString().split('T')[0];
+        if (d.value === todayKey) {
+          return Date.now();
+        } else {
+          return new Date(y, m, day, 12, 0, 0).getTime();
+        }
       }
       return Date.now();
     })(),
@@ -9500,7 +9531,7 @@ function showInspectHistory(hiveId) {
   if (!inspections.length) { panel.style.display = 'none'; return; }
 
   var last = inspections[0];
-  var dateStr = new Date(last.inspectedAt).toLocaleString('en-GB',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  var dateStr = formatInspectionWhen(last.inspectedAt);
   var daysAgo = Math.floor((Date.now() - last.inspectedAt) / 86400000);
   var daysStr = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
 
@@ -15251,7 +15282,7 @@ function loadLastInspectionForHive(hiveId) {
   }
 
   var ld = document.getElementById('inspect-last-date');
-  if (ld) ld.textContent = new Date(last.inspectedAt).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  if (ld) ld.textContent = formatInspectionWhen(last.inspectedAt);
 
   var ls = document.getElementById('inspect-last-stats');
   if (ls) {
