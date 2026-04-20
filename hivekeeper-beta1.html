@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 09:51 20 April 2026 · Stay logged in fix + screen restore now respects saved screen on auth success -->
+<!-- HiveKeeper · Last updated: 10:39 20 April 2026 · Home page speed-up: removed duplicate health score render + cached data loads + deferred non-critical work -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 09:51</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 10:39</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3212,137 +3212,29 @@ function viewHive(id){
 // ═══════════════════════════════════════════════
 
 function renderDashboard(){
+  // ── PERF: cache data loads ─────────────────────────────────────
+  // Previously renderDashboard called loadHives/loadInspections/loadApiaries 6-8 times,
+  // each running JSON.parse on the full blob. Cache them once at the top and reuse.
+  var _hivesCache = loadHives();
+  var _apiariesRaw = loadApiaries();
+  var apiaries = _apiariesRaw.filter(function(a){ return !a.id.toString().startsWith('demo-'); });
+
   updateApiaryNameDisplays();
+
   // Show sticky setup prompt if onboarding was never completed
   var setupBanner = document.getElementById('setup-incomplete-banner');
   var onboarded = localStorage.getItem('hk_onboarded') === '1';
-  var apiaries = loadApiaries().filter(function(a){ return !a.id.toString().startsWith('demo-'); });
   if (setupBanner) {
     setupBanner.style.display = (!onboarded && apiaries.length === 0) ? 'flex' : 'none';
   }
   const s = getApiarySummary();
-  const lossRate = Math.round(((s.dead + (s.empty||0)) / s.total)*100);
+  const lossRate = s.total > 0 ? Math.round(((s.dead + (s.empty||0)) / s.total)*100) : 0;
 
-  // Empty state for new users
-  if (s.total === 0) {
-    var dashStatsEl = document.getElementById('dash-stats');
-    var hasSharedApiary = loadApiaries().some(function(a){ return a.sharedWith; });
-    if (dashStatsEl) {
-      dashStatsEl.innerHTML = hasSharedApiary
-        ? '<div style="grid-column:1/-1;color:rgba(255,255,255,.7);font-size:13px;padding:20px;text-align:center;line-height:1.6;">Shared apiary loaded —<br>no hives added yet 🐝</div>'
-        : '<div style="grid-column:1/-1;color:rgba(255,255,255,.7);font-size:14px;padding:20px;text-align:center;line-height:2;">Welcome!<br>Tap <b style="color:white;">Apiary</b> on the right to add your first hive 🐝</div>';
-    }
-    var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
-    var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
-    var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
-    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _gMeta=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _gFirst=_gMeta?(' '+_gMeta.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
-    return;
-  }
-  // Stats
-  document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val">${s.active}</div><div class="stat-label">Active hives</div></div>
-    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#EF9A9A;">${s.dead}</div><div class="stat-label">Lost colonies</div></div>
-    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#FFE082;">${s.unclear}</div><div class="stat-label">Unclear</div></div>
-    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#BDBDBD;">${s.empty||0}</div><div class="stat-label">Empty boxes</div></div>
-  `;
+  // ── CRITICAL PATH: greeting + stats + cards ──────────────────
+  // These are what the user actually sees first. Render them synchronously so
+  // first paint is immediate. Everything else defers to the next frame.
 
-  // Loss banner - show only if significant losses
-  var lossBanner = document.getElementById('loss-banner');
-  var lossStatsEl = document.getElementById('loss-stats');
-  var _lossMonth = new Date().getMonth(); // 0=Jan ... 11=Dec
-  var _isWinter = _lossMonth >= 10 || _lossMonth <= 2; // Nov, Dec, Jan, Feb, Mar
-  if (lossBanner) lossBanner.style.display = (_isWinter && (s.dead > 0 || (s.empty||0) > 0)) ? 'block' : 'none';
-  if (lossStatsEl) lossStatsEl.innerHTML = `
-    <div class="loss-stat"><div class="loss-stat-val">${lossRate}%</div><div class="loss-stat-label">Colony loss rate</div></div>
-    <div class="loss-stat"><div class="loss-stat-val">${s.dead}</div><div class="loss-stat-label">Lost colonies</div></div>
-    <div class="loss-stat"><div class="loss-stat-val">${s.empty||0}</div><div class="loss-stat-label">Empty boxes</div></div>
-  `;
-
-  // Alerts
-  const alerts = runAlertEngine();
-  document.getElementById('alerts-container').innerHTML = alerts.map(a => `
-    <div class="alert-item ${a.severity}" onclick="${a.hiveId ? 'viewHive(\'' + a.hiveId + '\''  + ')' : 'goToApiaryAlerts()'}">
-      <div class="alert-icon">${a.icon}</div>
-      <div style="flex:1;min-width:0;">
-        <div class="alert-title">${a.title}</div>
-        <div class="alert-sub">${a.sub}</div>
-      </div>
-      <div class="alert-arrow">›</div>
-    </div>
-  `).join('');
-
-  // Apiary health score + strongest hive
-  var healthData = calcApiaryHealthScore();
-  var healthSection = document.getElementById('health-score-section');
-  if (healthSection && s.active > 0) {
-    healthSection.style.display = 'block';
-    var scoreVal = document.getElementById('health-score-val');
-    var scoreLabel = document.getElementById('health-score-label');
-    var scoreRing = document.getElementById('health-score-ring');
-    var colour = getHealthColour(healthData.score);
-    if (scoreVal) scoreVal.textContent = healthData.score;
-    if (scoreLabel) { scoreLabel.textContent = getHealthLabel(healthData.score); scoreLabel.style.color = colour; }
-    if (scoreRing) scoreRing.style.borderColor = colour;
-
-    if (healthData.strongest) {
-      var strongName = document.getElementById('strongest-hive-name');
-      var strongMeta = document.getElementById('strongest-hive-meta');
-      var strongCard = document.getElementById('strongest-hive-card');
-      if (strongName) strongName.textContent = healthData.strongest.hive.name;
-      if (strongMeta) strongMeta.textContent = 'Score: ' + healthData.strongest.score + '/100 · ' + getHealthLabel(healthData.strongest.score);
-      if (strongCard) strongCard.onclick = function() { viewHive(healthData.strongest.hive.id); };
-    }
-  } else if (healthSection) {
-    healthSection.style.display = 'none';
-  }
-
-  // Apiary health score + strongest hive
-  var healthData = calcApiaryHealthScore();
-  var healthSection = document.getElementById('health-score-section');
-  if (healthSection && s.active > 0) {
-    healthSection.style.display = 'block';
-    var colour = getHealthColour(healthData.score);
-    var scoreVal = document.getElementById('health-score-val');
-    var scoreLabel = document.getElementById('health-score-label');
-    var scoreRing = document.getElementById('health-score-ring');
-    if (scoreVal) scoreVal.textContent = healthData.score;
-    if (scoreLabel) { scoreLabel.textContent = getHealthLabel(healthData.score); scoreLabel.style.color = colour; }
-    if (scoreRing) scoreRing.style.borderColor = colour;
-    if (healthData.strongest) {
-      var strongName = document.getElementById('strongest-hive-name');
-      var strongMeta = document.getElementById('strongest-hive-meta');
-      var strongCard = document.getElementById('strongest-hive-card');
-      if (strongName) strongName.textContent = healthData.strongest.hive.name;
-      if (strongMeta) strongMeta.textContent = 'Score: ' + healthData.strongest.score + '/100 · ' + getHealthLabel(healthData.strongest.score);
-      if (strongCard) strongCard.onclick = function() { viewHive(healthData.strongest.hive.id); };
-    }
-  } else if (healthSection) {
-    healthSection.style.display = 'none';
-  }
-
-  // Active hives scroll
-  const activeHives = loadHives().filter(h => h.status === 'active' && !h.id.toString().startsWith('demo-'));
-  if (activeHives.length === 0) {
-    document.getElementById('dash-hives').innerHTML = `
-      <div style="padding:20px 4px;text-align:center;">
-        <div style="font-size:36px;margin-bottom:10px;">🐝</div>
-        <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:6px;">No hives yet</div>
-        <div style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.6;">Get started by setting up your apiary and adding your first hive.</div>
-        <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Set up my apiary →</button>
-      </div>`;
-  } else {
-    document.getElementById('dash-hives').innerHTML = activeHives.map(h => {
-    const badge = getBadge(h);
-    return `
-      <div class="hive-mini" onclick="viewHive('${h.id}')">
-        <div style="font-size:24px;margin-bottom:6px;">${getHiveIcon(h)}</div>
-        <div class="hive-mini-name">${h.name}</div>
-        <div class="hive-mini-meta">${h.storesLevel ? h.storesLevel.charAt(0).toUpperCase()+h.storesLevel.slice(1)+' stores' : ''}</div>
-        <div class="badge ${badge.cls}" style="margin-top:8px;font-size:8px;">${badge.text}</div>
-      </div>
-    `;
-  }).join('');
-  }
+  // Greeting (always visible, render first)
   const hour = new Date().getHours();
   var _greetingBase = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
   var _greetingName = '';
@@ -3352,12 +3244,132 @@ function renderDashboard(){
     var _fullName = _storedName || _meta.full_name || _meta.name || '';
     if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
   }
-  document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
-  if (typeof renderFoundingBadge === 'function') renderFoundingBadge();
-  // Update seasonal tip
-  if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser();
-  // Spray status pill on home
-  try { renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
+  var _greetEl = document.getElementById('dash-greeting');
+  if (_greetEl) _greetEl.textContent = _greetingBase + _greetingName;
+
+  // Empty state for new users — return early, nothing else to render
+  if (s.total === 0) {
+    var dashStatsEl = document.getElementById('dash-stats');
+    var hasSharedApiary = _apiariesRaw.some(function(a){ return a.sharedWith; });
+    if (dashStatsEl) {
+      dashStatsEl.innerHTML = hasSharedApiary
+        ? '<div style="grid-column:1/-1;color:rgba(255,255,255,.7);font-size:13px;padding:20px;text-align:center;line-height:1.6;">Shared apiary loaded —<br>no hives added yet 🐝</div>'
+        : '<div style="grid-column:1/-1;color:rgba(255,255,255,.7);font-size:14px;padding:20px;text-align:center;line-height:2;">Welcome!<br>Tap <b style="color:white;">Apiary</b> on the right to add your first hive 🐝</div>';
+    }
+    var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
+    var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
+    var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
+    return;
+  }
+
+  // Stats — render synchronously (primary "at a glance" data)
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val">${s.active}</div><div class="stat-label">Active hives</div></div>
+    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#EF9A9A;">${s.dead}</div><div class="stat-label">Lost colonies</div></div>
+    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#FFE082;">${s.unclear}</div><div class="stat-label">Unclear</div></div>
+    <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#BDBDBD;">${s.empty||0}</div><div class="stat-label">Empty boxes</div></div>
+  `;
+
+  // Active hives scroll — also primary content, render now
+  const activeHives = _hivesCache.filter(function(h){ return h.status === 'active' && !h.id.toString().startsWith('demo-'); });
+  if (activeHives.length === 0) {
+    document.getElementById('dash-hives').innerHTML = `
+      <div style="padding:20px 4px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:10px;">🐝</div>
+        <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:6px;">No hives yet</div>
+        <div style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.6;">Get started by setting up your apiary and adding your first hive.</div>
+        <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Set up my apiary →</button>
+      </div>`;
+  } else {
+    document.getElementById('dash-hives').innerHTML = activeHives.map(function(h) {
+      const badge = getBadge(h);
+      return `
+        <div class="hive-mini" onclick="viewHive('${h.id}')">
+          <div style="font-size:24px;margin-bottom:6px;">${getHiveIcon(h)}</div>
+          <div class="hive-mini-name">${h.name}</div>
+          <div class="hive-mini-meta">${h.storesLevel ? h.storesLevel.charAt(0).toUpperCase()+h.storesLevel.slice(1)+' stores' : ''}</div>
+          <div class="badge ${badge.cls}" style="margin-top:8px;font-size:8px;">${badge.text}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ── DEFERRED: everything below runs after first paint ────────
+  // These features (alerts, health score, loss banner, spray status, seasonal tip,
+  // founding badge) enrich the dashboard but aren't needed for first paint.
+  // requestAnimationFrame gives the browser a chance to paint the critical-path
+  // content first, so the user sees something instantly.
+  var _deferredWork = function() {
+    try {
+      // Loss banner — show only if winter + significant losses
+      var lossBanner = document.getElementById('loss-banner');
+      var lossStatsEl = document.getElementById('loss-stats');
+      var _lossMonth = new Date().getMonth(); // 0=Jan ... 11=Dec
+      var _isWinter = _lossMonth >= 10 || _lossMonth <= 2; // Nov, Dec, Jan, Feb, Mar
+      if (lossBanner) lossBanner.style.display = (_isWinter && (s.dead > 0 || (s.empty||0) > 0)) ? 'block' : 'none';
+      if (lossStatsEl) lossStatsEl.innerHTML = `
+        <div class="loss-stat"><div class="loss-stat-val">${lossRate}%</div><div class="loss-stat-label">Colony loss rate</div></div>
+        <div class="loss-stat"><div class="loss-stat-val">${s.dead}</div><div class="loss-stat-label">Lost colonies</div></div>
+        <div class="loss-stat"><div class="loss-stat-val">${s.empty||0}</div><div class="loss-stat-label">Empty boxes</div></div>
+      `;
+    } catch(e) { console.warn('loss banner:', e); }
+
+    try {
+      // Alerts panel
+      const alerts = runAlertEngine();
+      document.getElementById('alerts-container').innerHTML = alerts.map(function(a) { return `
+        <div class="alert-item ${a.severity}" onclick="${a.hiveId ? 'viewHive(\'' + a.hiveId + '\''  + ')' : 'goToApiaryAlerts()'}">
+          <div class="alert-icon">${a.icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="alert-title">${a.title}</div>
+            <div class="alert-sub">${a.sub}</div>
+          </div>
+          <div class="alert-arrow">›</div>
+        </div>
+      `; }).join('');
+    } catch(e) { console.warn('alerts:', e); }
+
+    try {
+      // Apiary health score + strongest hive — NOTE: previously this block was
+      // duplicated (ran twice back-to-back). Now runs once.
+      var healthData = calcApiaryHealthScore();
+      var healthSection = document.getElementById('health-score-section');
+      if (healthSection && s.active > 0) {
+        healthSection.style.display = 'block';
+        var colour = getHealthColour(healthData.score);
+        var scoreVal = document.getElementById('health-score-val');
+        var scoreLabel = document.getElementById('health-score-label');
+        var scoreRing = document.getElementById('health-score-ring');
+        if (scoreVal) scoreVal.textContent = healthData.score;
+        if (scoreLabel) { scoreLabel.textContent = getHealthLabel(healthData.score); scoreLabel.style.color = colour; }
+        if (scoreRing) scoreRing.style.borderColor = colour;
+
+        if (healthData.strongest) {
+          var strongName = document.getElementById('strongest-hive-name');
+          var strongMeta = document.getElementById('strongest-hive-meta');
+          var strongCard = document.getElementById('strongest-hive-card');
+          if (strongName) strongName.textContent = healthData.strongest.hive.name;
+          if (strongMeta) strongMeta.textContent = 'Score: ' + healthData.strongest.score + '/100 · ' + getHealthLabel(healthData.strongest.score);
+          if (strongCard) strongCard.onclick = function() { viewHive(healthData.strongest.hive.id); };
+        }
+      } else if (healthSection) {
+        healthSection.style.display = 'none';
+      }
+    } catch(e) { console.warn('health score:', e); }
+
+    // Founding badge + spray status pill + seasonal tip
+    try { if (typeof renderFoundingBadge === 'function') renderFoundingBadge(); } catch(e) {}
+    try { if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser(); } catch(e) {}
+    try { if (typeof renderSprayStatus === 'function') renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
+  };
+
+  // Use requestAnimationFrame to let the browser paint the critical-path content
+  // (greeting, stats, hive cards) before we run the deferred work.
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(_deferredWork);
+  } else {
+    setTimeout(_deferredWork, 0);
+  }
 }
 
 // ═══════════════════════════════════════════════
