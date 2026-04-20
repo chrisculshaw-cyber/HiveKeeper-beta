@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 11:20 20 April 2026 · Offline voice recording with IndexedDB queue + persistent offline banner on Inspect -->
+<!-- HiveKeeper · Last updated: 11:30 20 April 2026 · Auto-save after transcription + persistent connection pill (green/red/amber) on Inspect -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 11:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 11:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1464,7 +1464,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:24px;">&#x1F50D;</span><div><div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;">What to look for</div><div style="font-size:10px;color:#854F0B;opacity:.7;">This week's inspection focus</div></div></div>
       <div id="inspect-tip-text" style="font-size:13px;color:#633806;line-height:1.5;"></div>
     </div>
-    <div id="inspect-offline-banner" style="display:none;background:#FFF3CD;border:2px solid #FFB74D;border-radius:10px;padding:10px 14px;margin:8px 20px;font-size:12px;color:#5D4037;line-height:1.5;"></div>
+    <div id="inspect-offline-banner" style="display:flex;align-items:center;gap:8px;background:#E8F5E9;border:2px solid #66BB6A;border-radius:10px;padding:10px 14px;margin:8px 20px;font-size:12px;color:#1B5E20;line-height:1.4;">
+      <span id="inspect-offline-dot" style="width:10px;height:10px;border-radius:50%;background:#43A047;flex-shrink:0;"></span>
+      <span id="inspect-offline-text" style="flex:1;"><b>Online</b> · Ready to record — transcription will be instant</span>
+    </div>
     <div class="voice-recorder">
       <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
       <div class="waveform">
@@ -3214,26 +3217,40 @@ function deleteQueuedRecording(id) {
   });
 }
 
-// Update the offline banner on Inspect screen — shows when offline OR when queue has items.
+// Update the persistent connection pill on Inspect screen.
+// Three states: green (online, no queue), red (offline), amber (online with queued items).
 function updateInspectOfflineBanner() {
   var banner = document.getElementById('inspect-offline-banner');
-  if (!banner) return;
+  var dot = document.getElementById('inspect-offline-dot');
+  var text = document.getElementById('inspect-offline-text');
+  if (!banner || !dot || !text) return;
   var isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
   countQueuedRecordings().then(function(count) {
-    if (isOffline && count > 0) {
-      banner.style.display = 'block';
-      banner.innerHTML = '\uD83D\uDCF5 <b>Offline</b> \u00B7 You can still record. ' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting to transcribe when back online.';
-    } else if (isOffline) {
-      banner.style.display = 'block';
-      banner.innerHTML = '\uD83D\uDCF5 <b>Offline</b> \u00B7 Your voice recording will be saved and transcribed when you\u2019re back online.';
+    if (isOffline) {
+      // RED — offline
+      banner.style.background = '#FFEBEE';
+      banner.style.borderColor = '#E53935';
+      banner.style.color = '#B71C1C';
+      dot.style.background = '#E53935';
+      var waitingText = count > 0 ? ' · ' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting' : '';
+      text.innerHTML = '<b>Offline</b> · Recording will be saved for later processing' + waitingText;
     } else if (count > 0) {
-      banner.style.display = 'block';
-      banner.innerHTML = '\u2728 Back online. <b>' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting</b> \u2014 <span id="inspect-process-queue-btn" style="text-decoration:underline;cursor:pointer;font-weight:700;">Process now</span>';
+      // AMBER — online with items waiting
+      banner.style.background = '#FFF8E1';
+      banner.style.borderColor = '#FFB300';
+      banner.style.color = '#5D4037';
+      dot.style.background = '#FFB300';
+      text.innerHTML = '<b>Online</b> · ' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting — <span id="inspect-process-queue-btn" style="text-decoration:underline;cursor:pointer;font-weight:700;color:#C8730A;">Process now</span>';
       // Wire up the Process now click handler
       var btn = document.getElementById('inspect-process-queue-btn');
       if (btn) btn.onclick = function(ev) { ev.stopPropagation(); processVoiceQueue(); };
     } else {
-      banner.style.display = 'none';
+      // GREEN — online, all good
+      banner.style.background = '#E8F5E9';
+      banner.style.borderColor = '#66BB6A';
+      banner.style.color = '#1B5E20';
+      dot.style.background = '#43A047';
+      text.innerHTML = '<b>Online</b> · Ready to record — transcription will be instant';
     }
   });
 }
@@ -5806,6 +5823,19 @@ function saveInspection(){
         pushInspections().catch(function(){});
       }
     }
+    // ── AUTO-SAVE STAY-ON-SCREEN BEHAVIOUR ──
+    // When saving from voice auto-save (flag set in transcribeWithWhisper), skip the
+    // navigation to Hive detail so the user can review/edit the transcript and chips.
+    if (window._skipNavAfterSave) {
+      window._skipNavAfterSave = false;
+      // Remember the saved inspection ID so subsequent Save taps update it rather than creating a new one.
+      window._editingInspId = _inspIdAtSave;
+      // Relabel the save button to "Save changes"
+      var saveBtn = document.querySelector('#s-inspect button[onclick*="saveInspection"]');
+      if (saveBtn) saveBtn.textContent = 'Save changes ✓';
+      showToast('✓ Inspection saved — edit anything and tap Save changes');
+      return;
+    }
     var photoMsg = uploadedUrls.length ? ' · ' + uploadedUrls.length + ' photo' + (uploadedUrls.length > 1 ? 's' : '') + ' ☁️' : '';
     showToast('✓ Saved — ' + hive.name + photoMsg);
     viewHive(_hiveIdAtSave);
@@ -5824,7 +5854,12 @@ function saveInspection(){
     _saveUrlsAndNavigate();
   }
 
-  setTimeout(function(){ viewHive(currentHiveId); }, 1200);
+  // Delayed viewHive — skip it if we're auto-saving from voice (flag is set at this point
+  // but _saveUrlsAndNavigate clears it, so we capture the intent here before it runs)
+  var _shouldNavigate = !window._skipNavAfterSave;
+  if (_shouldNavigate) {
+    setTimeout(function(){ viewHive(currentHiveId); }, 1200);
+  }
   } catch(e) {
     console.error('saveInspection error:', e);
     showToast('Error saving — ' + e.message);
@@ -6968,9 +7003,27 @@ async function transcribeWithWhisper(audioBlob) {
       var t = data.text.trim();
       var ext = extractData(t);
       currentInspData = Object.assign({transcript:t}, ext);
-      document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
       showTranscript(t);
       showExtractedData(ext);
+      // ── AUTO-SAVE ──
+      // After successful transcription, automatically save the inspection. This matches
+      // the offline queue behaviour (where recordings are auto-saved when processed) and
+      // removes the confusing "tap stop, then tap Save" two-step flow. If Whisper misheard
+      // anything, the user can still edit the transcript (re-extraction happens live) and
+      // tap Save again to update. Labels change accordingly.
+      try {
+        if (typeof saveInspection === 'function' && currentHiveId) {
+          window._skipNavAfterSave = true; // tell saveInspection not to navigate to Hive detail
+          saveInspection();
+          window._inspectionAutoSaved = true; // flag for UI — can show "Saved ✓ tap to edit"
+          document.getElementById('voice-status').textContent = '✓ Inspection saved — tap any field below to edit';
+        } else {
+          document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
+        }
+      } catch(e) {
+        console.error('Auto-save after transcription failed:', e);
+        document.getElementById('voice-status').textContent = '✓ Transcript ready — tap Save inspection below';
+      }
     } else if (data.error) {
       var errMsg = data.error;
       console.error('Whisper error response:', data);
