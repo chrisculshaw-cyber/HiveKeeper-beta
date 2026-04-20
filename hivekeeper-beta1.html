@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:00 20 April 2026 · Subscribe to calendar now also on Calendar screen (below legend) alongside the Settings>Tools entry -->
+<!-- HiveKeeper · Last updated: 22:55 20 April 2026 · Map rotation now properly persists — pullApiaries reads map_bearing from Supabase, pushApiaries writes it back. Fixes long-standing bug where rotation reset to 0 on Apiary screen entry and on apiary switch. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 21:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 22:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12631,6 +12631,10 @@ async function pushApiaries() {
       map_view_lat: (typeof a.mapViewLat === 'number') ? a.mapViewLat : null,
       map_view_lng: (typeof a.mapViewLng === 'number') ? a.mapViewLng : null,
       map_zoom: (typeof a.mapZoom === 'number') ? a.mapZoom : null,
+      // map_bearing — must be pushed so rotation persists across devices and survives
+      // sign-out (localStorage gets cleared on next sign-in's pullApiaries).
+      // Stored as integer degrees 0–359.
+      map_bearing: (typeof a.mapBearing === 'number') ? Math.round(a.mapBearing) : 0,
       is_default: a.isDefault === true,
       created_at: new Date(a.createdAt || Date.now()).toISOString()
     };
@@ -12641,7 +12645,7 @@ async function pushApiaries() {
     if (error) {
       if (error.code === '23505') {
         // Duplicate key — row already exists, try plain update instead
-        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng, map_zoom: rows[i].map_zoom, is_default: rows[i].is_default }).eq('id', rows[i].id).eq('user_id', uid);
+        await sb.from('apiaries').update({ name: rows[i].name, location: rows[i].location, lat: rows[i].lat, lng: rows[i].lng, map_view_lat: rows[i].map_view_lat, map_view_lng: rows[i].map_view_lng, map_zoom: rows[i].map_zoom, map_bearing: rows[i].map_bearing, is_default: rows[i].is_default }).eq('id', rows[i].id).eq('user_id', uid);
       } else if (error.code === '42501') {
         // RLS error on this specific row — skip silently, likely a shared apiary
         console.warn('RLS error pushing apiary', rows[i].id, '— skipping');
@@ -12870,6 +12874,12 @@ async function pullFromSupabase() {
           mapViewLat: (typeof a.map_view_lat === 'number') ? a.map_view_lat : (typeof local.mapViewLat === 'number' ? local.mapViewLat : null),
           mapViewLng: (typeof a.map_view_lng === 'number') ? a.map_view_lng : (typeof local.mapViewLng === 'number' ? local.mapViewLng : null),
           mapZoom: (typeof a.map_zoom === 'number') ? a.map_zoom : (typeof local.mapZoom === 'number' ? local.mapZoom : null),
+          // mapBearing — Supabase column is `map_bearing`. Same defensive pattern: prefer
+          // Supabase value if present, otherwise preserve the locally-saved bearing so
+          // map rotation persists across sign-in/out and across devices once synced.
+          // Without this, loadMapBearing() finds undefined and resets bearing to 0 on
+          // every Apiary screen entry — visible bug where the map "stops rotating".
+          mapBearing: (typeof a.map_bearing === 'number') ? a.map_bearing : (typeof local.mapBearing === 'number' ? local.mapBearing : 0),
           // is_default: same defensive pattern — if Supabase column doesn't exist, preserve local value
           isDefault: (typeof a.is_default === 'boolean') ? a.is_default : (local.isDefault === true),
           createdAt: new Date(a.created_at).getTime()
