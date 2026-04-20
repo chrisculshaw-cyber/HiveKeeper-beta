@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 11:55 20 April 2026 · Fix minimise-returns-to-home (popstate race) + queue hang protection + Apiary first-load empty fix -->
+<!-- HiveKeeper · Last updated: 12:10 20 April 2026 · Queue diagnostic link + IndexedDB error handling + popstate suppression on minimise restore -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 11:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 12:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3236,6 +3236,7 @@ function updateInspectOfflineBanner() {
   if (!banner || !dot || !text) return;
   var isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
   countQueuedRecordings().then(function(count) {
+    console.log('[offline-banner] isOffline=' + isOffline + ' queuedCount=' + count);
     if (isOffline) {
       // RED — offline
       banner.style.background = '#FFEBEE';
@@ -3255,13 +3256,41 @@ function updateInspectOfflineBanner() {
       var btn = document.getElementById('inspect-process-queue-btn');
       if (btn) btn.onclick = function(ev) { ev.stopPropagation(); processVoiceQueue(); };
     } else {
-      // GREEN — online, all good
+      // GREEN — online, all good. Small debug link so users can verify queue state if they expected items.
       banner.style.background = '#E8F5E9';
       banner.style.borderColor = '#66BB6A';
       banner.style.color = '#1B5E20';
       dot.style.background = '#43A047';
-      text.innerHTML = '<b>Online</b> · Ready to record — transcription will be instant';
+      text.innerHTML = '<b>Online</b> · Ready to record — transcription will be instant <span id="inspect-queue-check-btn" style="margin-left:8px;font-size:10px;opacity:0.6;text-decoration:underline;cursor:pointer;">(check queue)</span>';
+      var qcb = document.getElementById('inspect-queue-check-btn');
+      if (qcb) qcb.onclick = function(ev) {
+        ev.stopPropagation();
+        countQueuedRecordings().then(function(c) {
+          getAllQueuedRecordings().then(function(items) {
+            var msg = 'Queue state:\n\n';
+            msg += 'Count: ' + c + '\n';
+            if (items.length === 0) {
+              msg += '\nNo recordings in queue.\n\nIf you expected items here, they may have been consumed during an earlier process attempt, or stored under a different app URL.';
+            } else {
+              msg += '\nItems:\n';
+              items.forEach(function(r, i) {
+                var date = new Date(r.createdAt).toLocaleString('en-GB');
+                msg += (i+1) + '. Hive ID: ' + r.hiveId + ' · ' + date + ' · ' + Math.round((r.blob && r.blob.size || 0)/1024) + 'KB\n';
+              });
+            }
+            alert(msg);
+          });
+        }).catch(function(err) { alert('Queue check failed: ' + err.message); });
+      };
     }
+  }).catch(function(err) {
+    console.error('[offline-banner] count failed:', err);
+    // If count fails, show a neutral state with the error so we can diagnose
+    banner.style.background = '#ECEFF1';
+    banner.style.borderColor = '#90A4AE';
+    banner.style.color = '#455A64';
+    dot.style.background = '#90A4AE';
+    text.innerHTML = '<b>Queue status unavailable</b> · ' + (err.message || 'IndexedDB error');
   });
 }
 
