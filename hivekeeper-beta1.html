@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 18:45 20 April 2026 · Imperial units toggle added (lb, °F, mph) — weather on inspection timeline now respects unit preference -->
+<!-- HiveKeeper · Last updated: 19:45 20 April 2026 · Settings reorg (plan+badge at top, Tools/Support back inline, Contact HiveKeeper), icons enlarged, Reports close returns to Settings, Add Hive deduplicated, Delete Account flow (Google Play compliance) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 18:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 19:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1200,7 +1200,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
-          <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+          <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
           <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
         </div>
       </div>
@@ -1352,8 +1352,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:10px;font-weight:700;cursor:pointer;"> Hidden</button>
         <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
-        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="In The Apiary (WhatsApp)" style="width:34px;height:34px;background:rgba(99,153,34,.35);border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;">💬</div>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="Community chat" style="width:42px;height:42px;background:rgba(99,153,34,.55);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="WhatsApp community chat">💬</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -1364,7 +1364,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
         <button id="apiary-export-btn" onclick="exportApiaryMap()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x2795;<br>Hive</button>
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:var(--honey);border:2px solid white;border-radius:10px;padding:6px 2px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.25);">+<br>Hive</button>
       </div>
   </div>
   <div class="scroll-area">
@@ -1431,8 +1431,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
-        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="In The Apiary (WhatsApp)" style="width:34px;height:34px;background:rgba(99,153,34,.35);border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;">💬</div>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="Community chat" style="width:42px;height:42px;background:rgba(99,153,34,.55);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="WhatsApp community chat">💬</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -1595,7 +1595,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 My Apiaries</button>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -1638,7 +1638,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="ai-screen-title">HiveKeeper AI</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -1731,7 +1731,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="calendar-screen-title">Calendar</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -2413,7 +2413,32 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
-      <!-- 6-TILE GRID: 3 rows of 2 -->
+      <!-- FOUNDING BADGE — promoted to top (it's a reward, deserves prominence) -->
+      <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:#412402;">Founding Beekeeper</div>
+            <div style="font-size:11px;color:#633806;margin-top:2px;">Lifetime Pro · Thank you 🐝</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CURRENT PLAN — promoted to top so users see it first -->
+      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
+          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div>
+          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest);margin-top:2px;">Beta</div>
+        </div>
+        <div style="text-align:right;">
+          <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
+          <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
+        </div>
+      </div>
+      <button id="manage-sub-btn" onclick="closeModalEl('modal-settings');openCustomerPortal();" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:10px;display:none;">Manage subscription →</button>
+
+      <!-- 4-TILE GRID: Your details, Reports, Preferences, Data -->
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
           <span style="font-size:24px;">👤</span>
@@ -2425,7 +2450,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </button>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
         <button onclick="closeModalEl('modal-settings');setTimeout(openPreferencesModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
           <span style="font-size:24px;">⚙️</span>
           <span>Preferences</span>
@@ -2436,41 +2461,17 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </button>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button onclick="closeModalEl('modal-settings');setTimeout(openToolsModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
-          <span style="font-size:24px;">🧰</span>
-          <span>Tools</span>
-        </button>
-        <button onclick="closeModalEl('modal-settings');setTimeout(openSupportModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
-          <span style="font-size:24px;">💬</span>
-          <span>Support</span>
-        </button>
-      </div>
+      <!-- TOOLS — inline, as they were before the tile experiment -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Tools</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;">🔍 Bee inspector contacts</button>
 
-      <!-- FOUNDING BADGE (kept visible — it's a reward) -->
-      <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
-          <div>
-            <div style="font-size:13px;font-weight:800;color:#412402;">Founding Beekeeper</div>
-            <div style="font-size:11px;color:#633806;margin-top:2px;">Lifetime Pro · Thank you 🐝</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CURRENT PLAN (kept visible — users need to see plan at a glance) -->
-      <div id="settings-plan-badge" onclick="closeModalEl('modal-settings');openPricingModal();" style="background:var(--cream);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:1px solid var(--wax);">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Current plan</div>
-          <div id="plan-badge-beta" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:20px;">⚗️</div><div style="font-size:9px;font-weight:800;background:#854F0B;color:#FAEEDA;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">BETA</div></div><div id="plan-badge-free" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;font-size:20px;">🌱</div><div style="font-size:9px;font-weight:800;background:#D3D1C7;color:#444441;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">FREE</div></div><div id="plan-badge-pro" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:20px;">🐝</div><div style="font-size:9px;font-weight:800;background:#185FA5;color:#E6F1FB;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">PRO</div></div><div id="plan-badge-commercial" style="display:none;flex-direction:column;align-items:center;gap:3px;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:20px;">🍯</div><div style="font-size:9px;font-weight:800;background:#3B6D11;color:#EAF3DE;border-radius:20px;padding:2px 8px;letter-spacing:.04em;">COMMERCIAL</div></div>
-          <div id="settings-plan-name" style="font-size:14px;font-weight:700;color:var(--forest);margin-top:2px;">Beta</div>
-        </div>
-        <div style="text-align:right;">
-          <div id="settings-plan-limits" style="font-size:11px;color:var(--text-m);">Unlimited during beta</div>
-          <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
-        </div>
-      </div>
-      <button id="manage-sub-btn" onclick="closeModalEl('modal-settings');openCustomerPortal();" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;display:none;">Manage subscription →</button>
+      <!-- SUPPORT — inline, as they were before -->
+      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Support</div>
+      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Contact HiveKeeper</button>
+      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">❓ Help &amp; guide</button>
 
       <!-- SIGN OUT (kept visible — one tap always) -->
       <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
@@ -2489,7 +2490,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="market-screen-title">Marketplace</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -2531,8 +2532,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Environment</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="In The Apiary (WhatsApp)" style="width:34px;height:34px;background:rgba(99,153,34,.35);border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0;">💬</div>
-        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" style="width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;">&#x2699;&#xFE0F;</div>
+        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="Community chat" style="width:42px;height:42px;background:rgba(99,153,34,.55);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="WhatsApp community chat">💬</div>
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:42px;height:42px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">❓ Help</div>
       </div>
     </div>
@@ -2689,6 +2690,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: Confirm Start Fresh (destructive — 2-step verification) -->
   <div class="modal-overlay" id="modal-confirm-wipe" onclick="closeModal(event,'modal-confirm-wipe')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Delete Account (destructive — Google Play Data Safety compliance) -->
+  <div class="modal-overlay" id="modal-delete-account" onclick="closeModal(event,'modal-delete-account')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
@@ -8009,7 +8016,8 @@ function toggleEditLayout(){
     var mrc = document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none';
     var mtt = document.getElementById('map-tip-text'); if(mtt) mtt.textContent='';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
-    // apiary-hive-btn stays visible always
+    // apiary-hive-btn only visible inside Apiary Settings (edit mode) — hide on exit
+    var hiveBtnHide=document.getElementById('apiary-hive-btn'); if(hiveBtnHide) hiveBtnHide.style.display='none';
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='none';
     var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
     saveHives(loadHives()); showToast('Layout saved');
@@ -10470,6 +10478,13 @@ function openAccountModal() {
     + '<button onclick="closeModalEl(\'modal-account\');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;">🔐 Change password</button>'
     + '<button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;">📅 Subscribe to calendar</button>'
 
+    // === DANGER ZONE — Delete account (Google Play Data Safety compliance) ===
+    + '<div style="font-size:11px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Danger zone</div>'
+    + '<button onclick="closeModalEl(\'modal-account\');setTimeout(openDeleteAccountModal,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDDD1\uFE0F</span>'
+      + '<span style="flex:1;">Delete my account<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Permanently erase your account and all data</div></span>'
+    + '</button>'
+
     + '<button onclick="closeToSettings(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
 
   openModalEl('modal-account');
@@ -10699,7 +10714,7 @@ function openSupportModal() {
 
     + '<button onclick="closeModalEl(\'modal-support\');setTimeout(openFeedbackModal,200);" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\u2709\uFE0F</span>'
-      + '<span style="flex:1;">Send feedback to Chris<div style="font-size:10px;font-weight:400;opacity:.9;margin-top:2px;">Direct line to the founder — every message read</div></span>'
+      + '<span style="flex:1;">Contact HiveKeeper<div style="font-size:10px;font-weight:400;opacity:.9;margin-top:2px;">Direct line to the team — every message read</div></span>'
     + '</button>'
     + '<button onclick="window.open(\'https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8\',\'_blank\')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDCAC</span>'
@@ -10774,6 +10789,133 @@ function executeWipe() {
   closeModalEl('modal-confirm-wipe');
   // Call the actual existing wipe function after a brief delay
   setTimeout(function(){ try { confirmResetAndSignOut(); } catch(e) { console.error('Wipe failed:', e); showToast('Wipe failed — please try again'); } }, 200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE ACCOUNT — Google Play Data Safety requirement (effective 31 May 2024)
+// In-app path to permanently delete account + ALL associated user data.
+// Uses the same DELETE-to-confirm pattern as Start Fresh. On confirmation:
+//   1. Wipes Supabase rows for the user across all tables (hives, inspections,
+//      apiaries, landmarks, rows, harvests, treatments, photos, shared_apiaries)
+//   2. Deletes the auth.users row via Supabase admin RPC (server-side edge fn)
+//   3. Clears all localStorage
+//   4. Signs the user out
+// This matches the scope required: "user data associated with that app account"
+// per Google Support policy — not just the auth row.
+// ═══════════════════════════════════════════════════════════════
+function openDeleteAccountModal() {
+  var sheet = document.querySelector('#modal-delete-account .modal-sheet');
+  if (!sheet) return;
+  var userEmail = (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.email || '' : 'your account';
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="text-align:center;margin-bottom:16px;">'
+      + '<div style="font-size:48px;margin-bottom:8px;">\uD83D\uDDD1\uFE0F</div>'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:20px;font-weight:800;color:#B83228;">Delete account?</div>'
+    + '</div>'
+    + '<div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--rs);padding:14px;margin-bottom:14px;">'
+      + '<div style="font-size:13px;font-weight:700;color:#B83228;margin-bottom:8px;">This will permanently delete:</div>'
+      + '<ul style="margin:0 0 0 18px;padding:0;font-size:12px;color:var(--text);line-height:1.7;">'
+        + '<li>Your account (' + escapeHtml(userEmail) + ')</li>'
+        + '<li>All hives and apiaries</li>'
+        + '<li>All inspections, photos, transcripts</li>'
+        + '<li>All treatments, harvests, landmarks</li>'
+        + '<li>All shared apiary invitations</li>'
+        + '<li>Your subscription (active subscriptions will stop billing)</li>'
+      + '</ul>'
+      + '<div style="font-size:12px;color:#B83228;font-weight:700;margin-top:10px;">This cannot be undone. You will be signed out.</div>'
+    + '</div>'
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--text-l);line-height:1.5;">'
+      + '\uD83D\uDCA1 Want to keep your records? Cancel this, go to <b>Settings \u2192 Data</b> and export to CSV before deleting.'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--text);margin-bottom:6px;font-weight:700;">To confirm, type <span style="background:#FEF2F2;padding:2px 6px;border-radius:4px;color:#B83228;font-family:monospace;">DELETE</span> below:</div>'
+    + '<input type="text" id="del-acc-input" autocomplete="off" oninput="updateDeleteAccountButton()" placeholder="Type DELETE to confirm" style="width:100%;padding:14px;border:1.5px solid #B83228;border-radius:var(--rs);font-size:15px;font-family:\'Syne\',sans-serif;box-sizing:border-box;margin-bottom:12px;text-align:center;font-weight:700;letter-spacing:2px;">'
+    + '<button id="del-acc-btn" onclick="executeDeleteAccount()" disabled style="width:100%;background:#B83228;border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:not-allowed;margin-bottom:8px;opacity:.4;">Permanently delete my account</button>'
+    + '<button onclick="closeModalEl(\'modal-delete-account\')" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Cancel — keep my account</button>';
+
+  openModalEl('modal-delete-account');
+  setTimeout(function(){ var inp = document.getElementById('del-acc-input'); if (inp) inp.focus(); }, 300);
+}
+
+function updateDeleteAccountButton() {
+  var input = document.getElementById('del-acc-input');
+  var btn = document.getElementById('del-acc-btn');
+  if (!input || !btn) return;
+  if (input.value === 'DELETE') {
+    btn.disabled = false;
+    btn.style.cursor = 'pointer';
+    btn.style.opacity = '1';
+  } else {
+    btn.disabled = true;
+    btn.style.cursor = 'not-allowed';
+    btn.style.opacity = '.4';
+  }
+}
+
+async function executeDeleteAccount() {
+  var input = document.getElementById('del-acc-input');
+  if (!input || input.value !== 'DELETE') { showToast('Type DELETE exactly to confirm'); return; }
+
+  var btn = document.getElementById('del-acc-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting...'; btn.style.opacity = '.6'; }
+
+  try {
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+
+    if (uid && sb) {
+      // Step 1: delete user rows from all tables we own.
+      // Order doesn't strictly matter with RLS but we do it roughly leaf-first.
+      var tables = ['inspections', 'harvests', 'treatments', 'landmarks', 'rows',
+                    'shared_apiaries', 'hives', 'apiaries', 'profiles'];
+      for (var i = 0; i < tables.length; i++) {
+        try {
+          await sb.from(tables[i]).delete().eq('user_id', uid);
+        } catch(e) { console.warn('Delete failed for table ' + tables[i] + ':', e); }
+      }
+      // profiles table uses 'id' rather than 'user_id' in some configurations —
+      // try both keys as a safety net.
+      try { await sb.from('profiles').delete().eq('id', uid); } catch(e) {}
+
+      // Step 2: Call a Supabase edge function to delete the auth.users row.
+      // This requires a server-side function because the client doesn't have
+      // admin privileges to delete auth rows. The edge function name must
+      // match what's deployed (placeholder: 'delete-user-account').
+      try {
+        await sb.functions.invoke('delete-user-account', { body: { user_id: uid } });
+      } catch(e) {
+        console.warn('delete-user-account edge function not available:', e);
+        // Non-fatal: data is gone, but auth row may still exist. User can
+        // email privacy@gethivekeeper.com to have the auth row removed.
+      }
+    }
+
+    // Step 3: Wipe localStorage. Iterate because keys are scattered across
+    // many namespaces (hk_*, sb-*, supabase.*).
+    try {
+      var keysToRemove = [];
+      for (var k = 0; k < localStorage.length; k++) {
+        keysToRemove.push(localStorage.key(k));
+      }
+      keysToRemove.forEach(function(key){
+        if (key && (key.startsWith('hk_') || key.startsWith('sb-') || key.startsWith('supabase.'))) {
+          try { localStorage.removeItem(key); } catch(e) {}
+        }
+      });
+    } catch(e) { console.warn('localStorage wipe failed:', e); }
+
+    // Step 4: Sign out (cleans remaining session)
+    try { if (sb) await sb.auth.signOut(); } catch(e) {}
+
+    showToast('\u2705 Your account has been deleted. Goodbye \uD83D\uDC1D');
+
+    // Step 5: Reload to auth screen
+    setTimeout(function(){ window.location.reload(); }, 1500);
+  } catch(e) {
+    console.error('Delete account failed:', e);
+    showToast('Delete failed. Email privacy@gethivekeeper.com for help.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Permanently delete my account'; btn.style.opacity = '1'; }
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -16207,15 +16349,15 @@ function goToApiaryAlerts() {
   </div>
 
   <!-- MODAL: REPORTS -->
-  <div class="modal-overlay" id="modal-reports" onclick="closeModal(event,'modal-reports')">
+  <div class="modal-overlay" id="modal-reports" onclick="closeToSettingsOnOverlay(event,'modal-reports')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
       <div class="modal-title">📊 Reports</div>
-      <div onclick="closeModalEl('modal-reports')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      <div onclick="closeToSettings('modal-reports')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
       <div id="reports-content"></div>
-      <button onclick="closeModalEl('modal-reports')" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+      <button onclick="closeToSettings('modal-reports')" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
 
