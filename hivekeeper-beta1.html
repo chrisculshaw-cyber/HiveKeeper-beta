@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 12:10 20 April 2026 · Queue diagnostic link + IndexedDB error handling + popstate suppression on minimise restore -->
+<!-- HiveKeeper · Last updated: 12:30 20 April 2026 · ROLLBACK — reverted offline voice queue after data-loss incident. Retained: stay-logged-in fix, screen restore, home speedup. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 12:10</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 12:30</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1463,10 +1463,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div id="inspect-tips-section" style="margin:10px 20px 0;background:#FFF8E7;border:1px solid #FAEEDA;border-radius:var(--rs);padding:12px 14px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:24px;">&#x1F50D;</span><div><div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;">What to look for</div><div style="font-size:10px;color:#854F0B;opacity:.7;">This week's inspection focus</div></div></div>
       <div id="inspect-tip-text" style="font-size:13px;color:#633806;line-height:1.5;"></div>
-    </div>
-    <div id="inspect-offline-banner" style="display:flex;align-items:center;gap:8px;background:#E8F5E9;border:2px solid #66BB6A;border-radius:10px;padding:10px 14px;margin:8px 20px;font-size:12px;color:#1B5E20;line-height:1.4;">
-      <span id="inspect-offline-dot" style="width:10px;height:10px;border-radius:50%;background:#43A047;flex-shrink:0;"></span>
-      <span id="inspect-offline-text" style="flex:1;"><b>Online</b> · Ready to record — transcription will be instant</span>
     </div>
     <div class="voice-recorder">
       <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
@@ -2849,9 +2845,7 @@ function saveInspections(i){
           brood_frames: insp.broodFrames || null, stores_level: insp.storesLevel || '',
           swarm_risk: insp.swarmRisk || '', varroa_level: insp.varroaLevel || '',
           temper: insp.temper || '', health_score: insp.healthScore || null,
-          notes: insp.notes || '', transcript: insp.transcript || '',
-          frames_brood: insp.framesBrood || null, frames_stores: insp.framesStores || null,
-          frames_foundation: insp.framesFoundation || null, frames_empty: insp.framesEmpty || null
+          notes: insp.notes || '', transcript: insp.transcript || ''
         });
       }
     });
@@ -3095,7 +3089,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); /* Re-render Apiary list after Supabase pull — fixes "no hives" on first visit */ if (typeof renderApiary === 'function') renderApiary(); }); }catch(e){} }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -3105,18 +3099,8 @@ function goTo(id){
   try { syncUniversalHeaders(id); } catch(e) {}
 }
 
-// Intercept browser back button — navigate within app instead of leaving.
-// EXCEPTION: when the app was just restored from minimise, the mobile webview can
-// fire a spurious popstate event that would pop the screen back to home. The
-// visibilitychange handler sets _suppressNextPopstate for a short window to prevent this.
-var _suppressNextPopstate = 0;
+// Intercept browser back button — navigate within app instead of leaving
 window.addEventListener('popstate', function(e) {
-  if (_suppressNextPopstate && Date.now() < _suppressNextPopstate) {
-    console.log('popstate suppressed (within visibility-restore window)');
-    // Re-push state so the back button still works normally after the grace window
-    history.pushState({ screen: currentScreen }, '', window.location.pathname);
-    return;
-  }
   if (screenHistory.length > 1) {
     screenHistory.pop();
     var prev = screenHistory[screenHistory.length - 1] || 's-home';
@@ -3146,286 +3130,6 @@ function goBack(){
   if(prev==='s-hive') renderHiveDetail();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// OFFLINE VOICE QUEUE — IndexedDB blob storage for offline inspections
-// When users record voice offline, blobs are queued here instead of lost.
-// User manually triggers processing when back online (Process now button).
-// Schema: { id (auto), hiveId, createdAt (ms), blob (Blob), transcribed (bool) }
-// ═══════════════════════════════════════════════════════════════
-var _voiceQueueDB = null;
-var _voiceQueueDBName = 'hivekeeper-voice-queue';
-var _voiceQueueStore = 'recordings';
-
-function openVoiceQueueDB() {
-  return new Promise(function(resolve, reject) {
-    if (_voiceQueueDB) { resolve(_voiceQueueDB); return; }
-    if (typeof indexedDB === 'undefined') { reject(new Error('IndexedDB not supported')); return; }
-    var req = indexedDB.open(_voiceQueueDBName, 1);
-    req.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains(_voiceQueueStore)) {
-        db.createObjectStore(_voiceQueueStore, { keyPath: 'id', autoIncrement: true });
-      }
-    };
-    req.onsuccess = function(e) { _voiceQueueDB = e.target.result; resolve(_voiceQueueDB); };
-    req.onerror = function(e) { reject(new Error('IndexedDB open failed: ' + (e.target.error && e.target.error.message))); };
-  });
-}
-
-// Add a recording to the offline queue. Returns the auto-generated ID.
-function queueOfflineRecording(hiveId, blob) {
-  return openVoiceQueueDB().then(function(db) {
-    return new Promise(function(resolve, reject) {
-      var tx = db.transaction([_voiceQueueStore], 'readwrite');
-      var store = tx.objectStore(_voiceQueueStore);
-      var record = {
-        hiveId: hiveId,
-        createdAt: Date.now(),
-        blob: blob,
-        transcribed: false
-      };
-      var req = store.add(record);
-      req.onsuccess = function() { resolve(req.result); };
-      req.onerror = function() { reject(new Error('Queue add failed: ' + (req.error && req.error.message))); };
-    });
-  });
-}
-
-// Count queued recordings (useful for badge display).
-function countQueuedRecordings() {
-  return openVoiceQueueDB().then(function(db) {
-    return new Promise(function(resolve, reject) {
-      var tx = db.transaction([_voiceQueueStore], 'readonly');
-      var req = tx.objectStore(_voiceQueueStore).count();
-      req.onsuccess = function() { resolve(req.result); };
-      req.onerror = function() { reject(req.error); };
-    });
-  }).catch(function() { return 0; }); // if IDB fails, report 0 rather than crash
-}
-
-// Fetch all queued recordings (returned in insertion order — oldest first).
-function getAllQueuedRecordings() {
-  return openVoiceQueueDB().then(function(db) {
-    return new Promise(function(resolve, reject) {
-      var tx = db.transaction([_voiceQueueStore], 'readonly');
-      var req = tx.objectStore(_voiceQueueStore).getAll();
-      req.onsuccess = function() { resolve(req.result || []); };
-      req.onerror = function() { reject(req.error); };
-    });
-  });
-}
-
-// Remove a recording from the queue after successful processing.
-function deleteQueuedRecording(id) {
-  return openVoiceQueueDB().then(function(db) {
-    return new Promise(function(resolve, reject) {
-      var tx = db.transaction([_voiceQueueStore], 'readwrite');
-      var req = tx.objectStore(_voiceQueueStore).delete(id);
-      req.onsuccess = function() { resolve(); };
-      req.onerror = function() { reject(req.error); };
-    });
-  });
-}
-
-// Update the persistent connection pill on Inspect screen.
-// Three states: green (online, no queue), red (offline), amber (online with queued items).
-function updateInspectOfflineBanner() {
-  var banner = document.getElementById('inspect-offline-banner');
-  var dot = document.getElementById('inspect-offline-dot');
-  var text = document.getElementById('inspect-offline-text');
-  if (!banner || !dot || !text) return;
-  var isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
-  countQueuedRecordings().then(function(count) {
-    console.log('[offline-banner] isOffline=' + isOffline + ' queuedCount=' + count);
-    if (isOffline) {
-      // RED — offline
-      banner.style.background = '#FFEBEE';
-      banner.style.borderColor = '#E53935';
-      banner.style.color = '#B71C1C';
-      dot.style.background = '#E53935';
-      var waitingText = count > 0 ? ' · ' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting' : '';
-      text.innerHTML = '<b>Offline</b> · Recording will be saved for later processing' + waitingText;
-    } else if (count > 0) {
-      // AMBER — online with items waiting
-      banner.style.background = '#FFF8E1';
-      banner.style.borderColor = '#FFB300';
-      banner.style.color = '#5D4037';
-      dot.style.background = '#FFB300';
-      text.innerHTML = '<b>Online</b> · ' + count + ' recording' + (count !== 1 ? 's' : '') + ' waiting — <span id="inspect-process-queue-btn" style="text-decoration:underline;cursor:pointer;font-weight:700;color:#C8730A;">Process now</span>';
-      // Wire up the Process now click handler
-      var btn = document.getElementById('inspect-process-queue-btn');
-      if (btn) btn.onclick = function(ev) { ev.stopPropagation(); processVoiceQueue(); };
-    } else {
-      // GREEN — online, all good. Small debug link so users can verify queue state if they expected items.
-      banner.style.background = '#E8F5E9';
-      banner.style.borderColor = '#66BB6A';
-      banner.style.color = '#1B5E20';
-      dot.style.background = '#43A047';
-      text.innerHTML = '<b>Online</b> · Ready to record — transcription will be instant <span id="inspect-queue-check-btn" style="margin-left:8px;font-size:10px;opacity:0.6;text-decoration:underline;cursor:pointer;">(check queue)</span>';
-      var qcb = document.getElementById('inspect-queue-check-btn');
-      if (qcb) qcb.onclick = function(ev) {
-        ev.stopPropagation();
-        countQueuedRecordings().then(function(c) {
-          getAllQueuedRecordings().then(function(items) {
-            var msg = 'Queue state:\n\n';
-            msg += 'Count: ' + c + '\n';
-            if (items.length === 0) {
-              msg += '\nNo recordings in queue.\n\nIf you expected items here, they may have been consumed during an earlier process attempt, or stored under a different app URL.';
-            } else {
-              msg += '\nItems:\n';
-              items.forEach(function(r, i) {
-                var date = new Date(r.createdAt).toLocaleString('en-GB');
-                msg += (i+1) + '. Hive ID: ' + r.hiveId + ' · ' + date + ' · ' + Math.round((r.blob && r.blob.size || 0)/1024) + 'KB\n';
-              });
-            }
-            alert(msg);
-          });
-        }).catch(function(err) { alert('Queue check failed: ' + err.message); });
-      };
-    }
-  }).catch(function(err) {
-    console.error('[offline-banner] count failed:', err);
-    // If count fails, show a neutral state with the error so we can diagnose
-    banner.style.background = '#ECEFF1';
-    banner.style.borderColor = '#90A4AE';
-    banner.style.color = '#455A64';
-    dot.style.background = '#90A4AE';
-    text.innerHTML = '<b>Queue status unavailable</b> · ' + (err.message || 'IndexedDB error');
-  });
-}
-
-// Process all queued recordings one at a time. Shows progress in the banner.
-// Each recording becomes a full inspection (transcribed, extracted, saved to Supabase).
-// Fetch has a 30-second timeout and each iteration re-checks connectivity so we don't
-// hang indefinitely if the user goes offline mid-processing.
-var _queueProcessing = false;
-async function processVoiceQueue() {
-  if (_queueProcessing) {
-    // User tapped Process now again — offer to reset rather than just saying "already processing"
-    if (confirm('Already processing a recording. If it seems stuck, tap OK to reset. Otherwise cancel.')) {
-      _queueProcessing = false;
-      updateInspectOfflineBanner();
-    }
-    return;
-  }
-  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
-    showToast('\u26A0\uFE0F Still offline \u2014 connect to internet first');
-    return;
-  }
-  _queueProcessing = true;
-  var banner = document.getElementById('inspect-offline-banner');
-  try {
-    var queued = await getAllQueuedRecordings();
-    if (!queued.length) { _queueProcessing = false; updateInspectOfflineBanner(); return; }
-    var total = queued.length;
-    var processed = 0;
-    var failed = 0;
-    for (var i = 0; i < queued.length; i++) {
-      // Before each recording, check we're still online. If user went offline during processing,
-      // bail out rather than hang on fetch.
-      if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
-        console.warn('Queue processing interrupted — went offline at item ' + (i+1));
-        showToast('\u26A0\uFE0F Went offline \u2014 remaining recordings stay in queue');
-        break;
-      }
-      var rec = queued[i];
-      if (banner) banner.innerHTML = '\u23F3 Processing recording ' + (i+1) + ' of ' + total + '\u2026';
-      try {
-        // Send blob to Whisper worker — with a 30 second timeout so a bad connection
-        // can't hang us forever. AbortController is supported by all modern browsers.
-        var controller = new AbortController();
-        var timeoutId = setTimeout(function(){ controller.abort(); }, 30000);
-        var fd = new FormData();
-        fd.append('audio', rec.blob, 'audio.webm');
-        var wr;
-        try {
-          wr = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
-            method: 'POST',
-            body: fd,
-            signal: controller.signal
-          });
-        } catch (fetchErr) {
-          clearTimeout(timeoutId);
-          if (fetchErr.name === 'AbortError') {
-            console.warn('Queue item ' + (i+1) + ' timed out after 30s');
-            failed++;
-            continue;
-          }
-          throw fetchErr;
-        }
-        clearTimeout(timeoutId);
-        var wdata = await wr.json();
-        if (!wr.ok || !wdata.text) { failed++; continue; }
-        var transcript = wdata.text;
-        // Extract structured data from transcript
-        var extracted = typeof extractData === 'function' ? extractData(transcript) : {};
-        // Build inspection record
-        var hive = loadHives().find(function(h){ return h.id === rec.hiveId; });
-        if (!hive) { failed++; await deleteQueuedRecording(rec.id); continue; }
-        var insp = {
-          id: 'insp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-          hiveId: rec.hiveId,
-          inspectedAt: rec.createdAt, // preserve the time the RECORDING happened, not now
-          inspectedBy: (localStorage.getItem('hk_display_name') || 'Me'),
-          transcript: transcript,
-          notes: transcript,
-          queenSeen: extracted.queenSeen || null,
-          queenFrame: extracted.queenFrame || null,
-          broodFrames: extracted.broodFrames || null,
-          broodPattern: extracted.broodPattern || null,
-          storesLevel: extracted.storesLevel || null,
-          swarmRisk: extracted.swarmRisk || null,
-          varroaLevel: extracted.varroaLevel || null,
-          varroaCount: extracted.varroaCount || null,
-          temper: extracted.temper || null,
-          playCups: extracted.playCups || false,
-          queenCells: extracted.queenCells || false,
-          framesBrood: extracted.broodFrames || 0,
-          framesStores: extracted.storesFrames || 0,
-          framesFoundation: extracted.foundationFrames || 0,
-          framesEmpty: extracted.emptyFrames || 0,
-          syncStatus: 'pending'
-        };
-        // Save to localStorage
-        var all = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
-        all.push(insp);
-        localStorage.setItem('hk_inspections_v2', JSON.stringify(all));
-        // Push to Supabase if signed in — don't await, let it complete in background
-        if (typeof pushInspections === 'function' && getUserId && getUserId()) {
-          pushInspections().catch(function(e){ console.warn('queue push failed:', e); });
-        }
-        // Remove from queue
-        await deleteQueuedRecording(rec.id);
-        processed++;
-      } catch (e) {
-        console.error('Queue item failed:', e);
-        failed++;
-      }
-    }
-    _queueProcessing = false;
-    updateInspectOfflineBanner();
-    if (failed === 0 && processed === total) {
-      showToast('\u2705 ' + processed + ' recording' + (processed !== 1 ? 's' : '') + ' transcribed and saved');
-    } else if (processed > 0) {
-      showToast('\u2705 ' + processed + ' saved' + (failed > 0 ? ', \u26A0\uFE0F ' + failed + ' failed' : '') + ' \u2014 remaining items stay in queue');
-    } else {
-      showToast('\u26A0\uFE0F Could not process recordings \u2014 they stay in queue, try again later');
-    }
-    // Refresh views so the new inspections appear
-    try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
-    try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
-  } catch (e) {
-    _queueProcessing = false;
-    console.error('processVoiceQueue fatal:', e);
-    showToast('\u26A0\uFE0F Queue processing failed \u2014 please try again');
-    updateInspectOfflineBanner();
-  }
-}
-
-// Listen for online/offline changes to update the Inspect banner live.
-window.addEventListener('online', function() { updateInspectOfflineBanner(); });
-window.addEventListener('offline', function() { updateInspectOfflineBanner(); });
-
 // ── BACKGROUND / FOREGROUND HANDLING ─────────────────────────
 // When the app is backgrounded (user switches apps, locks phone), save the current screen.
 // When it comes back, restore to that screen instead of snapping to home.
@@ -3438,11 +3142,7 @@ document.addEventListener('visibilitychange', function() {
     // Going to background — persist current screen
     try { localStorage.setItem('hk_last_screen', currentScreen); } catch(e) {}
   } else {
-    // Coming back — suppress any spurious popstate from the webview for 1 second.
-    // Android webviews sometimes fire popstate on app resume, which would pop the user
-    // to home. This flag tells the popstate handler to ignore those.
-    _suppressNextPopstate = Date.now() + 1000;
-    // Restore the saved screen if we're not already on it
+    // Coming back — restore the saved screen if we're not already on it
     try {
       var saved = localStorage.getItem('hk_last_screen');
       if (saved && saved !== currentScreen && document.getElementById(saved)) {
@@ -3455,8 +3155,6 @@ document.addEventListener('visibilitychange', function() {
         document.querySelectorAll('.nav-btn').forEach(function(b) {
           b.classList.toggle('active', b.dataset.screen === saved);
         });
-        // Push a fresh state entry so the browser history is aligned with where we actually are
-        try { history.pushState({ screen: saved }, '', window.location.pathname); } catch(e) {}
       }
     } catch(e) {}
   }
@@ -3486,13 +3184,8 @@ function restoreLastScreenOnLoad() {
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', restoreLastScreenOnLoad);
-  document.addEventListener('DOMContentLoaded', function() {
-    // Update offline banner on load — catches any pending queue items from previous session
-    try { updateInspectOfflineBanner(); } catch(e) {}
-  });
 } else {
   restoreLastScreenOnLoad();
-  try { updateInspectOfflineBanner(); } catch(e) {}
 }
 
 function showToast(msg){
@@ -3519,45 +3212,21 @@ function viewHive(id){
 // ═══════════════════════════════════════════════
 
 function renderDashboard(){
-  // ── PERF: cache data loads ─────────────────────────────────────
-  // Previously renderDashboard called loadHives/loadInspections/loadApiaries 6-8 times,
-  // each running JSON.parse on the full blob. Cache them once at the top and reuse.
-  var _hivesCache = loadHives();
-  var _apiariesRaw = loadApiaries();
-  var apiaries = _apiariesRaw.filter(function(a){ return !a.id.toString().startsWith('demo-'); });
-
   updateApiaryNameDisplays();
-
   // Show sticky setup prompt if onboarding was never completed
   var setupBanner = document.getElementById('setup-incomplete-banner');
   var onboarded = localStorage.getItem('hk_onboarded') === '1';
+  var apiaries = loadApiaries().filter(function(a){ return !a.id.toString().startsWith('demo-'); });
   if (setupBanner) {
     setupBanner.style.display = (!onboarded && apiaries.length === 0) ? 'flex' : 'none';
   }
   const s = getApiarySummary();
-  const lossRate = s.total > 0 ? Math.round(((s.dead + (s.empty||0)) / s.total)*100) : 0;
+  const lossRate = Math.round(((s.dead + (s.empty||0)) / s.total)*100);
 
-  // ── CRITICAL PATH: greeting + stats + cards ──────────────────
-  // These are what the user actually sees first. Render them synchronously so
-  // first paint is immediate. Everything else defers to the next frame.
-
-  // Greeting (always visible, render first)
-  const hour = new Date().getHours();
-  var _greetingBase = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
-  var _greetingName = '';
-  if (typeof _currentUser !== 'undefined' && _currentUser) {
-    var _meta = _currentUser.user_metadata || {};
-    var _storedName = localStorage.getItem('hk_display_name') || '';
-    var _fullName = _storedName || _meta.full_name || _meta.name || '';
-    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
-  }
-  var _greetEl = document.getElementById('dash-greeting');
-  if (_greetEl) _greetEl.textContent = _greetingBase + _greetingName;
-
-  // Empty state for new users — return early, nothing else to render
+  // Empty state for new users
   if (s.total === 0) {
     var dashStatsEl = document.getElementById('dash-stats');
-    var hasSharedApiary = _apiariesRaw.some(function(a){ return a.sharedWith; });
+    var hasSharedApiary = loadApiaries().some(function(a){ return a.sharedWith; });
     if (dashStatsEl) {
       dashStatsEl.innerHTML = hasSharedApiary
         ? '<div style="grid-column:1/-1;color:rgba(255,255,255,.7);font-size:13px;padding:20px;text-align:center;line-height:1.6;">Shared apiary loaded —<br>no hives added yet 🐝</div>'
@@ -3566,10 +3235,10 @@ function renderDashboard(){
     var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
     var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
     var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
+    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _gMeta=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _gFirst=_gMeta?(' '+_gMeta.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
     return;
   }
-
-  // Stats — render synchronously (primary "at a glance" data)
+  // Stats
   document.getElementById('dash-stats').innerHTML = `
     <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val">${s.active}</div><div class="stat-label">Active hives</div></div>
     <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#EF9A9A;">${s.dead}</div><div class="stat-label">Lost colonies</div></div>
@@ -3577,8 +3246,58 @@ function renderDashboard(){
     <div class="stat-box" onclick="goTo('s-apiary')" style="cursor:pointer;"><div class="stat-val" style="color:#BDBDBD;">${s.empty||0}</div><div class="stat-label">Empty boxes</div></div>
   `;
 
-  // Active hives scroll — also primary content, render now
-  const activeHives = _hivesCache.filter(function(h){ return h.status === 'active' && !h.id.toString().startsWith('demo-'); });
+  // Loss banner - show only if significant losses
+  var lossBanner = document.getElementById('loss-banner');
+  var lossStatsEl = document.getElementById('loss-stats');
+  var _lossMonth = new Date().getMonth(); // 0=Jan ... 11=Dec
+  var _isWinter = _lossMonth >= 10 || _lossMonth <= 2; // Nov, Dec, Jan, Feb, Mar
+  if (lossBanner) lossBanner.style.display = (_isWinter && (s.dead > 0 || (s.empty||0) > 0)) ? 'block' : 'none';
+  if (lossStatsEl) lossStatsEl.innerHTML = `
+    <div class="loss-stat"><div class="loss-stat-val">${lossRate}%</div><div class="loss-stat-label">Colony loss rate</div></div>
+    <div class="loss-stat"><div class="loss-stat-val">${s.dead}</div><div class="loss-stat-label">Lost colonies</div></div>
+    <div class="loss-stat"><div class="loss-stat-val">${s.empty||0}</div><div class="loss-stat-label">Empty boxes</div></div>
+  `;
+
+  // Alerts
+  const alerts = runAlertEngine();
+  document.getElementById('alerts-container').innerHTML = alerts.map(a => `
+    <div class="alert-item ${a.severity}" onclick="${a.hiveId ? 'viewHive(\'' + a.hiveId + '\''  + ')' : 'goToApiaryAlerts()'}">
+      <div class="alert-icon">${a.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-sub">${a.sub}</div>
+      </div>
+      <div class="alert-arrow">›</div>
+    </div>
+  `).join('');
+
+  // Apiary health score + strongest hive
+  var healthData = calcApiaryHealthScore();
+  var healthSection = document.getElementById('health-score-section');
+  if (healthSection && s.active > 0) {
+    healthSection.style.display = 'block';
+    var scoreVal = document.getElementById('health-score-val');
+    var scoreLabel = document.getElementById('health-score-label');
+    var scoreRing = document.getElementById('health-score-ring');
+    var colour = getHealthColour(healthData.score);
+    if (scoreVal) scoreVal.textContent = healthData.score;
+    if (scoreLabel) { scoreLabel.textContent = getHealthLabel(healthData.score); scoreLabel.style.color = colour; }
+    if (scoreRing) scoreRing.style.borderColor = colour;
+
+    if (healthData.strongest) {
+      var strongName = document.getElementById('strongest-hive-name');
+      var strongMeta = document.getElementById('strongest-hive-meta');
+      var strongCard = document.getElementById('strongest-hive-card');
+      if (strongName) strongName.textContent = healthData.strongest.hive.name;
+      if (strongMeta) strongMeta.textContent = 'Score: ' + healthData.strongest.score + '/100 · ' + getHealthLabel(healthData.strongest.score);
+      if (strongCard) strongCard.onclick = function() { viewHive(healthData.strongest.hive.id); };
+    }
+  } else if (healthSection) {
+    healthSection.style.display = 'none';
+  }
+
+  // Active hives scroll
+  const activeHives = loadHives().filter(h => h.status === 'active' && !h.id.toString().startsWith('demo-'));
   if (activeHives.length === 0) {
     document.getElementById('dash-hives').innerHTML = `
       <div style="padding:20px 4px;text-align:center;">
@@ -3588,95 +3307,33 @@ function renderDashboard(){
         <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Set up my apiary →</button>
       </div>`;
   } else {
-    document.getElementById('dash-hives').innerHTML = activeHives.map(function(h) {
-      const badge = getBadge(h);
-      return `
-        <div class="hive-mini" onclick="viewHive('${h.id}')">
-          <div style="font-size:24px;margin-bottom:6px;">${getHiveIcon(h)}</div>
-          <div class="hive-mini-name">${h.name}</div>
-          <div class="hive-mini-meta">${h.storesLevel ? h.storesLevel.charAt(0).toUpperCase()+h.storesLevel.slice(1)+' stores' : ''}</div>
-          <div class="badge ${badge.cls}" style="margin-top:8px;font-size:8px;">${badge.text}</div>
-        </div>
-      `;
-    }).join('');
+    document.getElementById('dash-hives').innerHTML = activeHives.map(h => {
+    const badge = getBadge(h);
+    return `
+      <div class="hive-mini" onclick="viewHive('${h.id}')">
+        <div style="font-size:24px;margin-bottom:6px;">${getHiveIcon(h)}</div>
+        <div class="hive-mini-name">${h.name}</div>
+        <div class="hive-mini-meta">${h.storesLevel ? h.storesLevel.charAt(0).toUpperCase()+h.storesLevel.slice(1)+' stores' : ''}</div>
+        <div class="badge ${badge.cls}" style="margin-top:8px;font-size:8px;">${badge.text}</div>
+      </div>
+    `;
+  }).join('');
   }
-
-  // ── DEFERRED: everything below runs after first paint ────────
-  // These features (alerts, health score, loss banner, spray status, seasonal tip,
-  // founding badge) enrich the dashboard but aren't needed for first paint.
-  // requestAnimationFrame gives the browser a chance to paint the critical-path
-  // content first, so the user sees something instantly.
-  var _deferredWork = function() {
-    try {
-      // Loss banner — show only if winter + significant losses
-      var lossBanner = document.getElementById('loss-banner');
-      var lossStatsEl = document.getElementById('loss-stats');
-      var _lossMonth = new Date().getMonth(); // 0=Jan ... 11=Dec
-      var _isWinter = _lossMonth >= 10 || _lossMonth <= 2; // Nov, Dec, Jan, Feb, Mar
-      if (lossBanner) lossBanner.style.display = (_isWinter && (s.dead > 0 || (s.empty||0) > 0)) ? 'block' : 'none';
-      if (lossStatsEl) lossStatsEl.innerHTML = `
-        <div class="loss-stat"><div class="loss-stat-val">${lossRate}%</div><div class="loss-stat-label">Colony loss rate</div></div>
-        <div class="loss-stat"><div class="loss-stat-val">${s.dead}</div><div class="loss-stat-label">Lost colonies</div></div>
-        <div class="loss-stat"><div class="loss-stat-val">${s.empty||0}</div><div class="loss-stat-label">Empty boxes</div></div>
-      `;
-    } catch(e) { console.warn('loss banner:', e); }
-
-    try {
-      // Alerts panel
-      const alerts = runAlertEngine();
-      document.getElementById('alerts-container').innerHTML = alerts.map(function(a) { return `
-        <div class="alert-item ${a.severity}" onclick="${a.hiveId ? 'viewHive(\'' + a.hiveId + '\''  + ')' : 'goToApiaryAlerts()'}">
-          <div class="alert-icon">${a.icon}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="alert-title">${a.title}</div>
-            <div class="alert-sub">${a.sub}</div>
-          </div>
-          <div class="alert-arrow">›</div>
-        </div>
-      `; }).join('');
-    } catch(e) { console.warn('alerts:', e); }
-
-    try {
-      // Apiary health score + strongest hive — NOTE: previously this block was
-      // duplicated (ran twice back-to-back). Now runs once.
-      var healthData = calcApiaryHealthScore();
-      var healthSection = document.getElementById('health-score-section');
-      if (healthSection && s.active > 0) {
-        healthSection.style.display = 'block';
-        var colour = getHealthColour(healthData.score);
-        var scoreVal = document.getElementById('health-score-val');
-        var scoreLabel = document.getElementById('health-score-label');
-        var scoreRing = document.getElementById('health-score-ring');
-        if (scoreVal) scoreVal.textContent = healthData.score;
-        if (scoreLabel) { scoreLabel.textContent = getHealthLabel(healthData.score); scoreLabel.style.color = colour; }
-        if (scoreRing) scoreRing.style.borderColor = colour;
-
-        if (healthData.strongest) {
-          var strongName = document.getElementById('strongest-hive-name');
-          var strongMeta = document.getElementById('strongest-hive-meta');
-          var strongCard = document.getElementById('strongest-hive-card');
-          if (strongName) strongName.textContent = healthData.strongest.hive.name;
-          if (strongMeta) strongMeta.textContent = 'Score: ' + healthData.strongest.score + '/100 · ' + getHealthLabel(healthData.strongest.score);
-          if (strongCard) strongCard.onclick = function() { viewHive(healthData.strongest.hive.id); };
-        }
-      } else if (healthSection) {
-        healthSection.style.display = 'none';
-      }
-    } catch(e) { console.warn('health score:', e); }
-
-    // Founding badge + spray status pill + seasonal tip
-    try { if (typeof renderFoundingBadge === 'function') renderFoundingBadge(); } catch(e) {}
-    try { if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser(); } catch(e) {}
-    try { if (typeof renderSprayStatus === 'function') renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
-  };
-
-  // Use requestAnimationFrame to let the browser paint the critical-path content
-  // (greeting, stats, hive cards) before we run the deferred work.
-  if (typeof requestAnimationFrame === 'function') {
-    requestAnimationFrame(_deferredWork);
-  } else {
-    setTimeout(_deferredWork, 0);
+  const hour = new Date().getHours();
+  var _greetingBase = hour<12?'Good morning,':hour<18?'Good afternoon,':'Good evening,';
+  var _greetingName = '';
+  if (typeof _currentUser !== 'undefined' && _currentUser) {
+    var _meta = _currentUser.user_metadata || {};
+    var _storedName = localStorage.getItem('hk_display_name') || '';
+    var _fullName = _storedName || _meta.full_name || _meta.name || '';
+    if (_fullName) _greetingName = ' ' + _fullName.split(' ')[0];
   }
+  document.getElementById('dash-greeting').textContent = _greetingBase + _greetingName;
+  if (typeof renderFoundingBadge === 'function') renderFoundingBadge();
+  // Update seasonal tip
+  if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser();
+  // Spray status pill on home
+  try { renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -4826,9 +4483,6 @@ function startFreshInspection(){
 }
 
 function renderInspectHeader(){
-  // Refresh the offline banner state every time we enter/render the Inspect screen.
-  // This catches the case where user went offline elsewhere in the app then came here.
-  try { updateInspectOfflineBanner(); } catch(e) {}
   // ALWAYS clear the notes field when entering Inspect, even if no hive is selected yet.
   // Previously this returned early if no hive was found, leaving stale notes visible.
   var _n = document.getElementById('inspect-notes'); if (_n) _n.value = '';
@@ -4945,15 +4599,14 @@ document.addEventListener('visibilitychange', function() {
 function startRecording(){
   if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('voice')) return;
 
-  // ── OFFLINE SUPPORT ──
-  // Previously this blocked recording when offline. Now we allow it — the blob
-  // will be queued in IndexedDB and transcribed when back online.
-  // Update the status message so the user knows what to expect.
-  var _isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
-  if (_isOffline) {
-    console.log('startRecording: offline mode — will queue blob for later transcription');
+  // ── FIX A: ONLINE CHECK ──
+  // Whisper transcription needs internet. If offline, explain clearly and don't pretend to record.
+  // TODO (next build): queue audio blob in IndexedDB and transcribe on reconnect
+  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+    showToast('⚠️ Voice needs internet — connect and try again, or type notes manually');
+    document.getElementById('voice-status').textContent = 'Offline — connect to internet to use voice';
+    return;
   }
-
   // ── FIX B: CHECK MIC API EXISTS BEFORE STARTING ──
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     showToast('⚠️ Microphone not available on this device — please type notes manually');
@@ -5905,19 +5558,6 @@ function saveInspection(){
         pushInspections().catch(function(){});
       }
     }
-    // ── AUTO-SAVE STAY-ON-SCREEN BEHAVIOUR ──
-    // When saving from voice auto-save (flag set in transcribeWithWhisper), skip the
-    // navigation to Hive detail so the user can review/edit the transcript and chips.
-    if (window._skipNavAfterSave) {
-      window._skipNavAfterSave = false;
-      // Remember the saved inspection ID so subsequent Save taps update it rather than creating a new one.
-      window._editingInspId = _inspIdAtSave;
-      // Relabel the save button to "Save changes"
-      var saveBtn = document.querySelector('#s-inspect button[onclick*="saveInspection"]');
-      if (saveBtn) saveBtn.textContent = 'Save changes ✓';
-      showToast('✓ Inspection saved — edit anything and tap Save changes');
-      return;
-    }
     var photoMsg = uploadedUrls.length ? ' · ' + uploadedUrls.length + ' photo' + (uploadedUrls.length > 1 ? 's' : '') + ' ☁️' : '';
     showToast('✓ Saved — ' + hive.name + photoMsg);
     viewHive(_hiveIdAtSave);
@@ -5936,12 +5576,7 @@ function saveInspection(){
     _saveUrlsAndNavigate();
   }
 
-  // Delayed viewHive — skip it if we're auto-saving from voice (flag is set at this point
-  // but _saveUrlsAndNavigate clears it, so we capture the intent here before it runs)
-  var _shouldNavigate = !window._skipNavAfterSave;
-  if (_shouldNavigate) {
-    setTimeout(function(){ viewHive(currentHiveId); }, 1200);
-  }
+  setTimeout(function(){ viewHive(currentHiveId); }, 1200);
   } catch(e) {
     console.error('saveInspection error:', e);
     showToast('Error saving — ' + e.message);
@@ -7085,27 +6720,9 @@ async function transcribeWithWhisper(audioBlob) {
       var t = data.text.trim();
       var ext = extractData(t);
       currentInspData = Object.assign({transcript:t}, ext);
+      document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
       showTranscript(t);
       showExtractedData(ext);
-      // ── AUTO-SAVE ──
-      // After successful transcription, automatically save the inspection. This matches
-      // the offline queue behaviour (where recordings are auto-saved when processed) and
-      // removes the confusing "tap stop, then tap Save" two-step flow. If Whisper misheard
-      // anything, the user can still edit the transcript (re-extraction happens live) and
-      // tap Save again to update. Labels change accordingly.
-      try {
-        if (typeof saveInspection === 'function' && currentHiveId) {
-          window._skipNavAfterSave = true; // tell saveInspection not to navigate to Hive detail
-          saveInspection();
-          window._inspectionAutoSaved = true; // flag for UI — can show "Saved ✓ tap to edit"
-          document.getElementById('voice-status').textContent = '✓ Inspection saved — tap any field below to edit';
-        } else {
-          document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
-        }
-      } catch(e) {
-        console.error('Auto-save after transcription failed:', e);
-        document.getElementById('voice-status').textContent = '✓ Transcript ready — tap Save inspection below';
-      }
     } else if (data.error) {
       var errMsg = data.error;
       console.error('Whisper error response:', data);
@@ -7145,47 +6762,18 @@ stopRecording = function() {
     _recordingWasInterrupted = false;
   }
 
-  // ── OFFLINE: QUEUE THE BLOB INSTEAD OF DISCARDING ──
-  // If offline when recording finished, save the audio blob to IndexedDB so the user
-  // can process it later when back online. This replaces the old "audio lost" behaviour.
+  // ── FIX D: ONLINE CHECK BEFORE TRANSCRIPTION ──
+  // Even if recording worked, we need internet to transcribe. Check here before starting upload.
+  // TODO (next build): if offline, queue audio blob in IndexedDB and transcribe on reconnect.
   if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
-    document.getElementById('voice-status').textContent = 'Saving recording for later…';
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-      mediaRecorder.onstop = function() {
-        try { mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
-        if (!audioChunks || audioChunks.length === 0) {
-          showToast('⚠️ No audio captured — try again');
-          document.getElementById('voice-status').textContent = 'No audio captured';
-          return;
-        }
-        var blob = new Blob(audioChunks, { type: 'audio/webm' });
-        if (blob.size < 1000) {
-          showToast('⚠️ Recording too short');
-          document.getElementById('voice-status').textContent = 'Too short';
-          return;
-        }
-        var hiveIdForQueue = currentHiveId;
-        if (!hiveIdForQueue) {
-          showToast('⚠️ Please select a hive before recording offline');
-          document.getElementById('voice-status').textContent = 'Select a hive first';
-          return;
-        }
-        queueOfflineRecording(hiveIdForQueue, blob).then(function(id) {
-          console.log('Offline recording queued, id=' + id + ', size=' + blob.size);
-          showToast('📵 Saved for later — will transcribe when online');
-          document.getElementById('voice-status').textContent = 'Saved offline · will process when back online';
-          updateInspectOfflineBanner();
-        }).catch(function(err) {
-          console.error('Failed to queue offline recording:', err);
-          showToast('⚠️ Could not save recording — please type notes manually');
-          document.getElementById('voice-status').textContent = 'Save failed — type notes manually';
-        });
-      };
-    } else {
-      showToast('⚠️ Recorder not ready — please try again');
-      document.getElementById('voice-status').textContent = 'Recorder error — try again';
-    }
+    showToast('⚠️ Went offline during recording — audio lost. Type notes manually or retry when online.');
+    document.getElementById('voice-status').textContent = 'Offline — type notes manually';
+    try {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); });
+      }
+    } catch(e) {}
     return;
   }
 
@@ -10816,8 +10404,6 @@ async function onAuthSuccess() {
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
 
   // Render with cloud data — but respect any saved screen from before the reload.
-  // If the user was on Inspect/Apiary/Calendar etc when the OS killed the webview,
-  // don't bounce them back to Home after re-authenticating.
   var _savedScreen = null;
   try { _savedScreen = localStorage.getItem('hk_last_screen'); } catch(e) {}
   var _safeRestoreScreens = ['s-apiary', 's-calendar', 's-ai', 's-market', 's-inspect'];
@@ -10949,12 +10535,8 @@ async function authSignUp() {
 async function authSignIn() {
   var email = document.getElementById('auth-email').value.trim();
   var password = document.getElementById('auth-password').value;
-  // NOTE: "Stay logged in" checkbox is now advisory only. The previous implementation
-  // attached a beforeunload handler that called sb.auth.signOut() — but on mobile webviews
-  // (Median wrapper) beforeunload fires whenever the OS backgrounds the app (phone calls,
-  // app switches, low memory), causing unwanted server-side logouts. Supabase sessions
-  // expire and auto-refresh naturally, so we rely on that for security instead.
-  // Users who genuinely want to end their session can use Sign Out in Settings.
+  var remember = document.getElementById('auth-remember');
+  var keepSignedIn = !remember || remember.checked;
 
   if (!email || !password) { authError('Please enter your email and password'); return; }
 
@@ -10964,6 +10546,11 @@ async function authSignIn() {
 
   authLoading(false);
   if (error) { authError(error.message); return; }
+
+  // NOTE: "Stay logged in" checkbox is advisory only. Previously attached a beforeunload
+  // handler that called sb.auth.signOut() — but mobile webviews fire beforeunload on app
+  // background (phone calls, switches, low memory), causing unwanted logouts. Supabase
+  // session refresh handles security via persistSession + autoRefreshToken.
 
   // Call onAuthSuccess directly
   if (data && data.user) {
@@ -11176,8 +10763,8 @@ function handleSignIn() {
   var password = document.getElementById('signin-password').value;
   var btn = document.getElementById('signin-btn');
   var errEl = document.getElementById('auth-error');
-  // "Stay logged in" is advisory-only now; we read checked state for UI feedback but
-  // don't attach a signOut handler (caused unwanted logouts on mobile webview).
+  var remember = document.getElementById('auth-remember');
+  var keepSignedIn = !remember || remember.checked;
 
   if (!email || !password) { errEl.textContent = 'Please enter your email and password'; return; }
   if (errEl) errEl.textContent = '';
@@ -11207,9 +10794,7 @@ function handleSignIn() {
         errEl.style.display = 'block';
         return;
       }
-      // NOTE: "Stay logged in" checkbox is advisory only (see authSignIn comment).
-      // Previous beforeunload signOut handler caused unwanted logouts on mobile webview
-      // when the OS backgrounded the app. Supabase session refresh handles security.
+      // "Stay logged in" advisory only — see authSignIn comment. Removed beforeunload signOut.
       // onAuthStateChange handles success
     })
     .catch(function(e) {
@@ -12274,11 +11859,6 @@ async function pushInspections() {
       health_score: i.healthScore || null,
       notes: i.notes || '',
       transcript: i.transcript || '',
-      // Frame composition counters — now synced to Supabase (20 Apr 2026)
-      frames_brood: i.framesBrood || null,
-      frames_stores: i.framesStores || null,
-      frames_foundation: i.framesFoundation || null,
-      frames_empty: i.framesEmpty || null,
       photo_urls: i.photoUrls || []
     };
   });
@@ -12518,9 +12098,7 @@ async function pullFromSupabase() {
           queenFrame: i.queen_frame, broodFrames: i.brood_frames,
           storesLevel: i.stores_level, swarmRisk: i.swarm_risk,
           varroaLevel: i.varroa_level, temper: i.temper,
-          healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
-          framesBrood: i.frames_brood, framesStores: i.frames_stores,
-          framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty
+          healthScore: i.health_score, notes: i.notes, transcript: i.transcript
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mapped));
@@ -12627,9 +12205,7 @@ async function pullFromSupabase() {
               existingInspections.push({ id: i.id, hiveId: i.hive_id, inspectedAt: new Date(i.inspected_at).getTime(),
                 inspectedBy: i.inspected_by, queenSeen: i.queen_seen, broodFrames: i.brood_frames,
                 storesLevel: i.stores_level, swarmRisk: i.swarm_risk, varroaLevel: i.varroa_level,
-                temper: i.temper, healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
-                framesBrood: i.frames_brood, framesStores: i.frames_stores,
-                framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty });
+                temper: i.temper, healthScore: i.health_score, notes: i.notes, transcript: i.transcript });
             }
           });
           localStorage.setItem('hk_inspections_v2', JSON.stringify(existingInspections));
@@ -12793,11 +12369,7 @@ saveInspections = function(inspections) {
         temper: insp.temper || '',
         health_score: insp.healthScore || null,
         notes: insp.notes || '',
-        transcript: insp.transcript || '',
-        frames_brood: insp.framesBrood || null,
-        frames_stores: insp.framesStores || null,
-        frames_foundation: insp.framesFoundation || null,
-        frames_empty: insp.framesEmpty || null
+        transcript: insp.transcript || ''
       });
     });
     showToast('📵 Saved offline — will sync when back online');
@@ -14155,9 +13727,7 @@ async function loadTesterData() {
           swarmRisk: i.swarm_risk, varroaLevel: i.varroa_level,
           temper: i.temper, healthScore: i.health_score,
           notes: i.notes, transcript: i.transcript,
-          photoUrls: i.photo_urls || [],
-          framesBrood: i.frames_brood, framesStores: i.frames_stores,
-          framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty
+          photoUrls: i.photo_urls || []
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mappedI));
