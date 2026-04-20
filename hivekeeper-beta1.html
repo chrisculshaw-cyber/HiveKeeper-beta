@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 18:00 20 April 2026 · Map fixes: invalidateSize after rotation transform, full map rebuild on apiary switch, safety-net invalidate on init -->
+<!-- HiveKeeper · Last updated: 18:20 20 April 2026 · Settings sub-modal Cancel/Close/X/overlay-tap all return to main Settings -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 18:00</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 18:20</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2658,31 +2658,31 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
 
   <!-- MODAL: Account (profile + contact + SOS) -->
-  <div class="modal-overlay" id="modal-account" onclick="closeModal(event,'modal-account')">
+  <div class="modal-overlay" id="modal-account" onclick="closeToSettingsOnOverlay(event,'modal-account')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
 
   <!-- MODAL: Data (import/export consolidated) -->
-  <div class="modal-overlay" id="modal-data" onclick="closeModal(event,'modal-data')">
+  <div class="modal-overlay" id="modal-data" onclick="closeToSettingsOnOverlay(event,'modal-data')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
 
   <!-- MODAL: Preferences (all toggles consolidated) -->
-  <div class="modal-overlay" id="modal-preferences" onclick="closeModal(event,'modal-preferences')">
+  <div class="modal-overlay" id="modal-preferences" onclick="closeToSettingsOnOverlay(event,'modal-preferences')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
 
   <!-- MODAL: Tools (refer, share, inspector contacts) -->
-  <div class="modal-overlay" id="modal-tools" onclick="closeModal(event,'modal-tools')">
+  <div class="modal-overlay" id="modal-tools" onclick="closeToSettingsOnOverlay(event,'modal-tools')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
 
   <!-- MODAL: Support (feedback, WhatsApp, help) -->
-  <div class="modal-overlay" id="modal-support" onclick="closeModal(event,'modal-support')">
+  <div class="modal-overlay" id="modal-support" onclick="closeToSettingsOnOverlay(event,'modal-support')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
@@ -5946,6 +5946,32 @@ async function handleAIPhotoUpload(event) {
 function openModalEl(id){ var el=document.getElementById(id); if(el) el.classList.add('open'); }
 function closeModalEl(id){ var el=document.getElementById(id); if(el) el.classList.remove('open'); }
 function closeModal(e,id){ if(e.target===document.getElementById(id)) closeModalEl(id); }
+
+// ═══════════════════════════════════════════════════════════════
+// Close a Settings sub-modal and return to the main Settings modal.
+// Used by Cancel/Close/X close buttons AND by tap-outside handlers, so all
+// three close paths behave consistently: user came from Settings, goes back
+// to Settings. The 220ms delay lets the sub-modal close animation complete
+// before Settings is re-opened, which avoids a visual glitch.
+// ═══════════════════════════════════════════════════════════════
+function closeToSettings(subModalId) {
+  closeModalEl(subModalId);
+  setTimeout(function(){
+    try {
+      openModalEl('modal-settings');
+      // Settings has some state restoration helpers — call them if present so
+      // plan badge, sign-out button, founding badge etc. render correctly.
+      if (typeof addSignOutToSettings === 'function') addSignOutToSettings();
+      if (typeof updatePlanBadge === 'function') updatePlanBadge();
+    } catch(e) { console.warn('closeToSettings reopen failed:', e); }
+  }, 220);
+}
+// Variant for use with closeModal(event, id) — only triggers if user tapped the overlay
+function closeToSettingsOnOverlay(event, subModalId) {
+  if (event.target === document.getElementById(subModalId)) {
+    closeToSettings(subModalId);
+  }
+}
 
 // ═══════════════════════════════════════════════
 // INIT
@@ -10340,7 +10366,7 @@ function openAccountModal() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
       + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDC64 Your account</div>'
-      + '<div onclick="closeModalEl(\'modal-account\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+      + '<div onclick="closeToSettings(\'modal-account\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
     + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Your personal details and emergency contact. All fields are optional except where marked. Your address is used only for SOS fallback and never shared.</p>'
@@ -10398,7 +10424,7 @@ function openAccountModal() {
     + '<button onclick="closeModalEl(\'modal-account\');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;">🔐 Change password</button>'
     + '<button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;">📅 Subscribe to calendar</button>'
 
-    + '<button onclick="closeModalEl(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
+    + '<button onclick="closeToSettings(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
 
   openModalEl('modal-account');
 }
@@ -10448,7 +10474,7 @@ function saveAccount() {
     } catch(e) { console.warn('Profile sync threw:', e); }
   }
 
-  closeModalEl('modal-account');
+  closeToSettings('modal-account');
   showToast('\u2705 Account saved');
 
   // Refresh greeting + display bits that use the name
@@ -10475,7 +10501,7 @@ function openDataModal() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
       + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCBE Data</div>'
-      + '<div onclick="closeModalEl(\'modal-data\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+      + '<div onclick="closeToSettings(\'modal-data\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
     + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Manage your HiveKeeper data — sync, import, export, or start over.</p>'
@@ -10512,7 +10538,7 @@ function openDataModal() {
       + '<span style="flex:1;">Start fresh — clear all data<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Requires typed confirmation. Cannot be undone.</div></span>'
     + '</button>'
 
-    + '<button onclick="closeModalEl(\'modal-data\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+    + '<button onclick="closeToSettings(\'modal-data\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-data');
 }
@@ -10527,7 +10553,7 @@ function openPreferencesModal() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
       + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\u2699\uFE0F Preferences</div>'
-      + '<div onclick="closeModalEl(\'modal-preferences\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+      + '<div onclick="closeToSettings(\'modal-preferences\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
     + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Customise how HiveKeeper looks and behaves.</p>'
@@ -10549,7 +10575,7 @@ function openPreferencesModal() {
       + '<div class="settings-toggle" id="toggle-push"></div>'
     + '</div>'
 
-    + '<button onclick="closeModalEl(\'modal-preferences\')" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+    + '<button onclick="closeToSettings(\'modal-preferences\')" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-preferences');
 
@@ -10581,7 +10607,7 @@ function openToolsModal() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
       + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83E\uDDF0 Tools</div>'
-      + '<div onclick="closeModalEl(\'modal-tools\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+      + '<div onclick="closeToSettings(\'modal-tools\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
     + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Share HiveKeeper with other beekeepers, collaborate on apiaries, and find your local Bee Inspector.</p>'
@@ -10599,7 +10625,7 @@ function openToolsModal() {
       + '<span style="flex:1;">Bee inspector contacts<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Your Regional Bee Inspector details</div></span>'
     + '</button>'
 
-    + '<button onclick="closeModalEl(\'modal-tools\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+    + '<button onclick="closeToSettings(\'modal-tools\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-tools');
 }
@@ -10614,7 +10640,7 @@ function openSupportModal() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
       + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCAC Support</div>'
-      + '<div onclick="closeModalEl(\'modal-support\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+      + '<div onclick="closeToSettings(\'modal-support\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
     + '</div>'
 
     + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Get help, send feedback, or join the beekeeper community.</p>'
@@ -10632,7 +10658,7 @@ function openSupportModal() {
       + '<span style="flex:1;">Help &amp; guide<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">How to use HiveKeeper</div></span>'
     + '</button>'
 
-    + '<button onclick="closeModalEl(\'modal-support\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+    + '<button onclick="closeToSettings(\'modal-support\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-support');
 }
