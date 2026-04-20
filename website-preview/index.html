@@ -117,18 +117,18 @@ p { font-size: 17px; line-height: 1.7; }
   padding: 8px 0;
 }
 .nav-links a:hover { color: var(--honey); }
-.nav-cta {
+.nav-links a.nav-cta {
   background: var(--forest);
   color: #ffffff;
-  padding: 12px 26px;
+  padding: 14px 32px;
   border-radius: 999px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   transition: all 0.2s;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 6px rgba(31, 78, 58, 0.2);
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25);
 }
-.nav-cta:hover { background: var(--forest-deep); transform: translateY(-1px); }
+.nav-links a.nav-cta:hover { background: var(--forest-deep); color: #ffffff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(31, 78, 58, 0.3); }
 @media (max-width: 720px) {
   .nav-links a:not(.nav-cta) { display: none; }
 }
@@ -954,9 +954,9 @@ footer {
       <svg class="hex-deco hex-deco-2" viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg"><path d="M30 2l24 14v20L30 50 6 36V16z" fill="#C8730A" opacity="0.2"/></svg>
 
       <svg class="bee-float" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- Wings (smaller, behind body, translucent) -->
-        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#E8F4FB" opacity="0.75" transform="rotate(-25 42 38)" stroke="#b8d4e8" stroke-width="0.5"/>
-        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#E8F4FB" opacity="0.75" transform="rotate(25 58 38)" stroke="#b8d4e8" stroke-width="0.5"/>
+        <!-- Wings (visible, translucent blue-grey with defined stroke) -->
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
         <!-- Body (elongated oval, angled like a flying bee) -->
         <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
         <!-- Stripes across body -->
