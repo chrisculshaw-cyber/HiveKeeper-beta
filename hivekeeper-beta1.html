@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 15:45 20 April 2026 · Ads hidden + Reports section + SOS 15s timeout + Apiary Leaflet refresh on switch + weather on inspections + Account modal (profile + SOS consolidated) + restored frame composition sync -->
+<!-- HiveKeeper · Last updated: 16:15 20 April 2026 · Settings reorganised: Your details + Reports at top (2-up), Subscribe to calendar + Change password moved into Account modal, export options consolidated into Data modal -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 15:45</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 20 April 2026 at 16:15</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2412,24 +2412,19 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
-      <!-- PROFILE NAME -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your name</div>
-        <div style="display:flex;gap:8px;">
-          <input id="settings-display-name" type="text" placeholder="Your display name" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
-          <div id="settings-name-save-btn" onclick="saveDisplayName()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
-        </div>
+      <!-- TOP ROW: Your details + Reports (two tiles side-by-side) -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">👤</span>
+          <span>Your details</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📊</span>
+          <span>Reports</span>
+        </button>
       </div>
-      <!-- PROFILE PHONE -->
-      <div style="margin-bottom:14px;">
-        <div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Your phone</div>
-        <div style="font-size:10px;color:var(--text-l);margin-bottom:6px;line-height:1.5;">Used for SOS messages and auto-filling Asian Hornet reports. Kept private.</div>
-        <div style="display:flex;gap:8px;">
-          <input id="settings-phone" type="tel" placeholder="e.g. 07700 900123" style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid var(--wax);font-size:14px;font-family:'Syne',sans-serif;color:var(--text);" />
-          <div id="settings-phone-save-btn" onclick="saveProfilePhone()" style="background:var(--forest);color:white;border-radius:20px;padding:10px 16px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0;">Save</div>
-        </div>
-      </div>
-      <!-- ACCOUNT -->
+
+      <!-- FOUNDING BADGE -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:40px;height:40px;border-radius:50%;background:#BA7517;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">&#x1F3C5;</div>
@@ -2475,40 +2470,25 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <!-- TOOLS -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Tools</div>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🔍 Bee inspector contacts</button>
 
-      <!-- REPORTS — own section so it's discoverable -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Reports</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-        <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">📊</span><span>View inspection reports</span></span>
-        <span style="font-size:16px;opacity:.7;">›</span>
-      </button>
-
-      <!-- DATA -->
+      <!-- DATA — single entry point that opens Export/Import sub-modal -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Data</div>
+      <button onclick="closeModalEl('modal-settings');setTimeout(openDataModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:8px;">📥 <span>Import / Export data</span></span>
+        <span style="font-size:14px;opacity:.6;">›</span>
+      </button>
       <button onclick="pushAllToSupabase()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">☁️ Sync to cloud</button>
-      <button onclick="openImportModal()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📤 Import from BeeBase / CSV</button>
-      <button onclick="exportToCSV()" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📥 Export all data to CSV</button>
-      <button onclick="exportBeeBase()" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">📋 Export to BeeBase / NBU format</button>
       <button onclick="confirmResetAndSignOut()" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">🔄 Start fresh — clear all data</button>
 
       <!-- SUPPORT -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Support</div>
       <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Send feedback to Chris</button>
       <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:8px;">❓ Help &amp; guide</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">❓ Help &amp; guide</button>
 
-      <!-- ACCOUNT -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">Account</div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-        <span style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">👤</span><span>Your details &amp; emergency contact</span></span>
-        <span style="font-size:16px;opacity:.7;">›</span>
-      </button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;">🔐 Change password</button>
-
-      <!-- EMERGENCY section removed — SOS setup now lives inside Account -->
+      <!-- Change password and Subscribe to calendar now live inside the Account modal -->
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
@@ -2694,6 +2674,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: Account (profile + contact + SOS) -->
   <div class="modal-overlay" id="modal-account" onclick="closeModal(event,'modal-account')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Data (import/export consolidated) -->
+  <div class="modal-overlay" id="modal-data" onclick="closeModal(event,'modal-data')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
     </div>
   </div>
@@ -10390,7 +10376,13 @@ function openAccountModal() {
       + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">If set, SOS sends SMS and WhatsApp at the same time</div>'
     + '</div>'
 
-    + '<button onclick="saveAccount()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Save account details</button>'
+    + '<button onclick="saveAccount()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:16px;">Save account details</button>'
+
+    // === ACCOUNT ACTIONS ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Account actions</div>'
+    + '<button onclick="closeModalEl(\'modal-account\');setTimeout(openChangePassword,200);" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:8px;">🔐 Change password</button>'
+    + '<button onclick="subscribeToCalendar()" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;">📅 Subscribe to calendar</button>'
+
     + '<button onclick="closeModalEl(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
 
   openModalEl('modal-account');
@@ -10454,6 +10446,46 @@ if (typeof escapeAttr !== 'function') {
 }
 if (typeof escapeHtml !== 'function') {
   window.escapeHtml = function(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA MODAL — consolidated import/export
+// Single entry point that gathers Import from BeeBase/CSV, Export to CSV,
+// Export to BeeBase/NBU into one sub-modal so main Settings is less cluttered.
+// ═══════════════════════════════════════════════════════════════
+function openDataModal() {
+  var sheet = document.querySelector('#modal-data .modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDCE5 Import &amp; Export</div>'
+      + '<div onclick="closeModalEl(\'modal-data\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:20px;">Move your beekeeping data in or out of HiveKeeper. All exports include inspections, hives, apiaries, and notes.</p>'
+
+    // === IMPORT ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Import</div>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openImportModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDCE4</span>'
+      + '<span style="flex:1;">Import from BeeBase / CSV<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Bring in existing hive records</div></span>'
+    + '</button>'
+
+    // === EXPORT ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Export</div>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportToCSV,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDCCB</span>'
+      + '<span style="flex:1;">Export all data to CSV<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Full CSV of everything — inspections, hives, apiaries</div></span>'
+    + '</button>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDCD1</span>'
+      + '<span style="flex:1;">Export to BeeBase / NBU format<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">For Regional Bee Inspector compliance</div></span>'
+    + '</button>'
+
+    + '<button onclick="closeModalEl(\'modal-data\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-data');
 }
 
 // ═══════════════════════════════════════════════
