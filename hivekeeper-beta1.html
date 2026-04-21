@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 11:46 21 April 2026 BST · Minimise/restore bug fixed — Android WebView fires spurious popstate on backgrounding/foregrounding which was triggering the "already at home, go home" branch. Now suppressed via visibility transition flag. -->
+<!-- HiveKeeper · Last updated: 12:13 21 April 2026 BST · Two fixes: (1) Apiary action grid was hardcoded to 4 columns but only shows 3 buttons by default, leaving a gap on the right until Apiary Settings was toggled — now correctly 3 columns by default. (2) New apiary prompt no longer pre-fills "My Second Apiary", now blank with hint text embedded in the question. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 11:46</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 12:13</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1358,7 +1358,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
     </div>
         <div id="edit-mode-banner" style="display:none;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-size:11px;color:white;text-align:center;margin-bottom:6px;">Drag hives to reposition · Tap Done when finished</div>
-        <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;">
+        <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px;">
         <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
         <button onclick="openShareApiary()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
@@ -10278,7 +10278,7 @@ function openApiarySwitcher() {
 
 function addNewApiary() {
   if (!canAddApiary()) { showUpgradeModal('apiary'); return; }
-  var name = prompt('New apiary name:', 'My Second Apiary');
+  var name = prompt('Name this apiary (e.g. Home Apiary, Wood Farm, Top Field):', '');
   if (!name || !name.trim()) return;
   var newId = uid();
   var newApiary = { id: newId, name: name.trim(), location: '', lat: null, lng: null, createdAt: Date.now() };
