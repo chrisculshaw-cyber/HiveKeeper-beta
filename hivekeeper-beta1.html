@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:58 21 April 2026 BST · Two UX fixes from field test: (1) Wake-lock intro modal: checkbox+button combo replaced with two clear buttons — "Don't show again" (one tap permanent suppress + close) and "Got it" (just close this time, shows again next session). Previous two-step UX was confusing — tap checkbox, nothing visually committed, tap Got it. (2) Row ordering: naturalRowSort comparator added, applied in loadRows() on every read (self-healing — persists back to Supabase only if order actually changed, no spurious writes). Fixes "Row 2, 4, 1, 3" lexicographic mess from earlier auto-reconcile runs. Also applied defensively in renderHiveListDropdown. -->
+<!-- HiveKeeper · Last updated: 22:20 21 April 2026 BST · Voice recorder reliability fixes from field feedback (three symptoms): (A) tap doesn't respond — root cause: _recBusy flag could get stuck true after async errors or navigation, silently dropping subsequent taps. Fix: button.disabled is now the primary interlock (not _recBusy), and a 10-second recovery timer force-enables the button if anything leaves it stuck. All startRecording/stopRecording exit paths now clear this timer. (B) counter runs but not recording — root cause: 3s warning toast was missed in the field; now also auto-stops at 6s if still no audio chunks received, so beekeeper doesn't keep talking into the void. Added mediaRecorder.requestData() nudge at 3s for Android WebView compatibility. (C) need to press stop twice — root cause: button re-enable race during mediaRecorder.stop() async callback. Fix: button stays disabled through the entire async stop→onstop cycle, guaranteed re-enabled by _reenableRecBtn() or the recovery timer. Also added diagnostic logging behind window._hkDiag for future debugging. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:58</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 22:20</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5159,7 +5159,55 @@ function renderInspectHeader(){
     : '<div class="photo-add" onclick="addPhoto()" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">📷<span style="font-size:8px;color:var(--text-l);font-weight:700;">AI</span></div>';
 }
 
-function toggleRecord(){ recording ? stopRecording() : startRecording(); }
+// _recBusy prevents the classic double-tap race: tap mic → UI says "requesting"
+// while getUserMedia is pending → user taps again → two MediaRecorders spawn.
+// Also covers the other direction: tap stop → mediaRecorder.stop() is async, if
+// user taps again before onstop completes they'd kick off a new recording with
+// the old one mid-teardown. One guard covers both gates.
+var _recBusy = false;
+function toggleRecord(){
+  var _rb = document.getElementById('rec-btn');
+  // If the button is visibly disabled, drop the tap — the disable state is
+  // our primary interlock. Also check the _recBusy fallback for paths that
+  // might not have disabled the button yet.
+  if ((_rb && _rb.disabled) || _recBusy) {
+    if (window._hkDiag) console.log('[rec] toggle ignored — btn disabled:', _rb && _rb.disabled, 'busy:', _recBusy);
+    // Give the user visible feedback so they know their tap registered but
+    // was rejected — previously the tap was silently dropped which made the
+    // app feel unresponsive. "No response" symptom the user reported.
+    showToast(recording ? 'Still processing — please wait' : 'Starting up — please wait');
+    return;
+  }
+  if (window._hkDiag) console.log('[rec] toggle tap —', recording ? 'stopping' : 'starting');
+  _recBusy = true;
+  // Disable the button immediately so rapid double-taps can't fire a second
+  // start/stop before the first completes its async work. Re-enabled by the
+  // respective start/stop paths when they're done.
+  if (_rb) { _rb.disabled = true; _rb.style.opacity = '0.6'; }
+  // Safety net: if something goes wrong and neither startRecording nor
+  // stopRecording re-enables the button within 8 seconds, force it back.
+  // Also clear _recBusy unconditionally — previously only cleared if the
+  // button was still disabled, meaning a stuck _recBusy with enabled button
+  // would freeze toggleRecord permanently.
+  clearTimeout(window._recBtnRecoveryTimer);
+  window._recBtnRecoveryTimer = setTimeout(function(){
+    var _rbR = document.getElementById('rec-btn');
+    if (_recBusy || (_rbR && _rbR.disabled)) {
+      console.warn('[rec] recovery timer fired — force-clearing record state');
+      if (_rbR) { _rbR.disabled = false; _rbR.style.opacity = ''; }
+      _recBusy = false;
+    }
+  }, 8000);
+  try {
+    if (recording) stopRecording();
+    else startRecording();
+  } catch(e) {
+    console.error('[rec] toggle error:', e);
+    // Something synchronous threw — release the guard so the button works again
+    if (_rb) { _rb.disabled = false; _rb.style.opacity = ''; }
+    _recBusy = false;
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 // SCREEN WAKE LOCK — keep screen on while voice recording
@@ -5253,7 +5301,12 @@ document.addEventListener('visibilitychange', function() {
 });
 
 function startRecording(){
-  if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('voice')) return;
+  if (typeof checkFeatureLimit === 'function' && !checkFeatureLimit('voice')) {
+    var _rbF = document.getElementById('rec-btn'); if (_rbF) { _rbF.disabled = false; _rbF.style.opacity = ''; }
+    _recBusy = false;
+    clearTimeout(window._recBtnRecoveryTimer);
+    return;
+  }
 
   // ── FIX A: ONLINE CHECK ──
   // Whisper transcription needs internet. If offline, explain clearly and don't pretend to record.
@@ -5261,14 +5314,27 @@ function startRecording(){
   if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
     showToast('⚠️ Voice needs internet — connect and try again, or type notes manually');
     document.getElementById('voice-status').textContent = 'Offline — connect to internet to use voice';
+    var _rbOff = document.getElementById('rec-btn'); if (_rbOff) { _rbOff.disabled = false; _rbOff.style.opacity = ''; }
+    _recBusy = false;
+    clearTimeout(window._recBtnRecoveryTimer);
     return;
   }
   // ── FIX B: CHECK MIC API EXISTS BEFORE STARTING ──
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     showToast('⚠️ Microphone not available on this device — please type notes manually');
     document.getElementById('voice-status').textContent = 'Microphone not supported — type notes manually';
+    var _rbNM = document.getElementById('rec-btn'); if (_rbNM) { _rbNM.disabled = false; _rbNM.style.opacity = ''; }
+    _recBusy = false;
+    clearTimeout(window._recBtnRecoveryTimer);
     return;
   }
+
+  // Hold busy guard for the ENTIRE async window (getUserMedia permission prompt
+  // can take many seconds). Also disable the record button visually so the user
+  // gets immediate feedback that their tap registered.
+  _recBusy = true;
+  var _rb0 = document.getElementById('rec-btn');
+  if (_rb0) { _rb0.disabled = true; _rb0.style.opacity = '0.6'; }
 
   // Set UI to "requesting mic" state — NOT "recording". Don't start timer until mic is live.
   document.getElementById('voice-status').textContent = 'Requesting microphone access…';
@@ -5286,28 +5352,58 @@ function startRecording(){
         recording = false;
         clearInterval(recTimer);
         releaseWakeLock(); // Release wake lock — no point keeping screen on if recording broke
-        var _rb2 = document.getElementById('rec-btn'); if (_rb2) { _rb2.classList.remove('recording'); _rb2.textContent = '\uD83C\uDFA4'; }
+        var _rb2 = document.getElementById('rec-btn'); if (_rb2) { _rb2.classList.remove('recording'); _rb2.textContent = '\uD83C\uDFA4'; _rb2.disabled = false; _rb2.style.opacity = ''; }
+        _recBusy = false;
       };
-      mediaRecorder.start();
+      mediaRecorder.start(1000); // Emit dataavailable every 1s so we can verify chunks flow
+      // Request an early data chunk so audioChunks gets primed quickly — helps
+      // confirm the mic is actually feeding data within the first second.
+      try { mediaRecorder.requestData(); } catch(e) {}
 
       // Mic is live — now flip UI to "recording" state
       recording = true;
       _recordingWasInterrupted = false; // fresh recording, reset interruption flag
       acquireWakeLock(); // Keep screen on — prevents phone auto-lock cutting off audio
-      var _rb = document.getElementById('rec-btn'); if (_rb) _rb.classList.add('recording');
-      document.getElementById('rec-btn').textContent = '⏹️';
+      var _rb = document.getElementById('rec-btn');
+      if (_rb) {
+        _rb.classList.add('recording');
+        _rb.textContent = '⏹️';
+        _rb.disabled = false;
+        _rb.style.opacity = '';
+      }
+      clearTimeout(window._recBtnRecoveryTimer); // happy path — no need for recovery
       document.getElementById('voice-status').textContent = 'Recording… speak clearly 🎙️ (keep app open)';
       document.querySelectorAll('.w-bar').forEach(function(b){ b.classList.add('active'); });
       recSeconds = 0;
       recTimer = setInterval(function(){
         recSeconds++;
         document.getElementById('rec-time').textContent = String(Math.floor(recSeconds/60)).padStart(2,'0')+':'+String(recSeconds%60).padStart(2,'0');
+        // Every 3s, check that data is actually flowing. If not, warn the user —
+        // previously the timer would happily count up while the mic produced nothing.
+        if (recSeconds === 3 && (!audioChunks || audioChunks.length === 0)) {
+          showToast('⚠️ No audio detected yet — check your microphone is not muted');
+          if (window._hkDiag) console.warn('[rec] 3s elapsed, audioChunks empty');
+          // Try requesting data explicitly — some Android WebViews need a nudge
+          try { if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.requestData(); } catch(e) {}
+        }
+        // At 6s, if STILL no audio, stop the recording automatically and tell the
+        // user clearly rather than letting the counter tick up to a useless upload.
+        // Symptom B (counter runs but not recording) — if we reach this, the mic
+        // genuinely isn't producing data and the user should know, not keep talking.
+        if (recSeconds === 6 && (!audioChunks || audioChunks.length === 0)) {
+          console.warn('[rec] 6s elapsed with no audio chunks — stopping automatically');
+          showToast('⚠️ Microphone not producing audio — stopping. Check mic permissions and try again.');
+          try { stopRecording(); } catch(e) { console.error('auto-stop failed', e); }
+        }
       }, 1000);
+      _recBusy = false;
     } catch(err) {
       console.error('MediaRecorder setup failed:', err);
       showToast('⚠️ Could not start recording: ' + (err.message || 'unknown error'));
       document.getElementById('voice-status').textContent = 'Recording failed — please type notes manually';
-      // Make sure we release the stream
+      var _rbE = document.getElementById('rec-btn'); if (_rbE) { _rbE.disabled = false; _rbE.style.opacity = ''; }
+      _recBusy = false;
+      clearTimeout(window._recBtnRecoveryTimer);
       try { stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
     }
   }).catch(function(err){
@@ -5319,6 +5415,9 @@ function startRecording(){
       showMicPermissionHelp();
       document.getElementById('voice-status').textContent = 'Microphone access blocked — tap 🎙️ again for help';
       recording = false;
+      var _rbP = document.getElementById('rec-btn'); if (_rbP) { _rbP.disabled = false; _rbP.style.opacity = ''; }
+      _recBusy = false;
+      clearTimeout(window._recBtnRecoveryTimer);
       return;
     } else if (err && err.name === 'NotFoundError') {
       msg = '🎙️ No microphone found on this device.';
@@ -5330,6 +5429,9 @@ function startRecording(){
     showToast(msg);
     document.getElementById('voice-status').textContent = 'Microphone unavailable — type notes manually';
     recording = false;
+    var _rbC = document.getElementById('rec-btn'); if (_rbC) { _rbC.disabled = false; _rbC.style.opacity = ''; }
+    _recBusy = false;
+    clearTimeout(window._recBtnRecoveryTimer);
   });
 }
 
@@ -7605,8 +7707,15 @@ async function transcribeWithWhisper(audioBlob) {
 var _origStopRec = stopRecording;
 stopRecording = function() {
   recording=false; clearInterval(recTimer);
-  var _rb=document.getElementById('rec-btn'); if(_rb) _rb.classList.remove('recording');
-  document.getElementById('rec-btn').textContent='\uD83C\uDFA4';
+  var _rb=document.getElementById('rec-btn');
+  if (_rb) {
+    _rb.classList.remove('recording');
+    _rb.textContent='\uD83C\uDFA4';
+    // Briefly disable so user can't re-tap before async stop completes.
+    // Re-enabled in the onstop callback below, or in the error paths.
+    _rb.disabled = true;
+    _rb.style.opacity = '0.6';
+  }
   document.querySelectorAll('.w-bar').forEach(function(b){b.classList.remove('active');});
 
   // Update voice-status label to reflect whether a transcript already exists.
@@ -7632,6 +7741,16 @@ stopRecording = function() {
     _recordingWasInterrupted = false;
   }
 
+  // Helper to re-enable the rec button when async work completes. Also clears
+  // _recBusy so the user can start a fresh recording, and clears the recovery
+  // timer (the safety-net that force-enables after 10s if nothing else does).
+  function _reenableRecBtn() {
+    var _rbR = document.getElementById('rec-btn');
+    if (_rbR) { _rbR.disabled = false; _rbR.style.opacity = ''; }
+    _recBusy = false;
+    clearTimeout(window._recBtnRecoveryTimer);
+  }
+
   // ── FIX D: ONLINE CHECK BEFORE TRANSCRIPTION ──
   // Even if recording worked, we need internet to transcribe. Check here before starting upload.
   // TODO (next build): if offline, queue audio blob in IndexedDB and transcribe on reconnect.
@@ -7644,20 +7763,30 @@ stopRecording = function() {
         mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); });
       }
     } catch(e) {}
+    _reenableRecBtn();
     return;
   }
 
   document.getElementById('voice-status').textContent='Processing...';
   if(mediaRecorder && mediaRecorder.state!=='inactive'){
-    // HAPPY PATH — real Whisper transcription
-    mediaRecorder.stop();
-    mediaRecorder.onstop = function(){
-      mediaRecorder.stream.getTracks().forEach(function(t){t.stop();});
+    // HAPPY PATH — real Whisper transcription.
+    // CRITICAL ORDERING FIX (Apr 21): onstop MUST be assigned BEFORE calling
+    // stop(). On some Android WebView builds, stop() fires onstop synchronously,
+    // which means assignment-after-stop would miss it entirely and the button
+    // would stay disabled. Symptom user reported: "have to press stop twice".
+    // Also: make the handler idempotent (_onstopFired guard) and add a 5s
+    // fallback in case onstop never fires at all.
+    var _onstopFired = false;
+    var _handleStop = function() {
+      if (_onstopFired) return;
+      _onstopFired = true;
+      try { if (mediaRecorder && mediaRecorder.stream) mediaRecorder.stream.getTracks().forEach(function(t){t.stop();}); } catch(e) {}
       // Check we actually have audio data
       if (!audioChunks || audioChunks.length === 0) {
         console.error('stopRecording: no audio chunks captured');
         showToast('⚠️ No audio captured — please check microphone and try again');
         document.getElementById('voice-status').textContent = 'No audio captured — type notes manually';
+        _reenableRecBtn();
         return;
       }
       var blob = new Blob(audioChunks, {type:'audio/webm'});
@@ -7665,10 +7794,29 @@ stopRecording = function() {
       if (blob.size < 1000) {
         showToast('⚠️ Recording too short or silent — please try again');
         document.getElementById('voice-status').textContent = 'Recording too short — try again';
+        _reenableRecBtn();
         return;
       }
+      // Re-enable the button before the upload so user can record again
+      // while transcription is in progress if they want to.
+      _reenableRecBtn();
       transcribeWithWhisper(blob);
     };
+    mediaRecorder.onstop = _handleStop;
+    // Safety fallback: if onstop doesn't fire within 5s, force-run the handler.
+    // Without this, the button stays disabled forever on some Android builds.
+    setTimeout(function() {
+      if (!_onstopFired) {
+        console.warn('[rec] onstop didn\'t fire within 5s — forcing handler');
+        _handleStop();
+      }
+    }, 5000);
+    try {
+      mediaRecorder.stop();
+    } catch(e) {
+      console.error('[rec] mediaRecorder.stop() threw:', e);
+      _handleStop();
+    }
   } else {
     // ── FIX C: KILL SILENT SAMPLE_TRANSCRIPTS FALLBACK ──
     // Previously this served one of 3 hardcoded fake transcripts as if it were the user's voice,
@@ -7677,6 +7825,7 @@ stopRecording = function() {
     console.error('stopRecording: mediaRecorder not ready. state=' + (mediaRecorder ? mediaRecorder.state : 'null'));
     showToast('⚠️ Microphone wasn\'t recording — check permissions and try again, or type notes manually');
     document.getElementById('voice-status').textContent = 'Recording failed — microphone may be blocked';
+    _reenableRecBtn();
   }
 };
 
