@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 16:53 21 April 2026 BST · Pass 1 of post-inspection tester feedback: (1) Save no longer navigates away — stays on Inspect screen with a fresh form. (2) Unsaved transcript/notes now trigger a warning before leaving Inspect. (3) Explicit Hive Status control (Active/Unclear/Dead/Empty) above Save — replaces the silent queen-seen=unclear bug that was corrupting status on honest inspections. -->
+<!-- HiveKeeper · Last updated: 17:24 21 April 2026 BST · Pass 1 inspection improvements reconciled: explicit Hive Status control on Inspect (fixes the home-screen "queen-not-seen → unclear" stats bug), stay on Inspect screen after save (no more flick-to-hive-detail), unsaved-work warning on goTo/goBack with active-recording detection, toggle-button clicks now flag dirty state. Two parallel-Claude implementations reconciled into one. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 16:53</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 17:24</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3173,11 +3173,13 @@ else if (window.location.hash === '#diag-clear') setTimeout(diagClear, 500);
 
 function goTo(id){
   // Unsaved-inspection guard — tester feedback Apr 21. If leaving Inspect
-  // with dirty transcript/notes, confirm before navigating away. Bypass the
+  // with dirty transcript/notes/buttons, confirm before navigating away. Bypass the
   // guard via window._inspectionJustSaved (set by saveInspection on success).
   if (currentScreen === 's-inspect' && id !== 's-inspect' && window._inspectionDirty === true && !window._inspectionJustSaved) {
-    var msg = 'You have unsaved inspection notes.\n\nLeave without saving?';
-    if (!window.confirm(msg)) {
+    var _unsavedMsg = (typeof recording !== 'undefined' && recording)
+      ? 'Recording is in progress. Leaving this screen will stop and lose the recording.\n\nLeave anyway?'
+      : 'You have unsaved inspection notes.\n\nLeave without saving?';
+    if (!window.confirm(_unsavedMsg)) {
       return; // user cancelled — stay on inspect
     }
     // User confirmed leave — clear the dirty flag so we don't re-ask
@@ -5742,6 +5744,26 @@ function resetInspectStatusButtons() {
     btn.style.borderColor = 'rgba(255,255,255,0.25)';
   });
 }
+
+// ── INSPECT DIRTY TRACKING — TOGGLE BUTTON COVERAGE ─────────────
+// Extends the System A text-input listeners (in renderInspectHeader) to also
+// catch changes to the segmented toggle buttons (status / stores / swarm risk /
+// temper / queen-seen). Without this, a beekeeper could tap a dozen buttons
+// on an inspection, navigate away, and lose the lot without any warning.
+// Uses event delegation so it picks up dynamically-rendered buttons too.
+(function wireInspToggleDirty() {
+  function handler(e) {
+    if (typeof currentScreen === 'undefined' || currentScreen !== 's-inspect') return;
+    if (e.target && e.target.classList && e.target.classList.contains('toggle-btn')) {
+      window._inspectionDirty = true;
+    }
+    // Also catch the explicit status buttons (different class: inspect-status-btn)
+    if (e.target && e.target.classList && e.target.classList.contains('inspect-status-btn')) {
+      window._inspectionDirty = true;
+    }
+  }
+  document.addEventListener('click', handler, true);
+})();
 
 function saveInspection(){
   try {
