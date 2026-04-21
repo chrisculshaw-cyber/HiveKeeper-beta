@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:20 21 April 2026 BST · Voice recorder reliability fixes from field feedback (three symptoms): (A) tap doesn't respond — root cause: _recBusy flag could get stuck true after async errors or navigation, silently dropping subsequent taps. Fix: button.disabled is now the primary interlock (not _recBusy), and a 10-second recovery timer force-enables the button if anything leaves it stuck. All startRecording/stopRecording exit paths now clear this timer. (B) counter runs but not recording — root cause: 3s warning toast was missed in the field; now also auto-stops at 6s if still no audio chunks received, so beekeeper doesn't keep talking into the void. Added mediaRecorder.requestData() nudge at 3s for Android WebView compatibility. (C) need to press stop twice — root cause: button re-enable race during mediaRecorder.stop() async callback. Fix: button stays disabled through the entire async stop→onstop cycle, guaranteed re-enabled by _reenableRecBtn() or the recovery timer. Also added diagnostic logging behind window._hkDiag for future debugging. -->
+<!-- HiveKeeper · Last updated: 22:39 21 April 2026 BST · Wake-lock intro modal UX refined: (1) Reinstated the "Don't show this again" checkbox — now visibly larger (22×22px) with accent-color set to forest green so the tick shows clearly. Label area is padded + bordered (cream background) so it reads as a tappable panel, not loose text. Single "Got it" button commits the dismissal (sets hk_wake_lock_intro_suppress if ticked, clears it if unticked — so reopening and unticking restores future showing). (2) Added "Also good to know" section flagging VPN — tells users that being connected to a VPN can block voice transcription (Worker endpoint may be rerouted or blocked), and to disconnect VPN or type notes manually. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 22:20</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 22:39</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2826,10 +2826,17 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;"><b>Navigate away from Inspect when you're done</b> — Apiary, Hive, or Home will all release it automatically. Otherwise your battery keeps draining.</p>
         <p style="font-size:12px;color:var(--text-l);line-height:1.5;margin:8px 0 0;"><b>Android battery saver</b> mode can block wake lock. If the 🔆 indicator doesn't appear, check your device's power-saving settings.</p>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="suppressWakeLockIntro()" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-l);cursor:pointer;">Don't show again</button>
-        <button onclick="closeModalEl('modal-wake-lock-intro')" style="flex:2;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+      <!-- Also good to know: VPN note. Whisper transcription won't work if VPN blocks/reroutes the Worker endpoint. -->
+      <div style="background:#FFF8E7;border:1px solid #FAEEDA;border-radius:var(--rs);padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">🌐 Also good to know</div>
+        <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;">If you're connected to a <b>VPN</b>, voice transcription may fail — VPNs can block or reroute the traffic HiveKeeper needs. Disconnect your VPN while recording, or type notes manually instead.</p>
       </div>
+      <!-- Don't-show-again checkbox: big visible tick, single commit on "Got it". -->
+      <label for="wake-intro-dontshow-cb" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;cursor:pointer;padding:10px 12px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);user-select:none;">
+        <input type="checkbox" id="wake-intro-dontshow-cb" style="width:22px;height:22px;cursor:pointer;accent-color:var(--forest);flex-shrink:0;">
+        <span style="font-size:14px;color:var(--text);font-weight:600;">Don't show this again</span>
+      </label>
+      <button onclick="dismissWakeLockIntro()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
     </div>
   </div>
 
@@ -5255,19 +5262,29 @@ async function acquireWakeLock() {
 }
 
 // Reopen the wake-lock intro modal from the 🔆 indicator tap.
+// Syncs the checkbox to the current suppress state so the user sees whether
+// they've previously suppressed it.
 function openWakeLockIntro() {
   try {
+    var cb = document.getElementById('wake-intro-dontshow-cb');
+    if (cb) cb.checked = localStorage.getItem('hk_wake_lock_intro_suppress') === '1';
     if (typeof openModalEl === 'function') openModalEl('modal-wake-lock-intro');
     else { var m = document.getElementById('modal-wake-lock-intro'); if (m) m.classList.add('open'); }
   } catch(e) { console.warn('openWakeLockIntro:', e); }
 }
 
-// Suppress the wake-lock intro permanently and close. One tap on "Don't show again".
-// Previous version used a checkbox + "Got it" button combo which was a confusing
-// two-step UX. Now: "Got it" just closes (shows again next session), "Don't show
-// again" closes AND sets the permanent suppress flag.
-function suppressWakeLockIntro() {
-  try { localStorage.setItem('hk_wake_lock_intro_suppress', '1'); } catch(e) {}
+// Dismiss the modal, honouring the checkbox. If ticked → permanent suppress.
+// If unticked → clear any existing suppress flag so a user who changes their
+// mind by reopening and unticking gets the modal back next session.
+function dismissWakeLockIntro() {
+  try {
+    var cb = document.getElementById('wake-intro-dontshow-cb');
+    if (cb && cb.checked) {
+      localStorage.setItem('hk_wake_lock_intro_suppress', '1');
+    } else {
+      localStorage.removeItem('hk_wake_lock_intro_suppress');
+    }
+  } catch(e) {}
   try { closeModalEl('modal-wake-lock-intro'); } catch(e) {}
 }
 
