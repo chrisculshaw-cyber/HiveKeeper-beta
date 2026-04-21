@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 12:13 21 April 2026 BST · Two fixes: (1) Apiary action grid was hardcoded to 4 columns but only shows 3 buttons by default, leaving a gap on the right until Apiary Settings was toggled — now correctly 3 columns by default. (2) New apiary prompt no longer pre-fills "My Second Apiary", now blank with hint text embedded in the question. -->
+<!-- HiveKeeper · Last updated: 12:37 21 April 2026 BST · Map view toggle shipped: Both / List / Map buttons above row tabs on Apiary screen. Preference persists in localStorage per user. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 12:13</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 12:37</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1404,6 +1404,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div onclick="resetMapRotation()" style="background:var(--wax);border-radius:20px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;margin-left:2px;">Reset</div>
         </div>
       </div>
+    </div>
+    <!-- View mode toggle: Both / List / Map. Persisted in localStorage
+         (hk_apiary_view_mode). Default is 'both' to preserve existing UX. -->
+    <div id="apiary-view-toggle" style="display:flex;gap:4px;padding:8px 12px 6px;justify-content:center;background:white;border-top:1px solid var(--wax);">
+      <button id="view-btn-both" onclick="setApiaryViewMode('both')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:var(--forest);color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">Both</button>
+      <button id="view-btn-list" onclick="setApiaryViewMode('list')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">List</button>
+      <button id="view-btn-map" onclick="setApiaryViewMode('map')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">Map</button>
     </div>
     <!-- Row filter tabs — between canvas and hive list -->
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
@@ -3182,7 +3189,7 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -10169,6 +10176,7 @@ function switchApiary(id) {
     }, 400);
     setTimeout(function(){ try{ if (typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 500);
     setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 700);
+    setTimeout(function(){ try { applyApiaryViewMode(); } catch(e) {} }, 150);
     // Final invalidate covers any post-rotation layout shift.
     setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 1000);
   }
@@ -10186,6 +10194,64 @@ function switchApiary(id) {
     renderHiveListDropdown(); // Rebuild dropdown contents for new apiary
   } catch(e) { console.warn('Inspect reset on apiary switch failed:', e); }
   showToast('Switched to ' + (apiary ? apiary.name : 'apiary'));
+}
+
+// ── APIARY VIEW MODE (Both / List / Map) ──────────────────────
+// User preference stored in localStorage; applied on every s-apiary entry
+// and whenever the user taps a toggle button. Valid values: 'both', 'list', 'map'.
+var APIARY_VIEW_MODE_KEY = 'hk_apiary_view_mode';
+
+function getApiaryViewMode() {
+  try {
+    var v = localStorage.getItem(APIARY_VIEW_MODE_KEY);
+    if (v === 'list' || v === 'map' || v === 'both') return v;
+  } catch(e) {}
+  return 'both';
+}
+
+function setApiaryViewMode(mode) {
+  if (mode !== 'list' && mode !== 'map' && mode !== 'both') mode = 'both';
+  try { localStorage.setItem(APIARY_VIEW_MODE_KEY, mode); } catch(e) {}
+  applyApiaryViewMode(mode);
+}
+
+function applyApiaryViewMode(mode) {
+  if (!mode) mode = getApiaryViewMode();
+  var mapWrap = document.querySelector('#s-apiary .map-canvas-wrap');
+  var hiveList = document.getElementById('hive-list-container');
+  var rowTabsContainer = document.getElementById('row-tabs');
+  var rowTabsParent = rowTabsContainer ? rowTabsContainer.parentElement : null;
+  var alerts = document.getElementById('apiary-alerts-container');
+
+  // Show/hide map
+  if (mapWrap) mapWrap.style.display = (mode === 'list') ? 'none' : '';
+  // Show/hide list + row tabs + alerts (list-related items move together)
+  var listDisplay = (mode === 'map') ? 'none' : '';
+  if (hiveList) hiveList.style.display = listDisplay;
+  if (rowTabsParent) rowTabsParent.style.display = listDisplay;
+  if (alerts) alerts.style.display = listDisplay;
+
+  // When switching INTO a mode that shows the map, Leaflet needs invalidateSize
+  // because the container width may have changed since last paint.
+  if (mode !== 'list') {
+    setTimeout(function(){
+      try { if (_leafletMap) _leafletMap.invalidateSize(); } catch(e) {}
+    }, 50);
+  }
+
+  // Visual state of the three toggle buttons
+  var btns = { both: 'view-btn-both', list: 'view-btn-list', map: 'view-btn-map' };
+  Object.keys(btns).forEach(function(key){
+    var el = document.getElementById(btns[key]);
+    if (!el) return;
+    if (key === mode) {
+      el.style.background = 'var(--forest)';
+      el.style.color = 'white';
+    } else {
+      el.style.background = 'transparent';
+      el.style.color = 'var(--forest)';
+    }
+  });
 }
 
 function initCurrentApiary() {
