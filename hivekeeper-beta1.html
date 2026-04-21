@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:10 21 April 2026 BST · Save-with-no-toast bug diagnosed. Most likely cause: saveInspection was silently returning at "if(!hive) return" when currentHiveId did not match any loaded hive — no toast, no modal, nothing. Fix: now shows "Save failed — hive not found (try re-selecting)" toast in that case. Also added diagnostic logging (window._hkDiag=true) at every branch of saveInspection so next silent-fail is instantly visible in console. -->
+<!-- HiveKeeper · Last updated: 19:19 21 April 2026 BST · Visible save confirmation on the button itself. After tapping Save inspection, the button flips to "✓ Inspection saved" in darker green for 2 seconds, then resets. Toast was too easy to miss in field conditions (sun glare, brief duration). Button-level feedback gives unambiguous confirmation right where the finger just was. Button is also disabled during the 2-second window to prevent accidental double-saves. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:10</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:19</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1592,7 +1592,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
     </div>
     <div style="margin:14px 20px 0;">
-      <button class="btn-primary" onclick="saveInspection()" style="padding:20px;font-size:18px;letter-spacing:.02em;">Save inspection &#x2713;</button>
+      <button id="save-inspection-btn" class="btn-primary" onclick="saveInspection()" style="padding:20px;font-size:18px;letter-spacing:.02em;transition:background-color 0.2s ease, color 0.2s ease;">Save inspection &#x2713;</button>
     </div>
     <div style="padding:8px 20px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
@@ -5919,6 +5919,29 @@ function saveInspection(){
     // photo or tweak notes immediately after save).
     if (window._hkDiag) console.log('[save] SUCCESS · toasting · uploadedUrls=', uploadedUrls.length);
     showToast('✓ Inspection saved — ' + hive.name + photoMsg);
+    // Visible confirmation on the Save button itself — toasts alone are too
+    // easy to miss on a phone in the field (sun glare, short duration).
+    // Button flips to "Inspection saved ✓" in a darker green for 2 seconds,
+    // then resets to its normal state. Gives the beekeeper unambiguous
+    // feedback exactly where their finger just was.
+    try {
+      var _saveBtn = document.getElementById('save-inspection-btn');
+      if (_saveBtn) {
+        var _origText = _saveBtn.innerHTML;
+        var _origBg = _saveBtn.style.background;
+        var _origColor = _saveBtn.style.color;
+        _saveBtn.innerHTML = '&#x2713; Inspection saved';
+        _saveBtn.style.background = '#1F5128';
+        _saveBtn.style.color = '#E8F5E9';
+        _saveBtn.disabled = true;
+        setTimeout(function(){
+          _saveBtn.innerHTML = _origText || 'Save inspection &#x2713;';
+          _saveBtn.style.background = _origBg;
+          _saveBtn.style.color = _origColor;
+          _saveBtn.disabled = false;
+        }, 2000);
+      }
+    } catch(e) { console.warn('save-btn confirm error', e); }
     // Mark the save as completed — clears unsaved-work guard, lets the
     // beekeeper continue or navigate away cleanly.
     window._inspectionJustSaved = true;
