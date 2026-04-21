@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:34 21 April 2026 BST · UX polish batch: (1) Wake-lock intro modal shown once-ever on first entry to Inspect — explains screen-awake behaviour, battery caveat, Android battery-saver warning. 🔆 indicator now has ⓘ icon and is clickable to reopen explanation any time. (2) Profile sync bug FIXED — loadUserProfile() now called from onAuthSuccess on every sign-in, not just after tier upgrade. Previously users signing in on a new device wouldn't get their display name / phone / address / SOS contact back from Supabase until they upgraded. (3) AI Transcript pill label strengthened from "Tap to edit" to "Editable — tap to edit". (4) Notes field now has inline hint "Additional observations (separate from AI transcript)" and clearer placeholder "Type any notes here — these save alongside the AI transcript". Kept both fields rather than merging: voice-first users and manual-typers have different workflows. -->
+<!-- HiveKeeper · Last updated: 21:48 21 April 2026 BST · Late evening field-test feedback: (1) Wake-lock intro modal now session-based (sessionStorage) rather than firing every screen entry — previously the flag was being wiped by pullFromSupabase's keysToKeep. Added "Don't show this again" checkbox for permanent suppression via hk_wake_lock_intro_suppress (added to keysToKeep). (2) Inspect gate — when no hive is selected, the form is hidden behind a "Select a hive to begin" empty state with a clear call-to-action button. Prevents accidental data entry against the wrong or no hive. (3) Row auto-reconcile — loadRows() now scans hives for row names not in the stored list and silently adds them. Self-heals the Nene Valley "1 row" bug where imported hives referenced Row 2/3/4 but only Row 1 was in the stored rows list. (4) Confirmed: display name saves to Supabase profiles.display_name and pulls back via loadUserProfile() on every sign-in (fixed earlier today). -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:34</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:48</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1456,6 +1456,17 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
   <div class="scroll-area">
 
+    <!-- Empty state: shown when no hive selected. Prevents the form being interacted with. -->
+    <div id="inspect-empty-state" style="display:none;padding:40px 24px;text-align:center;">
+      <div style="font-size:72px;line-height:1;margin-bottom:16px;">&#x1F41D;</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">Select a hive to begin</div>
+      <p style="font-size:14px;color:var(--text-l);line-height:1.6;margin:0 auto 20px;max-width:320px;">Tap the <b>Select a hive…</b> dropdown above to choose which hive you're inspecting. You can change the apiary via 🍯 My Apiaries.</p>
+      <button onclick="toggleHiveList()" style="background:var(--honey);border:none;border-radius:var(--rs);padding:14px 24px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Choose a hive</button>
+    </div>
+
+    <!-- Gated content: the inspection form. Hidden until a hive is selected. -->
+    <div id="inspect-form-content" style="display:none;">
+
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;">Last inspection</div>
@@ -1602,6 +1613,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
     </div>
     <div style="height:20px;"></div>
+    </div><!-- /#inspect-form-content -->
   </div>
 </div>
 
@@ -2787,7 +2799,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
   </div>
 
-  <!-- MODAL: Wake Lock intro (shown first time user visits Inspect) -->
+  <!-- MODAL: Wake Lock intro (shown first time user visits Inspect per session, unless dismissed forever) -->
   <div class="modal-overlay" id="modal-wake-lock-intro" onclick="closeModal(event,'modal-wake-lock-intro')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:440px;">
       <div class="modal-handle"></div>
@@ -2798,14 +2810,18 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <p style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px;">While you're on the Inspect screen, HiveKeeper keeps your phone awake. You can leave the screen on in the apiary and get back to inspecting with bee-goo'd gloves without your phone locking you out mid-record.</p>
       <div style="background:var(--cream);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">
         <div style="font-size:12px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">The indicator</div>
-        <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;">Look for the <b>🔆 Stay awake</b> marker next to the Online pill. When it's showing, your screen is held on. When you leave Inspect (Home, Apiary, anywhere else) the phone goes back to normal auto-lock.</p>
+        <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;">Look for the <b>🔆 Stay awake</b> marker next to the Online pill. When it's showing, your screen is held on. When you leave Inspect (Home, Apiary, anywhere else) the phone goes back to normal auto-lock. Tap the marker any time to reopen this explanation.</p>
       </div>
       <div style="background:#FDECEA;border:1px solid #F5B7B1;border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;">
         <div style="font-size:12px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">⚠ Battery note</div>
-        <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;">Keeping the screen on uses more battery, especially at full brightness in sun. <b>Navigate away from Inspect when you're done</b> — Apiary, Hive, or Home will all release it automatically.</p>
+        <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;"><b>Navigate away from Inspect when you're done</b> — Apiary, Hive, or Home will all release it automatically. Otherwise your battery keeps draining.</p>
         <p style="font-size:12px;color:var(--text-l);line-height:1.5;margin:8px 0 0;"><b>Android battery saver</b> mode can block wake lock. If the 🔆 indicator doesn't appear, check your device's power-saving settings.</p>
       </div>
-      <button onclick="closeModalEl('modal-wake-lock-intro')" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--text);">
+        <input type="checkbox" id="wake-intro-dont-show" style="width:18px;height:18px;cursor:pointer;">
+        <span>Don't show this again</span>
+      </label>
+      <button onclick="closeWakeLockIntro()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
     </div>
   </div>
 
@@ -3573,6 +3589,21 @@ function goBack(){
   if(prev==='s-home'||prev==='s-dashboard') renderDashboard();
   if(prev==='s-apiary'){ renderApiary(); renderMap(); }
   if(prev==='s-hive') renderHiveDetail();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INSPECT GATE — show "Select a hive" empty state when no hive chosen.
+// Prevents accidental data entry against the wrong (or no) hive.
+// Called from renderInspectHeader (screen entry) and changeInspectHive
+// (dropdown select). updateInspectGate() is the single source of truth —
+// it reads currentHiveId and toggles empty-state vs form.
+// ═══════════════════════════════════════════════════════════════
+function updateInspectGate() {
+  var empty = document.getElementById('inspect-empty-state');
+  var form = document.getElementById('inspect-form-content');
+  var hasHive = !!currentHiveId && !!loadHives().find(function(h){ return h.id === currentHiveId; });
+  if (empty) empty.style.display = hasHive ? 'none' : 'block';
+  if (form) form.style.display = hasHive ? 'block' : 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5034,6 +5065,10 @@ function renderInspectHeader(){
   try { updateInspectConnPill(); } catch(e) {}
   // Refresh the apiary name display — ensures label updates if user switched apiary from elsewhere.
   try { updateApiaryNameDisplays(); } catch(e) {}
+  // Inspect gate: if no hive selected, show the empty state and hide the form.
+  // Prevents users interacting with the form before choosing a hive — otherwise
+  // data gets saved against the wrong hive or not at all.
+  try { updateInspectGate(); } catch(e) {}
   // ALWAYS clear the notes field when entering Inspect, even if no hive is selected yet.
   // Previously this returned early if no hive was found, leaving stale notes visible.
   var _n = document.getElementById('inspect-notes'); if (_n) _n.value = '';
@@ -5136,12 +5171,15 @@ async function acquireWakeLock() {
     _wakeLock = await navigator.wakeLock.request('screen');
     console.log('Wake lock acquired — screen will stay on');
     try { var _ind = document.getElementById('inspect-wake-indicator'); if (_ind) _ind.style.display = 'inline'; } catch(e) {}
-    // Show one-time intro modal explaining the wake lock + battery caveat.
-    // Stored in localStorage so it only fires ONCE across all sessions; the 🔆
-    // indicator remains clickable (ⓘ icon) so the beekeeper can reopen it any time.
+    // Show the intro modal once per session by default. If the user ticked
+    // "Don't show this again", that sets hk_wake_lock_intro_suppress in
+    // localStorage and we never show it. Otherwise we use sessionStorage so it
+    // fires the first time per app session and then stays quiet until next launch.
     try {
-      if (!localStorage.getItem('hk_wake_lock_intro_shown')) {
-        localStorage.setItem('hk_wake_lock_intro_shown', '1');
+      var permSuppressed = localStorage.getItem('hk_wake_lock_intro_suppress') === '1';
+      var sessShown = sessionStorage.getItem('hk_wake_intro_session') === '1';
+      if (!permSuppressed && !sessShown) {
+        sessionStorage.setItem('hk_wake_intro_session', '1');
         // Delay slightly so the Inspect screen has fully painted before the modal
         setTimeout(function(){
           try { openWakeLockIntro(); } catch(e) { console.warn('wake-intro open:', e); }
@@ -5163,9 +5201,28 @@ async function acquireWakeLock() {
 // Reopen the wake-lock intro modal from the 🔆 indicator tap.
 function openWakeLockIntro() {
   try {
+    // Uncheck the "don't show again" box when user manually reopens, so their
+    // state is consistent: ticked only if they dismissed via the checkbox on "Got it"
+    var cb = document.getElementById('wake-intro-dont-show');
+    if (cb) cb.checked = localStorage.getItem('hk_wake_lock_intro_suppress') === '1';
     if (typeof openModalEl === 'function') openModalEl('modal-wake-lock-intro');
     else { var m = document.getElementById('modal-wake-lock-intro'); if (m) m.classList.add('open'); }
   } catch(e) { console.warn('openWakeLockIntro:', e); }
+}
+
+// Close the wake-lock intro modal, honouring the "Don't show again" checkbox.
+// If checked, set permanent suppress flag. If unchecked, clear any existing
+// suppress flag so a user who changes their mind can re-enable it.
+function closeWakeLockIntro() {
+  try {
+    var cb = document.getElementById('wake-intro-dont-show');
+    if (cb && cb.checked) {
+      localStorage.setItem('hk_wake_lock_intro_suppress', '1');
+    } else {
+      localStorage.removeItem('hk_wake_lock_intro_suppress');
+    }
+  } catch(e) {}
+  try { closeModalEl('modal-wake-lock-intro'); } catch(e) {}
 }
 
 async function releaseWakeLock() {
@@ -7780,6 +7837,8 @@ function changeInspectHive(hiveId){
   updateInspectMeta();
   // Load last inspection for this hive and show in notes
   loadLastInspectionForHive(hiveId);
+  // Update the inspect gate — hide the empty state now that a hive is selected
+  try { updateInspectGate(); } catch(e) {}
   showToast(getHiveName(hiveId)+' selected');
 }
 function getHiveName(hiveId){var h=loadHives().find(function(hv){return hv.id===hiveId;});return h?h.name:'Unknown hive';}
@@ -13530,7 +13589,7 @@ async function pullFromSupabase() {
         'hk_onboarded','hk_pending_invite','hk_policies_accepted','hk_founding_beekeeper',
         'hk_ref_code','hk_referral_bonus',
         'hk_last_screen','hk_screen_diag','hk_trial_start',
-        'hk_apiary_view_mode'];
+        'hk_apiary_view_mode','hk_wake_lock_intro_suppress'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -16068,7 +16127,35 @@ function loadRows() {
       localStorage.removeItem('hk_rows_null');
     }
     var stored = JSON.parse(localStorage.getItem(getRowKey()) || 'null');
-    if (stored && stored.length) return stored;
+    if (stored && stored.length) {
+      // AUTO-RECONCILE (Apr 21): if hives in this apiary reference row names
+      // that aren't in the stored list (e.g. after a data import where hives
+      // came through but rows didn't), silently add them. Otherwise the Apiary
+      // screen shows only "Row 1" even though hives are tagged Row 2/3/4, and
+      // those hives end up in the "No row" bucket. Self-healing migration.
+      try {
+        var hivesInApiary = loadHives().filter(function(h){ return h.apiaryId === currentApiaryId; });
+        var storedNames = {};
+        stored.forEach(function(r){ storedNames[r.name] = true; if (r.id) storedNames[r.id] = true; });
+        var added = 0;
+        hivesInApiary.forEach(function(h){
+          if (h.row && !storedNames[h.row]) {
+            stored.push({ id: h.row, name: h.row });
+            storedNames[h.row] = true;
+            added++;
+          }
+        });
+        if (added > 0) {
+          localStorage.setItem(getRowKey(), JSON.stringify(stored));
+          if (window._hkDiag) console.log('[loadRows] auto-reconciled', added, 'missing rows for apiary', currentApiaryId);
+          // Fire push to Supabase so the reconciled rows sync across devices
+          if (getUserId() && typeof pushRows === 'function') {
+            pushRows().catch(function(){});
+          }
+        }
+      } catch(e) { console.warn('Row auto-reconcile failed:', e); }
+      return stored;
+    }
     // Derive rows from existing hives if none stored
     var hives = loadHives().filter(function(h){ return h.apiaryId === currentApiaryId; });
     var seen = {};
