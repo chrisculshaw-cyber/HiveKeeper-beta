@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:41 21 April 2026 BST · Move Hive feature audit — feature is substantially complete (modal, dropdown/new-apiary toggle, movement log in hk_movements_v1, timeline rendering with brown 🚚 dot, free-text reason, editable when-moved datetime, reset map position on move). One gap closed: Free-tier canAddApiary() check added before creating new apiary via move — prevents bypass of tier limits once paywalls enforce. Remaining gaps: movements are local-only (no Supabase sync) — not blocking today. -->
+<!-- HiveKeeper · Last updated: 20:35 21 April 2026 BST · Move Hive feedback fixes: (1) Modal class changed from .modal (undefined — hence the translucent appearance) to .modal-sheet which has proper cream background. (2) After moving a hive, currentApiaryId now follows the hive to its new apiary, and all apiary-name displays are refreshed — previously screen still showed old apiary name. (3) Timeline render diagnostic added behind window._hkDiag flag to help identify why movements may not appear in the inspection history. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:41</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 20:35</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2726,12 +2726,12 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
   <!-- MODAL: Move Hive -->
   <div class="modal-overlay" id="modal-move-hive" onclick="closeModal(event,'modal-move-hive')">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;">
-      <div class="modal-head">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
+      <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);">🚚 Move hive</div>
         <div onclick="closeModalEl('modal-move-hive')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">&#x2715;</div>
       </div>
-      <div class="modal-body" style="padding:16px 20px;">
+      <div class="modal-body" style="padding:0;">
         <div id="move-hive-summary" style="margin-bottom:14px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:13px;color:var(--text);">
           Loading hive details…
         </div>
@@ -3099,6 +3099,18 @@ function confirmMoveHive() {
       saveHives(hives);
     }
 
+    // Follow the hive to its new apiary — without this, the user returns to a
+    // Hive Detail / Apiary screen still labelled with the OLD apiary name.
+    // This also makes the destination apiary "current" so that the hive list,
+    // map, and all apiary-name displays render correctly after the move.
+    try {
+      currentApiaryId = toApiaryId;
+      if (typeof CURRENT_APIARY_KEY !== 'undefined') {
+        localStorage.setItem(CURRENT_APIARY_KEY, toApiaryId);
+      }
+      if (typeof updateApiaryNameDisplays === 'function') updateApiaryNameDisplays();
+    } catch(e) { console.warn('post-move apiary switch', e); }
+
     // Push hive update to Supabase if available (movements stay local for now)
     try { if (typeof pushHives === 'function') pushHives().catch(function(){}); } catch(e) {}
     try { if (typeof pushApiaries === 'function' && mode === 'new') pushApiaries().catch(function(){}); } catch(e) {}
@@ -3106,8 +3118,10 @@ function confirmMoveHive() {
     closeModalEl('modal-move-hive');
     showToast('✓ ' + (hive.name || 'Hive') + ' moved to ' + toApiaryName);
 
-    // Navigate back to Apiary to show the new state
-    setTimeout(function(){ try { renderHiveDetail(); } catch(e){} try { renderApiary(); } catch(e){} }, 100);
+    // Re-render after the DOM settles so hive detail, timeline, and apiary
+    // views all pick up the new state. 100ms is enough for the modal close
+    // transition without feeling laggy.
+    setTimeout(function(){ try { renderHiveDetail(); } catch(e){} try { renderApiary(); } catch(e){} try { updateApiaryNameDisplays(); } catch(e){} }, 100);
   } catch(e) {
     console.error('confirmMoveHive error', e);
     showToast('Error moving hive — ' + (e.message || 'unknown'));
@@ -4779,6 +4793,7 @@ function renderHiveDetail(){
     tlEl.innerHTML = `<div style="padding:20px;text-align:center;"><div style="font-size:40px;opacity:.4;">📋</div><div style="font-size:14px;color:var(--text-l);margin-top:8px;">No inspections recorded yet</div></div>`;
     return;
   }
+  if (window._hkDiag) console.log('[timeline]', hive.id, hive.name, '| inspections:', inspections.length, '| movements:', movements.length, '| swarms:', swarmCatches.length, '| merged:', tlItems.map(function(t){ return t.type + '@' + new Date(t.date).toISOString().slice(0,16); }));
   const dotCls = hive.status==='dead'?'grey':hive.status==='unclear'?'':latest&&latest.healthScore>75?'green':'';
 
   tlEl.innerHTML = tlItems.map((item,idx)=>{
