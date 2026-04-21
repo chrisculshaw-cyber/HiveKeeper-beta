@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 18:59 21 April 2026 BST · Unsaved-warning now fires when typing in Notes. Root cause: the per-element addEventListener on the Notes textarea was silently failing in field use (reason not yet pinned — possibly mobile keyboard quirk or event target replacement). Fix: switched to document-level event delegation that cannot be defeated by listener-detachment. The direct-element listeners remain as a fallback belt-and-braces. -->
+<!-- HiveKeeper · Last updated: 19:10 21 April 2026 BST · Save-with-no-toast bug diagnosed. Most likely cause: saveInspection was silently returning at "if(!hive) return" when currentHiveId did not match any loaded hive — no toast, no modal, nothing. Fix: now shows "Save failed — hive not found (try re-selecting)" toast in that case. Also added diagnostic logging (window._hkDiag=true) at every branch of saveInspection so next silent-fail is instantly visible in console. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 18:59</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:10</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5797,6 +5797,7 @@ function resetInspectStatusButtons() {
 
 function saveInspection(){
   try {
+  if (window._hkDiag) console.log('[save] entry · currentHiveId=', currentHiveId);
   // If no hive selected, try to read from the dropdown
   if(!currentHiveId){
     var nameEl = document.getElementById('inspect-hive-selected-name');
@@ -5804,9 +5805,11 @@ function saveInspection(){
       var matched = loadHives().find(function(h){ return h.name === nameEl.textContent.trim(); });
       if (matched) currentHiveId = matched.id;
     }
+    if (window._hkDiag) console.log('[save] after dropdown read · currentHiveId=', currentHiveId);
   }
   if(!currentHiveId){
     var hives = loadHives();
+    if (window._hkDiag) console.log('[save] still no hive selected · hives loaded=', hives.length);
     if (!hives.length) {
       showToast('Please add a hive in your Apiary first');
       return;
@@ -5815,7 +5818,12 @@ function saveInspection(){
     return;
   }
   const hive=loadHives().find(h=>h.id===currentHiveId);
-  if(!hive) return;
+  if(!hive) {
+    if (window._hkDiag) console.log('[save] ABORT — currentHiveId', currentHiveId, 'does not match any loaded hive');
+    showToast('⚠️ Save failed — hive not found (try re-selecting)');
+    return;
+  }
+  if (window._hkDiag) console.log('[save] proceeding · hive=', hive.name);
   const notes=document.getElementById('inspect-notes').value;
   const insp={
     id:uid(), hiveId:currentHiveId,
@@ -5909,6 +5917,7 @@ function saveInspection(){
     // Stay on inspection screen — tester feedback Apr 21. Previously navigated
     // to Hive Detail, which broke field workflow (user often wants to add a
     // photo or tweak notes immediately after save).
+    if (window._hkDiag) console.log('[save] SUCCESS · toasting · uploadedUrls=', uploadedUrls.length);
     showToast('✓ Inspection saved — ' + hive.name + photoMsg);
     // Mark the save as completed — clears unsaved-work guard, lets the
     // beekeeper continue or navigate away cleanly.
