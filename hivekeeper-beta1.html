@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:50 21 April 2026 BST · Safety fix — SOS button now also rendered inside the Inspect empty state, separated by a divider and labelled "Emergency". Previously the SOS was only inside #inspect-form-content which is hidden when no hive is selected, meaning a lone worker arriving at Inspect before picking a hive could not trigger SOS if something went wrong. Apiary-screen SOS is unaffected (not gated at all). -->
+<!-- HiveKeeper · Last updated: 21:58 21 April 2026 BST · Two UX fixes from field test: (1) Wake-lock intro modal: checkbox+button combo replaced with two clear buttons — "Don't show again" (one tap permanent suppress + close) and "Got it" (just close this time, shows again next session). Previous two-step UX was confusing — tap checkbox, nothing visually committed, tap Got it. (2) Row ordering: naturalRowSort comparator added, applied in loadRows() on every read (self-healing — persists back to Supabase only if order actually changed, no spurious writes). Fixes "Row 2, 4, 1, 3" lexicographic mess from earlier auto-reconcile runs. Also applied defensively in renderHiveListDropdown. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:50</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:58</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2826,11 +2826,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <p style="font-size:13px;color:var(--text);line-height:1.5;margin:0;"><b>Navigate away from Inspect when you're done</b> — Apiary, Hive, or Home will all release it automatically. Otherwise your battery keeps draining.</p>
         <p style="font-size:12px;color:var(--text-l);line-height:1.5;margin:8px 0 0;"><b>Android battery saver</b> mode can block wake lock. If the 🔆 indicator doesn't appear, check your device's power-saving settings.</p>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--text);">
-        <input type="checkbox" id="wake-intro-dont-show" style="width:18px;height:18px;cursor:pointer;">
-        <span>Don't show this again</span>
-      </label>
-      <button onclick="closeWakeLockIntro()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="suppressWakeLockIntro()" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text-l);cursor:pointer;">Don't show again</button>
+        <button onclick="closeModalEl('modal-wake-lock-intro')" style="flex:2;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+      </div>
     </div>
   </div>
 
@@ -5210,27 +5209,17 @@ async function acquireWakeLock() {
 // Reopen the wake-lock intro modal from the 🔆 indicator tap.
 function openWakeLockIntro() {
   try {
-    // Uncheck the "don't show again" box when user manually reopens, so their
-    // state is consistent: ticked only if they dismissed via the checkbox on "Got it"
-    var cb = document.getElementById('wake-intro-dont-show');
-    if (cb) cb.checked = localStorage.getItem('hk_wake_lock_intro_suppress') === '1';
     if (typeof openModalEl === 'function') openModalEl('modal-wake-lock-intro');
     else { var m = document.getElementById('modal-wake-lock-intro'); if (m) m.classList.add('open'); }
   } catch(e) { console.warn('openWakeLockIntro:', e); }
 }
 
-// Close the wake-lock intro modal, honouring the "Don't show again" checkbox.
-// If checked, set permanent suppress flag. If unchecked, clear any existing
-// suppress flag so a user who changes their mind can re-enable it.
-function closeWakeLockIntro() {
-  try {
-    var cb = document.getElementById('wake-intro-dont-show');
-    if (cb && cb.checked) {
-      localStorage.setItem('hk_wake_lock_intro_suppress', '1');
-    } else {
-      localStorage.removeItem('hk_wake_lock_intro_suppress');
-    }
-  } catch(e) {}
+// Suppress the wake-lock intro permanently and close. One tap on "Don't show again".
+// Previous version used a checkbox + "Got it" button combo which was a confusing
+// two-step UX. Now: "Got it" just closes (shows again next session), "Don't show
+// again" closes AND sets the permanent suppress flag.
+function suppressWakeLockIntro() {
+  try { localStorage.setItem('hk_wake_lock_intro_suppress', '1'); } catch(e) {}
   try { closeModalEl('modal-wake-lock-intro'); } catch(e) {}
 }
 
@@ -7754,6 +7743,8 @@ function renderHiveListDropdown(){
   var hives=loadHives().filter(function(h){ return !h.isHidden && h.apiaryId === currentApiaryId; });
   var rowNames = loadRows().map(function(r){ return r.name; });
   hives.forEach(function(h){ if(h.row && rowNames.indexOf(h.row) === -1) rowNames.push(h.row); });
+  // Re-sort after any dropdown-local additions so dropdown tracks the Apiary row order
+  try { rowNames.sort(function(a,b){ return naturalRowSort({name:a},{name:b}); }); } catch(e) {}
   var html = '';
 
   function hiveItem(hive) {
@@ -16124,6 +16115,23 @@ var ROW_KEY_PREFIX = 'hk_rows_';
 
 function getRowKey() { return ROW_KEY_PREFIX + (currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || 'default'); }
 
+// Natural-sort comparator for row names. "Row 2" comes before "Row 10",
+// "Alpha" comes before "Beta". Falls back to locale-aware string compare
+// for names that don't match the "Text Number" pattern.
+function naturalRowSort(a, b) {
+  var an = a && a.name ? String(a.name) : '';
+  var bn = b && b.name ? String(b.name) : '';
+  var am = an.match(/^(.*?)(\d+)(.*)$/);
+  var bm = bn.match(/^(.*?)(\d+)(.*)$/);
+  if (am && bm && am[1] === bm[1]) {
+    var na = parseInt(am[2], 10);
+    var nb = parseInt(bm[2], 10);
+    if (na !== nb) return na - nb;
+    return an.localeCompare(bn);
+  }
+  return an.localeCompare(bn);
+}
+
 function loadRows() {
   try {
     // Migrate any rows saved to hk_rows_null to the correct apiary key
@@ -16155,6 +16163,9 @@ function loadRows() {
           }
         });
         if (added > 0) {
+          // Natural-sort after adding: "Row 1, Row 2, Row 10" rather than
+          // lexicographic "Row 1, Row 10, Row 2". Works for numeric suffixes.
+          stored.sort(naturalRowSort);
           localStorage.setItem(getRowKey(), JSON.stringify(stored));
           if (window._hkDiag) console.log('[loadRows] auto-reconciled', added, 'missing rows for apiary', currentApiaryId);
           // Fire push to Supabase so the reconciled rows sync across devices
@@ -16163,6 +16174,21 @@ function loadRows() {
           }
         }
       } catch(e) { console.warn('Row auto-reconcile failed:', e); }
+      // Always return in natural-sorted order — self-heals bad order from earlier
+      // auto-reconciles that appended without sorting. Cheap enough to do on
+      // every read; no need for a one-time migration. Persist only if the order
+      // actually changed, otherwise we'd spam Supabase on every read.
+      try {
+        var _orderBefore = stored.map(function(r){ return r.name; }).join('|');
+        stored.sort(naturalRowSort);
+        var _orderAfter = stored.map(function(r){ return r.name; }).join('|');
+        if (_orderBefore !== _orderAfter) {
+          localStorage.setItem(getRowKey(), JSON.stringify(stored));
+          if (getUserId() && typeof pushRows === 'function') {
+            pushRows().catch(function(){});
+          }
+        }
+      } catch(e) {}
       return stored;
     }
     // Derive rows from existing hives if none stored
