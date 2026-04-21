@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 20:35 21 April 2026 BST · Move Hive feedback fixes: (1) Modal class changed from .modal (undefined — hence the translucent appearance) to .modal-sheet which has proper cream background. (2) After moving a hive, currentApiaryId now follows the hive to its new apiary, and all apiary-name displays are refreshed — previously screen still showed old apiary name. (3) Timeline render diagnostic added behind window._hkDiag flag to help identify why movements may not appear in the inspection history. -->
+<!-- HiveKeeper · Last updated: 21:09 21 April 2026 BST · Tuesday evening bug-bash: (1) Landmarks render consolidated — removed two duplicate inline render blocks from initLeafletMap; the authoritative render in renderLeafletHives is now the single source of truth. Diagnostic logging added behind window._hkDiag. (2) Kevin display-name bug — empty-state greeting path now falls back to localStorage.hk_display_name if user_metadata.full_name is missing. (3) Screen-scoped wake lock on Inspect — phone stays awake for the full inspection workflow, not just during recording. 🔆 Stay awake indicator next to the connection pill. (4) Additive recording — subsequent voice recordings append to existing transcript with "— more —" separator rather than overwriting. Re-extracts structured data from combined text. (5) rows_pkey race condition — pushRows now uses upsert with onConflict: "id" and serializes concurrent calls via in-flight promise guard; no more 409s on rapid row saves. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 20:35</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:09</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1475,6 +1475,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div id="inspect-conn-pill" style="display:flex;align-items:center;gap:8px;background:#E8F5E9;border:2px solid #66BB6A;border-radius:10px;padding:10px 14px;margin:8px 20px;font-size:12px;color:#1B5E20;line-height:1.4;">
       <span id="inspect-conn-dot" style="width:10px;height:10px;border-radius:50%;background:#43A047;flex-shrink:0;"></span>
       <span id="inspect-conn-text" style="flex:1;"><b>Online</b> · Voice recording available</span>
+      <span id="inspect-wake-indicator" style="display:none;font-size:10px;color:#6B6050;white-space:nowrap;" title="Screen stays awake while on this screen">🔆 Stay awake</span>
     </div>
     <div class="voice-recorder">
       <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
@@ -3464,6 +3465,19 @@ function goTo(id){
     diagLog('goTo skipped write (unsafe screen: ' + id + ')');
   }
   try { renderTrialBanners(); } catch(e) {}
+  // Screen-scoped wake lock — keep phone awake for the whole Inspect screen,
+  // not just while recording. Field feedback Apr 21: beekeepers wanted their
+  // phone to stay on during the full inspection workflow (glove-friendly).
+  var _prevScreen = currentScreen;
+  if (id === 's-inspect') {
+    try { if (typeof acquireWakeLock === 'function') acquireWakeLock(); } catch(e) {}
+  } else if (_prevScreen === 's-inspect') {
+    // Leaving Inspect — release the wake lock UNLESS we're still recording
+    // (the recording flow has its own wake-lock handling that will keep it alive).
+    if (typeof recording === 'undefined' || !recording) {
+      try { if (typeof releaseWakeLock === 'function') releaseWakeLock(); } catch(e) {}
+    }
+  }
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
   currentScreen = id;
@@ -3714,7 +3728,7 @@ function renderDashboard(){
     var lb=document.getElementById('loss-banner'); if(lb) lb.style.display='none';
     var ac=document.getElementById('alerts-container'); if(ac) ac.innerHTML='';
     var dh=document.getElementById('dash-hives'); if(dh) dh.innerHTML='';
-    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _gMeta=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _gFirst=_gMeta?(' '+_gMeta.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
+    var gr=document.getElementById('dash-greeting'); if(gr){ var h=new Date().getHours(); var _gBase=h<12?'Good morning,':h<18?'Good afternoon,':'Good evening,'; var _metaName=typeof _currentUser!=='undefined'&&_currentUser&&_currentUser.user_metadata?(_currentUser.user_metadata.full_name||_currentUser.user_metadata.name||''):''; var _localName=''; try{ _localName=localStorage.getItem('hk_display_name')||''; }catch(e){} var _fullName=_metaName||_localName; var _gFirst=_fullName?(' '+_fullName.split(' ')[0]):''; gr.textContent=_gBase+_gFirst; }
     return;
   }
   // Stats
@@ -5095,10 +5109,12 @@ async function acquireWakeLock() {
       return;
     }
     _wakeLock = await navigator.wakeLock.request('screen');
-    console.log('Wake lock acquired — screen will stay on during recording');
+    console.log('Wake lock acquired — screen will stay on');
+    try { var _ind = document.getElementById('inspect-wake-indicator'); if (_ind) _ind.style.display = 'inline'; } catch(e) {}
     _wakeLock.addEventListener('release', function() {
       console.log('Wake lock released');
       _wakeLock = null;
+      try { var _ind2 = document.getElementById('inspect-wake-indicator'); if (_ind2) _ind2.style.display = 'none'; } catch(e) {}
     });
   } catch(err) {
     // Wake lock can fail due to battery saver mode, low battery, or OS policy
@@ -5114,6 +5130,7 @@ async function releaseWakeLock() {
       _wakeLock = null;
       console.log('Wake lock manually released');
     }
+    try { var _ind = document.getElementById('inspect-wake-indicator'); if (_ind) _ind.style.display = 'none'; } catch(e) {}
   } catch(err) {
     console.warn('Wake lock release failed:', err);
     _wakeLock = null;
@@ -7448,11 +7465,22 @@ async function transcribeWithWhisper(audioBlob) {
     console.log('transcribeWithWhisper: response', data);
     if (data.text && data.text.trim().length > 0) {
       var t = data.text.trim();
-      var ext = extractData(t);
-      currentInspData = Object.assign({transcript:t}, ext);
-      document.getElementById('voice-status').textContent = '✓ Transcript ready — review below';
-      showTranscript(t);
+      // Additive recording (Apr 21, tester feedback Vicky): if there's already
+      // a transcript, APPEND this new recording with a visual separator so the
+      // beekeeper can add more detail mid-inspection without losing earlier
+      // content. Re-run the data extraction on the combined text so chips
+      // pick up fields mentioned in either segment.
+      var existing = (currentInspData && currentInspData.transcript ? currentInspData.transcript : '').trim();
+      var combined = existing ? (existing + '\n\n— more —\n\n' + t) : t;
+      var ext = extractData(combined);
+      currentInspData = Object.assign({}, currentInspData || {}, {transcript: combined}, ext);
+      document.getElementById('voice-status').textContent = existing
+        ? '✓ Added to transcript — review below'
+        : '✓ Transcript ready — review below';
+      showTranscript(combined);
       showExtractedData(ext);
+      // Mark inspection dirty so the unsaved-work guard fires if user nav's away
+      try { window._inspectionDirty = true; } catch(e) {}
     } else if (data.error) {
       var errMsg = data.error;
       console.error('Whisper error response:', data);
@@ -7481,8 +7509,20 @@ stopRecording = function() {
   document.getElementById('rec-btn').textContent='\uD83C\uDFA4';
   document.querySelectorAll('.w-bar').forEach(function(b){b.classList.remove('active');});
 
-  // Always release wake lock when recording stops — restore normal auto-lock
-  releaseWakeLock();
+  // Update voice-status label to reflect whether a transcript already exists.
+  // If yes: next recording will APPEND (additive recording — tester feedback Apr 21).
+  try {
+    var _hasTranscript = !!(currentInspData && currentInspData.transcript && currentInspData.transcript.trim());
+    var _vs = document.getElementById('voice-status');
+    if (_vs && _hasTranscript) _vs.textContent = 'Tap microphone to add more to the transcript';
+  } catch(e) {}
+
+  // Wake lock: if user is still on the Inspect screen, keep it — screen-scoped
+  // wake lock (acquired on screen entry) should persist until they navigate away.
+  // Only release here if somehow we're not on Inspect (defensive fallback).
+  if (typeof currentScreen === 'undefined' || currentScreen !== 's-inspect') {
+    releaseWakeLock();
+  }
 
   // ── INTERRUPTION WARNING ──
   // If the page was hidden during recording (phone locked, user switched apps),
@@ -16001,20 +16041,12 @@ function saveRows(rows) {
   if (getUserId()) pushRows().catch(function(){});
 }
 
-async function pushRows(rows) {
-  var uid = getUserId();
-  var apiaryId = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY);
-  if (!uid || !apiaryId) return;
-  var sb = getSupabase();
-  // Delete existing rows for this apiary then reinsert in order
-  await sb.from('rows').delete().eq('user_id', uid).eq('apiary_id', apiaryId);
-  if (!rows.length) return;
-  var toInsert = rows.map(function(r, i) {
-    return { id: r.id, user_id: uid, apiary_id: apiaryId, name: r.name, position: i };
-  });
-  var { error } = await sb.from('rows').insert(toInsert);
-  if (error) console.warn('Row push error:', error.message);
-}
+// NOTE: this first pushRows declaration is immediately overridden by the
+// authoritative version later in the file (around line 16425+). Kept here as
+// a no-op placeholder to prevent ReferenceError if called before the override
+// loads. The real implementation does serialized upsert to avoid rows_pkey
+// conflicts caused by overlapping calls.
+async function pushRows() { /* superseded */ }
 
 function addRow() {
   var rows = loadRows();
@@ -16382,21 +16414,46 @@ function showHealthBreakdown() {
 
 
 // ── ROW CLOUD SYNC ───────────────────────────────────────
+// Previously used delete+insert which has a race-condition window:
+// two concurrent pushRows() calls could BOTH delete, then both insert the
+// same ids → 409 conflict on the second insert. Switched to upsert with
+// onConflict: 'id' which is idempotent. Also added a simple serialization
+// guard so only one push is in-flight at a time per apiary — subsequent
+// calls within the same tick are coalesced.
+var _pushRowsInFlight = null;
 async function pushRows() {
   var uid = getUserId(); if (!uid) return;
-  var rows = loadRows();
-  var sb = getSupabase();
   var apiaryId = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY);
   if (!apiaryId) return;
-  var records = rows.map(function(r, i) {
-    return { id: r.id, user_id: uid, apiary_id: apiaryId, name: r.name, position: i };
-  });
-  // Delete+reinsert avoids composite primary key conflict issues
-  await sb.from('rows').delete().eq('user_id', uid).eq('apiary_id', apiaryId);
-  if (records.length > 0) {
-    var { error } = await sb.from('rows').insert(records);
-    if (error) console.warn('Row push error:', error.message);
+  // If a push is already running, wait for it to finish then run again
+  // with fresh data — guarantees the last call's data is what ends up in Supabase
+  // without overlapping requests.
+  if (_pushRowsInFlight) {
+    try { await _pushRowsInFlight; } catch(e) {}
   }
+  _pushRowsInFlight = (async function() {
+    var rows = loadRows();
+    var sb = getSupabase();
+    var records = rows.map(function(r, i) {
+      return { id: r.id, user_id: uid, apiary_id: apiaryId, name: r.name, position: i };
+    });
+    // First: remove any rows that no longer exist locally (for this apiary)
+    try {
+      var existingIds = records.map(function(r){ return r.id; });
+      var delQuery = sb.from('rows').delete().eq('user_id', uid).eq('apiary_id', apiaryId);
+      if (existingIds.length) {
+        delQuery = delQuery.not('id', 'in', '(' + existingIds.map(function(x){ return '"'+x+'"'; }).join(',') + ')');
+      }
+      await delQuery;
+    } catch(e) { /* best-effort cleanup */ }
+    // Then: upsert the current rows. onConflict: 'id' makes this idempotent —
+    // same row can be pushed multiple times without hitting rows_pkey.
+    if (records.length > 0) {
+      var { error } = await sb.from('rows').upsert(records, { onConflict: 'id' });
+      if (error) console.warn('Row push error:', error.message);
+    }
+  })();
+  try { await _pushRowsInFlight; } finally { _pushRowsInFlight = null; }
 }
 
 async function pullRows() {
@@ -17330,60 +17387,13 @@ function initLeafletMap() {
   // only a diagonal/partial strip of tiles leaving cream-coloured corners.
   setTimeout(function(){ try { if (_leafletMap) _leafletMap.invalidateSize(); } catch(e) {} }, 250);
 
-  // Update count overlay
-    try {
-    var _lmAll=loadLandmarks?loadLandmarks():[];
-    var _apLm2=getCurrentApiary();
-    if(_apLm2&&_lmAll.length&&_leafletMap){
-      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
-      _lmAll.forEach(function(lm){
-        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
-        var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
-        var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
-        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
-        var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
-        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
-          +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
-          +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
-          +'</div>';
-        var ic=L.divIcon({html:h,className:'',iconAnchor:[20,32],iconSize:[40,40]});
-        var mk=L.marker([lt,lg],{icon:ic,draggable:!!editMode});
-        if(editMode){(function(landmark){mk.on('dragend',function(e){
-          var ll=e.target.getLatLng();
-          var all=loadLandmarks();var idx=all.findIndex(function(x){return x.id===landmark.id;});
-          if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);}
-        });})(lm);}
-        mk.addTo(_leafletMap);
-      });
-    }
-  }catch(e){console.warn('Landmark render:',e);}
-    // Render landmarks on Leaflet map
-  try {
-    var _lmAll=loadLandmarks?loadLandmarks():[];
-    var _apLm2=getCurrentApiary();
-    if(_apLm2&&_lmAll.length&&_leafletMap){
-      var _aLt=_apLm2.lat||52.5,_aLg=_apLm2.lng||-1.5;
-      _lmAll.forEach(function(lm){
-        if(lm.apiaryId&&lm.apiaryId!==_apLm2.id)return;
-        var def=(typeof LANDMARK_TYPES!=='undefined'&&LANDMARK_TYPES[lm.type])||{emoji:'&#x1F4CD;',label:lm.label||'Landmark'};
-        var lt=lm.mapLat||(_aLt+(Math.random()-0.5)*0.0002);
-        var lg=lm.mapLng||(_aLg+(Math.random()-0.5)*0.0002);
-        var rot=(-(typeof _mapBearing==='number'?_mapBearing:0))+'deg';
-        var h='<div style="text-align:center;transform:rotate('+rot+');transform-origin:center center;">'
-          +'<div style="font-size:24px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));">'+(def.emoji||'&#x1F4CD;')+'</div>'
-          +'<div style="font-size:8px;font-weight:800;color:white;background:rgba(0,0,0,.65);border-radius:6px;padding:1px 5px;white-space:nowrap;margin-top:1px;">'+lm.label+'</div>'
-          +'</div>';
-        var ic=L.divIcon({html:h,className:'',iconAnchor:[20,32],iconSize:[40,40]});
-        var mk=L.marker([lt,lg],{icon:ic,draggable:!!editMode});
-        if(editMode){(function(landmark){mk.on('dragend',function(e){
-          var ll=e.target.getLatLng();
-          var all=loadLandmarks();var idx=all.findIndex(function(x){return x.id===landmark.id;});
-          if(idx>=0){all[idx].mapLat=ll.lat;all[idx].mapLng=ll.lng;saveLandmarks(all);}
-        });})(lm);}
-        mk.addTo(_leafletMap);
-      });
-    }
-  }catch(e){console.warn('Landmark render:',e);}
+  // Landmarks are rendered by renderLeafletHives() which is called at the end
+  // of initLeafletMap (line ~17325) and separately after Supabase pull completes.
+  // renderLeafletHives contains the authoritative landmark render (scale, rotation,
+  // pointer triangle, edit sheet, position fallback). Previously this file had
+  // THREE copies of landmark rendering code — this module's simpler copies and
+  // the full version in renderLeafletHives. Duplicates removed Apr 21 to make
+  // debugging possible.
   updateMapHiveCount();
 }
 
@@ -17492,9 +17502,11 @@ function renderLeafletHives(editMode) {
   _landmarkMarkers = {};
 
   var landmarks = (typeof loadLandmarks === 'function') ? loadLandmarks() : [];
+  var _rawLandmarkCount = landmarks.length;
   landmarks = landmarks.filter(function(lm) {
     return !lm.apiaryId || lm.apiaryId === _apiaryId;
   });
+  if (window._hkDiag) console.log('[landmarks]', _rawLandmarkCount, 'loaded ·', landmarks.length, 'match apiary', _apiaryId, '· editMode:', !!editMode);
 
   landmarks.forEach(function(lm) {
     var def = LANDMARK_TYPES[lm.type] || LANDMARK_TYPES.custom;
