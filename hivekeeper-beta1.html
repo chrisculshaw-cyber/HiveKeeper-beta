@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 07:45 21 April 2026 · Apiary switch map refresh fix (renderMap canvas crash guarded) plus comment cleanup pass — misleading bug-cause narratives removed, renderMap clearly marked DEPRECATED, init cleanup comments tightened. -->
+<!-- HiveKeeper · Last updated: 08:15 21 April 2026 · Minimise/restore bug fixed — Android WebView fires spurious popstate on backgrounding/foregrounding which was triggering the "already at home, go home" branch. Now suppressed via visibility transition flag. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3192,8 +3192,21 @@ function goTo(id){
   try { syncUniversalHeaders(id); } catch(e) {}
 }
 
+// Flag set during minimise/restore cycle — suppresses popstate navigation
+// that Android WebView fires spuriously on backgrounding/foregrounding.
+// Without this, minimising the app on any non-home screen and restoring
+// lands the user on home because popstate thinks it's a real back-button press.
+var _hkVisibilityTransition = false;
+
 // Intercept browser back button — navigate within app instead of leaving
 window.addEventListener('popstate', function(e) {
+  // Android WebView fires popstate on minimise/restore — ignore during that window
+  if (_hkVisibilityTransition) {
+    diagLog('popstate SUPPRESSED (visibility transition)');
+    // Push state back so the history stack stays sane
+    try { history.pushState({ screen: currentScreen }, '', window.location.pathname); } catch(_) {}
+    return;
+  }
   if (screenHistory.length > 1) {
     screenHistory.pop();
     var prev = screenHistory[screenHistory.length - 1] || 's-home';
@@ -3267,7 +3280,8 @@ if (document.readyState === 'loading') {
 //      For that case, we also check hk_last_screen on DOMContentLoaded and restore.
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) {
-    // Going to background — persist current screen
+    // Going to background — persist current screen + guard against spurious popstate
+    _hkVisibilityTransition = true;
     try {
       localStorage.setItem('hk_last_screen', currentScreen);
       diagLog('visibility HIDDEN wrote ' + currentScreen);
@@ -3290,6 +3304,9 @@ document.addEventListener('visibilitychange', function() {
         diagLog('visibility VISIBLE restored to ' + saved);
       }
     } catch(e) { diagLog('visibility VISIBLE FAILED: ' + e.message); }
+    // Clear the transition flag AFTER a short delay — this covers the case
+    // where Android fires a spurious popstate a few hundred ms after restore.
+    setTimeout(function(){ _hkVisibilityTransition = false; diagLog('visibility transition flag cleared'); }, 800);
   }
 });
 
