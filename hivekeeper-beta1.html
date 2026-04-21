@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 22:53 21 April 2026 BST · Third attempt at the wake-lock modal checkbox visibility — previous accent-color approach has patchy Android WebView support (Median wrapper used by beta testers). Replaced with a fully custom-drawn checkbox: hidden native input (for state) + visible 26×26 div with forest-green border that fills green with a white tick on check. Data-checked attribute toggled via label click + explicitly synced in openWakeLockIntro. Unambiguously visible on every WebView build. -->
+<!-- HiveKeeper · Last updated: 23:18 21 April 2026 BST · Photo Finder diagnostic tool added after tester reported a saved inspection photo going missing. Access: Settings → Data → Recovery → Find lost photos. Walks all local inspections to collect every photoUrl, queries Supabase storage directly for <uid>/hive-photos/* tree, identifies ORPHANS (photos in cloud storage not referenced by any inspection — these are likely the "missing" photos). Shows referenced photos grouped by hive (with "Go to hive →" button) plus any orphans in a highlighted warning section. Also exposes the failure mode where photos uploaded with currentHiveId===null end up in /unassigned/ folder — orphans from that path are now clearly visible and recoverable by the user via direct link. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 22:53</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:18</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -2718,6 +2718,21 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <!-- MODAL: Data (import/export consolidated) -->
   <div class="modal-overlay" id="modal-data" onclick="closeToSettingsOnOverlay(event,'modal-data')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: Photo Finder (diagnostic tool for locating lost photos) -->
+  <div class="modal-overlay" id="modal-photo-finder" onclick="closeToSettingsOnOverlay(event,'modal-photo-finder')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);">🔍 Find lost photos</div>
+        <div onclick="closeToSettings('modal-photo-finder')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">&#x2715;</div>
+      </div>
+      <p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:16px;">Every photo you've uploaded, grouped by hive. Tap any thumbnail to open it full-size. Tap "Go to hive" to jump to that inspection.</p>
+      <div id="photo-finder-summary" style="margin-bottom:12px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:12px;color:var(--text);">Loading…</div>
+      <div id="photo-finder-results" style="margin-bottom:16px;"></div>
+      <button onclick="closeToSettings('modal-photo-finder')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
 
@@ -11453,6 +11468,169 @@ if (typeof escapeHtml !== 'function') {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PHOTO FINDER — diagnostic recovery tool for lost photos
+// Built 21 Apr 2026 after a tester reported a saved photo going missing.
+// Strategy:
+//   1. Walk all inspections (local + Supabase pull ensures parity) and list
+//      every photoUrl attached, grouped by hive.
+//   2. Query Supabase storage directly for the user's /hive-photos/<uid>/*
+//      tree and flag any files that aren't referenced by an inspection —
+//      those are true orphans, recoverable manually.
+// The heavy lifting is deliberately all in one function so it's easy to
+// reason about; performance is acceptable for typical beta-tester data sizes
+// (dozens of inspections, hundreds of photos).
+// ═══════════════════════════════════════════════════════════════
+async function openPhotoFinder() {
+  openModalEl('modal-photo-finder');
+  var summaryEl = document.getElementById('photo-finder-summary');
+  var resultsEl = document.getElementById('photo-finder-results');
+  if (!summaryEl || !resultsEl) return;
+  summaryEl.textContent = 'Loading inspections and scanning cloud storage…';
+  resultsEl.innerHTML = '';
+
+  try {
+    // ── Step 1: collect every photoUrl referenced by a local inspection ──
+    var inspections = (typeof loadInspections === 'function') ? loadInspections() : [];
+    var hives = (typeof loadHives === 'function') ? loadHives(true) : [];
+    var hiveById = {};
+    hives.forEach(function(h) { hiveById[h.id] = h; });
+
+    var referencedUrls = {}; // url → { hiveId, hiveName, inspId, date, label }
+    var inspectionsWithPhotos = 0;
+    var totalReferencedPhotos = 0;
+
+    inspections.forEach(function(insp) {
+      if (insp.photoUrls && insp.photoUrls.length) {
+        inspectionsWithPhotos++;
+        insp.photoUrls.forEach(function(url, idx) {
+          if (!url) return;
+          totalReferencedPhotos++;
+          var hive = hiveById[insp.hiveId];
+          referencedUrls[url] = {
+            hiveId: insp.hiveId,
+            hiveName: hive ? hive.name : '(unknown hive — possibly deleted)',
+            inspId: insp.id,
+            date: insp.inspectedAt,
+            label: (insp.photoLabels && insp.photoLabels[idx]) || ''
+          };
+        });
+      }
+    });
+
+    // ── Step 2: query Supabase storage for everything under <uid>/ ──
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    var storageFiles = [];
+    var storageError = null;
+    if (uid && typeof getSupabase === 'function') {
+      try {
+        var sb = getSupabase();
+        // List all folders (hive IDs) under the user's root
+        var { data: hiveDirs, error: dirErr } = await sb.storage.from('hive-photos').list(uid, { limit: 1000 });
+        if (dirErr) throw dirErr;
+        for (var i = 0; i < (hiveDirs || []).length; i++) {
+          var dir = hiveDirs[i];
+          // Each dir is a hiveId folder. List its files.
+          var { data: files, error: filesErr } = await sb.storage.from('hive-photos').list(uid + '/' + dir.name, { limit: 1000 });
+          if (filesErr) continue;
+          (files || []).forEach(function(f) {
+            var fullPath = uid + '/' + dir.name + '/' + f.name;
+            var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(fullPath);
+            storageFiles.push({
+              path: fullPath,
+              hiveId: dir.name,
+              filename: f.name,
+              url: urlData && urlData.publicUrl ? urlData.publicUrl : null,
+              createdAt: f.created_at || null,
+              size: (f.metadata && f.metadata.size) || null
+            });
+          });
+        }
+      } catch(e) {
+        console.warn('[photo-finder] storage list failed:', e);
+        storageError = e.message || 'unknown error';
+      }
+    }
+
+    // ── Step 3: identify orphans — storage files not referenced by any inspection ──
+    var orphans = storageFiles.filter(function(f) { return f.url && !referencedUrls[f.url]; });
+
+    // ── Step 4: render ──
+    var summaryHtml = '<b>' + totalReferencedPhotos + '</b> photo' + (totalReferencedPhotos === 1 ? '' : 's') +
+      ' attached to <b>' + inspectionsWithPhotos + '</b> inspection' + (inspectionsWithPhotos === 1 ? '' : 's') + '.';
+    if (storageError) {
+      summaryHtml += '<br><span style="color:#B83228;">⚠ Could not scan cloud storage: ' + escapeAttr(storageError) + '</span>';
+    } else if (storageFiles.length > 0) {
+      summaryHtml += ' Cloud storage has <b>' + storageFiles.length + '</b> file' + (storageFiles.length === 1 ? '' : 's') +
+        ', of which <b>' + orphans.length + '</b> ' + (orphans.length === 1 ? 'is' : 'are') + ' not linked to an inspection.';
+    }
+    summaryEl.innerHTML = summaryHtml;
+
+    var html = '';
+
+    // Orphans section first — these are the "lost" photos the user is probably looking for
+    if (orphans.length > 0) {
+      html += '<div style="font-size:12px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">⚠ Orphan photos (not linked to an inspection)</div>';
+      html += '<p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:10px;">These photos are in cloud storage but aren\'t attached to any inspection — likely your missing photo. Tap the thumbnail to open full-size.</p>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px;">';
+      orphans.forEach(function(f) {
+        var hiveName = hiveById[f.hiveId] ? hiveById[f.hiveId].name : '(hive id ' + f.hiveId + ')';
+        if (f.hiveId === 'unassigned') hiveName = '(uploaded before hive was chosen)';
+        var dateStr = f.createdAt ? new Date(f.createdAt).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+        html += '<div style="background:#FFF8E7;border:1px solid #F5B7B1;border-radius:8px;padding:6px;cursor:pointer;" onclick="window.open(\'' + f.url + '\',\'_blank\')">'
+          + '<img src="' + f.url + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;" loading="lazy">'
+          + '<div style="font-size:9px;font-weight:700;color:var(--text);margin-top:4px;line-height:1.3;">' + escapeHtml(hiveName) + '</div>'
+          + (dateStr ? '<div style="font-size:8px;color:var(--text-l);">' + dateStr + '</div>' : '')
+          + '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Attached photos grouped by hive
+    if (totalReferencedPhotos > 0) {
+      html += '<div style="font-size:12px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">✓ Photos attached to inspections</div>';
+      // Group by hive
+      var byHive = {};
+      Object.keys(referencedUrls).forEach(function(url) {
+        var info = referencedUrls[url];
+        var key = info.hiveId || '(no hive)';
+        if (!byHive[key]) byHive[key] = { hiveName: info.hiveName, hiveId: info.hiveId, items: [] };
+        byHive[key].items.push({ url: url, date: info.date, label: info.label, inspId: info.inspId });
+      });
+      Object.keys(byHive).forEach(function(hiveId) {
+        var group = byHive[hiveId];
+        html += '<div style="margin-bottom:16px;">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:6px 10px;background:var(--cream);border-radius:6px;">';
+        html += '<div style="font-size:13px;font-weight:700;color:var(--text);">' + escapeHtml(group.hiveName) + ' <span style="color:var(--text-l);font-weight:400;">(' + group.items.length + ')</span></div>';
+        if (hiveId !== '(no hive)' && hiveById[hiveId]) {
+          html += '<button onclick="closeToSettings(\'modal-photo-finder\');setTimeout(function(){currentHiveId=\'' + hiveId + '\';goTo(\'s-hive\');},250);" style="background:transparent;border:1px solid var(--forest);border-radius:10px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--forest);cursor:pointer;font-family:\'Syne\',sans-serif;">Go to hive →</button>';
+        }
+        html += '</div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;">';
+        group.items.sort(function(a,b){ return b.date - a.date; });
+        group.items.forEach(function(item) {
+          var dateStr = item.date ? new Date(item.date).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '';
+          html += '<div style="background:var(--white);border:1px solid var(--wax);border-radius:8px;padding:6px;cursor:pointer;" onclick="window.open(\'' + item.url + '\',\'_blank\')">'
+            + '<img src="' + item.url + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;" loading="lazy">'
+            + (item.label ? '<div style="font-size:9px;font-weight:700;color:var(--text);margin-top:4px;">' + escapeHtml(item.label) + '</div>' : '')
+            + (dateStr ? '<div style="font-size:8px;color:var(--text-l);">' + dateStr + '</div>' : '')
+            + '</div>';
+        });
+        html += '</div></div>';
+      });
+    }
+
+    if (totalReferencedPhotos === 0 && orphans.length === 0) {
+      html = '<div style="padding:30px 20px;text-align:center;"><div style="font-size:48px;opacity:.3;">📷</div><div style="font-size:14px;color:var(--text-l);margin-top:10px;">No photos found — neither attached to inspections nor in cloud storage.</div></div>';
+    }
+
+    resultsEl.innerHTML = html;
+  } catch(e) {
+    console.error('[photo-finder] fatal:', e);
+    summaryEl.innerHTML = '<span style="color:#B83228;">Error loading photo finder: ' + escapeAttr(e.message || 'unknown') + '</span>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // DATA MODAL — consolidated import/export
 // Single entry point that gathers Import from BeeBase/CSV, Export to CSV,
 // Export to BeeBase/NBU into one sub-modal so main Settings is less cluttered.
@@ -11492,6 +11670,13 @@ function openDataModal() {
     + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:20px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDCD1</span>'
       + '<span style="flex:1;">Export to BeeBase / NBU format<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">For Regional Bee Inspector compliance</div></span>'
+    + '</button>'
+
+    // === RECOVERY ===
+    + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Recovery</div>'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openPhotoFinder,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:20px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDD0D</span>'
+      + '<span style="flex:1;">Find lost photos<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Shows every photo you\u2019ve ever uploaded, grouped by hive and date. Use this if a photo is missing from a hive\u2019s timeline.</div></span>'
     + '</button>'
 
     // === DANGER ZONE ===
