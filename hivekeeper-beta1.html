@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 17:33 21 April 2026 BST · (1) "Additional notes" renamed to "Notes" (tester feedback — simpler). (2) Unsaved-warning fix — strengthened dirty-flag binding on both transcript and notes fields: now listens for input, change, AND keyup events (belt-and-braces for mobile browser quirks where one event type can fail to fire). (3) Added opt-in diagnostic logging: set window._hkDiag=true in console to see dirty-flag state changes + goTo guard evaluation. -->
+<!-- HiveKeeper · Last updated: 18:59 21 April 2026 BST · Unsaved-warning now fires when typing in Notes. Root cause: the per-element addEventListener on the Notes textarea was silently failing in field use (reason not yet pinned — possibly mobile keyboard quirk or event target replacement). Fix: switched to document-level event delegation that cannot be defeated by listener-detachment. The direct-element listeners remain as a fallback belt-and-braces. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 17:33</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 18:59</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5757,24 +5757,42 @@ function resetInspectStatusButtons() {
   });
 }
 
-// ── INSPECT DIRTY TRACKING — TOGGLE BUTTON COVERAGE ─────────────
+// ── INSPECT DIRTY TRACKING — TOGGLE BUTTON + TEXTAREA COVERAGE ──
 // Extends the System A text-input listeners (in renderInspectHeader) to also
 // catch changes to the segmented toggle buttons (status / stores / swarm risk /
-// temper / queen-seen). Without this, a beekeeper could tap a dozen buttons
-// on an inspection, navigate away, and lose the lot without any warning.
-// Uses event delegation so it picks up dynamically-rendered buttons too.
-(function wireInspToggleDirty() {
-  function handler(e) {
+// temper / queen-seen) AND the transcript/notes textareas. Without this, a
+// beekeeper could tap a dozen buttons on an inspection, navigate away, and
+// lose the lot without any warning.
+//
+// Uses event delegation at document level so it picks up dynamically-rendered
+// elements too, and can't be defeated by listener-detachment edge cases that
+// have been observed in field testing (typing in Notes was not marking dirty
+// via the direct addEventListener on the textarea element).
+(function wireInspDirty() {
+  function markIfInspect(src) {
     if (typeof currentScreen === 'undefined' || currentScreen !== 's-inspect') return;
-    if (e.target && e.target.classList && e.target.classList.contains('toggle-btn')) {
-      window._inspectionDirty = true;
+    window._inspectionDirty = true;
+    if (window._hkDiag) console.log('[dirty delegated]', src, 'at', new Date().toISOString());
+  }
+  // Toggle button clicks (status / stores / swarm risk / temper / queen-seen)
+  document.addEventListener('click', function(e) {
+    if (!e.target || !e.target.classList) return;
+    if (e.target.classList.contains('toggle-btn') || e.target.classList.contains('inspect-status-btn')) {
+      markIfInspect('toggle-click');
     }
-    // Also catch the explicit status buttons (different class: inspect-status-btn)
-    if (e.target && e.target.classList && e.target.classList.contains('inspect-status-btn')) {
-      window._inspectionDirty = true;
+  }, true);
+  // Textarea / input typing — catches both transcript-text and inspect-notes
+  // via id match. This is the robust path: works even if the per-element
+  // addEventListener in renderInspectHeader fails for any reason.
+  function onInput(e) {
+    if (!e.target || !e.target.id) return;
+    if (e.target.id === 'inspect-notes' || e.target.id === 'transcript-text') {
+      markIfInspect('text-' + e.type + '-' + e.target.id);
     }
   }
-  document.addEventListener('click', handler, true);
+  document.addEventListener('input', onInput, true);
+  document.addEventListener('keyup', onInput, true);
+  document.addEventListener('change', onInput, true);
 })();
 
 function saveInspection(){
