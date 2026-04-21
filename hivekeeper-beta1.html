@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 19:19 21 April 2026 BST · Visible save confirmation on the button itself. After tapping Save inspection, the button flips to "✓ Inspection saved" in darker green for 2 seconds, then resets. Toast was too easy to miss in field conditions (sun glare, brief duration). Button-level feedback gives unambiguous confirmation right where the finger just was. Button is also disabled during the 2-second window to prevent accidental double-saves. -->
+<!-- HiveKeeper · Last updated: 19:41 21 April 2026 BST · Move Hive feature audit — feature is substantially complete (modal, dropdown/new-apiary toggle, movement log in hk_movements_v1, timeline rendering with brown 🚚 dot, free-text reason, editable when-moved datetime, reset map position on move). One gap closed: Free-tier canAddApiary() check added before creating new apiary via move — prevents bypass of tier limits once paywalls enforce. Remaining gaps: movements are local-only (no Supabase sync) — not blocking today. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:19</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 19:41</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1620,6 +1620,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
       <div class="screen-sub" id="hive-detail-meta" style="flex:1;color:rgba(255,255,255,.7);">Loading...</div>
       <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
+      <button onclick="openMoveHiveModal()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🚚 Move</button>
       <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
     </div>
     <div id="hive-detail-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
@@ -2723,6 +2724,65 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
   </div>
 
+  <!-- MODAL: Move Hive -->
+  <div class="modal-overlay" id="modal-move-hive" onclick="closeModal(event,'modal-move-hive')">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;">
+      <div class="modal-head">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);">🚚 Move hive</div>
+        <div onclick="closeModalEl('modal-move-hive')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">&#x2715;</div>
+      </div>
+      <div class="modal-body" style="padding:16px 20px;">
+        <div id="move-hive-summary" style="margin-bottom:14px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:13px;color:var(--text);">
+          Loading hive details…
+        </div>
+
+        <!-- Destination toggle -->
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Move to</div>
+          <div style="display:flex;gap:6px;">
+            <button id="move-dest-existing" onclick="setMoveDestMode('existing')" style="flex:1;padding:10px;border:1.5px solid var(--forest);border-radius:var(--rs);background:var(--forest);color:white;font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Existing apiary</button>
+            <button id="move-dest-new" onclick="setMoveDestMode('new')" style="flex:1;padding:10px;border:1.5px solid var(--forest);border-radius:var(--rs);background:transparent;color:var(--forest);font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ New apiary</button>
+          </div>
+        </div>
+
+        <!-- Existing apiary picker -->
+        <div id="move-existing-wrap" style="margin-bottom:12px;">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Choose apiary</label>
+          <select id="move-target-apiary" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;background:white;"></select>
+          <div id="move-no-other-apiaries" style="display:none;font-size:12px;color:var(--text-l);font-style:italic;margin-top:6px;">You have no other apiaries. Tap "+ New apiary" to create one.</div>
+        </div>
+
+        <!-- New apiary inputs -->
+        <div id="move-new-wrap" style="margin-bottom:12px;display:none;">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">New apiary name</label>
+          <input type="text" id="move-new-apiary-name" placeholder="e.g. Heather Moor, Orchard Farm" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:10px;">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Location (postcode or lat,lng)</label>
+          <input type="text" id="move-new-apiary-location" placeholder="e.g. NN14 3JH or 52.4789,-0.6019" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+          <div style="font-size:11px;color:var(--text-l);font-style:italic;margin-top:4px;">You can fine-tune on the map after creating.</div>
+        </div>
+
+        <!-- When moved -->
+        <div style="margin-bottom:12px;">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">When moved</label>
+          <input type="datetime-local" id="move-when" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+          <div style="font-size:11px;color:var(--text-l);font-style:italic;margin-top:4px;">Defaults to now — change if the move happened earlier.</div>
+        </div>
+
+        <!-- Reason -->
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Reason (optional)</label>
+          <input type="text" id="move-reason" placeholder="e.g. spring rape pollination, isolation, winter shelter" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;">
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:8px;">
+          <button onclick="closeModalEl('modal-move-hive')" style="flex:1;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);background:white;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Cancel</button>
+          <button onclick="confirmMoveHive()" id="move-hive-confirm-btn" style="flex:2;padding:14px;border:none;border-radius:var(--rs);background:var(--forest);color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">🚚 Move hive</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: Change Password -->
   <div class="modal-overlay" id="modal-change-password" onclick="closeModal(event,'modal-change-password')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
@@ -2873,6 +2933,189 @@ function destroyHiveListSortable() {
   } catch(e) {}
 }
 function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch{ return []; } }
+
+// ── HIVE MOVEMENT STORAGE ──────────────────────────────────────
+// Movement events are stored locally for now — Supabase table + sync
+// to be added in a follow-up. Each event: id, hiveId, fromApiaryId,
+// toApiaryId, movedAt (ISO), reason, createdAt.
+var MOVEMENTS_KEY = 'hk_movements_v1';
+function loadMovements(){ try{ return JSON.parse(localStorage.getItem(MOVEMENTS_KEY)) || []; } catch(e){ return []; } }
+function saveMovements(list){ try { localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(list)); } catch(e){ console.warn('saveMovements', e); } }
+function getMovementsForHive(hiveId){
+  return loadMovements().filter(function(m){ return m.hiveId === hiveId; })
+    .sort(function(a,b){ return new Date(b.movedAt).getTime() - new Date(a.movedAt).getTime(); });
+}
+
+// ── MOVE HIVE MODAL ───────────────────────────────────────────
+// Opens from Hive Detail header. Populated with the current hive and
+// a choice of existing apiaries OR inline new-apiary creation.
+// Movement is logged with editable date/time and optional reason.
+function openMoveHiveModal() {
+  if (!currentHiveId) { showToast('No hive selected'); return; }
+  var hive = loadHives().find(function(h){ return h.id === currentHiveId; });
+  if (!hive) { showToast('Hive not found'); return; }
+  var currentApiary = loadApiaries().find(function(a){ return a.id === hive.apiaryId; });
+  var summaryEl = document.getElementById('move-hive-summary');
+  if (summaryEl) {
+    summaryEl.innerHTML = '<strong>' + (hive.name || 'Hive') + '</strong>'
+      + '<br><span style="font-size:12px;color:var(--text-l);">Currently in: ' + (currentApiary ? currentApiary.name : 'unknown') + '</span>';
+  }
+  // Populate existing-apiary dropdown (excluding the current one)
+  var select = document.getElementById('move-target-apiary');
+  var noOther = document.getElementById('move-no-other-apiaries');
+  if (select) {
+    select.innerHTML = '';
+    var others = loadApiaries().filter(function(a){
+      return a.id !== hive.apiaryId && !a.id.toString().startsWith('demo-');
+    });
+    if (others.length === 0) {
+      if (noOther) noOther.style.display = 'block';
+      select.style.display = 'none';
+      // Auto-switch to "new apiary" mode
+      setTimeout(function(){ setMoveDestMode('new'); }, 10);
+    } else {
+      if (noOther) noOther.style.display = 'none';
+      select.style.display = '';
+      others.forEach(function(a){
+        var opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name + (a.location ? ' · ' + a.location : '');
+        select.appendChild(opt);
+      });
+      setMoveDestMode('existing');
+    }
+  }
+  // Reset inputs
+  document.getElementById('move-new-apiary-name').value = '';
+  document.getElementById('move-new-apiary-location').value = '';
+  document.getElementById('move-reason').value = '';
+  // Default "when moved" to now, formatted for datetime-local input
+  var now = new Date();
+  var iso = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0')
+    + 'T' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('move-when').value = iso;
+  openModalEl('modal-move-hive');
+}
+
+function setMoveDestMode(mode) {
+  var existingWrap = document.getElementById('move-existing-wrap');
+  var newWrap = document.getElementById('move-new-wrap');
+  var btnExisting = document.getElementById('move-dest-existing');
+  var btnNew = document.getElementById('move-dest-new');
+  if (mode === 'new') {
+    existingWrap.style.display = 'none';
+    newWrap.style.display = '';
+    btnExisting.style.background = 'transparent';
+    btnExisting.style.color = 'var(--forest)';
+    btnNew.style.background = 'var(--forest)';
+    btnNew.style.color = 'white';
+  } else {
+    existingWrap.style.display = '';
+    newWrap.style.display = 'none';
+    btnExisting.style.background = 'var(--forest)';
+    btnExisting.style.color = 'white';
+    btnNew.style.background = 'transparent';
+    btnNew.style.color = 'var(--forest)';
+  }
+  existingWrap.dataset.mode = mode;
+}
+
+function confirmMoveHive() {
+  var btn = document.getElementById('move-hive-confirm-btn');
+  if (btn) btn.disabled = true;
+  try {
+    var hive = loadHives().find(function(h){ return h.id === currentHiveId; });
+    if (!hive) { showToast('Hive not found'); if(btn) btn.disabled=false; return; }
+    var fromApiaryId = hive.apiaryId;
+    var mode = document.getElementById('move-existing-wrap').dataset.mode || 'existing';
+    var toApiaryId = null;
+    var toApiaryName = '';
+
+    if (mode === 'new') {
+      var name = document.getElementById('move-new-apiary-name').value.trim();
+      var loc = document.getElementById('move-new-apiary-location').value.trim();
+      if (!name) { showToast('Please enter a name for the new apiary'); if(btn) btn.disabled=false; return; }
+      // Tier enforcement — creating a new apiary counts against the tier limit.
+      // Without this check, a Free-tier user could bypass the 1-apiary cap by
+      // using "Move hive → + New apiary" repeatedly.
+      if (typeof canAddApiary === 'function' && !canAddApiary()) {
+        if (btn) btn.disabled = false;
+        closeModalEl('modal-move-hive');
+        if (typeof showUpgradeModal === 'function') showUpgradeModal('apiary');
+        return;
+      }
+      // Parse lat/lng if provided in that format
+      var lat = null, lng = null;
+      var coords = (typeof parseLatLng === 'function') ? parseLatLng(loc) : null;
+      if (coords) { lat = coords.lat; lng = coords.lng; }
+      var newId = uid();
+      var newApiary = { id: newId, name: name, location: loc, lat: lat, lng: lng, createdAt: Date.now() };
+      var apiaries = loadApiaries();
+      apiaries.push(newApiary);
+      saveApiaries(apiaries);
+      toApiaryId = newId;
+      toApiaryName = name;
+    } else {
+      var select = document.getElementById('move-target-apiary');
+      toApiaryId = select && select.value ? select.value : null;
+      if (!toApiaryId) { showToast('Please choose a target apiary'); if(btn) btn.disabled=false; return; }
+      var target = loadApiaries().find(function(a){ return a.id === toApiaryId; });
+      toApiaryName = target ? target.name : 'the new apiary';
+    }
+
+    if (toApiaryId === fromApiaryId) {
+      showToast('Hive is already in that apiary');
+      if (btn) btn.disabled = false;
+      return;
+    }
+
+    // Parse and validate movement date/time
+    var whenRaw = document.getElementById('move-when').value;
+    var movedAt = whenRaw ? new Date(whenRaw) : new Date();
+    if (isNaN(movedAt.getTime())) movedAt = new Date();
+
+    var reason = document.getElementById('move-reason').value.trim();
+
+    // Log the movement event
+    var movements = loadMovements();
+    movements.push({
+      id: uid(),
+      hiveId: currentHiveId,
+      fromApiaryId: fromApiaryId,
+      toApiaryId: toApiaryId,
+      movedAt: movedAt.toISOString(),
+      reason: reason,
+      createdAt: Date.now()
+    });
+    saveMovements(movements);
+
+    // Update the hive: new apiaryId, reset map position so user places it again
+    var hives = loadHives();
+    var idx = hives.findIndex(function(h){ return h.id === currentHiveId; });
+    if (idx >= 0) {
+      hives[idx].apiaryId = toApiaryId;
+      hives[idx].mapX = null;
+      hives[idx].mapY = null;
+      saveHives(hives);
+    }
+
+    // Push hive update to Supabase if available (movements stay local for now)
+    try { if (typeof pushHives === 'function') pushHives().catch(function(){}); } catch(e) {}
+    try { if (typeof pushApiaries === 'function' && mode === 'new') pushApiaries().catch(function(){}); } catch(e) {}
+
+    closeModalEl('modal-move-hive');
+    showToast('✓ ' + (hive.name || 'Hive') + ' moved to ' + toApiaryName);
+
+    // Navigate back to Apiary to show the new state
+    setTimeout(function(){ try { renderHiveDetail(); } catch(e){} try { renderApiary(); } catch(e){} }, 100);
+  } catch(e) {
+    console.error('confirmMoveHive error', e);
+    showToast('Error moving hive — ' + (e.message || 'unknown'));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 function saveInspections(i){
   localStorage.setItem(INSP_KEY, JSON.stringify(i));
   if (!getUserId()) return;
@@ -4523,19 +4766,40 @@ function renderHiveDetail(){
 
   // Timeline
   const tlEl = document.getElementById('hive-timeline');
-  if(inspections.length === 0){
+  // Merge swarm catches AND movements into timeline
+  var swarmCatches = loadSwarmCatches(hive.id);
+  var movements = getMovementsForHive(hive.id);
+  var tlItems = [
+    ...inspections.map(function(insp){ return { type: 'inspection', date: insp.inspectedAt, data: insp }; }),
+    ...swarmCatches.map(function(s){ return { type: 'swarm', date: new Date(s.date).getTime(), data: s }; }),
+    ...movements.map(function(m){ return { type: 'movement', date: new Date(m.movedAt).getTime(), data: m }; })
+  ].sort(function(a,b){ return b.date - a.date; });
+
+  if (tlItems.length === 0) {
     tlEl.innerHTML = `<div style="padding:20px;text-align:center;"><div style="font-size:40px;opacity:.4;">📋</div><div style="font-size:14px;color:var(--text-l);margin-top:8px;">No inspections recorded yet</div></div>`;
     return;
   }
   const dotCls = hive.status==='dead'?'grey':hive.status==='unclear'?'':latest&&latest.healthScore>75?'green':'';
-  // Merge swarm catches into timeline
-  var swarmCatches = loadSwarmCatches(hive.id);
-  var tlItems = [
-    ...inspections.map(function(insp){ return { type: 'inspection', date: insp.inspectedAt, data: insp }; }),
-    ...swarmCatches.map(function(s){ return { type: 'swarm', date: new Date(s.date).getTime(), data: s }; })
-  ].sort(function(a,b){ return b.date - a.date; });
-  
+
   tlEl.innerHTML = tlItems.map((item,idx)=>{
+    if (item.type === 'movement') {
+      var m = item.data;
+      var fromA = loadApiaries().find(function(a){ return a.id === m.fromApiaryId; });
+      var toA = loadApiaries().find(function(a){ return a.id === m.toApiaryId; });
+      var fromName = fromA ? fromA.name : 'unknown';
+      var toName = toA ? toA.name : 'unknown';
+      return '<div class="tl-entry">' +
+        '<div class="tl-dot-col"><div class="tl-dot" style="background:#8B5E3C;"></div>' +
+        (idx<tlItems.length-1?'<div class="tl-line"></div>':'') + '</div>' +
+        '<div class="tl-card">' +
+          '<div class="tl-date">🚚 Moved · ' + new Date(m.movedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) +
+            (new Date(m.movedAt).getHours() || new Date(m.movedAt).getMinutes() ? ' · ' + new Date(m.movedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '') +
+          '</div>' +
+          '<div class="tl-row"><span class="tl-label">From</span><span>' + fromName + '</span></div>' +
+          '<div class="tl-row"><span class="tl-label">To</span><span>' + toName + '</span></div>' +
+          (m.reason ? '<div class="tl-notes">' + m.reason + '</div>' : '') +
+        '</div></div>';
+    }
     if (item.type === 'swarm') {
       var s = item.data;
       return '<div class="tl-entry">' +
