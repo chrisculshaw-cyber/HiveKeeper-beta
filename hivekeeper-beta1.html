@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 21:48 21 April 2026 BST · Late evening field-test feedback: (1) Wake-lock intro modal now session-based (sessionStorage) rather than firing every screen entry — previously the flag was being wiped by pullFromSupabase's keysToKeep. Added "Don't show this again" checkbox for permanent suppression via hk_wake_lock_intro_suppress (added to keysToKeep). (2) Inspect gate — when no hive is selected, the form is hidden behind a "Select a hive to begin" empty state with a clear call-to-action button. Prevents accidental data entry against the wrong or no hive. (3) Row auto-reconcile — loadRows() now scans hives for row names not in the stored list and silently adds them. Self-heals the Nene Valley "1 row" bug where imported hives referenced Row 2/3/4 but only Row 1 was in the stored rows list. (4) Confirmed: display name saves to Supabase profiles.display_name and pulls back via loadUserProfile() on every sign-in (fixed earlier today). -->
+<!-- HiveKeeper · Last updated: 21:50 21 April 2026 BST · Safety fix — SOS button now also rendered inside the Inspect empty state, separated by a divider and labelled "Emergency". Previously the SOS was only inside #inspect-form-content which is hidden when no hive is selected, meaning a lone worker arriving at Inspect before picking a hive could not trigger SOS if something went wrong. Apiary-screen SOS is unaffected (not gated at all). -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,7 +1112,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:48</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 21:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1456,12 +1456,21 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   </div>
   <div class="scroll-area">
 
-    <!-- Empty state: shown when no hive selected. Prevents the form being interacted with. -->
-    <div id="inspect-empty-state" style="display:none;padding:40px 24px;text-align:center;">
+    <!-- Empty state: shown when no hive selected. Prevents the form being interacted with.
+         SOS button remains accessible — a lone worker in trouble must be able to
+         trigger SOS even if they haven't yet selected a hive. -->
+    <div id="inspect-empty-state" style="display:none;padding:40px 24px 20px;text-align:center;">
       <div style="font-size:72px;line-height:1;margin-bottom:16px;">&#x1F41D;</div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">Select a hive to begin</div>
       <p style="font-size:14px;color:var(--text-l);line-height:1.6;margin:0 auto 20px;max-width:320px;">Tap the <b>Select a hive…</b> dropdown above to choose which hive you're inspecting. You can change the apiary via 🍯 My Apiaries.</p>
       <button onclick="toggleHiveList()" style="background:var(--honey);border:none;border-radius:var(--rs);padding:14px 24px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Choose a hive</button>
+      <!-- SOS always available, even before a hive is selected. Separated from
+           normal actions by a divider + label so it reads as emergency, not a
+           primary flow button. -->
+      <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--wax);">
+        <div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Emergency</div>
+        <button onclick="triggerSOS()" style="width:100%;max-width:320px;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS &mdash; Send emergency alert</button>
+      </div>
     </div>
 
     <!-- Gated content: the inspection form. Hidden until a hive is selected. -->
