@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:26</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:39</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6662,27 +6662,26 @@ async function sendAI(){
     }catch(e){ showTyping(false); addMessage('ai','Photo analysis failed — check your connection and try again.'); }
     return;
   }
-  const lower=msg.toLowerCase();
-  const key=Object.keys(AI_KB).find(k=>lower.includes(k));
-  if(key){ setTimeout(()=>{ showTyping(false); addMessage('ai',AI_KB[key]); },900); return; }
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:buildSystemPrompt(), messages:[{role:'user',content:msg}] })
-    });
-    const data=await res.json();
-    showTyping(false);
-    var textBlock=(data.content||[]).find(function(b){return b.type==='text';}); var text=textBlock?textBlock.text:null;
-    addMessage('ai', text||getFallback(msg));
-  }catch(e){ showTyping(false); addMessage('ai',getFallback(msg)); }
+
+  // ── AI CHAT TEMPORARILY UNAVAILABLE ──
+  // The previous implementation called the Anthropic API directly from the
+  // browser (no auth header — every call returned 401) and silently fell
+  // back to hardcoded "demo" answers that referenced fictional hives and
+  // events from the demo data set (Row 2 H6, Row 4 robbing, Meadowbrook
+  // Farm, etc). That was actively misleading testers. Disabled 21 April
+  // pending proper implementation via the Cloudflare Worker with a
+  // server-side API key and real-data system prompt built from
+  // loadHives/loadInspections. For now: show an honest failure message
+  // so testers know the service isn't available rather than seeing
+  // fake bespoke advice.
+  showTyping(false);
+  addMessage('ai', 'AI chat is temporarily unavailable while the backend is being rebuilt — Chris is working on it. In the meantime, ask a beekeeper, check your notes, or use the seasonal tips on the home screen.');
 }
 
+// Stub retained for any legacy call-sites. Returns the honest unavailability
+// message rather than hardcoded demo answers.
 function getFallback(msg){
-  const l=msg.toLowerCase();
-  if(l.includes('row 2')&&l.includes('h6')||l.includes('hive 6')) return 'Row 2 Hive 6 is one of your better survivors — going strong with plenty of bees. The concern is stores may be running low with active brood rearing. Check this weekend and feed 1:1 syrup if less than 3 frames of sealed honey visible.';
-  if(l.includes('queen')) return 'With your winter losses, queen quality going into next winter is critical. This season, try to raise or source queens from your best survivors — Row 2 H1, H2, and H8 look like good candidates based on your notes. Mark all queens yellow (2025 colour) and record the date.';
-  return `Based on your apiary this week: immediate priorities are wax moth (2 hives), robbing prevention (Row 4), redistributing stores to Row 2 H6 and H7, and weekly inspections on Row 3 H4 (swarm risk). What specific hive or issue would you like to focus on?`;
+  return 'AI chat is temporarily unavailable — please try again later.';
 }
 
 function sendSuggestion(el){ document.getElementById('ai-input').value=el.textContent; sendAI(); }
