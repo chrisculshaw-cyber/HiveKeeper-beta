@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:18</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:26</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6434,12 +6434,27 @@ function saveInspection(){
   var _photosAtSave = (currentInspData.photos || []).slice();
   var _hiveIdAtSave = currentHiveId;
   var _inspIdAtSave = insp.id;
-  var _uploadPromises = _photosAtSave
-    .filter(function(p){ return p._uploadPromise; })
-    .map(function(p){ return p._uploadPromise; });
+  // Build parallel arrays of the photos and their upload promises. The key
+  // defensive change (Apr 21): we await each promise and read its RESOLVED
+  // value directly, rather than reading p.url from the (possibly stale)
+  // photo object. Previously if currentInspData was reset between upload
+  // start and save-complete, the p.url mutation happened on the wrong
+  // reference and the URL was lost — producing an orphan photo in storage
+  // with no attachment on the inspection (exactly the bug Chris hit on
+  // 21 April with "row 3 hive 4" photo).
+  var _resolveUrlPromises = _photosAtSave.map(function(p) {
+    if (!p._uploadPromise) return Promise.resolve(p.url || null);
+    return p._uploadPromise.then(function(u) {
+      // uploadSinglePhoto resolves to the URL (or null on failure).
+      // Prefer the resolved value; fall back to p.url if the .then inside
+      // addPhotoToStrip got there first.
+      return u || p.url || null;
+    }).catch(function(){ return p.url || null; });
+  });
+  var _uploadPromises = _resolveUrlPromises;
 
-  function _saveUrlsAndNavigate() {
-    var uploadedUrls = _photosAtSave.map(function(p){ return p.url; }).filter(Boolean);
+  function _saveUrlsAndNavigate(resolvedUrls) {
+    var uploadedUrls = (resolvedUrls || _photosAtSave.map(function(p){ return p.url; })).filter(Boolean);
     var photoLabels = _photosAtSave.map(function(p){ return p.label || ''; });
     if (uploadedUrls.length) {
       var allInsp = loadInspections();
@@ -6500,10 +6515,10 @@ function saveInspection(){
 
   if (_uploadPromises.length > 0) {
     showToast('⏫ Uploading photos…');
-    Promise.all(_uploadPromises).then(function(){
-      _saveUrlsAndNavigate();
+    Promise.all(_uploadPromises).then(function(resolvedUrls){
+      _saveUrlsAndNavigate(resolvedUrls);
     }).catch(function(){
-      _saveUrlsAndNavigate(); // navigate even if some fail
+      _saveUrlsAndNavigate(); // navigate even if some fail; falls back to p.url
     });
   } else {
     _saveUrlsAndNavigate();
