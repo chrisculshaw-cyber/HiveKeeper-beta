@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:39</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:51</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5992,6 +5992,31 @@ function addPhotoToStrip(dataUrl, photoIndex, label) {
         _capturedPhoto.hiveId = uploadHiveId;
         if (statusEl) statusEl.textContent = '☁️';
         thumb.onclick = function(){ window.open(url); };
+        // RETROSPECTIVE ATTACHMENT (Apr 21 late): if the user already tapped
+        // Save while this upload was in flight, saveInspection will have
+        // tagged this photo with _inspectionId. Attach the URL to that
+        // inspection NOW — belt-and-braces guarantee that photos end up on
+        // inspections even if the normal save-path attachment failed due to
+        // currentInspData being reset, a sync-pull race, or any other bug.
+        try {
+          if (_capturedPhoto._inspectionId) {
+            var allInsp = loadInspections();
+            var rec = allInsp.find(function(i){ return i.id === _capturedPhoto._inspectionId; });
+            if (rec) {
+              rec.photoUrls = rec.photoUrls || [];
+              if (rec.photoUrls.indexOf(url) === -1) {
+                rec.photoUrls.push(url);
+                rec.photoLabels = rec.photoLabels || [];
+                rec.photoLabels.push(label || '');
+                saveInspections(allInsp);
+                if (typeof pushInspections === 'function') pushInspections().catch(function(){});
+                if (window._hkDiag) console.log('[photo] retrospectively attached URL to inspection', _capturedPhoto._inspectionId);
+                // Trigger a re-render if the user is viewing that hive/inspection now
+                try { if (typeof renderHive === 'function' && currentHiveId === rec.hiveId) renderHive(); } catch(e) {}
+              }
+            }
+          }
+        } catch(e) { console.warn('retrospective attach failed:', e); }
       } else {
         if (statusEl) statusEl.textContent = label.substring(0,8);
       }
@@ -6434,6 +6459,17 @@ function saveInspection(){
   var _photosAtSave = (currentInspData.photos || []).slice();
   var _hiveIdAtSave = currentHiveId;
   var _inspIdAtSave = insp.id;
+  // DEFENSIVE ATTACHMENT (Apr 21 late): tag every pending photo object with
+  // the inspection id it belongs to. The upload .then() inside
+  // addPhotoToStrip will use this to attach the URL back to the inspection
+  // RETROSPECTIVELY — even if _photosAtSave was empty here (because
+  // currentInspData was reset between photo-add and save, or a sync pull
+  // wiped the in-flight state). This guarantees the photo ends up on the
+  // inspection regardless of what raced with what.
+  (currentInspData.photos || []).forEach(function(p) {
+    p._inspectionId = _inspIdAtSave;
+  });
+  if (window._hkDiag) console.log('[save] photos at save time=', _photosAtSave.length, 'inspId=', _inspIdAtSave);
   // Build parallel arrays of the photos and their upload promises. The key
   // defensive change (Apr 21): we await each promise and read its RESOLVED
   // value directly, rather than reading p.url from the (possibly stale)
@@ -11584,16 +11620,17 @@ async function openPhotoFinder() {
     // Orphans section first — these are the "lost" photos the user is probably looking for
     if (orphans.length > 0) {
       html += '<div style="font-size:12px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px;">⚠ Orphan photos (not linked to an inspection)</div>';
-      html += '<p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:10px;">These photos are in cloud storage but aren\'t attached to any inspection — likely your missing photo. Tap the thumbnail to open full-size.</p>';
-      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px;">';
-      orphans.forEach(function(f) {
+      html += '<p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:10px;">These photos are in cloud storage but aren\'t attached to any inspection. Tap the thumbnail to open full-size, or tap "Attach" to link the photo to an existing inspection.</p>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px;">';
+      orphans.forEach(function(f, oi) {
         var hiveName = hiveById[f.hiveId] ? hiveById[f.hiveId].name : '(hive id ' + f.hiveId + ')';
         if (f.hiveId === 'unassigned') hiveName = '(uploaded before hive was chosen)';
         var dateStr = f.createdAt ? new Date(f.createdAt).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-        html += '<div style="background:#FFF8E7;border:1px solid #F5B7B1;border-radius:8px;padding:6px;cursor:pointer;" onclick="window.open(\'' + f.url + '\',\'_blank\')">'
-          + '<img src="' + f.url + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;" loading="lazy">'
+        html += '<div style="background:#FFF8E7;border:1px solid #F5B7B1;border-radius:8px;padding:6px;">'
+          + '<img src="' + f.url + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;cursor:pointer;" loading="lazy" onclick="window.open(\'' + f.url + '\',\'_blank\')">'
           + '<div style="font-size:9px;font-weight:700;color:var(--text);margin-top:4px;line-height:1.3;">' + escapeHtml(hiveName) + '</div>'
-          + (dateStr ? '<div style="font-size:8px;color:var(--text-l);">' + dateStr + '</div>' : '')
+          + (dateStr ? '<div style="font-size:8px;color:var(--text-l);margin-bottom:4px;">' + dateStr + '</div>' : '<div style="margin-bottom:4px;"></div>')
+          + '<button onclick="attachOrphanToInspection(\'' + encodeURIComponent(f.url) + '\',\'' + f.hiveId + '\')" style="width:100%;background:var(--forest);border:none;border-radius:6px;padding:6px;font-size:10px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;">Attach to inspection</button>'
           + '</div>';
       });
       html += '</div>';
@@ -11641,6 +11678,55 @@ async function openPhotoFinder() {
   } catch(e) {
     console.error('[photo-finder] fatal:', e);
     summaryEl.innerHTML = '<span style="color:#B83228;">Error loading photo finder: ' + escapeAttr(e.message || 'unknown') + '</span>';
+  }
+}
+
+// Attach an orphan photo URL to one of the hive's existing inspections.
+// Called from the Photo Finder. Shows a simple prompt listing recent
+// inspections for the photo's originally-tagged hive; user taps one and
+// the URL is appended to that inspection's photoUrls.
+function attachOrphanToInspection(encodedUrl, hiveId) {
+  try {
+    var url = decodeURIComponent(encodedUrl);
+    var inspections = loadInspections()
+      .filter(function(i){ return i.hiveId === hiveId; })
+      .sort(function(a,b){ return b.inspectedAt - a.inspectedAt; })
+      .slice(0, 20); // most recent 20
+    if (!inspections.length) {
+      alert('No inspections found for this hive. Create one first, then come back to attach the photo.');
+      return;
+    }
+    // Build a simple picker using the ask-user-input pattern (native prompt for simplicity)
+    var lines = inspections.map(function(i, idx) {
+      var d = new Date(i.inspectedAt).toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      var preview = (i.transcript || i.notes || '').substring(0, 40).replace(/\n/g,' ');
+      return (idx+1) + '. ' + d + (preview ? ' — ' + preview : '');
+    });
+    var choice = prompt('Attach photo to which inspection?\n\n' + lines.join('\n') + '\n\nEnter number (or cancel):');
+    if (!choice) return;
+    var n = parseInt(choice, 10);
+    if (isNaN(n) || n < 1 || n > inspections.length) { alert('Invalid choice'); return; }
+    var target = inspections[n-1];
+    // Attach
+    var allInsp = loadInspections();
+    var rec = allInsp.find(function(i){ return i.id === target.id; });
+    if (!rec) { alert('Could not find that inspection'); return; }
+    rec.photoUrls = rec.photoUrls || [];
+    if (rec.photoUrls.indexOf(url) === -1) {
+      rec.photoUrls.push(url);
+      rec.photoLabels = rec.photoLabels || [];
+      rec.photoLabels.push('(recovered)');
+      saveInspections(allInsp);
+      if (typeof pushInspections === 'function') pushInspections().catch(function(){});
+      showToast('✓ Photo attached');
+      // Refresh the Photo Finder so the orphan disappears from the list
+      setTimeout(function(){ try { openPhotoFinder(); } catch(e) {} }, 300);
+    } else {
+      alert('This photo is already attached to that inspection.');
+    }
+  } catch(e) {
+    console.error('attachOrphanToInspection failed:', e);
+    alert('Attach failed: ' + (e.message || 'unknown error'));
   }
 }
 
