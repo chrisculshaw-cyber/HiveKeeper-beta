@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 21:05 · Hive Editor layout polish</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 21:20 · Visibility label + checkbox sync fixes</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1420,7 +1420,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
          (at least one must stay checked). Persisted in localStorage as JSON.
          Built 22 April 2026 evening. Old 3-radio-button pattern (both/list/map)
          retired — checkboxes handle the stack strip + future view types cleanly
-         without a combinatorial menu. -->
+         without a combinatorial menu.
+         Initial checked state set by applyApiaryViewState() on Apiary screen entry;
+         before that runs, checkboxes default to unchecked. -->
     <div id="apiary-view-toggle" style="display:flex;gap:16px;padding:10px 16px 8px;justify-content:center;align-items:center;background:white;border-top:1px solid var(--wax);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);">
       <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-map" onchange="toggleApiaryView('map')" style="accent-color:var(--forest);cursor:pointer;">Map</label>
       <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-list" onchange="toggleApiaryView('list')" style="accent-color:var(--forest);cursor:pointer;">List</label>
@@ -3696,6 +3698,13 @@ window.addEventListener('offline', function() { updateInspectConnPill(); });
 // Initial paint on load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() { try { updateInspectConnPill(); } catch(e) {} });
+  // Sync apiary view toggle checkboxes on initial load — previously they rendered
+  // unchecked by default (HTML attribute) even when state said they should be on,
+  // because JS-driven sync only fired on apiary screen entry. Chris observed all
+  // three unticked-but-visible 22 April evening. Fix: sync on DOMContentLoaded.
+  document.addEventListener('DOMContentLoaded', function() {
+    try { if (typeof applyApiaryViewState === 'function') applyApiaryViewState(); } catch(e) {}
+  });
 } else {
   try { updateInspectConnPill(); } catch(e) {}
 }
@@ -5408,12 +5417,13 @@ function renderHiveEditor() {
     + sectionHead('Cover photo')
     + photoHtml
 
-    // Visibility — compact toggle, not a huge box
+    // Visibility — compact single-line description, no wrapping issue
     + sectionHead('Visibility')
-    + '<label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;cursor:pointer;user-select:none;line-height:1.4;padding:6px 0;">'
-    +   '<input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);margin-top:2px;flex-shrink:0;">'
-    +   '<span>Hide this hive from the active view<br><span style="color:var(--text-l);font-size:11px;">Data preserved, doesn\'t count toward your hive limit</span></span>'
+    + '<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;user-select:none;padding:10px;background:var(--cream);border:1px solid var(--wax);border-radius:6px;">'
+    +   '<input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);flex-shrink:0;">'
+    +   '<span style="font-weight:700;">Hide this hive</span>'
     + '</label>'
+    + '<div style="font-size:11px;color:var(--text-l);margin-top:4px;line-height:1.4;">Data preserved, doesn\'t count toward your hive limit</div>'
 
     // Save / Cancel — primary actions, prominent
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;">'
