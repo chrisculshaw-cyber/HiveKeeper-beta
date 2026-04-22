@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 18:10 · Stack visualiser Phase 2 (SVG renderer)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 18:40 · Stack Phase 2.1 (bug fixes)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1487,14 +1487,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <!-- Gated content: the inspection form. Hidden until a hive is selected. -->
     <div id="inspect-form-content" style="display:none;">
 
-    <!-- Selected hive image banner — visual confirmation of which hive is being
-         inspected. Shown only if the chosen hive has a cover photo. Filled by
-         populateHiveSelector(). -->
-    <div id="inspect-hive-image-banner" style="display:none;margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;box-shadow:var(--shadow);position:relative;"></div>
-
-    <!-- Hive stack visualiser — SVG diagram of the physical hive configuration.
-         Hidden when no hive selected. Filled by populateHiveSelector(). -->
-    <div id="inspect-hive-stack-banner" style="display:none;margin:10px 20px 0;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;"></div>
+    <!-- Hive context banner — cover photo (left) + stack diagram (right).
+         Shows when any hive is selected. Filled by populateHiveSelector(). -->
+    <div id="inspect-hive-context-banner" style="display:none;margin:10px 20px 0;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);overflow:hidden;box-shadow:var(--shadow);"></div>
 
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
@@ -1670,7 +1665,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
       <div id="hive-stack-section" style="margin-top:12px;display:none;">
-        <div class="section-head"><div class="section-title">🏠 Hive stack</div><button class="section-action" onclick="openStackEditor(currentHiveId)">Edit →</button></div>
+        <div class="section-head"><div class="section-title">🏠 Hive stack</div><button id="hive-stack-edit-btn" class="section-action" type="button">Edit →</button></div>
         <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;"></div>
       </div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
@@ -4938,13 +4933,35 @@ function renderHiveStackSection(hive) {
   if (!hive) { section.style.display = 'none'; return; }
   vis.innerHTML = '<div style="width:180px;">' + renderHiveStackSVG(hive, { width: 180 }) + '</div>';
   section.style.display = 'block';
+  // Wire the Edit button programmatically — inline onclick="openStackEditor(currentHiveId)"
+  // was reported as silent on phone (22 April). Using addEventListener with a fresh
+  // clone to prevent duplicate listeners on re-render is more reliable across browsers.
+  var btn = document.getElementById('hive-stack-edit-btn');
+  if (btn) {
+    var fresh = btn.cloneNode(true);
+    btn.parentNode.replaceChild(fresh, btn);
+    fresh.addEventListener('click', function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      openStackEditor(hive.id);
+    });
+  }
 }
 
 // Phase 3 stub — full stack editor comes next. For now shows a "coming soon" toast
 // so the Edit button on Hive Detail is wired up without crashing.
+// Includes diagnostic logging so we can trace whether the click is firing.
 function openStackEditor(hiveId) {
+  console.log('[stack-editor] openStackEditor called, hiveId=', hiveId, ' currentHiveId=', typeof currentHiveId !== 'undefined' ? currentHiveId : '(undefined)');
+  var targetId = hiveId || (typeof currentHiveId !== 'undefined' ? currentHiveId : null);
+  if (!targetId) {
+    if (typeof showToast === 'function') showToast('No hive selected');
+    return;
+  }
   if (typeof showToast === 'function') {
     showToast('Stack editor coming in next build');
+  } else {
+    alert('Stack editor coming in next build');
   }
 }
 
@@ -8213,55 +8230,45 @@ function selectHiveFromList(hiveId){
   hiveListOpen=false;
   var list=document.getElementById('inspect-hive-list'); if(list) list.style.display='none';
   changeInspectHive(hiveId);
-  var nameEl=document.getElementById('inspect-hive-selected-name');
-  if(nameEl){var hive=loadHives().find(function(h){return h.id===hiveId;}); if(hive) nameEl.textContent=hive.name;}
+  // populateHiveSelector does the full render (name, cover photo banner, stack banner).
+  // Calling it here fixes the "stack only appears after navigating away and back" bug —
+  // previously we only set the name element directly, leaving the new banner slots empty
+  // until the next full screen render.
+  populateHiveSelector();
 }
 function populateHiveSelector(){
   var hive=currentHiveId?loadHives().find(function(h){return h.id===currentHiveId;}):null;
   var nameEl=document.getElementById('inspect-hive-selected-name');
   if(nameEl) nameEl.textContent=hive?hive.name:'Select a hive...';
-  // Show a full-width image banner at the top of the inspect form when the
-  // selected hive has a cover photo. Gives the keeper clear visual confirmation
-  // of which hive they're inspecting — the pill text alone wasn't enough
-  // (Davey/Chris feedback 22 April).
-  var bannerEl=document.getElementById('inspect-hive-image-banner');
-  if(bannerEl){
-    if(hive && hive.coverPhoto){
-      var cleanUrl=hive.coverPhoto.split('?')[0];
-      bannerEl.innerHTML=''
-        + '<div style="position:relative;width:100%;aspect-ratio:16/7;max-height:180px;background:#e0e0e0;">'
-        +   '<img src="' + cleanUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
-        +   '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px 14px;">'
-        +     '<div style="color:white;font-size:14px;font-weight:800;font-family:Syne,sans-serif;">' + (hive.name || 'Hive') + '</div>'
-        +   '</div>'
-        + '</div>';
-      bannerEl.style.display='block';
-    } else {
-      bannerEl.innerHTML='';
-      bannerEl.style.display='none';
-    }
-  }
-  // Show the stack diagram banner for visual confirmation of what this hive
-  // physically looks like before the keeper opens it. Always shown when a hive
-  // is selected (every hive has at least default config — brood + floor + roof).
-  var stackBannerEl=document.getElementById('inspect-hive-stack-banner');
-  if(stackBannerEl){
+
+  // Combined context banner — cover photo thumbnail (if present) on the left,
+  // stack diagram + caption on the right. Replaces the previous two-stacked
+  // banners (image + stack) which wasted vertical space on mobile.
+  var ctxEl=document.getElementById('inspect-hive-context-banner');
+  if(ctxEl){
     if(hive){
-      stackBannerEl.innerHTML=''
-        + '<div style="display:flex;align-items:center;gap:14px;">'
-        +   '<div style="width:90px;flex-shrink:0;">' + renderHiveStackSVG(hive, { width: 90 }) + '</div>'
-        +   '<div style="flex:1;min-width:0;">'
-        +     '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Stack</div>'
-        +     '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:2px;">' + describeStack(hive) + '</div>'
-        +     '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
-        +   '</div>'
+      var photoHtml = '';
+      if (hive.coverPhoto) {
+        var cleanUrl = hive.coverPhoto.split('?')[0];
+        photoHtml = '<div style="width:90px;height:90px;flex-shrink:0;background:#e0e0e0;overflow:hidden;border-right:1px solid var(--wax);">'
+          + '<img src="' + cleanUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">'
+          + '</div>';
+      }
+      var stackHtml = '<div style="width:72px;flex-shrink:0;padding:8px 6px;">' + renderHiveStackSVG(hive, { width: 72 }) + '</div>';
+      var captionHtml = '<div style="flex:1;min-width:0;padding:10px 12px;">'
+        + '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Inspecting</div>'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + (hive.name || 'Hive') + '</div>'
+        + '<div style="font-size:11px;color:var(--text-m);margin-top:3px;">' + describeStack(hive) + '</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
         + '</div>';
-      stackBannerEl.style.display='block';
+      ctxEl.innerHTML = '<div style="display:flex;align-items:stretch;">' + photoHtml + stackHtml + captionHtml + '</div>';
+      ctxEl.style.display='block';
     } else {
-      stackBannerEl.innerHTML='';
-      stackBannerEl.style.display='none';
+      ctxEl.innerHTML='';
+      ctxEl.style.display='none';
     }
   }
+
   hiveListOpen=false;
   var list=document.getElementById('inspect-hive-list'); if(list) list.style.display='none';
 }
