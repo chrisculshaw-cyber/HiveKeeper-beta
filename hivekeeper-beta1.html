@@ -1,5 +1,5 @@
 <!-- Copyright 20'26 Culshaw Consulting Ltd / HiveKeeper. All rights reserved. Beta version - not for redistribution. -->
-<!-- HiveKeeper · Last updated: 23:18 21 April 2026 BST · Photo Finder diagnostic tool added after tester reported a saved inspection photo going missing. Access: Settings → Data → Recovery → Find lost photos. Walks all local inspections to collect every photoUrl, queries Supabase storage directly for <uid>/hive-photos/* tree, identifies ORPHANS (photos in cloud storage not referenced by any inspection — these are likely the "missing" photos). Shows referenced photos grouped by hive (with "Go to hive →" button) plus any orphans in a highlighted warning section. Also exposes the failure mode where photos uploaded with currentHiveId===null end up in /unassigned/ folder — orphans from that path are now clearly visible and recoverable by the user via direct link. -->
+<!-- HiveKeeper · Last updated: 11:25 22 April 2026 BST · Session Report v1 added to Reports engine (existing infrastructure at line 8302+). Available to Free/Pro/Commercial tiers (pre-paywall, temporarily free for all beta testers). Reports accessible via Settings → Reports AND now also via the Reports button on the Apiary action grid (🚚 Swarm / 👥 Share / 📊 Reports / ✏ Apiary Settings). Session Report: apiary-scoped (uses currentApiaryId), date range selector (today/yesterday/last 3/7/14/30 days/custom), per-inspection cards with hive name + timestamp + weather + health score + status badge + facts pills + transcript + notes + photos, summary banner (hives/inspections/avg health/dead/unclear/queen cells/swarm risk). Two print paths: Print/PDF opens a new window with print-friendly styling + auto print() on desktop (mobile just shows toolbar for native Print flow); HTML download keeps original. Additive-only build — no changes to existing screens, data paths, or inspection save logic. Kevin-safe mid-inspection. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 21 April 2026 at 23:51</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 11:25</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1361,6 +1361,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
         <div id="edit-mode-banner" style="display:none;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-size:11px;color:white;text-align:center;margin-bottom:6px;">Drag hives to reposition · Tap Done when finished</div>
         <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px;">
+        <button onclick="openReportsModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CA;<br>Reports</button>
         <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
         <button onclick="openShareApiary()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
@@ -8300,8 +8301,11 @@ var _currentReportHTML = '';
 var _currentReportFilename = '';
 
 var REPORTS_BY_TIER = {
-  free: [],
+  free: [
+    { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true }
+  ],
   pro: [
+    { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true },
     { id: 'apiary_health', label: 'Apiary Health Summary', icon: '🏥', desc: 'All hives, health scores and current status' },
     { id: 'inspection_history', label: 'Inspection History', icon: '📋', desc: 'All inspections for this apiary (last 90 days)' },
     { id: 'varroa_log', label: 'Varroa Monitoring Log', icon: '🔬', desc: 'All varroa counts and treatments' },
@@ -8309,6 +8313,7 @@ var REPORTS_BY_TIER = {
     { id: 'treatment_log', label: 'Treatment Log', icon: '💊', desc: 'All treatments applied across all hives' }
   ],
   commercial: [
+    { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true },
     { id: 'apiary_health', label: 'Apiary Health Summary', icon: '🏥', desc: 'All hives, health scores and current status' },
     { id: 'inspection_history', label: 'Inspection History', icon: '📋', desc: 'All inspections for this apiary (last 90 days)' },
     { id: 'varroa_log', label: 'Varroa Monitoring Log', icon: '🔬', desc: 'All varroa counts and treatments' },
@@ -8347,12 +8352,33 @@ function openReportsModal() {
         }
         yearSel += '</select>';
       }
+      var dateRangeSel = '';
+      if (r.dateRangeSelector) {
+        dateRangeSel = '<div style="margin:8px 0 10px;padding:8px;background:#FAEEDA;border-radius:8px;">'
+          + '<div style="font-size:11px;font-weight:700;color:#412402;margin-bottom:6px;">Date range</div>'
+          + '<select id="report-range-' + r.id + '" onchange="onSessionReportRangeChange(\'' + r.id + '\')" style="width:100%;padding:6px 8px;border:1px solid var(--wax);border-radius:6px;font-family:Syne,sans-serif;font-size:12px;background:white;">'
+          + '<option value="today" selected>Today</option>'
+          + '<option value="yesterday">Yesterday</option>'
+          + '<option value="3days">Last 3 days</option>'
+          + '<option value="7days">Last 7 days</option>'
+          + '<option value="14days">Last 14 days</option>'
+          + '<option value="30days">Last 30 days</option>'
+          + '<option value="custom">Custom range…</option>'
+          + '</select>'
+          + '<div id="report-range-custom-' + r.id + '" style="display:none;margin-top:6px;display:none;gap:6px;align-items:center;">'
+          + '<input type="date" id="report-range-from-' + r.id + '" style="flex:1;padding:5px 6px;border:1px solid var(--wax);border-radius:6px;font-family:Syne,sans-serif;font-size:11px;">'
+          + '<span style="font-size:11px;color:var(--text-l);">to</span>'
+          + '<input type="date" id="report-range-to-' + r.id + '" style="flex:1;padding:5px 6px;border:1px solid var(--wax);border-radius:6px;font-family:Syne,sans-serif;font-size:11px;">'
+          + '</div>'
+          + '</div>';
+      }
       html += '<div style="border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;">'
         + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'
         + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">' + r.icon + '</span><span style="font-size:13px;font-weight:700;color:var(--text);">' + r.label + '</span></div>'
         + yearSel
         + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;">' + r.desc + '</div>'
+        + dateRangeSel
         + '<button onclick="viewReport(\'' + r.id + '\')" style="background:var(--forest);border:none;border-radius:var(--rs);padding:8px 16px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-right:6px;">View</button>'
         + '<button onclick="runAndDownloadReport(\'' + r.id + '\')" style="background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px 16px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">⬇ Download</button>'
         + '</div>';
@@ -8527,12 +8553,222 @@ function generateReport(id) {
     }).join('');
   }
 
+  if (id === 'session_report') {
+    // Resolve date range from the selector
+    var rangeEl = document.getElementById('report-range-session_report');
+    var rangeVal = rangeEl ? rangeEl.value : 'today';
+    var fromMs, toMs, rangeLabel;
+    var now = new Date();
+    var startOfDay = function(d){ var c = new Date(d); c.setHours(0,0,0,0); return c.getTime(); };
+    var endOfDay = function(d){ var c = new Date(d); c.setHours(23,59,59,999); return c.getTime(); };
+    if (rangeVal === 'today') {
+      fromMs = startOfDay(now); toMs = endOfDay(now); rangeLabel = 'Today · ' + now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    } else if (rangeVal === 'yesterday') {
+      var yd = new Date(now); yd.setDate(yd.getDate()-1);
+      fromMs = startOfDay(yd); toMs = endOfDay(yd); rangeLabel = 'Yesterday · ' + yd.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    } else if (rangeVal === '3days' || rangeVal === '7days' || rangeVal === '14days' || rangeVal === '30days') {
+      var days = parseInt(rangeVal);
+      var start = new Date(now); start.setDate(start.getDate()-(days-1));
+      fromMs = startOfDay(start); toMs = endOfDay(now);
+      rangeLabel = 'Last ' + days + ' days · ' + new Date(fromMs).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' + new Date(toMs).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    } else if (rangeVal === 'custom') {
+      var fromEl = document.getElementById('report-range-from-session_report');
+      var toEl = document.getElementById('report-range-to-session_report');
+      if (!fromEl || !fromEl.value || !toEl || !toEl.value) {
+        return '<div style="font-family:sans-serif;padding:20px;background:#FFEBEE;border-radius:8px;color:#C62828;">Please select a from and to date for the custom range.</div>';
+      }
+      var fp = fromEl.value.split('-'), tp = toEl.value.split('-');
+      var fd = new Date(parseInt(fp[0]), parseInt(fp[1])-1, parseInt(fp[2]));
+      var td = new Date(parseInt(tp[0]), parseInt(tp[1])-1, parseInt(tp[2]));
+      fromMs = startOfDay(fd); toMs = endOfDay(td);
+      rangeLabel = fd.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' – ' + td.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    } else {
+      fromMs = startOfDay(now); toMs = endOfDay(now); rangeLabel = 'Today';
+    }
+
+    // Filter inspections to current apiary + date range
+    var sessionInsps = inspections
+      .filter(function(i){ return i.inspectedAt >= fromMs && i.inspectedAt <= toMs; })
+      .sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
+
+    // Empty state
+    if (!sessionInsps.length) {
+      return header('Session Report')
+        + '<div style="font-family:sans-serif;padding:24px 16px;text-align:center;">'
+        + '<div style="font-size:40px;margin-bottom:10px;opacity:.5;">🐝</div>'
+        + '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:4px;">No inspections in this date range</div>'
+        + '<div style="font-size:12px;color:#666;">Range: ' + rangeLabel + '</div>'
+        + '<div style="font-size:12px;color:#666;margin-top:4px;">Apiary: ' + (apiary ? apiary.name : 'My Apiary') + '</div>'
+        + '</div>';
+    }
+
+    // Session-level summary numbers
+    var uniqueHives = {}; sessionInsps.forEach(function(i){ uniqueHives[i.hiveId] = true; });
+    var hiveCount = Object.keys(uniqueHives).length;
+    var avgHealth = sessionInsps.reduce(function(s,i){ return s + (i.healthScore||0); }, 0) / sessionInsps.length;
+    var deadCount = sessionInsps.filter(function(i){ return i.status === 'dead'; }).length;
+    var unclearCount = sessionInsps.filter(function(i){ return i.status === 'unclear'; }).length;
+    var queenCellsCount = sessionInsps.filter(function(i){ return i.queenCells; }).length;
+    var swarmRiskCount = sessionInsps.filter(function(i){ return i.swarmRisk === 'high'; }).length;
+
+    // Sort ascending for display (chronological)
+    var displayInsps = sessionInsps.slice().sort(function(a,b){ return a.inspectedAt - b.inspectedAt; });
+
+    // Escape helper to keep notes/transcript safe
+    function sr_esc(s) {
+      if (s === null || s === undefined) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Build hive cards
+    var cards = displayInsps.map(function(insp) {
+      var hive = hives.find(function(h){ return h.id === insp.hiveId; });
+      var hiveName = hive ? hive.name : 'Unknown hive';
+      var hiveRow = hive ? (hive.row || '') : '';
+      var when = new Date(insp.inspectedAt);
+      var timeStr = when.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      var healthColor = insp.healthScore >= 70 ? '#2D5016' : insp.healthScore >= 40 ? '#C8730A' : '#C62828';
+      var statusBadge = '';
+      if (insp.status) {
+        var statusColors = { active:'#2D5016', unclear:'#C8730A', dead:'#C62828', empty:'#757575' };
+        statusBadge = '<span style="background:' + (statusColors[insp.status]||'#757575') + ';color:white;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:6px;">' + insp.status.toUpperCase() + '</span>';
+      }
+
+      // Weather block
+      var weatherHtml = '';
+      if (insp.weather) {
+        var w = insp.weather;
+        var tempBit = (w.temp !== undefined && w.temp !== null) ? Math.round(w.temp) + '°C' : '';
+        var condBit = w.condition || '';
+        var windBit = (w.wind !== undefined && w.wind !== null) ? Math.round(w.wind) + ' mph wind' : '';
+        var pieces = [tempBit, condBit, windBit].filter(Boolean);
+        if (pieces.length) {
+          weatherHtml = '<div style="font-size:11px;color:#666;margin-top:2px;">🌤 ' + pieces.join(' · ') + '</div>';
+        }
+      }
+
+      // Inspection facts row
+      var facts = [];
+      if (insp.queenSeen === true) facts.push('Queen seen');
+      else if (insp.queenSeen === false) facts.push('Queen not seen');
+      if (insp.broodFrames !== undefined && insp.broodFrames !== null) facts.push(insp.broodFrames + ' brood frames');
+      if (insp.broodPattern) facts.push('Brood: ' + insp.broodPattern);
+      if (insp.storesLevel) facts.push('Stores: ' + insp.storesLevel);
+      if (insp.varroaLevel) facts.push('Varroa: ' + insp.varroaLevel);
+      if (insp.varroaCount !== null && insp.varroaCount !== undefined) facts.push('Mite count ' + insp.varroaCount);
+      if (insp.swarmRisk && insp.swarmRisk !== 'none') facts.push('Swarm risk: ' + insp.swarmRisk);
+      if (insp.queenCells) facts.push('Queen cells');
+      if (insp.playCups) facts.push('Play cups');
+      if (insp.temper) facts.push('Temper: ' + insp.temper);
+
+      var factsHtml = facts.length
+        ? '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;">' + facts.map(function(f){
+            return '<span style="background:#f5f0e8;border-radius:10px;padding:3px 8px;font-size:10px;color:#412402;">' + sr_esc(f) + '</span>';
+          }).join('') + '</div>'
+        : '';
+
+      // Transcript
+      var transcriptHtml = '';
+      if (insp.transcript && insp.transcript !== 'Manual inspection') {
+        transcriptHtml = '<div style="margin-top:10px;padding:10px;background:#FFF9EE;border-left:3px solid #C8730A;border-radius:4px;">'
+          + '<div style="font-size:10px;font-weight:700;color:#C8730A;margin-bottom:4px;">🎙 TRANSCRIPT</div>'
+          + '<div style="font-size:12px;color:#333;line-height:1.5;">' + sr_esc(insp.transcript) + '</div>'
+          + '</div>';
+      }
+
+      // Notes
+      var notesHtml = '';
+      if (insp.notes && insp.notes.trim()) {
+        notesHtml = '<div style="margin-top:8px;padding:10px;background:#F5F5F5;border-left:3px solid #2D5016;border-radius:4px;">'
+          + '<div style="font-size:10px;font-weight:700;color:#2D5016;margin-bottom:4px;">📝 NOTES</div>'
+          + '<div style="font-size:12px;color:#333;line-height:1.5;">' + sr_esc(insp.notes) + '</div>'
+          + '</div>';
+      }
+
+      // Photos
+      var photosHtml = '';
+      var photoUrls = (insp.photoUrls && insp.photoUrls.length) ? insp.photoUrls : ((insp.photos||[]).map(function(p){ return p.url; }).filter(Boolean));
+      if (photoUrls.length) {
+        photosHtml = '<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">'
+          + photoUrls.map(function(url) {
+            return '<img src="' + sr_esc(url) + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />';
+          }).join('')
+          + '</div>';
+      }
+
+      return '<div style="font-family:sans-serif;margin:10px 0;border:1px solid #e0d9cc;border-radius:10px;padding:12px 14px;background:white;page-break-inside:avoid;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:14px;font-weight:800;color:#2D5016;">' + sr_esc(hiveName) + statusBadge + '</div>'
+        + '<div style="font-size:11px;color:#666;margin-top:2px;">' + sr_esc(hiveRow) + (hiveRow ? ' · ' : '') + timeStr + ' · by ' + sr_esc(insp.inspectedBy || 'Keeper') + '</div>'
+        + weatherHtml
+        + '</div>'
+        + (insp.healthScore !== undefined && insp.healthScore !== null
+            ? '<div style="text-align:center;flex-shrink:0;"><div style="font-size:22px;font-weight:800;color:' + healthColor + ';line-height:1;">' + insp.healthScore + '</div><div style="font-size:9px;color:#999;font-weight:700;letter-spacing:.05em;">HEALTH</div></div>'
+            : '')
+        + '</div>'
+        + factsHtml
+        + transcriptHtml
+        + notesHtml
+        + photosHtml
+        + '</div>';
+    }).join('');
+
+    // Summary banner
+    var summaryItems = [
+      { value: hiveCount, label: 'HIVES', color: '#2D5016' },
+      { value: sessionInsps.length, label: 'INSPECTIONS', color: '#2D5016' },
+      { value: Math.round(avgHealth) + '%', label: 'AVG HEALTH', color: avgHealth >= 60 ? '#2D5016' : '#C8730A' }
+    ];
+    if (deadCount) summaryItems.push({ value: deadCount, label: 'DEAD/LOST', color: '#C62828' });
+    if (unclearCount) summaryItems.push({ value: unclearCount, label: 'UNCLEAR', color: '#C8730A' });
+    if (queenCellsCount) summaryItems.push({ value: queenCellsCount, label: 'QC SEEN', color: '#C8730A' });
+    if (swarmRiskCount) summaryItems.push({ value: swarmRiskCount, label: 'SWARM RISK', color: '#C62828' });
+
+    var summaryHtml = '<div style="font-family:sans-serif;padding:12px 16px;background:#FAEEDA;display:grid;grid-template-columns:repeat(' + Math.min(summaryItems.length, 4) + ',1fr);gap:8px;">'
+      + summaryItems.map(function(si){
+          return '<div style="text-align:center;"><div style="font-size:20px;font-weight:800;color:' + si.color + ';line-height:1;">' + si.value + '</div><div style="font-size:9px;color:#666;font-weight:700;letter-spacing:.05em;margin-top:2px;">' + si.label + '</div></div>';
+        }).join('')
+      + '</div>';
+
+    var rangeHtml = '<div style="font-family:sans-serif;padding:10px 16px;background:#f5f0e8;font-size:11px;color:#412402;">'
+      + '<strong>Range:</strong> ' + sr_esc(rangeLabel) + ' · <strong>Apiary:</strong> ' + sr_esc(apiary ? apiary.name : 'My Apiary')
+      + '</div>';
+
+    return header('Session Report')
+      + rangeHtml
+      + summaryHtml
+      + '<div style="font-family:sans-serif;padding:8px 14px;background:#fff;">' + cards + '</div>'
+      + '<div style="font-family:sans-serif;padding:10px 16px;background:#f5f0e8;font-size:10px;color:#666;text-align:center;border-radius:0 0 8px 8px;">Generated ' + new Date().toLocaleString('en-GB') + ' · HiveKeeper</div>';
+  }
+
   if (id === 'nbu_compliance') {
     if (typeof exportBeeBase === 'function') { exportBeeBase(); return null; }
     return header('NBU/BeeBase Compliance Export') + '<p style="font-family:sans-serif;padding:16px;">Use Settings → Export to BeeBase/NBU format for the compliance CSV.</p>';
   }
 
   return '<p style="font-family:sans-serif;padding:16px;">Report not available.</p>';
+}
+
+function onSessionReportRangeChange(reportId) {
+  var sel = document.getElementById('report-range-' + reportId);
+  var customWrap = document.getElementById('report-range-custom-' + reportId);
+  if (!sel || !customWrap) return;
+  if (sel.value === 'custom') {
+    customWrap.style.display = 'flex';
+    // Prefill with sensible defaults if empty
+    var fromEl = document.getElementById('report-range-from-' + reportId);
+    var toEl = document.getElementById('report-range-to-' + reportId);
+    if (fromEl && !fromEl.value) {
+      var d = new Date(); d.setDate(d.getDate()-6);
+      fromEl.value = d.toISOString().split('T')[0];
+    }
+    if (toEl && !toEl.value) {
+      toEl.value = new Date().toISOString().split('T')[0];
+    }
+  } else {
+    customWrap.style.display = 'none';
+  }
 }
 
 function viewReport(id) {
@@ -8571,6 +8807,49 @@ function downloadCurrentReport() {
   a.download = _currentReportFilename || 'hivekeeper-report.html';
   a.click();
   showToast('Report downloaded ✓');
+}
+
+function printCurrentReport() {
+  if (!_currentReportHTML) { showToast('No report to print'); return; }
+  var printStyles = '<style>'
+    + '@media print {'
+    + '  @page { margin: 15mm; }'
+    + '  body { margin: 0; padding: 0; }'
+    + '  img { max-width: 200px !important; page-break-inside: avoid; }'
+    + '  div[style*="page-break-inside:avoid"] { page-break-inside: avoid; }'
+    + '  .no-print { display: none !important; }'
+    + '}'
+    + '@media screen {'
+    + '  body { background: #f5f0e8; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }'
+    + '  .report-wrap { max-width: 900px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.08); }'
+    + '  .print-toolbar { position: sticky; top: 0; background: white; padding: 12px 20px; border-bottom: 1px solid #e0d9cc; display: flex; gap: 8px; z-index: 10; }'
+    + '  .print-toolbar button { padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; font-family: inherit; }'
+    + '  .btn-print { background: #2D5016; color: white; border: none; }'
+    + '  .btn-close { background: transparent; color: #666; border: 1px solid #ccc; }'
+    + '}'
+    + '</style>';
+  var title = _currentReportFilename ? _currentReportFilename.replace(/\.html$/,'').replace(/-/g,' ') : 'HiveKeeper Report';
+  var full = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + title + '</title>' + printStyles + '</head>'
+    + '<body>'
+    + '<div class="print-toolbar no-print">'
+    + '<button class="btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>'
+    + '<button class="btn-close" onclick="window.close()">Close</button>'
+    + '<div style="flex:1;color:#666;font-size:12px;display:flex;align-items:center;padding-left:8px;">Tip: choose "Save as PDF" in the print dialog</div>'
+    + '</div>'
+    + '<div class="report-wrap">' + _currentReportHTML + '</div>'
+    + '</body></html>';
+  var win = window.open('', '_blank');
+  if (!win) { showToast('Pop-up blocked — allow pop-ups to print'); return; }
+  win.document.open();
+  win.document.write(full);
+  win.document.close();
+  // Let images load before triggering print on desktop. On mobile we just show the toolbar.
+  setTimeout(function() {
+    try {
+      var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+      if (!isMobile) { win.focus(); win.print(); }
+    } catch(e) { /* ignore */ }
+  }, 600);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -17662,9 +17941,10 @@ function goToApiaryAlerts() {
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div id="report-view-content"></div>
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <button onclick="downloadCurrentReport()" style="flex:1;background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">⬇ Download</button>
-        <button onclick="closeModalEl('modal-report-view')" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+        <button onclick="printCurrentReport()" style="flex:1;min-width:90px;background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">🖨 Print / PDF</button>
+        <button onclick="downloadCurrentReport()" style="flex:1;min-width:90px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">⬇ HTML</button>
+        <button onclick="closeModalEl('modal-report-view')" style="flex:1;min-width:90px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
       </div>
     </div>
   </div>
