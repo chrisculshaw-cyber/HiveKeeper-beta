@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:20 · Inspect banner layout fix</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:40 · Apiary row stack strip</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1427,6 +1427,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
       <div class="row-tabs" id="row-tabs" style="flex:1;overflow-x:auto;display:flex;padding:0 4px;"></div>
     </div>
+    <!-- Stack strip — mini hive stack diagrams for the selected row (or all rows) -->
+    <div id="apiary-stack-strip" style="background:var(--cream);border-bottom:1px solid var(--wax);padding:10px 16px;overflow-x:auto;display:none;"></div>
     <!-- Hive list -->
     <div id="hive-list-container" style="margin-top:4px;"></div>
     <!-- Seasonal alerts below hive list -->
@@ -4386,6 +4388,11 @@ function renderApiary(){
   var hives = currentRowFilter === 'all' ? hivesToShow : currentRowFilter === 'unassigned' ? hivesToShow.filter(h => !h.row || h.row === '') : hivesToShow.filter(h => h.row === currentRowFilter);
   var _editMode = !!window._editModeActive;
 
+  // Render the stack strip based on current row filter (built 22 April evening).
+  // When filter = 'all', strip shows one labelled group per row. When filter is
+  // a specific row, strip shows just that row's hives in order.
+  try { if (typeof renderApiaryStackStrip === 'function') renderApiaryStackStrip(hivesToShow); } catch(e) { console.warn('stack strip err', e); }
+
   // Debug: show hive count
   document.getElementById('hive-list-container').innerHTML = hives.map(function(h, _idx) {
     const badge = getBadge(h);
@@ -4923,6 +4930,93 @@ function renderHiveStackSVG(hive, options) {
 
   out += '</svg>';
   return out;
+}
+
+// Renders the apiary stack strip — a horizontal row of mini hive stack
+// diagrams shown between the row tabs and the hive list. Behaviour depends
+// on the current row filter:
+//
+//   currentRowFilter === 'all'       → one group per row, each labelled
+//   currentRowFilter === 'unassigned' → single group of unassigned hives
+//   currentRowFilter === '<row name>' → single group for that row
+//
+// Non-goal: NOT a replacement for the hive list — this is a visual
+// glance-at-the-apiary complement. Taps on a mini stack open the hive
+// detail screen (same as tapping in the list).
+function renderApiaryStackStrip(allHivesToShow) {
+  var strip = document.getElementById('apiary-stack-strip');
+  if (!strip) return;
+
+  // Empty state — hide the strip entirely
+  if (!allHivesToShow || !allHivesToShow.length) {
+    strip.style.display = 'none';
+    strip.innerHTML = '';
+    return;
+  }
+
+  // Build the list of row groups to render based on filter
+  var groups;
+  if (currentRowFilter === 'all') {
+    // Group by row. Preserve row order as first-seen-in-list.
+    var rowOrder = [];
+    var byRow = {};
+    allHivesToShow.forEach(function(h){
+      var key = (h.row && h.row !== '') ? h.row : '__unassigned';
+      if (!byRow[key]) { byRow[key] = []; rowOrder.push(key); }
+      byRow[key].push(h);
+    });
+    groups = rowOrder.map(function(k){
+      return { label: k === '__unassigned' ? 'Unassigned' : k, hives: byRow[k] };
+    });
+  } else if (currentRowFilter === 'unassigned') {
+    groups = [{
+      label: 'Unassigned',
+      hives: allHivesToShow.filter(function(h){ return !h.row || h.row === ''; })
+    }];
+  } else {
+    groups = [{
+      label: currentRowFilter,
+      hives: allHivesToShow.filter(function(h){ return h.row === currentRowFilter; })
+    }];
+  }
+
+  // Remove empty groups (a row with all dead/hidden hives, for instance)
+  groups = groups.filter(function(g){ return g.hives && g.hives.length; });
+
+  if (!groups.length) {
+    strip.style.display = 'none';
+    strip.innerHTML = '';
+    return;
+  }
+
+  // Render. Each group is a horizontal band — label on the left, then a
+  // horizontally-scrollable strip of mini stacks. When there's just one
+  // group, we hide the label (redundant with the row tab).
+  var showLabels = (groups.length > 1);
+
+  var html = groups.map(function(g){
+    var miniStacksHtml = g.hives.map(function(h){
+      var dimStyle = (h.status === 'dead') ? 'opacity:.35;' : '';
+      return '<div onclick="viewHive(\'' + h.id + '\')" style="cursor:pointer;text-align:center;flex-shrink:0;width:52px;' + dimStyle + '">'
+        +   '<div style="width:52px;height:68px;display:flex;align-items:flex-end;justify-content:center;">'
+        +     renderHiveStackSVG(h, { width: 48 })
+        +   '</div>'
+        +   '<div style="font-size:9px;font-weight:700;color:var(--text-m);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (h.name || '') + '</div>'
+        + '</div>';
+    }).join('');
+
+    var labelHtml = showLabels
+      ? '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-right:10px;flex-shrink:0;align-self:center;">' + g.label + '</div>'
+      : '';
+
+    return '<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:' + (showLabels ? '10px' : '0') + ';">'
+      +   labelHtml
+      +   '<div style="display:flex;gap:8px;flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;">' + miniStacksHtml + '</div>'
+      + '</div>';
+  }).join('');
+
+  strip.innerHTML = html;
+  strip.style.display = 'block';
 }
 
 // Renders the hive stack section on the Hive Detail screen. Hidden if no hive.
