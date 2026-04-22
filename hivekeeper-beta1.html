@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:52</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 13:50</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1582,11 +1582,17 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         <button class="toggle-btn" data-field="varroaLevel" data-value="treated" onclick="toggleField(this,'varroaLevel','treated')" style="flex:1;padding:8px 4px;border:1px solid var(--wax);border-radius:var(--rs);background:white;font-size:12px;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;">Treated</button>
       </div>
     </div>
+    <!-- Hive status control — sets insp.status on save AND persists to hive record.
+         Placed in the inspection body so the keeper sees it as part of the natural
+         inspection flow. Tap any button to select; leave untouched to preserve current. -->
     <div style="margin:12px 20px 0;">
-      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Wax moth / other</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="toggle-btn" data-field="waxMoth" data-value="true" onclick="toggleField(this,'waxMoth',true)" style="flex:1;padding:8px 4px;border:1px solid var(--wax);border-radius:var(--rs);background:white;font-size:12px;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;">&#x1F98B; Wax moth</button>
-        <button class="toggle-btn" data-field="waxMoth" data-value="false" onclick="toggleField(this,'waxMoth',false)" style="flex:1;padding:8px 4px;border:1px solid var(--wax);border-radius:var(--rs);background:white;font-size:12px;font-weight:600;cursor:pointer;font-family:Syne,sans-serif;">Clear</button>
+      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Hive status (optional — leave untouched to keep current)</div>
+      <div id="inspect-status-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">
+        <button type="button" onclick="setInspectStatus('active')" id="inspect-status-active" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Active</button>
+        <button type="button" onclick="setInspectStatus('unclear')" id="inspect-status-unclear" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Unclear</button>
+        <button type="button" onclick="setInspectStatus('dead')" id="inspect-status-dead" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Dead</button>
+        <button type="button" onclick="setInspectStatus('empty')" id="inspect-status-empty" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Empty</button>
+        <button type="button" onclick="setInspectStatus('wax_moth')" id="inspect-status-wax_moth" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">🦋 Wax moth</button>
       </div>
     </div>
     <div class="section-head" style="margin-top:12px;"><div class="section-title">Photos</div></div>
@@ -1612,17 +1618,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div class="frame-cell empty" id="fc-empty"><div class="frame-cell-label">Empty</div><div class="frame-cell-val" id="fc-empty-val">0</div><div class="frame-cell-btns"><div class="frame-cell-btn" onclick="adjFrame('empty',-1)">&#8722;</div><div class="frame-cell-btn" onclick="adjFrame('empty',1)">+</div></div></div>
         </div>
         <div class="frame-total" id="fc-total">Total: 0 frames</div>
-      </div>
-    </div>
-    <!-- Explicit Hive Status control — sets insp.status on save.
-         Tap any button to change hive status; leave untouched to preserve current. -->
-    <div style="margin:10px 20px 0;padding:10px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:10px;">
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px;">Change hive status (optional)</div>
-      <div id="inspect-status-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
-        <button type="button" onclick="setInspectStatus('active')" id="inspect-status-active" class="inspect-status-btn" style="padding:8px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.85);cursor:pointer;">Active</button>
-        <button type="button" onclick="setInspectStatus('unclear')" id="inspect-status-unclear" class="inspect-status-btn" style="padding:8px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.85);cursor:pointer;">Unclear</button>
-        <button type="button" onclick="setInspectStatus('dead')" id="inspect-status-dead" class="inspect-status-btn" style="padding:8px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.85);cursor:pointer;">Dead</button>
-        <button type="button" onclick="setInspectStatus('empty')" id="inspect-status-empty" class="inspect-status-btn" style="padding:8px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:transparent;color:rgba(255,255,255,0.85);cursor:pointer;">Empty</button>
       </div>
     </div>
     <div style="margin:14px 20px 0;">
@@ -6299,32 +6294,32 @@ async function subscribeToCalendar() {
 // corrupting status data (non-queen-sighted inspections were flipping
 // active hives to unclear). Now user explicitly owns the status change.
 function setInspectStatus(newStatus) {
-  if (newStatus !== 'active' && newStatus !== 'unclear' && newStatus !== 'dead' && newStatus !== 'empty') return;
+  if (newStatus !== 'active' && newStatus !== 'unclear' && newStatus !== 'dead' && newStatus !== 'empty' && newStatus !== 'wax_moth') return;
   // Toggle off if tapping the already-selected option
   if (currentInspData.status === newStatus) {
     currentInspData.status = null;
   } else {
     currentInspData.status = newStatus;
   }
-  // Visual update
-  ['active','unclear','dead','empty'].forEach(function(s) {
+  // Visual update — light-theme colours to match the other inspection-form toggles
+  ['active','unclear','dead','empty','wax_moth'].forEach(function(s) {
     var btn = document.getElementById('inspect-status-' + s);
     if (!btn) return;
     var isSel = (currentInspData.status === s);
-    btn.style.background = isSel ? 'rgba(228, 163, 58, 0.9)' : 'transparent';
-    btn.style.color = isSel ? '#1F3812' : 'rgba(255,255,255,0.85)';
-    btn.style.borderColor = isSel ? 'rgba(228, 163, 58, 1)' : 'rgba(255,255,255,0.25)';
+    btn.style.background = isSel ? 'var(--forest)' : 'white';
+    btn.style.color = isSel ? 'white' : 'var(--text)';
+    btn.style.borderColor = isSel ? 'var(--forest)' : 'var(--wax)';
   });
 }
 
 // Reset the status buttons — called from inspect screen enter/reset
 function resetInspectStatusButtons() {
-  ['active','unclear','dead','empty'].forEach(function(s) {
+  ['active','unclear','dead','empty','wax_moth'].forEach(function(s) {
     var btn = document.getElementById('inspect-status-' + s);
     if (!btn) return;
-    btn.style.background = 'transparent';
-    btn.style.color = 'rgba(255,255,255,0.85)';
-    btn.style.borderColor = 'rgba(255,255,255,0.25)';
+    btn.style.background = 'white';
+    btn.style.color = 'var(--text)';
+    btn.style.borderColor = 'var(--wax)';
   });
 }
 
@@ -6447,7 +6442,12 @@ function saveInspection(){
   // healthy non-queen-sighted hives to unclear.)
   //
   // Record insp.status from the user's explicit selection (null if unchanged).
+  // wax_moth is a SEPARATE flag in the status row — it sets the waxMoth bool
+  // without overwriting the colony status (which stays whatever it was).
   insp.status = (currentInspData.status === 'active' || currentInspData.status === 'unclear' || currentInspData.status === 'dead' || currentInspData.status === 'empty') ? currentInspData.status : null;
+  if (currentInspData.status === 'wax_moth') {
+    insp.waxMoth = true;
+  }
   var hives=loadHives();
   const hi=hives.findIndex(h=>h.id===currentHiveId);
   if(hi>=0){
