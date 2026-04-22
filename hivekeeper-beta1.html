@@ -1099,6 +1099,52 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
+
+/* ══════════════════════════════════════════════════════════════
+   Bulletproof checkboxes — added 22 April 23:25.
+   Chris reported 22 April evening: on Android Chrome (Redmi/MIUI)
+   the default tick wasn't appearing even when `checked` was true.
+   accent-color is inconsistently supported on Android WebView/MIUI
+   — this replaces the native tick with a custom rendered one that
+   works the same everywhere.
+   Scoped to .hk-chk so existing native checkboxes elsewhere aren't
+   affected.
+   ══════════════════════════════════════════════════════════════ */
+input[type="checkbox"].hk-chk {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--forest);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  flex-shrink: 0;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+input[type="checkbox"].hk-chk:checked {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+/* Custom tick rendered as SVG via mask — works on all Android + iOS */
+input[type="checkbox"].hk-chk:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  box-sizing: border-box;
+}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -1115,7 +1161,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 21:21 · Cache bust test</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 23:25 · Bulletproof checkboxes + close buttons</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1421,12 +1467,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
          Built 22 April 2026 evening. Old 3-radio-button pattern (both/list/map)
          retired — checkboxes handle the stack strip + future view types cleanly
          without a combinatorial menu.
-         Initial checked state set by applyApiaryViewState() on Apiary screen entry;
-         before that runs, checkboxes default to unchecked. -->
+         22 April 22:30 — added hardcoded `checked` on Map and List to match the
+         default state, so even if JS sync fails, the initial render is right.
+         applyApiaryViewState() still runs on load to reflect persisted state. -->
     <div id="apiary-view-toggle" style="display:flex;gap:16px;padding:10px 16px 8px;justify-content:center;align-items:center;background:white;border-top:1px solid var(--wax);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);">
-      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-map" onchange="toggleApiaryView('map')" style="accent-color:var(--forest);cursor:pointer;">Map</label>
-      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-list" onchange="toggleApiaryView('list')" style="accent-color:var(--forest);cursor:pointer;">List</label>
-      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-stacks" onchange="toggleApiaryView('stacks')" style="accent-color:var(--forest);cursor:pointer;">Stacks</label>
+      <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;"><input type="checkbox" class="hk-chk" id="view-chk-map" checked onchange="toggleApiaryView('map')">Map</label>
+      <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;"><input type="checkbox" class="hk-chk" id="view-chk-list" checked onchange="toggleApiaryView('list')">List</label>
+      <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;"><input type="checkbox" class="hk-chk" id="view-chk-stacks" onchange="toggleApiaryView('stacks')">Stacks</label>
     </div>
     <!-- Row filter tabs — between canvas and hive list -->
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
@@ -5149,7 +5196,7 @@ function renderStackEditor() {
   }, { width: 120 });
 
   var html = '<div class="modal-handle"></div>'
-    + '<div class="modal-title">Edit hive stack</div>'
+    + '<div style="position:relative;"><div class="modal-title" style="padding-right:32px;">Edit hive stack</div><button onclick="closeStackEditor()" aria-label="Close" style="position:absolute;top:-4px;right:-4px;width:36px;height:36px;border:none;background:transparent;color:var(--text-l);font-size:22px;font-weight:800;cursor:pointer;padding:0;line-height:1;border-radius:50%;">&times;</button></div>'
     + '<p style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.5;">Add, remove or reorder boxes. The order here matches the physical stack — bottom of the list is the floor, top of the list is under the roof.</p>'
     + '<div style="display:flex;gap:12px;margin-bottom:14px;">'
     +   '<div style="flex-shrink:0;width:130px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:8px;">'
@@ -5356,7 +5403,7 @@ function renderHiveEditor() {
   };
 
   var html = '<div class="modal-handle"></div>'
-    + '<div class="modal-title">Edit hive</div>'
+    + '<div style="position:relative;"><div class="modal-title" style="padding-right:32px;">Edit hive</div><button onclick="closeHiveEditor()" aria-label="Close" style="position:absolute;top:-4px;right:-4px;width:36px;height:36px;border:none;background:transparent;color:var(--text-l);font-size:22px;font-weight:800;cursor:pointer;padding:0;line-height:1;border-radius:50%;" onmouseover="this.style.background=\'var(--wax)\'" onmouseout="this.style.background=\'transparent\'">&times;</button></div>'
 
     // Identity — with proper labels
     + sectionHead('Identity')
@@ -5417,13 +5464,18 @@ function renderHiveEditor() {
     + sectionHead('Cover photo')
     + photoHtml
 
-    // Visibility — compact single-line description, no wrapping issue
+    // Visibility — 22 April 23:05 rebuild. Previous flex+label approach was
+    // rendering full-width with text wrapping off-screen on Android Chrome
+    // (Xiaomi MIUI). Simpler approach: no flex, inline input + text, explicit
+    // sizing on the checkbox so it doesn't blow the layout.
     + sectionHead('Visibility')
-    + '<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;user-select:none;padding:10px;background:var(--cream);border:1px solid var(--wax);border-radius:6px;">'
-    +   '<input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);flex-shrink:0;">'
-    +   '<span style="font-weight:700;">Hide this hive</span>'
-    + '</label>'
-    + '<div style="font-size:11px;color:var(--text-l);margin-top:4px;line-height:1.4;">Data preserved, doesn\'t count toward your hive limit</div>'
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:6px;padding:12px;">'
+    +   '<label style="cursor:pointer;user-select:none;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;">'
+    +     '<input type="checkbox" class="hk-chk" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked">'
+    +     'Hide this hive'
+    +   '</label>'
+    +   '<div style="font-size:11px;color:var(--text-l);margin-top:6px;line-height:1.4;padding-left:28px;">Data preserved, doesn\'t count toward your hive limit</div>'
+    + '</div>'
 
     // Save / Cancel — primary actions, prominent
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;">'
