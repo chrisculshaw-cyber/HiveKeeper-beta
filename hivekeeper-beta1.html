@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 11:42</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:15</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -8611,12 +8611,17 @@ function generateReport(id) {
         + '</div>';
     }
 
-    // Session-level summary numbers
+    // Session-level summary numbers — status counts reflect the hive's CURRENT status
+    // across the inspected set, not just inspection-level status changes.
     var uniqueHives = {}; sessionInsps.forEach(function(i){ uniqueHives[i.hiveId] = true; });
     var hiveCount = Object.keys(uniqueHives).length;
-    var avgHealth = sessionInsps.reduce(function(s,i){ return s + (i.healthScore||0); }, 0) / sessionInsps.length;
-    var deadCount = sessionInsps.filter(function(i){ return i.status === 'dead'; }).length;
-    var unclearCount = sessionInsps.filter(function(i){ return i.status === 'unclear'; }).length;
+    var inspectedHiveRecords = Object.keys(uniqueHives).map(function(hid){
+      return hives.find(function(h){ return h.id === hid; });
+    }).filter(Boolean);
+    var activeCount = inspectedHiveRecords.filter(function(h){ return h.status === 'active'; }).length;
+    var unclearCount = inspectedHiveRecords.filter(function(h){ return h.status === 'unclear'; }).length;
+    var deadCount = inspectedHiveRecords.filter(function(h){ return h.status === 'dead'; }).length;
+    var emptyCount = inspectedHiveRecords.filter(function(h){ return h.status === 'empty'; }).length;
     var queenCellsCount = sessionInsps.filter(function(i){ return i.queenCells; }).length;
     var swarmRiskCount = sessionInsps.filter(function(i){ return i.swarmRisk === 'high'; }).length;
 
@@ -8636,11 +8641,19 @@ function generateReport(id) {
       var hiveRow = hive ? (hive.row || '') : '';
       var when = new Date(insp.inspectedAt);
       var timeStr = when.toLocaleString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      var healthColor = insp.healthScore >= 70 ? '#2D5016' : insp.healthScore >= 40 ? '#C8730A' : '#C62828';
+
+      // Status badge — prefer the HIVE's current status (what it actually is now)
+      // rather than just what this inspection recorded. If the inspection explicitly
+      // changed the status, surface that as a secondary note.
       var statusBadge = '';
-      if (insp.status) {
-        var statusColors = { active:'#2D5016', unclear:'#C8730A', dead:'#C62828', empty:'#757575' };
-        statusBadge = '<span style="background:' + (statusColors[insp.status]||'#757575') + ';color:white;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:6px;">' + insp.status.toUpperCase() + '</span>';
+      var statusColors = { active:'#2D5016', unclear:'#C8730A', dead:'#C62828', empty:'#757575' };
+      var displayStatus = hive ? hive.status : null;
+      if (displayStatus) {
+        statusBadge = '<span style="background:' + (statusColors[displayStatus]||'#757575') + ';color:white;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:6px;">' + displayStatus.toUpperCase() + '</span>';
+      }
+      var statusChangeNote = '';
+      if (insp.status && insp.status !== displayStatus) {
+        statusChangeNote = '<span style="font-size:10px;color:#C8730A;margin-left:6px;">→ marked ' + insp.status + ' this inspection</span>';
       }
 
       // Weather block
@@ -8708,13 +8721,10 @@ function generateReport(id) {
       return '<div style="font-family:sans-serif;margin:10px 0;border:1px solid #e0d9cc;border-radius:10px;padding:12px 14px;background:white;page-break-inside:avoid;">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
         + '<div style="flex:1;">'
-        + '<div style="font-size:14px;font-weight:800;color:#2D5016;">' + sr_esc(hiveName) + statusBadge + '</div>'
+        + '<div style="font-size:14px;font-weight:800;color:#2D5016;">' + sr_esc(hiveName) + statusBadge + statusChangeNote + '</div>'
         + '<div style="font-size:11px;color:#666;margin-top:2px;">' + sr_esc(hiveRow) + (hiveRow ? ' · ' : '') + timeStr + ' · by ' + sr_esc(insp.inspectedBy || 'Keeper') + '</div>'
         + weatherHtml
         + '</div>'
-        + (insp.healthScore !== undefined && insp.healthScore !== null
-            ? '<div style="text-align:center;flex-shrink:0;"><div style="font-size:22px;font-weight:800;color:' + healthColor + ';line-height:1;">' + insp.healthScore + '</div><div style="font-size:9px;color:#999;font-weight:700;letter-spacing:.05em;">HEALTH</div></div>'
-            : '')
         + '</div>'
         + factsHtml
         + transcriptHtml
@@ -8725,16 +8735,19 @@ function generateReport(id) {
 
     // Summary banner
     var summaryItems = [
-      { value: hiveCount, label: 'HIVES', color: '#2D5016' },
-      { value: sessionInsps.length, label: 'INSPECTIONS', color: '#2D5016' },
-      { value: Math.round(avgHealth) + '%', label: 'AVG HEALTH', color: avgHealth >= 60 ? '#2D5016' : '#C8730A' }
+      { value: hiveCount, label: 'HIVES INSPECTED', color: '#2D5016' },
+      { value: sessionInsps.length, label: 'INSPECTIONS', color: '#2D5016' }
     ];
-    if (deadCount) summaryItems.push({ value: deadCount, label: 'DEAD/LOST', color: '#C62828' });
+    if (activeCount) summaryItems.push({ value: activeCount, label: 'ACTIVE', color: '#2D5016' });
     if (unclearCount) summaryItems.push({ value: unclearCount, label: 'UNCLEAR', color: '#C8730A' });
+    if (deadCount) summaryItems.push({ value: deadCount, label: 'DEAD', color: '#C62828' });
+    if (emptyCount) summaryItems.push({ value: emptyCount, label: 'EMPTY', color: '#757575' });
     if (queenCellsCount) summaryItems.push({ value: queenCellsCount, label: 'QC SEEN', color: '#C8730A' });
     if (swarmRiskCount) summaryItems.push({ value: swarmRiskCount, label: 'SWARM RISK', color: '#C62828' });
 
-    var summaryHtml = '<div style="font-family:sans-serif;padding:12px 16px;background:#FAEEDA;display:grid;grid-template-columns:repeat(' + Math.min(summaryItems.length, 4) + ',1fr);gap:8px;">'
+    // Decide grid columns — up to 4 per row for readability
+    var cols = Math.min(summaryItems.length, 4);
+    var summaryHtml = '<div style="font-family:sans-serif;padding:12px 16px;background:#FAEEDA;display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;">'
       + summaryItems.map(function(si){
           return '<div style="text-align:center;"><div style="font-size:20px;font-weight:800;color:' + si.color + ';line-height:1;">' + si.value + '</div><div style="font-size:9px;color:#666;font-weight:700;letter-spacing:.05em;margin-top:2px;">' + si.label + '</div></div>';
         }).join('')
@@ -8904,12 +8917,71 @@ async function loadReferralStats() {
   if (!_currentUser) return;
   var sb = getSupabase();
   var { data } = await sb.from('referrals')
-    .select('status')
-    .eq('referrer_id', _currentUser.id);
+    .select('status, created_at, referred_id')
+    .eq('referrer_id', _currentUser.id)
+    .order('created_at', { ascending: false });
   if (data) {
     _referralCount = data.length;
     _referralConverted = data.filter(function(r){ return r.status === 'converted'; }).length;
+
+    // Detect new referrals since the user last saw their stats
+    var lastSeenRaw = localStorage.getItem('hk_referrals_last_seen_at');
+    var lastSeen = lastSeenRaw ? parseInt(lastSeenRaw) : 0;
+    var newRefs = data.filter(function(r){
+      var t = r.created_at ? new Date(r.created_at).getTime() : 0;
+      return t > lastSeen;
+    });
+    if (newRefs.length > 0 && lastSeen > 0) {
+      // Only notify if we have a prior baseline (avoid spamming on first ever load)
+      showReferralNotification(newRefs.length);
+    } else if (lastSeen === 0) {
+      // First time — set the baseline so future referrals count as "new"
+      localStorage.setItem('hk_referrals_last_seen_at', Date.now().toString());
+    }
   }
+}
+
+// Show a banner on the home screen when the user has new referrals they haven't seen
+function showReferralNotification(count) {
+  // Insert a banner into the home screen weather-strip area
+  try {
+    var home = document.getElementById('s-home');
+    if (!home) return;
+    // Avoid duplicate banners
+    if (document.getElementById('referral-notification-banner')) return;
+
+    var banner = document.createElement('div');
+    banner.id = 'referral-notification-banner';
+    banner.style.cssText = 'margin:10px 20px 0;background:linear-gradient(135deg,#C8730A,#F4D03F);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(200,115,10,.25);cursor:pointer;';
+    banner.onclick = function() { dismissReferralNotification(); openReferralModal(); };
+
+    var plural = count === 1 ? 'beekeeper' : 'beekeepers';
+    var msg = count === 1
+      ? 'Someone signed up with your referral link'
+      : count + ' beekeepers signed up with your referral link';
+    banner.innerHTML = '<div style="font-size:24px;">🎉</div>'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.9);text-transform:uppercase;letter-spacing:.04em;">NEW REFERRAL</div>'
+      + '<div style="font-size:13px;font-weight:700;color:white;margin-top:2px;">' + msg + '</div>'
+      + '</div>'
+      + '<div onclick="event.stopPropagation();dismissReferralNotification();" style="color:rgba(255,255,255,.75);font-size:18px;padding:4px 6px;cursor:pointer;">✕</div>';
+
+    // Insert after weather strip if possible, else at top of scroll area
+    var weather = document.getElementById('weather-strip');
+    if (weather && weather.parentNode) {
+      weather.parentNode.insertBefore(banner, weather.nextSibling);
+    } else {
+      var scroll = home.querySelector('.scroll-area');
+      if (scroll) scroll.insertBefore(banner, scroll.firstChild);
+    }
+  } catch(e) { /* fail silent — banner is a nice-to-have */ }
+}
+
+function dismissReferralNotification() {
+  var el = document.getElementById('referral-notification-banner');
+  if (el && el.parentNode) el.parentNode.removeChild(el);
+  // Mark all current referrals as seen
+  localStorage.setItem('hk_referrals_last_seen_at', Date.now().toString());
 }
 
 // Check URL for referral code on landing
@@ -12724,6 +12796,13 @@ async function onAuthSuccess() {
   // new device wouldn't see their own details come back. Now runs on every sign-in.
   if (typeof loadUserProfile === 'function') {
     loadUserProfile().catch(function(e){ console.warn('Profile pull failed:', e); });
+  }
+  // Check for new referrals so we can surface a home-screen banner.
+  // Delayed slightly so the home screen is mounted before the banner tries to insert.
+  if (typeof loadReferralStats === 'function') {
+    setTimeout(function() {
+      loadReferralStats().catch(function(e){ console.warn('Referral stats load failed:', e); });
+    }, 1200);
   }
 }
 
