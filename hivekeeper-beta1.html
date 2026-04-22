@@ -1161,7 +1161,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 23:35 · All three views default on</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 01:15 · Box type + Colony form now independent</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1933,6 +1933,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <select id="new-hive-type">
           <option value="overwintered">Overwintered colony</option>
           <option value="nuc">New nucleus (nuc)</option>
+          <option value="double_nuc">Double-brood nuc</option>
           <option value="swarm_prime">Prime swarm</option>
           <option value="swarm_cast">Cast swarm</option>
           <option value="split">Split / artificial swarm</option>
@@ -4878,8 +4879,12 @@ function renderHiveStackSVG(hive, options) {
     for (var j = 0; j < sp; j++) stack.push({ type: 'super' });
   }
 
-  // Special case: nucs render as a single compact box, no roof style variation
-  var isNuc = (hive.boxType === 'nuc' || hive.hiveType === 'nuc');
+  // Special case: nucs and double-brood nucs render as compact boxes.
+  // DESIGN (23 April 01:10): boxType is the single source of truth for
+  // "what equipment is this hive". hiveType is colony-origin metadata
+  // (overwintered/swarm/split/etc) and does NOT drive rendering.
+  var isNuc = (hive.boxType === 'nuc');
+  var isDoubleNuc = (hive.boxType === 'double-nuc');
   if (isNuc) {
     var nucH = 30;
     var nucW = 78;
@@ -4898,6 +4903,31 @@ function renderHiveStackSVG(hive, options) {
     svg += '<rect x="' + (nucX - 6) + '" y="' + (16 + nucH) + '" width="' + (nucW + 12) + '" height="' + FLOOR_H + '" fill="#3A2108"/>';
     svg += '</svg>';
     return svg;
+  }
+  if (isDoubleNuc) {
+    // Double-brood nuc — two standard nuc boxes stacked. Slightly narrower
+    // than a full hive so it's visually distinct. No queen excluder (both
+    // are brood boxes). No supers (if the keeper adds supers, they should
+    // be using a full hive at that point).
+    var dnH = 28;            // each box slightly shorter than single-nuc to fit two
+    var dnW = 82;
+    var dnX = (width - dnW) / 2;
+    var dnTotalH = FLOOR_H + (dnH * 2) + 12 + 4;
+    var svg2 = '<svg viewBox="0 0 ' + width + ' ' + dnTotalH + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">';
+    // flat roof
+    svg2 += '<rect x="' + (dnX - 4) + '" y="4" width="' + (dnW + 8) + '" height="10" rx="2" fill="#4A2E0E"/>';
+    // upper box
+    svg2 += '<rect x="' + dnX + '" y="16" width="' + dnW + '" height="' + dnH + '" rx="3" fill="#D4A574" stroke="#8B5A2B" stroke-width="1.5"/>';
+    svg2 += '<text x="' + (width/2) + '" y="' + (16 + dnH/2 + 3) + '" text-anchor="middle" font-family="Syne,sans-serif" font-size="8" font-weight="800" fill="#3A2108">NUC</text>';
+    // lower box
+    svg2 += '<rect x="' + dnX + '" y="' + (16 + dnH) + '" width="' + dnW + '" height="' + dnH + '" rx="3" fill="#C89558" stroke="#8B5A2B" stroke-width="1.5"/>';
+    svg2 += '<text x="' + (width/2) + '" y="' + (16 + dnH + dnH/2 + 3) + '" text-anchor="middle" font-family="Syne,sans-serif" font-size="8" font-weight="800" fill="#3A2108">NUC</text>';
+    // entrance slot at bottom of lower box
+    svg2 += '<rect x="' + (dnX + dnW/2 - 10) + '" y="' + (16 + (dnH * 2) - 4) + '" width="20" height="3" fill="#3A2108"/>';
+    // floor
+    svg2 += '<rect x="' + (dnX - 6) + '" y="' + (16 + (dnH * 2)) + '" width="' + (dnW + 12) + '" height="' + FLOOR_H + '" fill="#3A2108"/>';
+    svg2 += '</svg>';
+    return svg2;
   }
 
   // Compute total height based on stack contents + roof + floor
@@ -5130,9 +5160,9 @@ function openStackEditor(hiveId) {
     return;
   }
 
-  // Nucs have no stack editor — they're a single box
-  if (hive.boxType === 'nuc' || hive.hiveType === 'nuc') {
-    if (typeof showToast === 'function') showToast('Nucs have no stack to edit');
+  // Nucs and double-brood nucs have no stack editor — boxType drives this decision
+  if (hive.boxType === 'nuc' || hive.boxType === 'double-nuc') {
+    if (typeof showToast === 'function') showToast(hive.boxType === 'double-nuc' ? 'Double-brood nucs have no stack to edit' : 'Nucs have no stack to edit');
     return;
   }
 
@@ -5318,11 +5348,12 @@ function openHiveEditor(hiveId) {
     row: hive.row || '',
     established: hive.established || '',
     boxType: hive.boxType || 'national',
+    hiveType: hive.hiveType || 'overwintered',
     roofStyle: hive.roofStyle || 'flat',
     stack: stackDraft,
     coverPhoto: hive.coverPhoto || null,
     isHidden: !!hive.isHidden,
-    isNuc: (hive.boxType === 'nuc' || hive.hiveType === 'nuc')
+    isNuc: (hive.boxType === 'nuc' || hive.boxType === 'double-nuc')
   };
 
   renderHiveEditor();
@@ -5339,7 +5370,7 @@ function renderHiveEditor() {
     stack: d.stack,
     boxType: d.boxType,
     roofStyle: d.roofStyle,
-    hiveType: hive.hiveType
+    hiveType: d.hiveType
   };
 
   // Available rows pulled from existing hives + the current row (in case it's already off-list)
@@ -5354,16 +5385,17 @@ function renderHiveEditor() {
         return '<option value="' + escapeAttr(r) + '"' + (r === d.row ? ' selected' : '') + '>' + escapeHtml(r) + '</option>';
       }).join('');
 
-  var boxTypes = ['national','commercial','wbc','langstroth','smith','top-bar','warre','nuc'];
-  var boxTypeLabels = {national:'National',commercial:'Commercial',wbc:'WBC',langstroth:'Langstroth',smith:'Smith','top-bar':'Top Bar',warre:'Warré',nuc:'Nuc box'};
+  var boxTypes = ['national','commercial','wbc','langstroth','smith','top-bar','warre','nuc','double-nuc'];
+  var boxTypeLabels = {national:'National',commercial:'Commercial',wbc:'WBC',langstroth:'Langstroth',smith:'Smith','top-bar':'Top Bar',warre:'Warré',nuc:'Nuc box','double-nuc':'Double-brood nuc'};
   var boxTypeOptionsHtml = boxTypes.map(function(t){
     return '<option value="' + t + '"' + (t === d.boxType ? ' selected' : '') + '>' + boxTypeLabels[t] + '</option>';
   }).join('');
 
   // Stack editor rows — same UI as the standalone editor but inline
   var stackRowsHtml = '';
-  if (d.isNuc || d.boxType === 'nuc') {
-    stackRowsHtml = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;color:var(--text-m);font-size:12px;text-align:center;">Nucs are a single box — no stack to edit</div>';
+  if (d.isNuc || d.boxType === 'nuc' || d.boxType === 'double-nuc') {
+    var nucMsg = (d.boxType === 'double-nuc') ? 'Double-brood nucs have a fixed two-box stack — no editor' : 'Nucs are a single box — no stack to edit';
+    stackRowsHtml = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;color:var(--text-m);font-size:12px;text-align:center;">' + nucMsg + '</div>';
   } else if (d.stack.length === 0) {
     stackRowsHtml = '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Empty stack. Tap "+ Brood / Super / QE" below to add boxes.</div>';
   } else {
@@ -5417,6 +5449,15 @@ function renderHiveEditor() {
     +     '<select id="he-row" onchange="_hiveEditorDraft.row=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + rowOptionsHtml + '</select>'
     +   '</div>'
     +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Colony form</label>'
+    +     '<select id="he-hivetype" onchange="hiveEditorChangeHiveType(this.value)" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    +       ['overwintered','nuc','double_nuc','swarm_prime','swarm_cast','split'].map(function(t){
+            var labels = {overwintered:'Overwintered colony',nuc:'New nucleus (nuc)',double_nuc:'Double-brood nuc',swarm_prime:'Prime swarm',swarm_cast:'Cast swarm',split:'Split / artificial swarm'};
+            return '<option value="' + t + '"' + (t === d.hiveType ? ' selected' : '') + '>' + labels[t] + '</option>';
+          }).join('')
+    +     '</select>'
+    +   '</div>'
+    +   '<div>'
     +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Established date</label>'
     +     '<input type="date" id="he-est" value="' + escapeAttr(d.established) + '" oninput="_hiveEditorDraft.established=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
     +   '</div>'
@@ -5450,7 +5491,7 @@ function renderHiveEditor() {
     +     '</div>'
     +     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">'
     +       '<div style="max-height:220px;overflow-y:auto;border:1px solid var(--wax);border-radius:6px;padding:6px;background:var(--cream);">' + stackRowsHtml + '</div>'
-    +       (d.isNuc || d.boxType === 'nuc' ? '' :
+    +       (d.isNuc || d.boxType === 'nuc' || d.boxType === 'double-nuc' ? '' :
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px;">'
           +   '<button onclick="hiveEditorStackAdd(\'brood\')" style="padding:10px 4px;background:#3A6B4A;border:none;border-radius:6px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
           +   '<button onclick="hiveEditorStackAdd(\'super\')" style="padding:10px 4px;background:#F4D03F;border:none;border-radius:6px;color:#4A2E0E;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
@@ -5526,8 +5567,17 @@ function hiveEditorSetRoof(style) {
 }
 function hiveEditorChangeBoxType(type) {
   _hiveEditorDraft.boxType = type;
-  // If switching to nuc, the stack editor should reflect that (stack hidden)
-  _hiveEditorDraft.isNuc = (type === 'nuc');
+  // boxType is the single source of truth for "is this a nuc" — drives both
+  // rendering and stack-editor blocking. hiveType (Colony form) is independent
+  // metadata about how the colony started, not what equipment it's in.
+  _hiveEditorDraft.isNuc = (type === 'nuc' || type === 'double-nuc');
+  renderHiveEditor();
+}
+
+function hiveEditorChangeHiveType(type) {
+  _hiveEditorDraft.hiveType = type;
+  // hiveType does NOT affect isNuc / rendering — that's boxType's job.
+  // Re-render anyway so any UI bits that display hiveType update.
   renderHiveEditor();
 }
 
@@ -5576,6 +5626,7 @@ function saveHiveEditor() {
   hive.row = d.row || '';
   hive.established = d.established || hive.established;
   hive.boxType = d.boxType || hive.boxType;
+  hive.hiveType = d.hiveType || hive.hiveType;
   hive.roofStyle = d.roofStyle || 'flat';
   // Persist stack only if it has content; otherwise null (which uses fallback rendering)
   hive.stack = (Array.isArray(d.stack) && d.stack.length) ? d.stack.slice().map(function(b){return{type:b.type};}) : null;
@@ -8907,8 +8958,9 @@ function populateHiveSelector(){
       var captionHtml = '<div style="flex:1;min-width:0;padding:12px 14px;align-self:center;">'
         + '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Inspecting</div>'
         + '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + (hive.name || 'Hive') + '</div>'
-        + '<div style="font-size:11px;color:var(--text-m);margin-top:3px;">' + describeStack(hive) + '</div>'
-        + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
+        + '<div style="font-size:10px;font-weight:700;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-top:6px;">Equipment</div>'
+        + '<div style="font-size:11px;color:var(--text-m);margin-top:1px;">' + describeStack(hive) + '</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
         + '</div>';
       ctxEl.innerHTML = '<div style="display:flex;align-items:stretch;min-height:110px;">' + photoHtml + stackHtml + captionHtml + '</div>';
       ctxEl.style.display='block';
@@ -8922,23 +8974,61 @@ function populateHiveSelector(){
   var list=document.getElementById('inspect-hive-list'); if(list) list.style.display='none';
 }
 
-// Human-readable summary of a hive's stack (e.g. "1 brood + QE + 2 supers").
-// Used as caption alongside the SVG diagram.
+// Human-readable summary of a hive's stack.
+// 22 April 23:40 rewrite: order-aware. Previously collapsed to type counts,
+// which lost critical info like "super below QE" (non-standard config).
+// Now collapses only consecutive runs of the same type — e.g.
+//   [brood, super, qe, super, super] → "1 brood · 1 super · QE · 2 supers"
+// This surfaces odd configs and makes the caption match the diagram.
+// Bottom-to-top matches the array order and how a keeper would describe
+// the physical hive.
 function describeStack(hive) {
   if (!hive) return '';
-  if (hive.boxType === 'nuc' || hive.hiveType === 'nuc') return 'Nuc';
-  var counts = { brood: 0, super: 0, qe: 0 };
+  // boxType drives equipment identification — hiveType is colony origin, not equipment
+  if (hive.boxType === 'nuc') return 'Nuc';
+  if (hive.boxType === 'double-nuc') return 'Double-brood nuc';
+
+  var stack;
   if (Array.isArray(hive.stack) && hive.stack.length) {
-    hive.stack.forEach(function(b){ if (counts.hasOwnProperty(b.type)) counts[b.type]++; });
+    stack = hive.stack;
   } else {
-    counts.brood = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
-    counts.super = Math.max(0, parseInt(hive.supers || 0, 10));
+    // Fallback: synthesise from counts (brood at bottom, supers on top)
+    stack = [];
+    var bb = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
+    var sp = Math.max(0, parseInt(hive.supers || 0, 10));
+    for (var i = 0; i < bb; i++) stack.push({ type: 'brood' });
+    for (var j = 0; j < sp; j++) stack.push({ type: 'super' });
   }
+
+  var typeLabel = { brood: 'brood', super: 'super', qe: 'QE' };
+
+  // Collapse consecutive runs of the same type
   var parts = [];
-  if (counts.brood) parts.push(counts.brood + ' brood');
-  if (counts.qe) parts.push('QE');
-  if (counts.super) parts.push(counts.super + ' super' + (counts.super > 1 ? 's' : ''));
+  var currentType = null;
+  var currentCount = 0;
+  stack.forEach(function(box) {
+    if (box.type === currentType) {
+      currentCount++;
+    } else {
+      if (currentType) {
+        parts.push(formatRun(currentType, currentCount, typeLabel));
+      }
+      currentType = box.type;
+      currentCount = 1;
+    }
+  });
+  if (currentType) {
+    parts.push(formatRun(currentType, currentCount, typeLabel));
+  }
+
   return parts.join(' · ');
+}
+
+function formatRun(type, count, typeLabel) {
+  if (type === 'qe') return 'QE'; // always singular
+  var label = typeLabel[type] || type;
+  if (count === 1) return '1 ' + label;
+  return count + ' ' + label + 's';
 }
 function changeInspectHive(hiveId){
   if(!hiveId) return; currentHiveId=hiveId;
@@ -19530,12 +19620,28 @@ function renderLeafletHives(editMode) {
       title: hive.name
     });
 
-    // Click: open hive detail
-    marker.on('click', function() {
-      if (!editMode) {
-        openHiveDetail(hive.id || hive._id);
-      }
-    });
+    // Bind a popup with hive info — tapped pin in Edit Layout mode shows a
+    // bubble with name, row, stack summary, status. The map is non-interactive
+    // in normal view (setMapInteractive(false) on screen entry), so popups ONLY
+    // work in edit mode — which is also where users would want them, to
+    // confirm which hive they just dragged (Chris 23 April 00:30).
+    if (editMode) {
+      var statusEmoji = '';
+      if (hive.status === 'dead') statusEmoji = '💀 ';
+      else if (hive.status === 'unclear') statusEmoji = '❓ ';
+      else if (hive.waxMoth) statusEmoji = '🦋 ';
+      var popupHtml = ''
+        + '<div style="font-family:Syne,sans-serif;min-width:120px;">'
+        +   '<div style="font-size:13px;font-weight:800;color:#162B1F;">' + statusEmoji + (hive.name || 'Hive') + '</div>'
+        +   (hive.row ? '<div style="font-size:10px;color:#8A7A60;margin-top:2px;margin-bottom:6px;">' + hive.row + '</div>' : '<div style="margin-bottom:6px;"></div>')
+        +   '<button onclick="viewHive(\'' + hive.id + '\')" style="width:100%;padding:6px 10px;background:#C8730A;color:white;border:none;border-radius:5px;font-size:11px;font-weight:800;font-family:Syne,sans-serif;cursor:pointer;">Open →</button>'
+        + '</div>';
+      marker.bindPopup(popupHtml, { autoPan: true, closeButton: true, maxWidth: 180, minWidth: 120 });
+    }
+
+    // Click handler — popup fires automatically from bindPopup (edit mode only).
+    // In non-edit view the map is non-interactive so clicks don't reach here.
+    marker.on('click', function() { /* popup auto-opens via bindPopup */ });
 
     // Drag end: save new position
     marker.on('dragend', function(e) {
