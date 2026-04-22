@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 20:35 · Consolidated Hive Editor</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 21:05 · Hive Editor layout polish</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -5349,59 +5349,85 @@ function renderHiveEditor() {
   var html = '<div class="modal-handle"></div>'
     + '<div class="modal-title">Edit hive</div>'
 
-    // Live preview at top
-    + '<div style="display:flex;justify-content:center;background:var(--cream);border:1px solid var(--wax);border-radius:8px;padding:10px;margin-bottom:6px;">'
-    +   '<div style="width:140px;">' + renderHiveStackSVG(previewHive, { width: 140 }) + '</div>'
-    + '</div>'
-
-    // Identity
+    // Identity — with proper labels
     + sectionHead('Identity')
-    + '<div style="display:flex;flex-direction:column;gap:8px;">'
-    +   '<input type="text" id="he-name" value="' + escapeAttr(d.name) + '" oninput="_hiveEditorDraft.name=this.value" placeholder="Hive name" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
-    +   '<select id="he-row" onchange="_hiveEditorDraft.row=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + rowOptionsHtml + '</select>'
-    +   '<input type="date" id="he-est" value="' + escapeAttr(d.established) + '" oninput="_hiveEditorDraft.established=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Hive name</label>'
+    +     '<input type="text" id="he-name" value="' + escapeAttr(d.name) + '" oninput="_hiveEditorDraft.name=this.value" placeholder="e.g. Row 2 Hive 3" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    +   '</div>'
+    +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Row</label>'
+    +     '<select id="he-row" onchange="_hiveEditorDraft.row=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + rowOptionsHtml + '</select>'
+    +   '</div>'
+    +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Established date</label>'
+    +     '<input type="date" id="he-est" value="' + escapeAttr(d.established) + '" oninput="_hiveEditorDraft.established=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    +   '</div>'
     + '</div>'
 
-    // Physical
+    // Physical — box type + roof FIRST (they affect the rendered diagram),
+    // then a side-by-side preview + stack editor panel so the user can see
+    // the hive change as they reorder boxes (matches the standalone editor UX
+    // Chris asked to restore, 22 April evening).
     + sectionHead('Physical')
-    + '<div style="display:flex;flex-direction:column;gap:8px;">'
-    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;">Box type</label>'
-    +   '<select id="he-box" onchange="hiveEditorChangeBoxType(this.value)" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + boxTypeOptionsHtml + '</select>'
-    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;margin-top:6px;">Roof style</label>'
-    +   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;">'
-    +     ['flat','pointy','deep','shallow'].map(function(s){
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Box type</label>'
+    +     '<select id="he-box" onchange="hiveEditorChangeBoxType(this.value)" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + boxTypeOptionsHtml + '</select>'
+    +   '</div>'
+    +   '<div>'
+    +     '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-bottom:4px;">Roof style</label>'
+    +     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;">'
+    +       ['flat','pointy','deep','shallow'].map(function(s){
             var sel = (s === d.roofStyle);
             var icon = ({flat:'▬',pointy:'▲',deep:'▮',shallow:'▭'})[s];
             var label = ({flat:'Flat',pointy:'Pointy',deep:'Deep',shallow:'Shallow'})[s];
             return '<button onclick="hiveEditorSetRoof(\'' + s + '\')" style="padding:8px 4px;border:2px solid ' + (sel ? 'var(--forest)' : 'var(--wax)') + ';background:' + (sel ? 'var(--forest)' : 'white') + ';color:' + (sel ? 'white' : 'var(--text)') + ';border-radius:6px;font-size:11px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;"><div style="font-size:18px;">' + icon + '</div>' + label + '</button>';
           }).join('')
+    +     '</div>'
     +   '</div>'
-    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;margin-top:10px;">Stack (bottom to top, top of list = top of hive)</label>'
-    +   '<div style="max-height:200px;overflow-y:auto;border:1px solid var(--wax);border-radius:6px;padding:6px;background:var(--cream);">' + stackRowsHtml + '</div>'
-    +   (d.isNuc || d.boxType === 'nuc' ? '' :
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">'
-        +   '<button onclick="hiveEditorStackAdd(\'brood\')" style="padding:10px 4px;background:#3A6B4A;border:none;border-radius:6px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
-        +   '<button onclick="hiveEditorStackAdd(\'super\')" style="padding:10px 4px;background:#F4D03F;border:none;border-radius:6px;color:#4A2E0E;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
-        +   '<button onclick="hiveEditorStackAdd(\'qe\')" style="padding:10px 4px;background:#D8D8D8;border:1px solid #999;border-radius:6px;color:#333;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
-        + '</div>')
+    +   '<label style="display:block;font-size:11px;color:var(--text-l);font-weight:700;margin-top:4px;">Stack (top of list = top of hive)</label>'
+    +   '<div style="display:flex;gap:10px;align-items:stretch;">'
+    +     '<div style="flex-shrink:0;width:130px;background:var(--cream);border:1px solid var(--wax);border-radius:8px;padding:8px;display:flex;justify-content:center;align-items:flex-start;">'
+    +       renderHiveStackSVG(previewHive, { width: 110 })
+    +     '</div>'
+    +     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">'
+    +       '<div style="max-height:220px;overflow-y:auto;border:1px solid var(--wax);border-radius:6px;padding:6px;background:var(--cream);">' + stackRowsHtml + '</div>'
+    +       (d.isNuc || d.boxType === 'nuc' ? '' :
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px;">'
+          +   '<button onclick="hiveEditorStackAdd(\'brood\')" style="padding:10px 4px;background:#3A6B4A;border:none;border-radius:6px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
+          +   '<button onclick="hiveEditorStackAdd(\'super\')" style="padding:10px 4px;background:#F4D03F;border:none;border-radius:6px;color:#4A2E0E;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
+          +   '<button onclick="hiveEditorStackAdd(\'qe\')" style="padding:10px 4px;background:#D8D8D8;border:1px solid #999;border-radius:6px;color:#333;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
+          + '</div>')
+    +     '</div>'
+    +   '</div>'
     + '</div>'
 
     // Cover photo
     + sectionHead('Cover photo')
     + photoHtml
 
-    // Visibility
+    // Visibility — compact toggle, not a huge box
     + sectionHead('Visibility')
-    + '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none;"><input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);">Hide this hive from the active view (data preserved, doesn\'t count toward limit)</label>'
+    + '<label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;cursor:pointer;user-select:none;line-height:1.4;padding:6px 0;">'
+    +   '<input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);margin-top:2px;flex-shrink:0;">'
+    +   '<span>Hide this hive from the active view<br><span style="color:var(--text-l);font-size:11px;">Data preserved, doesn\'t count toward your hive limit</span></span>'
+    + '</label>'
 
-    // Danger zone
-    + sectionHead('Danger zone')
-    + '<button onclick="hiveEditorDelete()" style="width:100%;padding:10px;background:#FFF0EE;color:#B83228;border:1px solid #B83228;border-radius:6px;font-size:13px;font-weight:800;font-family:Syne,sans-serif;cursor:pointer;">🗑 Delete hive permanently</button>'
-
-    // Save / Cancel — sticky at bottom
+    // Save / Cancel — primary actions, prominent
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;">'
     +   '<button onclick="closeHiveEditor()" style="background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>'
     +   '<button onclick="saveHiveEditor()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;">Save changes ✓</button>'
+    + '</div>'
+
+    // Danger zone — MOVED below Save/Cancel (Chris raised concern about delete sitting
+    // above Save — hand slip = hive deleted). Extra visual separator + big gap + warning text
+    // to make accidental taps effectively impossible.
+    + '<div style="margin-top:40px;padding-top:20px;border-top:2px dashed #C62828;">'
+    +   '<div style="font-size:10px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">⚠ Danger zone</div>'
+    +   '<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;line-height:1.4;">Permanently deletes this hive and ALL its inspection records. This cannot be undone.</div>'
+    +   '<button onclick="hiveEditorDelete()" style="width:100%;padding:10px;background:white;color:#B83228;border:1px solid #B83228;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">🗑 Delete hive permanently</button>'
     + '</div>';
 
   var sheet = document.querySelector('#modal-hive-components .modal-sheet');
