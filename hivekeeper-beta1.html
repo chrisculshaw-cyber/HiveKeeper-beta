@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 18:40 · Stack Phase 2.1 (bug fixes)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:05 · Stack Phase 3 (editor modal)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4948,21 +4948,176 @@ function renderHiveStackSection(hive) {
   }
 }
 
-// Phase 3 stub — full stack editor comes next. For now shows a "coming soon" toast
-// so the Edit button on Hive Detail is wired up without crashing.
-// Includes diagnostic logging so we can trace whether the click is firing.
+// ═══════════════════════════════════════════════════════════════
+// STACK EDITOR (Phase 3)
+// ═══════════════════════════════════════════════════════════════
+// Modal that lets the keeper edit the physical stack of a hive —
+// add / remove / reorder brood boxes, supers and queen excluders.
+// Reuses the #modal-hive-components sheet (single-modal pattern).
+//
+// State held in _stackEditorDraft while the modal is open. On Save,
+// writes to hive.stack and calls saveHives() which triggers cloud sync.
+// Cancel discards the draft.
+//
+// Initial state: if hive.stack is null (existing hive), migrate from
+// broodBoxes + supers counts — this is the migration moment where an
+// old hive gets its first stack array.
+var _stackEditorDraft = null;
+var _stackEditorHiveId = null;
+
 function openStackEditor(hiveId) {
-  console.log('[stack-editor] openStackEditor called, hiveId=', hiveId, ' currentHiveId=', typeof currentHiveId !== 'undefined' ? currentHiveId : '(undefined)');
+  console.log('[stack-editor] opening for hiveId=', hiveId);
   var targetId = hiveId || (typeof currentHiveId !== 'undefined' ? currentHiveId : null);
   if (!targetId) {
     if (typeof showToast === 'function') showToast('No hive selected');
     return;
   }
-  if (typeof showToast === 'function') {
-    showToast('Stack editor coming in next build');
-  } else {
-    alert('Stack editor coming in next build');
+  var hive = loadHives().find(function(h){ return h.id === targetId; });
+  if (!hive) {
+    if (typeof showToast === 'function') showToast('Hive not found');
+    return;
   }
+
+  // Nucs have no stack editor — they're a single box
+  if (hive.boxType === 'nuc' || hive.hiveType === 'nuc') {
+    if (typeof showToast === 'function') showToast('Nucs have no stack to edit');
+    return;
+  }
+
+  _stackEditorHiveId = targetId;
+
+  // Initialise the draft — prefer existing stack, else synthesise from counts
+  if (Array.isArray(hive.stack) && hive.stack.length) {
+    _stackEditorDraft = hive.stack.slice().map(function(b){ return { type: b.type }; });
+  } else {
+    _stackEditorDraft = [];
+    var bb = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
+    var sp = Math.max(0, parseInt(hive.supers || 0, 10));
+    for (var i = 0; i < bb; i++) _stackEditorDraft.push({ type: 'brood' });
+    for (var j = 0; j < sp; j++) _stackEditorDraft.push({ type: 'super' });
+  }
+
+  renderStackEditor();
+  openModalEl('modal-hive-components');
+}
+
+function renderStackEditor() {
+  var hive = loadHives().find(function(h){ return h.id === _stackEditorHiveId; });
+  if (!hive) return;
+
+  var rowsHtml = '';
+  if (_stackEditorDraft.length === 0) {
+    rowsHtml = '<div style="padding:20px;text-align:center;color:var(--text-l);font-size:13px;">Empty stack. Tap "Add box" below to start.</div>';
+  } else {
+    // Render bottom-to-top visually matches physical hive (topmost array index
+    // is the top of the hive), so we reverse for display but keep the array
+    // bottom-up as the data model. Index labels are "from bottom" for sanity.
+    for (var i = _stackEditorDraft.length - 1; i >= 0; i--) {
+      var box = _stackEditorDraft[i];
+      var boxLabel, boxColour, boxBg;
+      if (box.type === 'brood') {
+        boxLabel = '🟩 Brood box'; boxColour = '#162B1F'; boxBg = '#3A6B4A';
+      } else if (box.type === 'super') {
+        boxLabel = '🟨 Super';     boxColour = '#4A2E0E'; boxBg = '#F4D03F';
+      } else if (box.type === 'qe') {
+        boxLabel = '⚙️ Queen excluder'; boxColour = '#333'; boxBg = '#D8D8D8';
+      } else {
+        boxLabel = box.type; boxColour = '#555'; boxBg = '#EEE';
+      }
+      var canUp = (i < _stackEditorDraft.length - 1);
+      var canDown = (i > 0);
+      rowsHtml += '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:6px;background:' + boxBg + ';border-radius:8px;border:1px solid rgba(0,0,0,.1);">'
+        +   '<div style="flex:1;font-size:13px;font-weight:700;color:' + boxColour + ';">' + boxLabel + '</div>'
+        +   '<button onclick="stackEditorMove(' + i + ', 1)" ' + (canUp ? '' : 'disabled') + ' style="width:32px;height:32px;border:1px solid rgba(0,0,0,.15);background:white;border-radius:6px;font-size:14px;cursor:pointer;' + (canUp ? '' : 'opacity:.3;cursor:not-allowed;') + '" aria-label="Move up">▲</button>'
+        +   '<button onclick="stackEditorMove(' + i + ', -1)" ' + (canDown ? '' : 'disabled') + ' style="width:32px;height:32px;border:1px solid rgba(0,0,0,.15);background:white;border-radius:6px;font-size:14px;cursor:pointer;' + (canDown ? '' : 'opacity:.3;cursor:not-allowed;') + '" aria-label="Move down">▼</button>'
+        +   '<button onclick="stackEditorRemove(' + i + ')" style="width:32px;height:32px;border:1px solid #C62828;background:#FFEBEE;color:#C62828;border-radius:6px;font-size:14px;cursor:pointer;font-weight:700;" aria-label="Remove">✕</button>'
+        + '</div>';
+    }
+  }
+
+  // Live preview diagram alongside the row list
+  var previewSvg = renderHiveStackSVG({
+    stack: _stackEditorDraft,
+    boxType: hive.boxType,
+    roofStyle: hive.roofStyle,
+    hiveType: hive.hiveType
+  }, { width: 120 });
+
+  var html = '<div class="modal-handle"></div>'
+    + '<div class="modal-title">Edit hive stack</div>'
+    + '<p style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.5;">Add, remove or reorder boxes. The order here matches the physical stack — bottom of the list is the floor, top of the list is under the roof.</p>'
+    + '<div style="display:flex;gap:12px;margin-bottom:14px;">'
+    +   '<div style="flex-shrink:0;width:130px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:8px;">'
+    +     previewSvg
+    +   '</div>'
+    +   '<div style="flex:1;min-width:0;max-height:300px;overflow-y:auto;">' + rowsHtml + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">'
+    +   '<button onclick="stackEditorAdd(\'brood\')" style="padding:12px 4px;background:#3A6B4A;border:none;border-radius:var(--rs);color:white;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
+    +   '<button onclick="stackEditorAdd(\'super\')" style="padding:12px 4px;background:#F4D03F;border:none;border-radius:var(--rs);color:#4A2E0E;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
+    +   '<button onclick="stackEditorAdd(\'qe\')" style="padding:12px 4px;background:#D8D8D8;border:1px solid #999;border-radius:var(--rs);color:#333;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+    +   '<button onclick="closeStackEditor()" style="background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>'
+    +   '<button onclick="saveStackEditor()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;">Save stack ✓</button>'
+    + '</div>';
+
+  var sheet = document.querySelector('#modal-hive-components .modal-sheet');
+  if (sheet) sheet.innerHTML = html;
+}
+
+// Add a box of the given type to the TOP of the stack (most recent position)
+function stackEditorAdd(type) {
+  if (['brood', 'super', 'qe'].indexOf(type) === -1) return;
+  _stackEditorDraft.push({ type: type });
+  renderStackEditor();
+}
+
+// Remove the box at the given index (with confirmation for brood boxes since
+// removing a brood box is a meaningful change — supers come and go, brood is structural)
+function stackEditorRemove(index) {
+  if (index < 0 || index >= _stackEditorDraft.length) return;
+  var box = _stackEditorDraft[index];
+  if (box.type === 'brood' && _stackEditorDraft.filter(function(b){return b.type==='brood';}).length === 1) {
+    if (!confirm('Remove the last brood box? Most colonies need at least one brood box — only remove if you really mean to.')) return;
+  }
+  _stackEditorDraft.splice(index, 1);
+  renderStackEditor();
+}
+
+// Move a box up or down by one position. direction: +1 = up (higher in stack), -1 = down
+function stackEditorMove(index, direction) {
+  var newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= _stackEditorDraft.length) return;
+  var tmp = _stackEditorDraft[index];
+  _stackEditorDraft[index] = _stackEditorDraft[newIndex];
+  _stackEditorDraft[newIndex] = tmp;
+  renderStackEditor();
+}
+
+function saveStackEditor() {
+  var hives = loadHives();
+  var hive = hives.find(function(h){ return h.id === _stackEditorHiveId; });
+  if (!hive) { closeStackEditor(); return; }
+  // Persist the new stack
+  hive.stack = _stackEditorDraft.slice().map(function(b){ return { type: b.type }; });
+  // Keep broodBoxes + supers counts in sync for backward compatibility
+  // (other parts of the app still read these)
+  hive.broodBoxes = hive.stack.filter(function(b){return b.type==='brood';}).length;
+  hive.supers = hive.stack.filter(function(b){return b.type==='super';}).length;
+  saveHives(hives);
+  closeStackEditor();
+  if (typeof showToast === 'function') showToast('Stack updated ✓');
+  // Re-render all screens that show the stack
+  try { if (typeof renderHiveDetail === 'function') renderHiveDetail(); } catch(e) {}
+  try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
+  try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
+}
+
+function closeStackEditor() {
+  _stackEditorDraft = null;
+  _stackEditorHiveId = null;
+  closeModalEl('modal-hive-components');
 }
 
 function renderHiveCoverBanner(hive) {
