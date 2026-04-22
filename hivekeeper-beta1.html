@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:15</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:35</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1252,16 +1252,6 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       <div style="color:rgba(255,255,255,.4);font-size:16px;">›</div>
     </div>
 
-    <!-- REPORTS QUICK ACCESS -->
-    <div onclick="openReportsModal()" style="margin:10px 20px 0;background:var(--white);border:1px solid var(--wax);border-radius:var(--rs);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
-      <div style="font-size:22px;">📊</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">REPORTS</div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);margin-top:2px;">Session report, inspection history and more</div>
-      </div>
-      <div style="color:var(--text-l);font-size:16px;">›</div>
-    </div>
-
     <!-- ASIAN HORNET WATCH -->
     <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;border:1px solid rgba(184,50,40,.3);box-shadow:var(--shadow);">
       <div class="ah-header" onclick="toggleAHPanel()">
@@ -1340,6 +1330,13 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
           <div id="strongest-hive-meta" style="font-size:11px;color:var(--text-l);margin-top:2px;">-</div>
         </div>
       </div>
+    </div>
+    <!-- REPORTS QUICK ACCESS ICON -->
+    <div style="display:flex;justify-content:center;margin:14px 0 4px;">
+      <button onclick="openReportsModal()" style="background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 16px;" aria-label="Open reports">
+        <div style="width:48px;height:48px;background:var(--honey-pale);border:1px solid var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow);">📊</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);font-family:'Syne',sans-serif;">Reports</div>
+      </button>
     </div>
     <div class="section-head" style="margin-top:4px;"><div class="section-title">Active hives</div><button class="section-action" onclick="goTo('s-apiary')">Map →</button></div>
     <div class="hive-scroll" id="dash-hives"></div>
