@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:05 · Stack Phase 3 (editor modal)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:20 · Inspect banner layout fix</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -8399,24 +8399,32 @@ function populateHiveSelector(){
   // Combined context banner — cover photo thumbnail (if present) on the left,
   // stack diagram + caption on the right. Replaces the previous two-stacked
   // banners (image + stack) which wasted vertical space on mobile.
+  //
+  // Layout notes (22 April after user feedback):
+  //   - Photo pane is 110px wide and stretches to full banner height (no
+  //     hard 90x90 constraint) so the image genuinely fills its frame
+  //   - Stack column is vertically centred alongside the photo
+  //   - align-items: stretch on the flex container is what gives the photo
+  //     its full height; the stack uses align-self:center to avoid
+  //     pinning to the top
   var ctxEl=document.getElementById('inspect-hive-context-banner');
   if(ctxEl){
     if(hive){
       var photoHtml = '';
       if (hive.coverPhoto) {
         var cleanUrl = hive.coverPhoto.split('?')[0];
-        photoHtml = '<div style="width:90px;height:90px;flex-shrink:0;background:#e0e0e0;overflow:hidden;border-right:1px solid var(--wax);">'
+        photoHtml = '<div style="width:110px;flex-shrink:0;background:#e0e0e0;overflow:hidden;border-right:1px solid var(--wax);align-self:stretch;">'
           + '<img src="' + cleanUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">'
           + '</div>';
       }
-      var stackHtml = '<div style="width:72px;flex-shrink:0;padding:8px 6px;">' + renderHiveStackSVG(hive, { width: 72 }) + '</div>';
-      var captionHtml = '<div style="flex:1;min-width:0;padding:10px 12px;">'
+      var stackHtml = '<div style="width:80px;flex-shrink:0;padding:10px 8px;align-self:center;">' + renderHiveStackSVG(hive, { width: 80 }) + '</div>';
+      var captionHtml = '<div style="flex:1;min-width:0;padding:12px 14px;align-self:center;">'
         + '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Inspecting</div>'
         + '<div style="font-size:14px;font-weight:800;color:var(--text);margin-top:2px;">' + (hive.name || 'Hive') + '</div>'
         + '<div style="font-size:11px;color:var(--text-m);margin-top:3px;">' + describeStack(hive) + '</div>'
         + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
         + '</div>';
-      ctxEl.innerHTML = '<div style="display:flex;align-items:stretch;">' + photoHtml + stackHtml + captionHtml + '</div>';
+      ctxEl.innerHTML = '<div style="display:flex;align-items:stretch;min-height:110px;">' + photoHtml + stackHtml + captionHtml + '</div>';
       ctxEl.style.display='block';
     } else {
       ctxEl.innerHTML='';
