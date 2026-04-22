@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 13:50</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 15:45</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -4755,18 +4755,14 @@ function renderHiveDetail(){
   const latest = inspections[0];
 
   document.getElementById('hive-detail-name').textContent = hive.name;
-  // Cover photo in header
+  // Cover photo in header — REMOVED 22 April. Background image at 0.18 opacity
+  // made the header chips/meta unreadable against busy photo backgrounds
+  // (Davey reported this). Cover photo still used as hive thumbnail in lists,
+  // inspection timelines, and everywhere else — just not as a header background.
   var headerEl = document.getElementById('hive-detail-header');
   if (headerEl) {
     var existingCover = headerEl.querySelector('.hive-cover-bg');
     if (existingCover) existingCover.remove();
-    if (hive.coverPhoto) {
-      var coverBg = document.createElement('div');
-      coverBg.className = 'hive-cover-bg';
-      coverBg.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;border-radius:inherit;overflow:hidden;z-index:0;opacity:0.18;pointer-events:none;';
-      coverBg.innerHTML = '<img src="' + hive.coverPhoto + '" style="width:100%;height:100%;object-fit:cover;">';
-      headerEl.insertBefore(coverBg, headerEl.firstChild);
-    }
   }
   document.getElementById('hive-detail-meta').textContent = hive.row + ' · ' + ((hive.hiveType||hive.type||'unknown').charAt(0).toUpperCase()+(hive.hiveType||hive.type||'unknown').slice(1)) + ' · ' + (hive.boxType||'Standard');
 
