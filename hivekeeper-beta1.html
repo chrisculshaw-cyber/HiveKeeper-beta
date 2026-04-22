@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 16:55</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 18:10 · Stack visualiser Phase 2 (SVG renderer)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1492,6 +1492,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
          populateHiveSelector(). -->
     <div id="inspect-hive-image-banner" style="display:none;margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;box-shadow:var(--shadow);position:relative;"></div>
 
+    <!-- Hive stack visualiser — SVG diagram of the physical hive configuration.
+         Hidden when no hive selected. Filled by populateHiveSelector(). -->
+    <div id="inspect-hive-stack-banner" style="display:none;margin:10px 20px 0;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;"></div>
+
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;">Last inspection</div>
@@ -1665,6 +1669,10 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
 
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
+      <div id="hive-stack-section" style="margin-top:12px;display:none;">
+        <div class="section-head"><div class="section-title">🏠 Hive stack</div><button class="section-action" onclick="openStackEditor(currentHiveId)">Edit →</button></div>
+        <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;"></div>
+      </div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
       <div id="hive-advice-section" style="margin-top:12px;"></div>
       <div id="hive-detail-content" style="margin-top:12px;"></div>
@@ -1754,8 +1762,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     </div>
     <div class="form-row">
       <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="commercial">Commercial</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="smith">Smith</option><option value="top-bar">Top Bar</option><option value="warre">Warré</option><option value="nuc">Nuc box</option></select></div>
-      <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
+      <div class="form-group"><label>Roof style</label><select id="new-hive-roof"><option value="flat">Flat</option><option value="pointy">Pointy (pitched)</option><option value="deep">Deep</option><option value="shallow">Shallow</option></select></div>
     </div>
+    <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
     <div class="form-group"><label>Queen status</label>
       <select id="new-hive-queen">
         <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
@@ -1882,8 +1891,9 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
       </div>
       <div class="form-row">
         <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="commercial">Commercial</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="smith">Smith</option><option value="top-bar">Top Bar</option><option value="warre">Warré</option></select></div>
-        <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
+        <div class="form-group"><label>Roof style</label><select id="new-hive-roof"><option value="flat">Flat</option><option value="pointy">Pointy (pitched)</option><option value="deep">Deep</option><option value="shallow">Shallow</option></select></div>
       </div>
+      <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
       <div class="form-group"><label>Queen status</label>
         <select id="new-hive-queen">
           <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
@@ -4765,6 +4775,179 @@ function handleCanvasPoint(x, y) {
 // so thumbnail positioning can't interfere with adjacent status cards (earlier
 // float:right design caused the image to spill into dead/unclear hive "Action
 // required" cards — Davey reported this 22 April).
+// ═══════════════════════════════════════════════════════════════
+// HIVE STACK SVG RENDERER
+// ═══════════════════════════════════════════════════════════════
+// Renders a colourful, simple SVG of a hive's physical stack — boxes
+// from bottom to top, with the floor at the bottom and the roof on top.
+// Used on Hive Detail screen and Inspect screen so the keeper can visually
+// confirm what they're about to open.
+//
+// Data model:
+//   hive.stack = [{type:'brood'}, {type:'qe'}, {type:'super'}, ...]
+//   hive.stack = null → fall back to broodBoxes + supers counts
+//   hive.roofStyle = 'flat' | 'pointy' | 'deep' | 'shallow'
+//
+// Returns an SVG string. Caller sets container size via CSS.
+//
+// Colour palette matches the app: forest green for brood, honey/cream for
+// supers (because honey lives there), thin metallic band for queen excluder.
+function renderHiveStackSVG(hive, options) {
+  options = options || {};
+  var width = options.width || 140;
+  // Box dimensions. Brood is taller than super because real brood boxes are.
+  var BOX_W = 108;              // box width, centred in the SVG
+  var BROOD_H = 38;             // brood box height (deeper)
+  var SUPER_H = 22;             // super height (shallow)
+  var QE_H = 6;                 // queen excluder — thin band
+  var FLOOR_H = 8;              // floor (stand/landing board)
+  var BOX_X = (width - BOX_W) / 2;
+
+  // Build stack from hive data. Prefer explicit stack array if present;
+  // otherwise synthesise from broodBoxes + supers counts (no QE drawn in
+  // fallback mode — we don't know where it would go).
+  var stack;
+  if (Array.isArray(hive.stack) && hive.stack.length) {
+    stack = hive.stack.slice();  // bottom-to-top
+  } else {
+    stack = [];
+    var bb = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
+    var sp = Math.max(0, parseInt(hive.supers || 0, 10));
+    for (var i = 0; i < bb; i++) stack.push({ type: 'brood' });
+    for (var j = 0; j < sp; j++) stack.push({ type: 'super' });
+  }
+
+  // Special case: nucs render as a single compact box, no roof style variation
+  var isNuc = (hive.boxType === 'nuc' || hive.hiveType === 'nuc');
+  if (isNuc) {
+    var nucH = 30;
+    var nucW = 78;
+    var nucX = (width - nucW) / 2;
+    var totalH = FLOOR_H + nucH + 12 + 4;  // floor + nuc + small roof + margin
+    var svg = '<svg viewBox="0 0 ' + width + ' ' + totalH + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">';
+    // small flat roof
+    svg += '<rect x="' + (nucX - 4) + '" y="4" width="' + (nucW + 8) + '" height="10" rx="2" fill="#4A2E0E"/>';
+    // nuc body
+    svg += '<rect x="' + nucX + '" y="16" width="' + nucW + '" height="' + nucH + '" rx="3" fill="#D4A574" stroke="#8B5A2B" stroke-width="1.5"/>';
+    // entrance slot at bottom
+    svg += '<rect x="' + (nucX + nucW/2 - 10) + '" y="' + (16 + nucH - 4) + '" width="20" height="3" fill="#3A2108"/>';
+    // label
+    svg += '<text x="' + (width/2) + '" y="' + (16 + nucH/2 + 4) + '" text-anchor="middle" font-family="Syne,sans-serif" font-size="9" font-weight="800" fill="#3A2108">NUC</text>';
+    // floor
+    svg += '<rect x="' + (nucX - 6) + '" y="' + (16 + nucH) + '" width="' + (nucW + 12) + '" height="' + FLOOR_H + '" fill="#3A2108"/>';
+    svg += '</svg>';
+    return svg;
+  }
+
+  // Compute total height based on stack contents + roof + floor
+  var stackHeight = 0;
+  for (var k = 0; k < stack.length; k++) {
+    var t = stack[k].type;
+    if (t === 'brood') stackHeight += BROOD_H;
+    else if (t === 'super') stackHeight += SUPER_H;
+    else if (t === 'qe') stackHeight += QE_H;
+  }
+  // Roof dimensions by style
+  var roofStyle = hive.roofStyle || 'flat';
+  var roofH;
+  if (roofStyle === 'pointy') roofH = 22;
+  else if (roofStyle === 'deep') roofH = 18;
+  else if (roofStyle === 'shallow') roofH = 8;
+  else roofH = 12;  // flat
+
+  var totalH = roofH + stackHeight + FLOOR_H + 4;
+
+  var out = '<svg viewBox="0 0 ' + width + ' ' + totalH + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">';
+
+  // Roof — drawn first, sits at top
+  var roofY = 2;
+  var roofColour = '#4A2E0E';     // bark
+  var roofEdge = '#3A2108';
+  if (roofStyle === 'pointy') {
+    // Triangular gabled roof with a flat cap base
+    var gableLeft = BOX_X - 6;
+    var gableRight = BOX_X + BOX_W + 6;
+    var gablePeak = width / 2;
+    out += '<polygon points="'
+        + gableLeft + ',' + (roofY + roofH) + ' '
+        + gableRight + ',' + (roofY + roofH) + ' '
+        + gablePeak + ',' + roofY
+        + '" fill="' + roofColour + '" stroke="' + roofEdge + '" stroke-width="1"/>';
+  } else {
+    // Flat/deep/shallow — all rectangles, just different heights
+    out += '<rect x="' + (BOX_X - 6) + '" y="' + roofY + '" width="' + (BOX_W + 12) + '" height="' + roofH + '" rx="2" fill="' + roofColour + '" stroke="' + roofEdge + '" stroke-width="1"/>';
+    // Small decorative detail on deep roofs
+    if (roofStyle === 'deep') {
+      out += '<line x1="' + (BOX_X - 4) + '" y1="' + (roofY + roofH - 4) + '" x2="' + (BOX_X + BOX_W + 4) + '" y2="' + (roofY + roofH - 4) + '" stroke="' + roofEdge + '" stroke-width="0.5" opacity="0.5"/>';
+    }
+  }
+
+  // Boxes — stack from top down, but our array is bottom-up, so iterate in reverse
+  var y = roofY + roofH;
+  for (var b = stack.length - 1; b >= 0; b--) {
+    var box = stack[b];
+    if (box.type === 'brood') {
+      // Brood box — forest green, slightly wider look with frame hints
+      out += '<rect x="' + BOX_X + '" y="' + y + '" width="' + BOX_W + '" height="' + BROOD_H + '" fill="#3A6B4A" stroke="#162B1F" stroke-width="1.5"/>';
+      // Frame hints (vertical lines)
+      for (var f = 1; f < 6; f++) {
+        var fx = BOX_X + (f * (BOX_W / 6));
+        out += '<line x1="' + fx + '" y1="' + (y + 4) + '" x2="' + fx + '" y2="' + (y + BROOD_H - 4) + '" stroke="#162B1F" stroke-width="0.4" opacity="0.4"/>';
+      }
+      out += '<text x="' + (width/2) + '" y="' + (y + BROOD_H/2 + 3) + '" text-anchor="middle" font-family="Syne,sans-serif" font-size="8" font-weight="800" fill="white" opacity="0.85">BROOD</text>';
+      y += BROOD_H;
+    } else if (box.type === 'super') {
+      // Super — honey cream with amber frames
+      out += '<rect x="' + BOX_X + '" y="' + y + '" width="' + BOX_W + '" height="' + SUPER_H + '" fill="#F4D03F" stroke="#8B6914" stroke-width="1.5"/>';
+      // Frame hints
+      for (var g = 1; g < 6; g++) {
+        var gx = BOX_X + (g * (BOX_W / 6));
+        out += '<line x1="' + gx + '" y1="' + (y + 3) + '" x2="' + gx + '" y2="' + (y + SUPER_H - 3) + '" stroke="#8B6914" stroke-width="0.4" opacity="0.5"/>';
+      }
+      out += '<text x="' + (width/2) + '" y="' + (y + SUPER_H/2 + 3) + '" text-anchor="middle" font-family="Syne,sans-serif" font-size="7" font-weight="800" fill="#4A2E0E">SUPER</text>';
+      y += SUPER_H;
+    } else if (box.type === 'qe') {
+      // Queen excluder — thin metallic band
+      out += '<rect x="' + BOX_X + '" y="' + y + '" width="' + BOX_W + '" height="' + QE_H + '" fill="#B8B8B8" stroke="#4A4A4A" stroke-width="1"/>';
+      // Cross-hatch to suggest wire mesh
+      for (var q = 1; q < 14; q++) {
+        var qx = BOX_X + (q * (BOX_W / 14));
+        out += '<line x1="' + qx + '" y1="' + (y + 1) + '" x2="' + qx + '" y2="' + (y + QE_H - 1) + '" stroke="#4A4A4A" stroke-width="0.4"/>';
+      }
+      y += QE_H;
+    }
+  }
+
+  // Floor / stand — at the bottom, slightly wider than boxes for a landing board
+  out += '<rect x="' + (BOX_X - 8) + '" y="' + y + '" width="' + (BOX_W + 16) + '" height="' + FLOOR_H + '" fill="#4A2E0E" stroke="#3A2108" stroke-width="1"/>';
+  // Entrance slot
+  out += '<rect x="' + (BOX_X + BOX_W/2 - 12) + '" y="' + (y - 2) + '" width="24" height="2" fill="#3A2108"/>';
+  // Stand legs
+  out += '<rect x="' + (BOX_X - 6) + '" y="' + (y + FLOOR_H) + '" width="4" height="3" fill="#3A2108"/>';
+  out += '<rect x="' + (BOX_X + BOX_W + 2) + '" y="' + (y + FLOOR_H) + '" width="4" height="3" fill="#3A2108"/>';
+
+  out += '</svg>';
+  return out;
+}
+
+// Renders the hive stack section on the Hive Detail screen. Hidden if no hive.
+function renderHiveStackSection(hive) {
+  var section = document.getElementById('hive-stack-section');
+  var vis = document.getElementById('hive-stack-visual');
+  if (!section || !vis) return;
+  if (!hive) { section.style.display = 'none'; return; }
+  vis.innerHTML = '<div style="width:180px;">' + renderHiveStackSVG(hive, { width: 180 }) + '</div>';
+  section.style.display = 'block';
+}
+
+// Phase 3 stub — full stack editor comes next. For now shows a "coming soon" toast
+// so the Edit button on Hive Detail is wired up without crashing.
+function openStackEditor(hiveId) {
+  if (typeof showToast === 'function') {
+    showToast('Stack editor coming in next build');
+  }
+}
+
 function renderHiveCoverBanner(hive) {
   var bannerEl = document.getElementById('hive-cover-banner');
   if (!bannerEl || !hive) return;
@@ -4816,6 +4999,9 @@ function renderHiveDetail(){
     <div class="hive-status-chip" onclick="openHiveTypeModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
       ${HIVE_TYPE_ICONS[hive.boxType||'National']||'&#x1F41D;'} ${hive.boxType||'National'}
     </div>
+    <div class="hive-status-chip" onclick="openRoofStyleModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
+      ${({flat:'▬',pointy:'▲',deep:'▮',shallow:'▭'})[hive.roofStyle||'flat']} ${({flat:'Flat',pointy:'Pointy',deep:'Deep',shallow:'Shallow'})[hive.roofStyle||'flat']} roof
+    </div>
     <div class="hive-status-chip" onclick="openHiveComponentsModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
       &#x1F4E6; ${hive.broodBoxes||1} brood · ${hive.supers||0} supers${getHoneyTotal(hive.id) > 0 ? " · 🍯 " + getHoneyTotal(hive.id) + "kg honey" : ""}
     </div>
@@ -4829,6 +5015,7 @@ function renderHiveDetail(){
 
   // Cover banner — own dedicated section at the bottom
   renderHiveCoverBanner(hive);
+  renderHiveStackSection(hive);
 
   // Status section
   const statusEl = document.getElementById('hive-status-section');
@@ -6614,6 +6801,7 @@ function saveNewHive(){
       id:uid(), name:name, row:row, num:rowHives.length+1,
       hiveType:document.getElementById('new-hive-type').value,
       boxType:document.getElementById('new-hive-box').value,
+      roofStyle:(document.getElementById('new-hive-roof') && document.getElementById('new-hive-roof').value) || 'flat',
       established:document.getElementById('new-hive-date').value,
       queenStatus:document.getElementById('new-hive-queen').value,
       queenMarked:false, queenYear:new Date().getFullYear(),
@@ -6623,7 +6811,8 @@ function saveNewHive(){
       mapX:.15+Math.random()*.7, mapY:.05+Math.random()*.85,
       apiaryId:currentApiaryId, isHidden:false,
       active:true, createdAt:Date.now(),
-      listOrder: _maxListOrder + 1
+      listOrder: _maxListOrder + 1,
+      stack: null  // NULL = use brood_boxes+supers fallback rendering
     };
     hives.push(newHive);
     saveHives(hives);
@@ -8052,8 +8241,48 @@ function populateHiveSelector(){
       bannerEl.style.display='none';
     }
   }
+  // Show the stack diagram banner for visual confirmation of what this hive
+  // physically looks like before the keeper opens it. Always shown when a hive
+  // is selected (every hive has at least default config — brood + floor + roof).
+  var stackBannerEl=document.getElementById('inspect-hive-stack-banner');
+  if(stackBannerEl){
+    if(hive){
+      stackBannerEl.innerHTML=''
+        + '<div style="display:flex;align-items:center;gap:14px;">'
+        +   '<div style="width:90px;flex-shrink:0;">' + renderHiveStackSVG(hive, { width: 90 }) + '</div>'
+        +   '<div style="flex:1;min-width:0;">'
+        +     '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Stack</div>'
+        +     '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:2px;">' + describeStack(hive) + '</div>'
+        +     '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + (hive.boxType || 'National') + ' · ' + (hive.roofStyle || 'flat') + ' roof</div>'
+        +   '</div>'
+        + '</div>';
+      stackBannerEl.style.display='block';
+    } else {
+      stackBannerEl.innerHTML='';
+      stackBannerEl.style.display='none';
+    }
+  }
   hiveListOpen=false;
   var list=document.getElementById('inspect-hive-list'); if(list) list.style.display='none';
+}
+
+// Human-readable summary of a hive's stack (e.g. "1 brood + QE + 2 supers").
+// Used as caption alongside the SVG diagram.
+function describeStack(hive) {
+  if (!hive) return '';
+  if (hive.boxType === 'nuc' || hive.hiveType === 'nuc') return 'Nuc';
+  var counts = { brood: 0, super: 0, qe: 0 };
+  if (Array.isArray(hive.stack) && hive.stack.length) {
+    hive.stack.forEach(function(b){ if (counts.hasOwnProperty(b.type)) counts[b.type]++; });
+  } else {
+    counts.brood = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
+    counts.super = Math.max(0, parseInt(hive.supers || 0, 10));
+  }
+  var parts = [];
+  if (counts.brood) parts.push(counts.brood + ' brood');
+  if (counts.qe) parts.push('QE');
+  if (counts.super) parts.push(counts.super + ' super' + (counts.super > 1 ? 's' : ''));
+  return parts.join(' · ');
 }
 function changeInspectHive(hiveId){
   if(!hiveId) return; currentHiveId=hiveId;
@@ -10713,6 +10942,52 @@ function selectHiveType(hiveId, type) {
   saveHives(hives);
   closeModalEl('modal-hive-components');
   showToast('Hive type set to ' + type);
+  renderHiveDetail();
+}
+
+// Roof style picker — reuses the modal-hive-components sheet (single-modal pattern)
+// Styles: flat (standard cedar strip), pointy (gabled/pitched — WBC-style),
+// deep (deep flat roof with extra insulation), shallow (thin flat roof).
+function openRoofStyleModal(hiveId) {
+  var hive = loadHives().find(function(h){ return h.id === hiveId; });
+  if (!hive) return;
+  var current = hive.roofStyle || 'flat';
+  var styles = [
+    { id: 'flat',    label: 'Flat',              icon: '▬', hint: 'Standard cedar strip roof' },
+    { id: 'pointy',  label: 'Pointy (pitched)',  icon: '▲', hint: 'WBC or gabled roof' },
+    { id: 'deep',    label: 'Deep',              icon: '▮', hint: 'Deep flat roof (extra insulation)' },
+    { id: 'shallow', label: 'Shallow',           icon: '▭', hint: 'Thin flat roof' }
+  ];
+  var html = '<div class="modal-handle"></div>'
+    + '<div class="modal-title">Roof style</div>'
+    + '<p style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.5;">Pick the roof type on this hive — shows up on the hive diagram.</p>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">'
+    + styles.map(function(s) {
+        var sel = (s.id === current);
+        return '<div onclick="selectRoofStyle(\'' + hiveId + '\',\'' + s.id + '\')" '
+          + 'style="padding:14px 10px;border-radius:var(--rs);border:2px solid ' + (sel ? 'var(--forest)' : 'var(--wax)') + ';'
+          + 'background:' + (sel ? 'var(--forest)' : 'white') + ';color:' + (sel ? 'white' : 'var(--text)') + ';'
+          + 'cursor:pointer;text-align:center;">'
+          + '<div style="font-size:28px;line-height:1;margin-bottom:6px;">' + s.icon + '</div>'
+          + '<div style="font-size:13px;font-weight:800;font-family:Syne,sans-serif;">' + s.label + '</div>'
+          + '<div style="font-size:10px;opacity:.75;margin-top:2px;">' + s.hint + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>'
+    + '<button onclick="closeModalEl(\'modal-hive-components\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+  var sheet = document.querySelector('#modal-hive-components .modal-sheet');
+  if (sheet) { sheet.innerHTML = html; openModalEl('modal-hive-components'); }
+}
+
+function selectRoofStyle(hiveId, style) {
+  if (['flat','pointy','deep','shallow'].indexOf(style) === -1) return;
+  var hives = loadHives();
+  var hive = hives.find(function(h){ return h.id === hiveId; });
+  if (!hive) return;
+  hive.roofStyle = style;
+  saveHives(hives);
+  closeModalEl('modal-hive-components');
+  showToast('Roof style set to ' + style);
   renderHiveDetail();
 }
 
@@ -14287,7 +14562,9 @@ async function pushHives() {
       cover_photo: h.coverPhoto || null,
       map_lat: h.map_lat || null,
       map_lng: h.map_lng || null,
-      list_order: (typeof h.listOrder === 'number') ? h.listOrder : null
+      list_order: (typeof h.listOrder === 'number') ? h.listOrder : null,
+      roof_style: h.roofStyle || 'flat',
+      stack: h.stack || null
     };
   });
   var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
@@ -14578,6 +14855,8 @@ async function pullFromSupabase() {
           waxMoth: h.wax_moth, temper: h.temper,
           coverPhoto: h.cover_photo || null,
           userId: h.user_id || null,
+          roofStyle: h.roof_style || 'flat',
+          stack: h.stack || null,
           // Prefer Supabase list_order if it's a valid number; otherwise preserve local
           listOrder: (typeof h.list_order === 'number') ? h.list_order : (typeof local.listOrder === 'number' ? local.listOrder : undefined)
         };
@@ -15361,7 +15640,8 @@ async function processInviteToken(token) {
         mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
         isHidden: h.is_hidden, notes: h.notes,
         waxMoth: h.wax_moth, temper: h.temper,
-        coverPhoto: h.cover_photo || null, userId: h.user_id || null
+        coverPhoto: h.cover_photo || null, userId: h.user_id || null,
+        roofStyle: h.roof_style || 'flat', stack: h.stack || null
       };
     })));
   }
