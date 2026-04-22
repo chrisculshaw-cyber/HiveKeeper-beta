@@ -1105,6 +1105,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/openlocationcode/1.0.4/openlocationcode.min.js"></script>
 </head>
 <body>
 <!-- AUTH OVERLAY -->
@@ -1114,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 16:30</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 16:55</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -12540,6 +12541,27 @@ function saveSOSSetup() {
   showToast('Emergency contact saved — ' + name + ' via ' + methods.join(' & '));
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PLUS CODE (Open Location Code) SUPPORT
+// ═══════════════════════════════════════════════════════════════
+// Uses Google's official open-location-code library loaded via CDN
+// (see <script> tag in <head>: openlocationcode.min.js v1.0.4).
+// Exposed as window.OpenLocationCode. We call .encode(lat, lng, 11)
+// for driveway-level ~3m precision. Safety-critical SOS use:
+// reference implementation avoided the risk of custom-maths bugs
+// sending help to wrong coordinates.
+function encodePlusCode(lat, lng, codeLength) {
+  try {
+    if (typeof OpenLocationCode === 'undefined') return null;
+    var la = parseFloat(lat), ln = parseFloat(lng);
+    if (isNaN(la) || isNaN(ln)) return null;
+    return OpenLocationCode.encode(la, ln, codeLength || 11);
+  } catch(e) {
+    console.warn('Plus code encode failed:', e && e.message);
+    return null;
+  }
+}
+
 function triggerSOS() {
   var contact = loadSOSContact();
 
@@ -12555,32 +12577,39 @@ function triggerSOS() {
   var myName = contact.myName || 'Me';
 
   function buildMessage(lat, lng, usedLiveGPS) {
-    // PRIORITY: live GPS is the truth. Apiary is only a fallback description.
-    // When live GPS is available, the apiary name becomes context ("likely near apiary X")
-    // not the primary location.
+    // Priority: live GPS > geocoded apiary coords > nothing.
+    // Apiary NAME is intentionally omitted (22 April per Chris) — the
+    // emergency contact is better served with raw location data than a
+    // beekeeper-facing reference like "Meadowbrook".
     var mapLat = lat || (apiary && apiary.lat ? apiary.lat : null);
     var mapLng = lng || (apiary && apiary.lng ? apiary.lng : null);
     var mapsUrl = mapLat && mapLng
       ? 'https://maps.google.com/maps?daddr=' + mapLat + ',' + mapLng
       : null;
-
-    // Location line depends on whether we have a real GPS fix
-    var locationLine;
-    if (usedLiveGPS) {
-      // Live GPS: show coords directly — apiary name may be misleading if user has moved
-      locationLine = 'Current GPS: ' + mapLat + ', ' + mapLng;
-      if (apiaryName) locationLine += ' (usually at: ' + apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '') + ')';
-    } else {
-      // No GPS: we only know the apiary
-      locationLine = apiaryName ? apiaryName + (apiaryLocation ? ', ' + apiaryLocation : '') : 'Location unavailable — GPS failed';
+    // Plus Code — computed client-side, no API. 11 chars = ~3m accuracy.
+    // Google Maps accepts Plus Codes directly in its search field, so the
+    // contact can just paste it in. Easier to read aloud to 999 than raw
+    // coords (fewer misheard digits). Reference: plus.codes
+    var plusCode = null;
+    if (mapLat && mapLng) {
+      try { plusCode = encodePlusCode(mapLat, mapLng, 11); } catch(e) {}
     }
 
     // Beekeeper's own phone — helps emergency contact call back directly
     var myPhone = localStorage.getItem('hk_user_phone') || '';
-    var msg = '\uD83D\uDEA8 URGENT \u2014 ' + myName + ' needs help!\n\n'
-      + locationLine + '\n';
+    var msg = '\uD83D\uDEA8 URGENT \u2014 ' + myName + ' needs help!\n\n';
+    if (usedLiveGPS) {
+      msg += 'Current GPS: ' + mapLat + ', ' + mapLng + '\n';
+    } else if (mapLat && mapLng) {
+      msg += 'Last-known GPS: ' + mapLat + ', ' + mapLng + ' (live GPS unavailable)\n';
+    } else {
+      msg += 'Location unavailable \u2014 GPS failed\n';
+    }
+    if (plusCode) {
+      msg += 'Plus Code: ' + plusCode + '\n';
+    }
     if (mapsUrl) {
-      msg += '\u27A1\uFE0F Navigate here:\n' + mapsUrl + '\n';
+      msg += '\n\u27A1\uFE0F Navigate here:\n' + mapsUrl + '\n';
     }
     if (myPhone) {
       msg += '\n\u260E\uFE0F Call me back on: ' + myPhone + '\n';
