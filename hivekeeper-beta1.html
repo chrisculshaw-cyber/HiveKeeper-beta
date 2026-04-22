@@ -1115,7 +1115,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 19:40 · Apiary row stack strip</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 20:35 · Consolidated Hive Editor</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1416,12 +1416,15 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
       </div>
     </div>
-    <!-- View mode toggle: Both / List / Map. Persisted in localStorage
-         (hk_apiary_view_mode). Default is 'both' to preserve existing UX. -->
-    <div id="apiary-view-toggle" style="display:flex;gap:4px;padding:8px 12px 6px;justify-content:center;background:white;border-top:1px solid var(--wax);">
-      <button id="view-btn-both" onclick="setApiaryViewMode('both')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:var(--forest);color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">Both</button>
-      <button id="view-btn-list" onclick="setApiaryViewMode('list')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">List</button>
-      <button id="view-btn-map" onclick="setApiaryViewMode('map')" class="view-mode-btn" style="flex:1;max-width:110px;padding:7px 10px;border-radius:20px;border:1.5px solid var(--forest);background:transparent;color:var(--forest);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;">Map</button>
+    <!-- View mode toggle: Map / List / Stacks checkboxes — pick any combination
+         (at least one must stay checked). Persisted in localStorage as JSON.
+         Built 22 April 2026 evening. Old 3-radio-button pattern (both/list/map)
+         retired — checkboxes handle the stack strip + future view types cleanly
+         without a combinatorial menu. -->
+    <div id="apiary-view-toggle" style="display:flex;gap:16px;padding:10px 16px 8px;justify-content:center;align-items:center;background:white;border-top:1px solid var(--wax);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);">
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-map" onchange="toggleApiaryView('map')" style="accent-color:var(--forest);cursor:pointer;">Map</label>
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-list" onchange="toggleApiaryView('list')" style="accent-color:var(--forest);cursor:pointer;">List</label>
+      <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;"><input type="checkbox" id="view-chk-stacks" onchange="toggleApiaryView('stacks')" style="accent-color:var(--forest);cursor:pointer;">Stacks</label>
     </div>
     <!-- Row filter tabs — between canvas and hive list -->
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
@@ -1667,8 +1670,8 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
       <div id="hive-stack-section" style="margin-top:12px;display:none;">
-        <div class="section-head"><div class="section-title">🏠 Hive stack</div><button id="hive-stack-edit-btn" class="section-action" type="button">Edit →</button></div>
-        <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;"></div>
+        <div class="section-head"><div class="section-title">🏠 Hive stack</div></div>
+        <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;cursor:pointer;" onclick="openHiveEditor(currentHiveId)" title="Tap to edit"></div>
       </div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
       <div id="hive-advice-section" style="margin-top:12px;"></div>
@@ -4947,6 +4950,14 @@ function renderApiaryStackStrip(allHivesToShow) {
   var strip = document.getElementById('apiary-stack-strip');
   if (!strip) return;
 
+  // Respect the view-mode checkbox. If Stacks is unchecked, keep it hidden even
+  // though renderApiary calls us. The applyApiaryViewState sets data-view-hidden
+  // when stacks checkbox is off.
+  if (strip.dataset.viewHidden === '1') {
+    strip.style.display = 'none';
+    // Still populate innerHTML so toggling stacks on later shows current state instantly
+  }
+
   // Empty state — hide the strip entirely
   if (!allHivesToShow || !allHivesToShow.length) {
     strip.style.display = 'none';
@@ -5016,10 +5027,14 @@ function renderApiaryStackStrip(allHivesToShow) {
   }).join('');
 
   strip.innerHTML = html;
-  strip.style.display = 'block';
+  // Only show if the view-mode checkbox allows it
+  strip.style.display = (strip.dataset.viewHidden === '1') ? 'none' : 'block';
 }
 
 // Renders the hive stack section on the Hive Detail screen. Hidden if no hive.
+// Tap target is the diagram itself (the panel has onclick=openHiveEditor) so we
+// just populate the SVG and show the section. The old separate "Edit →" button
+// was retired 22 April when chip row was consolidated.
 function renderHiveStackSection(hive) {
   var section = document.getElementById('hive-stack-section');
   var vis = document.getElementById('hive-stack-visual');
@@ -5027,19 +5042,6 @@ function renderHiveStackSection(hive) {
   if (!hive) { section.style.display = 'none'; return; }
   vis.innerHTML = '<div style="width:180px;">' + renderHiveStackSVG(hive, { width: 180 }) + '</div>';
   section.style.display = 'block';
-  // Wire the Edit button programmatically — inline onclick="openStackEditor(currentHiveId)"
-  // was reported as silent on phone (22 April). Using addEventListener with a fresh
-  // clone to prevent duplicate listeners on re-render is more reliable across browsers.
-  var btn = document.getElementById('hive-stack-edit-btn');
-  if (btn) {
-    var fresh = btn.cloneNode(true);
-    btn.parentNode.replaceChild(fresh, btn);
-    fresh.addEventListener('click', function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      openStackEditor(hive.id);
-    });
-  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5214,6 +5216,313 @@ function closeStackEditor() {
   closeModalEl('modal-hive-components');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// CONSOLIDATED HIVE EDITOR (built 22 April evening)
+// ═══════════════════════════════════════════════════════════════
+// One modal that covers everything previously scattered across 6 separate
+// chip → modal flows: name, row, established date, box type, roof style,
+// stack, cover photo, status, hide, delete.
+//
+// Structure: a single scrollable form with clear sections. Draft state held
+// in _hiveEditorDraft until Save (persists everything in one batch) or
+// Cancel (discards). Reuses the modal-hive-components sheet.
+//
+// Live preview SVG of the hive updates as the user changes box type, roof,
+// or stack — gives the keeper instant visual confirmation.
+var _hiveEditorDraft = null;
+var _hiveEditorHiveId = null;
+
+function openHiveEditor(hiveId) {
+  var targetId = hiveId || (typeof currentHiveId !== 'undefined' ? currentHiveId : null);
+  if (!targetId) {
+    if (typeof showToast === 'function') showToast('No hive selected');
+    return;
+  }
+  var hive = loadHives().find(function(h){ return h.id === targetId; });
+  if (!hive) {
+    if (typeof showToast === 'function') showToast('Hive not found');
+    return;
+  }
+
+  _hiveEditorHiveId = targetId;
+  // Snapshot everything we'll edit. Stack uses the same migration-on-first-edit
+  // logic as the standalone editor (synthesise from broodBoxes+supers if null).
+  var stackDraft;
+  if (Array.isArray(hive.stack) && hive.stack.length) {
+    stackDraft = hive.stack.slice().map(function(b){ return { type: b.type }; });
+  } else {
+    stackDraft = [];
+    var bb = Math.max(1, parseInt(hive.broodBoxes || 1, 10));
+    var sp = Math.max(0, parseInt(hive.supers || 0, 10));
+    for (var i = 0; i < bb; i++) stackDraft.push({ type: 'brood' });
+    for (var j = 0; j < sp; j++) stackDraft.push({ type: 'super' });
+  }
+  _hiveEditorDraft = {
+    name: hive.name || '',
+    row: hive.row || '',
+    established: hive.established || '',
+    boxType: hive.boxType || 'national',
+    roofStyle: hive.roofStyle || 'flat',
+    stack: stackDraft,
+    coverPhoto: hive.coverPhoto || null,
+    isHidden: !!hive.isHidden,
+    isNuc: (hive.boxType === 'nuc' || hive.hiveType === 'nuc')
+  };
+
+  renderHiveEditor();
+  openModalEl('modal-hive-components');
+}
+
+function renderHiveEditor() {
+  var hive = loadHives().find(function(h){ return h.id === _hiveEditorHiveId; });
+  if (!hive) return;
+  var d = _hiveEditorDraft;
+
+  // Build live preview from draft — uses renderHiveStackSVG with draft values
+  var previewHive = {
+    stack: d.stack,
+    boxType: d.boxType,
+    roofStyle: d.roofStyle,
+    hiveType: hive.hiveType
+  };
+
+  // Available rows pulled from existing hives + the current row (in case it's already off-list)
+  var allRows = loadHives().map(function(h){ return h.row || ''; }).filter(function(r){ return r !== ''; });
+  var uniqRows = [];
+  allRows.forEach(function(r){ if (uniqRows.indexOf(r) === -1) uniqRows.push(r); });
+  if (d.row && uniqRows.indexOf(d.row) === -1) uniqRows.push(d.row);
+  uniqRows.sort();
+
+  var rowOptionsHtml = '<option value="">No row</option>'
+    + uniqRows.map(function(r){
+        return '<option value="' + escapeAttr(r) + '"' + (r === d.row ? ' selected' : '') + '>' + escapeHtml(r) + '</option>';
+      }).join('');
+
+  var boxTypes = ['national','commercial','wbc','langstroth','smith','top-bar','warre','nuc'];
+  var boxTypeLabels = {national:'National',commercial:'Commercial',wbc:'WBC',langstroth:'Langstroth',smith:'Smith','top-bar':'Top Bar',warre:'Warré',nuc:'Nuc box'};
+  var boxTypeOptionsHtml = boxTypes.map(function(t){
+    return '<option value="' + t + '"' + (t === d.boxType ? ' selected' : '') + '>' + boxTypeLabels[t] + '</option>';
+  }).join('');
+
+  // Stack editor rows — same UI as the standalone editor but inline
+  var stackRowsHtml = '';
+  if (d.isNuc || d.boxType === 'nuc') {
+    stackRowsHtml = '<div style="padding:10px;background:#FFF8E1;border-radius:8px;color:var(--text-m);font-size:12px;text-align:center;">Nucs are a single box — no stack to edit</div>';
+  } else if (d.stack.length === 0) {
+    stackRowsHtml = '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Empty stack. Tap "+ Brood / Super / QE" below to add boxes.</div>';
+  } else {
+    for (var i = d.stack.length - 1; i >= 0; i--) {
+      var box = d.stack[i];
+      var boxLabel, boxColour, boxBg;
+      if (box.type === 'brood') { boxLabel = '🟩 Brood'; boxColour = '#162B1F'; boxBg = '#3A6B4A'; }
+      else if (box.type === 'super') { boxLabel = '🟨 Super'; boxColour = '#4A2E0E'; boxBg = '#F4D03F'; }
+      else if (box.type === 'qe') { boxLabel = '⚙ QE'; boxColour = '#333'; boxBg = '#D8D8D8'; }
+      else { boxLabel = box.type; boxColour = '#555'; boxBg = '#EEE'; }
+      var canUp = (i < d.stack.length - 1);
+      var canDown = (i > 0);
+      stackRowsHtml += '<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;margin-bottom:4px;background:' + boxBg + ';border-radius:6px;border:1px solid rgba(0,0,0,.1);">'
+        +   '<div style="flex:1;font-size:12px;font-weight:700;color:' + boxColour + ';">' + boxLabel + '</div>'
+        +   '<button onclick="hiveEditorStackMove(' + i + ', 1)" ' + (canUp ? '' : 'disabled') + ' style="width:28px;height:28px;border:1px solid rgba(0,0,0,.15);background:white;border-radius:4px;font-size:12px;cursor:pointer;' + (canUp ? '' : 'opacity:.3;cursor:not-allowed;') + '">▲</button>'
+        +   '<button onclick="hiveEditorStackMove(' + i + ', -1)" ' + (canDown ? '' : 'disabled') + ' style="width:28px;height:28px;border:1px solid rgba(0,0,0,.15);background:white;border-radius:4px;font-size:12px;cursor:pointer;' + (canDown ? '' : 'opacity:.3;cursor:not-allowed;') + '">▼</button>'
+        +   '<button onclick="hiveEditorStackRemove(' + i + ')" style="width:28px;height:28px;border:1px solid #C62828;background:#FFEBEE;color:#C62828;border-radius:4px;font-size:12px;cursor:pointer;font-weight:700;">✕</button>'
+        + '</div>';
+    }
+  }
+
+  var photoHtml;
+  if (d.coverPhoto) {
+    var clean = d.coverPhoto.split('?')[0];
+    photoHtml = '<div style="display:flex;align-items:center;gap:10px;">'
+      + '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:#e0e0e0;flex-shrink:0;"><img src="' + clean + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+      + '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">'
+      +   '<button onclick="hiveEditorChangePhoto()" style="padding:8px 12px;background:var(--forest);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">Change photo</button>'
+      +   '<button onclick="hiveEditorRemovePhoto()" style="padding:8px 12px;background:white;color:#B83228;border:1px solid #B83228;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">Remove photo</button>'
+      + '</div></div>';
+  } else {
+    photoHtml = '<button onclick="hiveEditorChangePhoto()" style="padding:10px 14px;background:var(--forest);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;width:100%;">+ Add cover photo</button>';
+  }
+
+  var sectionHead = function(label){
+    return '<div style="font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 8px;border-bottom:1px solid var(--wax);padding-bottom:6px;">' + label + '</div>';
+  };
+
+  var html = '<div class="modal-handle"></div>'
+    + '<div class="modal-title">Edit hive</div>'
+
+    // Live preview at top
+    + '<div style="display:flex;justify-content:center;background:var(--cream);border:1px solid var(--wax);border-radius:8px;padding:10px;margin-bottom:6px;">'
+    +   '<div style="width:140px;">' + renderHiveStackSVG(previewHive, { width: 140 }) + '</div>'
+    + '</div>'
+
+    // Identity
+    + sectionHead('Identity')
+    + '<div style="display:flex;flex-direction:column;gap:8px;">'
+    +   '<input type="text" id="he-name" value="' + escapeAttr(d.name) + '" oninput="_hiveEditorDraft.name=this.value" placeholder="Hive name" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    +   '<select id="he-row" onchange="_hiveEditorDraft.row=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + rowOptionsHtml + '</select>'
+    +   '<input type="date" id="he-est" value="' + escapeAttr(d.established) + '" oninput="_hiveEditorDraft.established=this.value" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">'
+    + '</div>'
+
+    // Physical
+    + sectionHead('Physical')
+    + '<div style="display:flex;flex-direction:column;gap:8px;">'
+    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;">Box type</label>'
+    +   '<select id="he-box" onchange="hiveEditorChangeBoxType(this.value)" style="width:100%;padding:10px;border:1px solid var(--wax);border-radius:6px;font-size:13px;font-family:inherit;box-sizing:border-box;">' + boxTypeOptionsHtml + '</select>'
+    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;margin-top:6px;">Roof style</label>'
+    +   '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;">'
+    +     ['flat','pointy','deep','shallow'].map(function(s){
+            var sel = (s === d.roofStyle);
+            var icon = ({flat:'▬',pointy:'▲',deep:'▮',shallow:'▭'})[s];
+            var label = ({flat:'Flat',pointy:'Pointy',deep:'Deep',shallow:'Shallow'})[s];
+            return '<button onclick="hiveEditorSetRoof(\'' + s + '\')" style="padding:8px 4px;border:2px solid ' + (sel ? 'var(--forest)' : 'var(--wax)') + ';background:' + (sel ? 'var(--forest)' : 'white') + ';color:' + (sel ? 'white' : 'var(--text)') + ';border-radius:6px;font-size:11px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;"><div style="font-size:18px;">' + icon + '</div>' + label + '</button>';
+          }).join('')
+    +   '</div>'
+    +   '<label style="font-size:11px;color:var(--text-l);font-weight:700;margin-top:10px;">Stack (bottom to top, top of list = top of hive)</label>'
+    +   '<div style="max-height:200px;overflow-y:auto;border:1px solid var(--wax);border-radius:6px;padding:6px;background:var(--cream);">' + stackRowsHtml + '</div>'
+    +   (d.isNuc || d.boxType === 'nuc' ? '' :
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">'
+        +   '<button onclick="hiveEditorStackAdd(\'brood\')" style="padding:10px 4px;background:#3A6B4A;border:none;border-radius:6px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
+        +   '<button onclick="hiveEditorStackAdd(\'super\')" style="padding:10px 4px;background:#F4D03F;border:none;border-radius:6px;color:#4A2E0E;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
+        +   '<button onclick="hiveEditorStackAdd(\'qe\')" style="padding:10px 4px;background:#D8D8D8;border:1px solid #999;border-radius:6px;color:#333;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
+        + '</div>')
+    + '</div>'
+
+    // Cover photo
+    + sectionHead('Cover photo')
+    + photoHtml
+
+    // Visibility
+    + sectionHead('Visibility')
+    + '<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;user-select:none;"><input type="checkbox" id="he-hidden" ' + (d.isHidden ? 'checked' : '') + ' onchange="_hiveEditorDraft.isHidden=this.checked" style="accent-color:var(--forest);">Hide this hive from the active view (data preserved, doesn\'t count toward limit)</label>'
+
+    // Danger zone
+    + sectionHead('Danger zone')
+    + '<button onclick="hiveEditorDelete()" style="width:100%;padding:10px;background:#FFF0EE;color:#B83228;border:1px solid #B83228;border-radius:6px;font-size:13px;font-weight:800;font-family:Syne,sans-serif;cursor:pointer;">🗑 Delete hive permanently</button>'
+
+    // Save / Cancel — sticky at bottom
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px;">'
+    +   '<button onclick="closeHiveEditor()" style="background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>'
+    +   '<button onclick="saveHiveEditor()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;">Save changes ✓</button>'
+    + '</div>';
+
+  var sheet = document.querySelector('#modal-hive-components .modal-sheet');
+  if (sheet) sheet.innerHTML = html;
+}
+
+// Stack manipulation inside the consolidated editor (mirrors the standalone editor)
+function hiveEditorStackAdd(type) {
+  if (['brood','super','qe'].indexOf(type) === -1) return;
+  _hiveEditorDraft.stack.push({ type: type });
+  renderHiveEditor();
+}
+function hiveEditorStackRemove(index) {
+  if (index < 0 || index >= _hiveEditorDraft.stack.length) return;
+  var box = _hiveEditorDraft.stack[index];
+  if (box.type === 'brood' && _hiveEditorDraft.stack.filter(function(b){return b.type==='brood';}).length === 1) {
+    if (!confirm('Remove the last brood box?')) return;
+  }
+  _hiveEditorDraft.stack.splice(index, 1);
+  renderHiveEditor();
+}
+function hiveEditorStackMove(index, direction) {
+  var ni = index + direction;
+  if (ni < 0 || ni >= _hiveEditorDraft.stack.length) return;
+  var tmp = _hiveEditorDraft.stack[index];
+  _hiveEditorDraft.stack[index] = _hiveEditorDraft.stack[ni];
+  _hiveEditorDraft.stack[ni] = tmp;
+  renderHiveEditor();
+}
+function hiveEditorSetRoof(style) {
+  if (['flat','pointy','deep','shallow'].indexOf(style) === -1) return;
+  _hiveEditorDraft.roofStyle = style;
+  renderHiveEditor();
+}
+function hiveEditorChangeBoxType(type) {
+  _hiveEditorDraft.boxType = type;
+  // If switching to nuc, the stack editor should reflect that (stack hidden)
+  _hiveEditorDraft.isNuc = (type === 'nuc');
+  renderHiveEditor();
+}
+
+// Photo handlers — defer to existing cover photo flow if present, otherwise no-op
+function hiveEditorChangePhoto() {
+  // Trigger native file picker. Reuses the same approach as existing cover photo upload.
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      _hiveEditorDraft.coverPhoto = ev.target.result;
+      renderHiveEditor();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+function hiveEditorRemovePhoto() {
+  _hiveEditorDraft.coverPhoto = null;
+  renderHiveEditor();
+}
+
+function hiveEditorDelete() {
+  if (!confirm('Permanently delete this hive? All inspection records for this hive will also be removed. This cannot be undone.')) return;
+  closeHiveEditor();
+  if (typeof confirmDeleteHive === 'function') {
+    // Use the existing delete flow — it has its own confirm but we already confirmed,
+    // so jump straight to the actual deletion if a direct function exists.
+    // Falling back to confirmDeleteHive (which re-confirms) is acceptable.
+    confirmDeleteHive(_hiveEditorHiveId);
+  }
+}
+
+function saveHiveEditor() {
+  if (!_hiveEditorHiveId || !_hiveEditorDraft) return;
+  var hives = loadHives();
+  var hive = hives.find(function(h){ return h.id === _hiveEditorHiveId; });
+  if (!hive) { closeHiveEditor(); return; }
+  var d = _hiveEditorDraft;
+
+  hive.name = (d.name || '').trim() || hive.name;
+  hive.row = d.row || '';
+  hive.established = d.established || hive.established;
+  hive.boxType = d.boxType || hive.boxType;
+  hive.roofStyle = d.roofStyle || 'flat';
+  // Persist stack only if it has content; otherwise null (which uses fallback rendering)
+  hive.stack = (Array.isArray(d.stack) && d.stack.length) ? d.stack.slice().map(function(b){return{type:b.type};}) : null;
+  // Keep counts in sync for backward compat
+  if (hive.stack) {
+    hive.broodBoxes = hive.stack.filter(function(b){return b.type==='brood';}).length;
+    hive.supers = hive.stack.filter(function(b){return b.type==='super';}).length;
+  }
+  hive.coverPhoto = d.coverPhoto || null;
+  hive.isHidden = !!d.isHidden;
+
+  saveHives(hives);
+  closeHiveEditor();
+  if (typeof showToast === 'function') showToast('Hive updated ✓');
+  // Re-render dependent screens
+  try { if (typeof renderHiveDetail === 'function') renderHiveDetail(); } catch(e) {}
+  try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
+  try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
+}
+
+function closeHiveEditor() {
+  _hiveEditorDraft = null;
+  _hiveEditorHiveId = null;
+  closeModalEl('modal-hive-components');
+}
+
+// Helper for safe HTML insertion. Reused across the editor.
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; });
+}
+function escapeAttr(s) {
+  return escapeHtml(s);
+}
+
 function renderHiveCoverBanner(hive) {
   var bannerEl = document.getElementById('hive-cover-banner');
   if (!bannerEl || !hive) return;
@@ -5252,31 +5561,26 @@ function renderHiveDetail(){
 
   const badge = getBadge(hive);
   var statusColour = hive.status==='active'?'var(--green)':hive.status==='dead'?'#9E9E9E':'#1565C0';
+  // Chips row — consolidated 22 April. Previously had 9+ separate chips each
+  // opening a different modal. Now: one primary "Edit hive" button that opens a
+  // unified modal covering name/row/box type/roof/stack/photo/status, plus a
+  // handful of preserved quick-tap chips (status change, warnings, honey total,
+  // delete). Removed: Rename chip, Row chip, Box type chip, Roof style chip,
+  // Brood/supers pill (stack diagram shows this), Hide chip (moved into Edit
+  // modal danger zone).
+  var honeyTotal = getHoneyTotal(hive.id);
   document.getElementById('hive-detail-chips').innerHTML = `
     <div class="chip">${badge.text}</div>
-    <div class="chip" onclick="openRenameCurrentHive()" style="cursor:pointer;">✏️ Rename</div>
-    <div class="chip" onclick="changeHiveRow('${hive.id}')" style="cursor:pointer;border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.9);">&#x1F5C2; ${hive.row || 'Set row'}</div>
-    ${hive.storesLevel ? `<div class="chip">&#x1F36F; Stores: ${hive.storesLevel}</div>` : ''}
-    ${hive.waxMoth ? '<div class="chip">&#x1F98B; Wax moth present</div>' : ''}
-    ${hive.wild ? '<div class="chip">&#x1F33F; Wild comb</div>' : ''}
+    <div class="hive-status-chip" onclick="openHiveEditor('${hive.id}')" style="color:white;border-color:var(--honey);background:var(--honey);font-weight:800;cursor:pointer;">
+      &#x270F;&#xFE0F; Edit hive
+    </div>
     <div class="hive-status-chip" onclick="openHiveStatusModal('${hive.id}')" style="color:${statusColour};border-color:${statusColour};background:white;">
       &#x270F;&#xFE0F; Change status
     </div>
-    <div class="hive-status-chip" onclick="openHiveTypeModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
-      ${HIVE_TYPE_ICONS[hive.boxType||'National']||'&#x1F41D;'} ${hive.boxType||'National'}
-    </div>
-    <div class="hive-status-chip" onclick="openRoofStyleModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
-      ${({flat:'▬',pointy:'▲',deep:'▮',shallow:'▭'})[hive.roofStyle||'flat']} ${({flat:'Flat',pointy:'Pointy',deep:'Deep',shallow:'Shallow'})[hive.roofStyle||'flat']} roof
-    </div>
-    <div class="hive-status-chip" onclick="openHiveComponentsModal('${hive.id}')" style="color:var(--text-m);border-color:var(--wax);background:white;">
-      &#x1F4E6; ${hive.broodBoxes||1} brood · ${hive.supers||0} supers${getHoneyTotal(hive.id) > 0 ? " · 🍯 " + getHoneyTotal(hive.id) + "kg honey" : ""}
-    </div>
-    <div class="hive-status-chip" style="color:var(--text-m);border-color:var(--wax);cursor:pointer;background:white;" onclick="hideHive('${hive.id}')">
-      👁 Hide
-    </div>
-    <div class="hive-status-chip" onclick="confirmDeleteHive('${hive.id}')" style="color:#B83228;border-color:#B83228;background:#FFF0EE;font-weight:800;">
-      &#x1F5D1; Delete hive
-    </div>
+    ${hive.storesLevel ? `<div class="chip">&#x1F36F; Stores: ${hive.storesLevel}</div>` : ''}
+    ${hive.waxMoth ? '<div class="chip">&#x1F98B; Wax moth present</div>' : ''}
+    ${hive.wild ? '<div class="chip">&#x1F33F; Wild comb</div>' : ''}
+    ${honeyTotal > 0 ? `<div class="hive-status-chip" style="color:var(--text-m);border-color:var(--wax);background:white;">&#x1F36F; ${honeyTotal}kg honey</div>` : ''}
   `;
 
   // Cover banner — own dedicated section at the bottom
@@ -11969,58 +12273,134 @@ function switchApiary(id) {
 // User preference stored in localStorage; applied on every s-apiary entry
 // and whenever the user taps a toggle button. Valid values: 'both', 'list', 'map'.
 var APIARY_VIEW_MODE_KEY = 'hk_apiary_view_mode';
+// New multi-view state key — stores {map:bool, list:bool, stacks:bool}.
+// We migrate from the old single-value 'hk_apiary_view_mode' on first read.
+var APIARY_VIEW_STATE_KEY = 'hk_apiary_view_state';
 
-function getApiaryViewMode() {
+function getApiaryViewState() {
   try {
-    var v = localStorage.getItem(APIARY_VIEW_MODE_KEY);
-    if (v === 'list' || v === 'map' || v === 'both') return v;
+    var raw = localStorage.getItem(APIARY_VIEW_STATE_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        // Guarantee at least one view on — if all false somehow, force list on
+        if (!parsed.map && !parsed.list && !parsed.stacks) parsed.list = true;
+        return {
+          map: !!parsed.map,
+          list: !!parsed.list,
+          stacks: !!parsed.stacks
+        };
+      }
+    }
+    // Migrate old 'both'/'list'/'map' format
+    var legacy = localStorage.getItem(APIARY_VIEW_MODE_KEY);
+    if (legacy === 'list') return { map: false, list: true, stacks: false };
+    if (legacy === 'map')  return { map: true, list: false, stacks: false };
   } catch(e) {}
-  return 'both';
+  // Default: map + list, stacks off (matches prior 'both' UX, stacks is a new opt-in)
+  return { map: true, list: true, stacks: false };
 }
 
-function setApiaryViewMode(mode) {
-  if (mode !== 'list' && mode !== 'map' && mode !== 'both') mode = 'both';
-  try { localStorage.setItem(APIARY_VIEW_MODE_KEY, mode); } catch(e) {}
-  applyApiaryViewMode(mode);
+function saveApiaryViewState(state) {
+  try { localStorage.setItem(APIARY_VIEW_STATE_KEY, JSON.stringify(state)); } catch(e) {}
 }
 
-function applyApiaryViewMode(mode) {
-  if (!mode) mode = getApiaryViewMode();
+// Toggle a single view on/off. Enforces "at least one must stay checked" — if
+// user tries to uncheck the last one, we gracefully re-check the checkbox.
+function toggleApiaryView(which) {
+  var state = getApiaryViewState();
+  state[which] = !state[which];
+  // Prevent all-off — revert if so
+  if (!state.map && !state.list && !state.stacks) {
+    state[which] = true;
+    // Also visually restore the checkbox (prevents it showing unchecked for a frame)
+    var chk = document.getElementById('view-chk-' + which);
+    if (chk) chk.checked = true;
+    if (typeof showToast === 'function') showToast('At least one view must be selected');
+    return;
+  }
+  saveApiaryViewState(state);
+  applyApiaryViewState(state);
+}
+
+// Apply the state to the DOM — show/hide map, list, stack strip, row tabs, alerts
+function applyApiaryViewState(state) {
+  if (!state) state = getApiaryViewState();
   var mapWrap = document.querySelector('#s-apiary .map-canvas-wrap');
   var hiveList = document.getElementById('hive-list-container');
   var rowTabsContainer = document.getElementById('row-tabs');
   var rowTabsParent = rowTabsContainer ? rowTabsContainer.parentElement : null;
   var alerts = document.getElementById('apiary-alerts-container');
+  var stackStrip = document.getElementById('apiary-stack-strip');
 
   // Show/hide map
-  if (mapWrap) mapWrap.style.display = (mode === 'list') ? 'none' : '';
-  // Show/hide list + row tabs + alerts (list-related items move together)
-  var listDisplay = (mode === 'map') ? 'none' : '';
-  if (hiveList) hiveList.style.display = listDisplay;
-  if (rowTabsParent) rowTabsParent.style.display = listDisplay;
-  if (alerts) alerts.style.display = listDisplay;
+  if (mapWrap) mapWrap.style.display = state.map ? '' : 'none';
 
-  // When switching INTO a mode that shows the map, Leaflet needs invalidateSize
-  // because the container width may have changed since last paint.
-  if (mode !== 'list') {
-    setTimeout(function(){
-      try { if (_leafletMap) _leafletMap.invalidateSize(); } catch(e) {}
-    }, 50);
+  // Row tabs + list + alerts show when either list OR stacks is on — the tabs
+  // control both filters so they're shared chrome
+  var chromeOn = (state.list || state.stacks);
+  if (rowTabsParent) rowTabsParent.style.display = chromeOn ? '' : 'none';
+  if (hiveList)    hiveList.style.display  = state.list ? '' : 'none';
+  if (alerts)      alerts.style.display    = state.list ? '' : 'none';
+
+  // Stack strip visibility is driven by state AND renderApiaryStackStrip (which
+  // hides itself when no hives). We toggle a CSS class to force-hide from here.
+  if (stackStrip) {
+    if (state.stacks) {
+      // Let renderApiaryStackStrip decide between block and none based on content
+      // (it runs from renderApiary). Just remove our force-hide flag.
+      stackStrip.dataset.viewHidden = '';
+      // If the strip was previously populated, show it now. Otherwise renderApiary
+      // will fill it on next render.
+      if (stackStrip.innerHTML.trim()) stackStrip.style.display = 'block';
+    } else {
+      stackStrip.dataset.viewHidden = '1';
+      stackStrip.style.display = 'none';
+    }
   }
 
-  // Visual state of the three toggle buttons
-  var btns = { both: 'view-btn-both', list: 'view-btn-list', map: 'view-btn-map' };
-  Object.keys(btns).forEach(function(key){
-    var el = document.getElementById(btns[key]);
-    if (!el) return;
-    if (key === mode) {
-      el.style.background = 'var(--forest)';
-      el.style.color = 'white';
-    } else {
-      el.style.background = 'transparent';
-      el.style.color = 'var(--forest)';
-    }
-  });
+  // When switching INTO a mode that shows the map, Leaflet needs invalidateSize
+  if (state.map) {
+    setTimeout(function(){ try { if (_leafletMap) _leafletMap.invalidateSize(); } catch(e) {} }, 50);
+  }
+
+  // Sync checkbox UI with state
+  var chkMap = document.getElementById('view-chk-map');
+  var chkList = document.getElementById('view-chk-list');
+  var chkStacks = document.getElementById('view-chk-stacks');
+  if (chkMap)    chkMap.checked = !!state.map;
+  if (chkList)   chkList.checked = !!state.list;
+  if (chkStacks) chkStacks.checked = !!state.stacks;
+}
+
+// Legacy shim — some earlier call sites might still invoke setApiaryViewMode('both'/'list'/'map').
+// Translate into the new state object so nothing breaks.
+function setApiaryViewMode(mode) {
+  var state;
+  if (mode === 'list')      state = { map: false, list: true, stacks: false };
+  else if (mode === 'map')  state = { map: true, list: false, stacks: false };
+  else                      state = { map: true, list: true, stacks: false };
+  saveApiaryViewState(state);
+  applyApiaryViewState(state);
+}
+
+// Legacy getter shim — returns a 3-mode string approximation of the new state.
+// Only used by code that hasn't been migrated yet; prefer getApiaryViewState directly.
+function getApiaryViewMode() {
+  var s = getApiaryViewState();
+  if (s.map && s.list) return 'both';
+  if (s.map && !s.list) return 'map';
+  if (s.list && !s.map) return 'list';
+  return 'both';
+}
+
+// Replacement for the old applyApiaryViewMode — delegates to state-based implementation.
+function applyApiaryViewMode(mode) {
+  if (mode === 'list' || mode === 'map' || mode === 'both') {
+    setApiaryViewMode(mode);
+  } else {
+    applyApiaryViewState();
+  }
 }
 
 function initCurrentApiary() {
