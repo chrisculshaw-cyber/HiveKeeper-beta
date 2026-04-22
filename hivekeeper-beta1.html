@@ -1114,7 +1114,7 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:35</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 22 April 2026 at 12:52</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -1331,15 +1331,16 @@ body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
         </div>
       </div>
     </div>
-    <!-- REPORTS QUICK ACCESS ICON -->
-    <div style="display:flex;justify-content:center;margin:14px 0 4px;">
-      <button onclick="openReportsModal()" style="background:transparent;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 16px;" aria-label="Open reports">
-        <div style="width:48px;height:48px;background:var(--honey-pale);border:1px solid var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:var(--shadow);">📊</div>
-        <div style="font-size:11px;font-weight:700;color:var(--text);font-family:'Syne',sans-serif;">Reports</div>
-      </button>
-    </div>
     <div class="section-head" style="margin-top:4px;"><div class="section-title">Active hives</div><button class="section-action" onclick="goTo('s-apiary')">Map →</button></div>
     <div class="hive-scroll" id="dash-hives"></div>
+    <div class="section-head" style="margin-top:14px;"><div class="section-title">Reports</div></div>
+    <div class="hive-scroll" style="grid-template-columns:repeat(2,1fr);">
+      <div class="hive-mini" onclick="openReportsModal()">
+        <div style="font-size:24px;margin-bottom:6px;">📊</div>
+        <div class="hive-mini-name">Session report</div>
+        <div class="hive-mini-meta">Inspection notes, photos, weather</div>
+      </div>
+    </div>
     <div style="height:20px;"></div>
   </div>
 </div>
