@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 10:30 · Dave bug fixes (edit-inspection flow)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 11:45 · Record diagnostics + recording-in-progress guards</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6016,6 +6016,8 @@ function startFreshInspection(){
 }
 
 function renderInspectHeader(){
+  console.log('[DIAG inspect] renderInspectHeader CALLED · recording=', recording, '· _editingInspId=', window._editingInspId);
+  console.trace('[DIAG inspect] renderInspectHeader trace');
   // Update the online/offline status pill every time the Inspect screen renders.
   try { updateInspectConnPill(); } catch(e) {}
   // Refresh the apiary name display — ensures label updates if user switched apiary from elsewhere.
@@ -6075,6 +6077,17 @@ function renderInspectHeader(){
       _nt._dirtyBound = true;
     }
   } catch(e) { console.warn('dirty-bind error', e); }
+  // GUARD: if a recording is in progress, SKIP the reset block. A re-render
+  // mid-recording (triggered by e.g. post-save navigation, screen refresh,
+  // or some cascaded call) would kill the MediaRecorder and wipe the button
+  // state — user taps record, studio mic icon appears mid-recording,
+  // everything breaks. Added 23 April 2026 after Chris reported exactly
+  // this pattern. If recording=true, we preserve button text, recording
+  // flag, timer state and let the recording continue.
+  if (recording) {
+    console.log('[DIAG inspect] renderInspectHeader called DURING recording — skipping reset block to preserve in-flight recording');
+    return;
+  }
   document.getElementById('transcript-box').style.display='none';
   document.getElementById('extracted-section').style.display='none';
   document.getElementById('inspect-notes').value='';
@@ -6126,6 +6139,7 @@ function renderInspectHeader(){
 // the old one mid-teardown. One guard covers both gates.
 var _recBusy = false;
 function toggleRecord(){
+  console.log('[DIAG rec] toggleRecord ENTRY · recording=', recording, '· _recBusy=', _recBusy, '· btn.disabled=', (document.getElementById('rec-btn')||{}).disabled);
   var _rb = document.getElementById('rec-btn');
   // If the button is visibly disabled, drop the tap — the disable state is
   // our primary interlock. Also check the _recBusy fallback for paths that
@@ -6159,8 +6173,8 @@ function toggleRecord(){
     }
   }, 8000);
   try {
-    if (recording) stopRecording();
-    else startRecording();
+    if (recording) { console.log('[DIAG rec] → stopRecording()'); stopRecording(); }
+    else { console.log('[DIAG rec] → startRecording()'); startRecording(); }
   } catch(e) {
     console.error('[rec] toggle error:', e);
     // Something synchronous threw — release the guard so the button works again
@@ -6313,6 +6327,7 @@ function startRecording(){
   document.getElementById('voice-status').textContent = 'Requesting microphone access…';
 
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    console.log('[DIAG rec] getUserMedia RESOLVED · stream tracks=', stream.getTracks().length, '· currentHiveId=', currentHiveId);
     // Mic permission granted — NOW we can actually start recording
     try {
       mediaRecorder = new MediaRecorder(stream);
@@ -6335,6 +6350,7 @@ function startRecording(){
 
       // Mic is live — now flip UI to "recording" state
       recording = true;
+      console.log('[DIAG rec] recording=true · btn about to become ⏹️');
       _recordingWasInterrupted = false; // fresh recording, reset interruption flag
       acquireWakeLock(); // Keep screen on — prevents phone auto-lock cutting off audio
       var _rb = document.getElementById('rec-btn');
@@ -9108,7 +9124,17 @@ function formatRun(type, count, typeLabel) {
   return count + ' ' + label + 's';
 }
 function changeInspectHive(hiveId){
-  if(!hiveId) return; currentHiveId=hiveId;
+  console.log('[DIAG inspect] changeInspectHive CALLED · hiveId=', hiveId, '· recording=', recording, '· _editingInspId=', window._editingInspId);
+  console.trace('[DIAG inspect] changeInspectHive trace');
+  if(!hiveId) return;
+  // GUARD: never switch hive mid-recording. If the user is actively recording
+  // and something triggers a hive change (shouldn't happen via UI but could
+  // via cascade), refuse — the recording in progress is for the current hive.
+  if (recording) {
+    console.warn('[DIAG inspect] changeInspectHive refused — recording in progress (hiveId=' + hiveId + ', currentHiveId=' + currentHiveId + ')');
+    return;
+  }
+  currentHiveId=hiveId;
   currentInspData={};
   var _panel=document.getElementById('inspect-history-panel'); if(_panel) _panel.style.display='none';
   var _notesEl=document.getElementById('inspect-last-notes'); if(_notesEl) _notesEl.style.maxHeight='0';
