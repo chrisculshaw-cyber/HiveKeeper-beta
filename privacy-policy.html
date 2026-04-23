@@ -272,7 +272,7 @@
       <li><a href="#security">Security</a></li>
       <li><a href="#children">Age restrictions</a></li>
       <li><a href="#marketing">Marketing communications</a></li>
-      <li><a href="#cookies">Cookies and tracking</a></li>
+      <li><a href="#cookies">Cookies, analytics, and advertising</a></li>
       <li><a href="#changes">Changes to this policy</a></li>
       <li><a href="#contact">Contact us</a></li>
     </ol>
@@ -318,6 +318,9 @@
     <h3>Payment data</h3>
     <p>If you subscribe to a paid plan, payment is handled entirely by our payment processor, Stripe. We do not see or store your full card details &mdash; we only receive a subscription identifier and billing status.</p>
 
+    <h3>Referral scheme data</h3>
+    <p>If you use the HiveKeeper referral scheme, each account is assigned a unique referral code. When someone signs up using your code, we link the two accounts by internal ID only. <strong>Email addresses and personal details are never shared between referrer and referee.</strong> Referral records are deleted if either account is deleted.</p>
+
     <h3>Technical data</h3>
     <p>When you use the app, we automatically receive basic technical information including your IP address, device type, browser, and app version. This is used to help the app function and to diagnose issues.</p>
   </section>
@@ -349,6 +352,8 @@
         <tr><td>Payment processing</td><td>Contract (Article 6(1)(b))</td></tr>
         <tr><td>Transactional emails (essential)</td><td>Contract (Article 6(1)(b))</td></tr>
         <tr><td>Marketing emails</td><td>Consent (Article 6(1)(a)) &mdash; opt-in required</td></tr>
+        <tr><td>Referral scheme</td><td>Contract (Article 6(1)(b)) &mdash; part of the scheme you opt into</td></tr>
+        <tr><td>First-party analytics and in-app advertising</td><td>Legitimate interest (Article 6(1)(f)) &mdash; product improvement and sustainability. No personal content analysed.</td></tr>
         <tr><td>Service improvement and security</td><td>Legitimate interest (Article 6(1)(f))</td></tr>
         <tr><td>Legal and tax record keeping</td><td>Legal obligation (Article 6(1)(c))</td></tr>
       </tbody>
@@ -363,13 +368,18 @@
         <tr><th>Provider</th><th>Purpose</th><th>Location</th></tr>
       </thead>
       <tbody>
-        <tr><td><strong>Supabase</strong></td><td>Database and user authentication</td><td>EU (London, UK)</td></tr>
-        <tr><td><strong>Cloudflare</strong></td><td>Worker functions, content delivery, security</td><td>Global edge</td></tr>
-        <tr><td><strong>OpenAI</strong></td><td>Voice transcription (Whisper)</td><td>United States</td></tr>
-        <tr><td><strong>Anthropic</strong></td><td>AI chat and frame photo analysis (Claude)</td><td>United States</td></tr>
-        <tr><td><strong>Stripe</strong></td><td>Payment processing</td><td>United Kingdom / Ireland</td></tr>
+        <tr><td><strong>Supabase</strong></td><td>Database, authentication, file storage</td><td>AWS eu-west-2 (London, UK)</td></tr>
+        <tr><td><strong>Cloudflare</strong></td><td>Worker functions, API proxy, content delivery, security</td><td>Global edge (UK/EU primary)</td></tr>
+        <tr><td><strong>GitHub Pages</strong></td><td>Static web hosting for marketing pages &mdash; no user data</td><td>Global CDN</td></tr>
+        <tr><td><strong>OpenAI</strong></td><td>Voice transcription (Whisper) &mdash; processed in real time via paid API, not retained</td><td>United States</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td>AI chat and frame photo analysis (Claude) &mdash; processed in real time via paid API, not retained</td><td>United States</td></tr>
+        <tr><td><strong>Stripe</strong></td><td>Payment processing and subscriptions</td><td>United Kingdom / Ireland</td></tr>
         <tr><td><strong>Resend</strong></td><td>Transactional and marketing email delivery</td><td>United States</td></tr>
-        <tr><td><strong>Median</strong></td><td>Mobile app wrapper (Android)</td><td>United States</td></tr>
+        <tr><td><strong>Median</strong></td><td>Native mobile app wrapper (Android / iOS) &mdash; no user data stored</td><td>United States</td></tr>
+        <tr><td><strong>Open-Meteo</strong></td><td>Live weather for your apiaries &mdash; GPS coordinates only, no personal data</td><td>Germany / EU</td></tr>
+        <tr><td><strong>postcodes.io / Nominatim</strong></td><td>Geocoding of apiary locations &mdash; postcodes/town names only</td><td>UK / EU (open-source)</td></tr>
+        <tr><td><strong>Leaflet.js / ESRI / OpenStreetMap</strong></td><td>Satellite map tiles &mdash; no personal data transmitted</td><td>Global CDN</td></tr>
+        <tr><td><strong>Google Charts API</strong></td><td>QR code generation for hive labels &mdash; hive identifiers only, no personal data</td><td>Google global CDN</td></tr>
       </tbody>
     </table>
     <p>These providers are contractually bound to process your data only on our instructions and to maintain appropriate security measures.</p>
@@ -378,7 +388,7 @@
   <section class="clause" id="international">
     <h2>6. International data transfers</h2>
     <p>Some of our subprocessors are based outside the UK and European Economic Area (EEA). Where data is transferred outside the UK/EEA, we rely on appropriate safeguards as required by UK GDPR, including the UK's International Data Transfer Agreement (IDTA), the EU Standard Contractual Clauses (SCCs) with the UK addendum, or adequacy decisions where applicable.</p>
-    <p>Your primary beekeeping data is stored on Supabase servers in West London (UK).</p>
+    <p>Your primary beekeeping data is stored on Supabase (AWS eu-west-2, London, UK).</p>
   </section>
 
   <section class="clause" id="retention">
@@ -453,13 +463,35 @@
   </section>
 
   <section class="clause" id="cookies">
-    <h2>12. Cookies and tracking</h2>
+    <h2>12. Cookies, analytics, and advertising</h2>
+
+    <h3>Cookies and local storage</h3>
     <p>HiveKeeper uses a small number of cookies and similar technologies, all for essential functionality:</p>
     <ul>
       <li><strong>Authentication cookies</strong> &mdash; to keep you signed in</li>
       <li><strong>Preference storage</strong> (local storage and session storage) &mdash; to remember your settings, current apiary, and cached data for offline use</li>
     </ul>
-    <p>We do not use advertising cookies. We do not use third-party analytics cookies. We do not share browsing data with advertising networks.</p>
+    <p>We do <strong>not</strong> use advertising cookies, tracking pixels, or third-party analytics services such as Google Analytics, Hotjar, Mixpanel, or Segment. We do <strong>not</strong> share browsing data with advertising networks.</p>
+
+    <h3>First-party analytics</h3>
+    <p>We operate our own privacy-first analytics built on Supabase. We record non-personal usage signals to help us understand how HiveKeeper is used and to improve features. No third parties are involved.</p>
+    <p><strong>What we record:</strong></p>
+    <ul>
+      <li>Screen views &mdash; which screens you visit within the app</li>
+      <li>Feature usage &mdash; events such as inspections saved, photos uploaded, reports viewed</li>
+      <li>Paywall interactions &mdash; when you encounter a plan limit (to help us calibrate limits fairly)</li>
+      <li>Onboarding completion &mdash; whether setup finished successfully</li>
+    </ul>
+    <p><strong>What we never record in analytics:</strong></p>
+    <ul>
+      <li>The content of your inspection notes or transcripts</li>
+      <li>Photos, audio, or any media</li>
+      <li>Your location beyond the apiary postcode you choose to enter</li>
+      <li>Any data from outside HiveKeeper</li>
+    </ul>
+
+    <h3>In-app advertising</h3>
+    <p>Free-tier accounts, and occasionally Pro-tier accounts, may see adverts within the app. These adverts are served from a <strong>static, curated list maintained by us</strong>. There is no external ad network, no tracking pixel, no behavioural targeting, and no data sharing with advertisers. Commercial-tier accounts and Founding Beekeepers never see adverts.</p>
   </section>
 
   <section class="clause" id="changes">
@@ -484,7 +516,12 @@
       Northamptonshire NN14 3HW<br>
       United Kingdom
     </p>
-    <p>You also have the right to complain to the UK Information Commissioner's Office:</p>
+
+    <div class="callout-info" style="margin-top:20px;">
+      <strong>🛡️ ICO Registration:</strong> Culshaw Consulting Ltd is registered with the UK Information Commissioner's Office under registration number <strong>CSN4273098</strong>.
+    </div>
+
+    <p style="margin-top:20px;">You also have the right to complain to the UK Information Commissioner's Office:</p>
     <p><a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a> &middot; 0303 123 1113</p>
 
     <a href="/hivekeeper-beta1.html" class="back-to-app">Back to HiveKeeper</a>
