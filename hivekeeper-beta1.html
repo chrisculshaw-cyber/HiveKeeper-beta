@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 12:00 · In-app log capture + download</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 12:20 · Edit-mode guard on renderInspectHeader</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -6095,6 +6095,25 @@ function startFreshInspection(){
 function renderInspectHeader(){
   console.log('[DIAG inspect] renderInspectHeader CALLED · recording=', recording, '· _editingInspId=', window._editingInspId);
   console.trace('[DIAG inspect] renderInspectHeader trace');
+
+  // EARLY GUARD — Dave Townend bug fix, 23 April 2026 12:15
+  // renderInspectHeader gets called repeatedly by a cascade we haven't fully
+  // traced (logged as separate item). During an edit-existing-inspection
+  // flow, editInspection() uses a setTimeout to populate the notes textarea
+  // with the saved record's notes. A subsequent renderInspectHeader call
+  // would wipe that value (line ~6108 `_n.value=''`), leaving the user
+  // looking at an empty textarea even though they just opened an inspection
+  // to amend. Guard: if _editingInspId is set, skip the full reset block
+  // (return early) — editInspection handles its own state population.
+  if (window._editingInspId) {
+    console.log('[DIAG inspect] renderInspectHeader called DURING edit mode — skipping reset block to preserve populated state');
+    // Still run the UI-chrome updates that don't wipe state
+    try { updateInspectConnPill(); } catch(e) {}
+    try { updateApiaryNameDisplays(); } catch(e) {}
+    try { updateInspectGate(); } catch(e) {}
+    return;
+  }
+
   // Update the online/offline status pill every time the Inspect screen renders.
   try { updateInspectConnPill(); } catch(e) {}
   // Refresh the apiary name display — ensures label updates if user switched apiary from elsewhere.
@@ -7385,6 +7404,7 @@ function resetInspectStatusButtons() {
 })();
 
 function saveInspection(){
+  console.log('[DIAG save] saveInspection CALLED · _editingInspId=', window._editingInspId, '· _inspectionDirty=', window._inspectionDirty);
   try {
   if (window._hkDiag) console.log('[save] entry · currentHiveId=', currentHiveId);
   // If no hive selected, try to read from the dropdown
@@ -7412,7 +7432,7 @@ function saveInspection(){
     showToast('⚠️ Save failed — hive not found (try re-selecting)');
     return;
   }
-  if (window._hkDiag) console.log('[save] proceeding · hive=', hive.name, 'editingInspId=', window._editingInspId);
+  console.log('[DIAG save] proceeding · hive=', hive.name, '· editingInspId=', window._editingInspId, '· _isEdit (computed below)...');
   const notes=document.getElementById('inspect-notes').value;
 
   // EDIT MODE DETECTION (Dave Townend bug fix, 23 April 2026):
@@ -7492,10 +7512,10 @@ function saveInspection(){
       // Safety fallback — shouldn't happen since we checked above
       inspections.unshift(insp);
     }
-    if (window._hkDiag) console.log('[save] UPDATED existing inspection at index', _idx);
+    console.log('[DIAG save] UPDATED existing inspection at index', _idx, '· id=', insp.id);
   } else {
     inspections.unshift(insp);
-    if (window._hkDiag) console.log('[save] INSERTED new inspection');
+    console.log('[DIAG save] INSERTED new inspection · id=', insp.id);
   }
   saveInspections(inspections);
   // Clear edit flag so a subsequent Save creates a new record (expected behaviour)
