@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 12:20 · Edit-mode guard on renderInspectHeader</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 12:25 · Edit flag protection + trace</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3041,6 +3041,25 @@ window.downloadHkLog = function() {
   }
 };
 
+// Trace every write to _editingInspId — find who clears it when we don't
+// expect. Log stacktrace via new Error().stack so it flows through capture.
+// Installed 23 April 12:25. Remove when the cascade bug is nailed.
+(function traceEditingInspId(){
+  var _val = null;
+  try {
+    Object.defineProperty(window, '_editingInspId', {
+      get: function(){ return _val; },
+      set: function(v){
+        var stack = '';
+        try { stack = (new Error().stack || '').split('\n').slice(1, 5).join(' ← '); } catch(e) {}
+        console.log('[DIAG editflag] SET · was=', _val, '· now=', v, '· stack=', stack);
+        _val = v;
+      },
+      configurable: true
+    });
+  } catch(e) { console.warn('editflag trace install failed', e); }
+})();
+
 
 // ═══════════════════════════════════════════════
 // YOUR REAL 24 HIVES — from inspection notes
@@ -3717,10 +3736,13 @@ function goTo(id){
     if (typeof recording === 'undefined' || !recording) {
       try { if (typeof releaseWakeLock === 'function') releaseWakeLock(); } catch(e) {}
     }
-    // Clear edit-mode flag so next Inspect entry is fresh (23 April Dave fix).
-    // If user entered via editInspection(), that function sets the flag again
-    // BEFORE goTo('s-inspect') so this doesn't interfere with intended edits.
-    window._editingInspId = null;
+    // NOTE: Previously this branch cleared window._editingInspId. Removed
+    // 23 April 12:25 — the cleanup was firing during incidental navigation
+    // cascades (something between recording completion and save was
+    // triggering leaving-then-returning-to-inspect), wiping the edit flag
+    // before the user could tap Save. Now the flag is ONLY cleared by
+    // explicit paths: saveInspection on success, startFreshInspection, and
+    // a fresh editInspection call overwriting it.
   }
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
