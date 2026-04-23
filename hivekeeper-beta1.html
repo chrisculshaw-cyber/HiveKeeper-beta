@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 08:10 · Smaller pins + desktop map coverage</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 10:30 · Dave bug fixes (edit-inspection flow)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3640,6 +3640,10 @@ function goTo(id){
     if (typeof recording === 'undefined' || !recording) {
       try { if (typeof releaseWakeLock === 'function') releaseWakeLock(); } catch(e) {}
     }
+    // Clear edit-mode flag so next Inspect entry is fresh (23 April Dave fix).
+    // If user entered via editInspection(), that function sets the flag again
+    // BEFORE goTo('s-inspect') so this doesn't interfere with intended edits.
+    window._editingInspId = null;
   }
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
@@ -5986,6 +5990,11 @@ const SAMPLE_TRANSCRIPTS = [
 
 function openInspectionForCurrentHive(){ goTo('s-inspect'); }
 function startFreshInspection(){
+  // 23 April 2026: clear edit-mode flag explicitly. Fresh inspection means
+  // inserting a new record, not amending. Belt-and-braces — the flag is
+  // also cleared on Inspect→elsewhere navigation, but if somehow state
+  // leaked across a stale session, this guarantees a clean start.
+  window._editingInspId = null;
   // Set today's date as default
   setTimeout(function() {
     var d = document.getElementById('inspect-date');
@@ -6025,11 +6034,24 @@ function renderInspectHeader(){
   // hive-name now handled by populateHiveSelector()
   const now = new Date();
   document.getElementById('inspect-meta').textContent = hive.row + ' · ' + now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  currentInspData={};
+  // 23 April 2026 Dave bug fix: do NOT wipe currentInspData when editing a
+  // saved inspection. editInspection() hydrates currentInspData from the
+  // stored record via setTimeout; if changeInspectHive fires afterwards
+  // (e.g. from a re-render cascade) it used to wipe that hydration, leaving
+  // stale data from an earlier session — root cause of Dave's "voice notes
+  // from Swarm 2025 appeared on Long Hall" symptom.
+  if (!window._editingInspId) {
+    currentInspData={};
+  } else if (window._hkDiag) {
+    console.log('[changeInspectHive] skipping currentInspData reset (edit mode, id=', window._editingInspId, ')');
+  }
   try { resetInspectStatusButtons(); } catch(e) {}
-  // Reset unsaved-work tracking for this new inspection
-  window._inspectionDirty = false;
-  window._inspectionJustSaved = false;
+  // Reset unsaved-work tracking for this new inspection. Also skip in edit
+  // mode so the dirty-flag guard doesn't trigger spuriously on amend.
+  if (!window._editingInspId) {
+    window._inspectionDirty = false;
+    window._inspectionJustSaved = false;
+  }
   // Bind dirty-tracking on transcript + notes — idempotent guard, but we
   // rebind on every entry to defend against edge cases where the listener
   // is lost (e.g. textarea temporarily detached, mobile keyboard quirks).
@@ -7297,11 +7319,37 @@ function saveInspection(){
     showToast('⚠️ Save failed — hive not found (try re-selecting)');
     return;
   }
-  if (window._hkDiag) console.log('[save] proceeding · hive=', hive.name);
+  if (window._hkDiag) console.log('[save] proceeding · hive=', hive.name, 'editingInspId=', window._editingInspId);
   const notes=document.getElementById('inspect-notes').value;
+
+  // EDIT MODE DETECTION (Dave Townend bug fix, 23 April 2026):
+  // If we entered Inspect via editInspection() to amend a saved record,
+  // window._editingInspId holds the existing inspection id. Reuse it so
+  // saveInspection performs an UPDATE (replace in-place) rather than the
+  // default INSERT (push a new record). Previous behaviour created a
+  // duplicate inspection whenever a user hit Save after amending — the
+  // root cause Dave reported 22 April, reproduced from his diagnostic
+  // replies.
+  var _isEdit = !!window._editingInspId;
+  var _existingInsp = null;
+  if (_isEdit) {
+    _existingInsp = (loadInspections() || []).find(function(i){ return i.id === window._editingInspId; });
+    if (!_existingInsp) {
+      // Edge case: flag set but record not found (deleted mid-edit, sync race).
+      // Fall back to insert-new so the keeper's data isn't lost.
+      _isEdit = false;
+      if (window._hkDiag) console.warn('[save] edit flag set but inspection not found — falling back to insert');
+    }
+  }
+
   const insp={
-    id:uid(), hiveId:currentHiveId,
+    id: _isEdit ? window._editingInspId : uid(),
+    hiveId: _isEdit ? _existingInsp.hiveId : currentHiveId,  // preserve original hive on edit
     inspectedAt:(function(){
+      // On edit, preserve the original inspection's timestamp — the keeper is
+      // amending notes for an inspection that happened in the past. Only use
+      // a fresh timestamp for genuinely new inspections.
+      if (_isEdit && _existingInsp.inspectedAt) return _existingInsp.inspectedAt;
       var d = document.getElementById('inspect-date');
       if (d && d.value) {
         var parts = d.value.split('-');
@@ -7317,19 +7365,19 @@ function saveInspection(){
       }
       return Date.now();
     })(),
-    inspectedBy:(function(){
+    inspectedBy: _isEdit ? (_existingInsp.inspectedBy || 'Keeper') : (function(){
       var meta = typeof _currentUser !== 'undefined' && _currentUser && _currentUser.user_metadata;
       return (meta && (meta.full_name || meta.name) ? (meta.full_name || meta.name).split(' ')[0] : 'Keeper');
     })(),
     transcript:(document.getElementById('transcript-text')?document.getElementById('transcript-text').innerText.trim():'') || currentInspData.transcript || notes || 'Manual inspection',
     notes, queenSeen:currentInspData.queenSeen===true ? true : currentInspData.queenSeen===false ? false : null, queenFrame:currentInspData.queenFrame||null,
     broodFrames:currentInspData.broodFrames||null, broodPattern:currentInspData.broodPattern||null,
-    apiaryId: currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null,
+    apiaryId: _isEdit ? (_existingInsp.apiaryId || null) : (currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null),
     storesLevel:currentInspData.storesLevel||'adequate', storesLevelUserSet:!!currentInspData.storesLevel, swarmRisk:currentInspData.swarmRisk||'none',
     playCups:currentInspData.playCups||false, queenCells:currentInspData.queenCells||false,
     varroaLevel:currentInspData.varroaLevel||'low', varroaCount:currentInspData.varroaCount||null,
     temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), syncStatus:'synced',
-    weather: (typeof getCurrentWeatherSnapshot === 'function' ? getCurrentWeatherSnapshot() : null)
+    weather: _isEdit ? (_existingInsp.weather || null) : (typeof getCurrentWeatherSnapshot === 'function' ? getCurrentWeatherSnapshot() : null)
   };
   let s=0;
   if(insp.queenSeen) s+=20; else s+=5;
@@ -7341,8 +7389,24 @@ function saveInspection(){
   if(insp.temper==='calm'||insp.temper==='good') s+=5; else if(insp.temper==='aggressive') s-=5;
   insp.healthScore=Math.max(0,Math.min(100,s));
   const inspections=loadInspections();
-  inspections.unshift(insp);
+  if (_isEdit) {
+    // UPDATE in place: find existing by id and replace. This preserves list
+    // ordering (no unshift-to-top on an amend — would be confusing).
+    var _idx = inspections.findIndex(function(i){ return i.id === window._editingInspId; });
+    if (_idx >= 0) {
+      inspections[_idx] = insp;
+    } else {
+      // Safety fallback — shouldn't happen since we checked above
+      inspections.unshift(insp);
+    }
+    if (window._hkDiag) console.log('[save] UPDATED existing inspection at index', _idx);
+  } else {
+    inspections.unshift(insp);
+    if (window._hkDiag) console.log('[save] INSERTED new inspection');
+  }
   saveInspections(inspections);
+  // Clear edit flag so a subsequent Save creates a new record (expected behaviour)
+  if (_isEdit) window._editingInspId = null;
   trackEvent('inspection_saved', { has_photos: !!(insp.photoUrls && insp.photoUrls.length), has_transcript: !!insp.transcript, health_score: insp.healthScore });
   // Update hive fields from inspection. Status is EXPLICITLY controlled by the
   // user via the status buttons above Save — not inferred from queen-seen.
