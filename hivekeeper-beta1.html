@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 15:30 · AI chat live (Claude Haiku via Worker v9)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 19:30 · Diagnostic logs gated behind window._hkDiag</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3041,6 +3041,23 @@ window.downloadHkLog = function() {
   }
 };
 
+// Diagnostic logger — gated behind window._hkDiag. Set window._hkDiag = true
+// in the DevTools console to enable verbose [DIAG ...] logging. Used for the
+// Dave Townend inspection-bug investigation on 23 April 2026 and retained
+// for future debugging. All [DIAG ...] log points route through this helper.
+// The in-app log capture buffer (window._hkLog) still captures whatever does
+// get logged, so turning _hkDiag on and downloading the log works for
+// support debugging without having to redeploy.
+window._hkDiag = window._hkDiag || false;  // default off in production
+function _hkDiagLog() {
+  if (!window._hkDiag) return;
+  try { console.log.apply(console, arguments); } catch(e) {}
+}
+function _hkDiagWarn() {
+  if (!window._hkDiag) return;
+  try { console.warn.apply(console, arguments); } catch(e) {}
+}
+
 // Trace every write to _editingInspId — find who clears it when we don't
 // expect. Log stacktrace via new Error().stack so it flows through capture.
 // Installed 23 April 12:25. Remove when the cascade bug is nailed.
@@ -3050,9 +3067,11 @@ window.downloadHkLog = function() {
     Object.defineProperty(window, '_editingInspId', {
       get: function(){ return _val; },
       set: function(v){
-        var stack = '';
-        try { stack = (new Error().stack || '').split('\n').slice(1, 5).join(' ← '); } catch(e) {}
-        console.log('[DIAG editflag] SET · was=', _val, '· now=', v, '· stack=', stack);
+        if (window._hkDiag) {
+          var stack = '';
+          try { stack = (new Error().stack || '').split('\n').slice(1, 5).join(' ← '); } catch(e) {}
+          _hkDiagLog('[DIAG editflag] SET · was=', _val, '· now=', v, '· stack=', stack);
+        }
         _val = v;
       },
       configurable: true
@@ -6143,8 +6162,8 @@ function startFreshInspection(){
 }
 
 function renderInspectHeader(){
-  console.log('[DIAG inspect] renderInspectHeader CALLED · recording=', recording, '· _editingInspId=', window._editingInspId);
-  console.trace('[DIAG inspect] renderInspectHeader trace');
+  _hkDiagLog('[DIAG inspect] renderInspectHeader CALLED · recording=', recording, '· _editingInspId=', window._editingInspId);
+  if (window._hkDiag) { try { console.trace('[DIAG inspect] renderInspectHeader trace'); } catch(e) {} }
 
   // EARLY GUARD — Dave Townend bug fix, 23 April 2026 12:15
   // renderInspectHeader gets called repeatedly by a cascade we haven't fully
@@ -6156,7 +6175,7 @@ function renderInspectHeader(){
   // to amend. Guard: if _editingInspId is set, skip the full reset block
   // (return early) — editInspection handles its own state population.
   if (window._editingInspId) {
-    console.log('[DIAG inspect] renderInspectHeader called DURING edit mode — skipping reset block to preserve populated state');
+    _hkDiagLog('[DIAG inspect] renderInspectHeader called DURING edit mode — skipping reset block to preserve populated state');
     // Still run the UI-chrome updates that don't wipe state
     try { updateInspectConnPill(); } catch(e) {}
     try { updateApiaryNameDisplays(); } catch(e) {}
@@ -6231,7 +6250,7 @@ function renderInspectHeader(){
   // this pattern. If recording=true, we preserve button text, recording
   // flag, timer state and let the recording continue.
   if (recording) {
-    console.log('[DIAG inspect] renderInspectHeader called DURING recording — skipping reset block to preserve in-flight recording');
+    _hkDiagLog('[DIAG inspect] renderInspectHeader called DURING recording — skipping reset block to preserve in-flight recording');
     return;
   }
   document.getElementById('transcript-box').style.display='none';
@@ -6285,7 +6304,7 @@ function renderInspectHeader(){
 // the old one mid-teardown. One guard covers both gates.
 var _recBusy = false;
 function toggleRecord(){
-  console.log('[DIAG rec] toggleRecord ENTRY · recording=', recording, '· _recBusy=', _recBusy, '· btn.disabled=', (document.getElementById('rec-btn')||{}).disabled);
+  _hkDiagLog('[DIAG rec] toggleRecord ENTRY · recording=', recording, '· _recBusy=', _recBusy, '· btn.disabled=', (document.getElementById('rec-btn')||{}).disabled);
   var _rb = document.getElementById('rec-btn');
   // If the button is visibly disabled, drop the tap — the disable state is
   // our primary interlock. Also check the _recBusy fallback for paths that
@@ -6319,8 +6338,8 @@ function toggleRecord(){
     }
   }, 8000);
   try {
-    if (recording) { console.log('[DIAG rec] → stopRecording()'); stopRecording(); }
-    else { console.log('[DIAG rec] → startRecording()'); startRecording(); }
+    if (recording) { _hkDiagLog('[DIAG rec] → stopRecording()'); stopRecording(); }
+    else { _hkDiagLog('[DIAG rec] → startRecording()'); startRecording(); }
   } catch(e) {
     console.error('[rec] toggle error:', e);
     // Something synchronous threw — release the guard so the button works again
@@ -6473,7 +6492,7 @@ function startRecording(){
   document.getElementById('voice-status').textContent = 'Requesting microphone access…';
 
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-    console.log('[DIAG rec] getUserMedia RESOLVED · stream tracks=', stream.getTracks().length, '· currentHiveId=', currentHiveId);
+    _hkDiagLog('[DIAG rec] getUserMedia RESOLVED · stream tracks=', stream.getTracks().length, '· currentHiveId=', currentHiveId);
     // Mic permission granted — NOW we can actually start recording
     try {
       mediaRecorder = new MediaRecorder(stream);
@@ -6496,7 +6515,7 @@ function startRecording(){
 
       // Mic is live — now flip UI to "recording" state
       recording = true;
-      console.log('[DIAG rec] recording=true · btn about to become ⏹️');
+      _hkDiagLog('[DIAG rec] recording=true · btn about to become ⏹️');
       _recordingWasInterrupted = false; // fresh recording, reset interruption flag
       acquireWakeLock(); // Keep screen on — prevents phone auto-lock cutting off audio
       var _rb = document.getElementById('rec-btn');
@@ -7454,7 +7473,7 @@ function resetInspectStatusButtons() {
 })();
 
 function saveInspection(){
-  console.log('[DIAG save] saveInspection CALLED · _editingInspId=', window._editingInspId, '· _inspectionDirty=', window._inspectionDirty);
+  _hkDiagLog('[DIAG save] saveInspection CALLED · _editingInspId=', window._editingInspId, '· _inspectionDirty=', window._inspectionDirty);
   try {
   if (window._hkDiag) console.log('[save] entry · currentHiveId=', currentHiveId);
   // If no hive selected, try to read from the dropdown
@@ -7482,7 +7501,7 @@ function saveInspection(){
     showToast('⚠️ Save failed — hive not found (try re-selecting)');
     return;
   }
-  console.log('[DIAG save] proceeding · hive=', hive.name, '· editingInspId=', window._editingInspId, '· _isEdit (computed below)...');
+  _hkDiagLog('[DIAG save] proceeding · hive=', hive.name, '· editingInspId=', window._editingInspId, '· _isEdit (computed below)...');
   const notes=document.getElementById('inspect-notes').value;
 
   // EDIT MODE DETECTION (Dave Townend bug fix, 23 April 2026):
@@ -7525,7 +7544,7 @@ function saveInspection(){
   } else {
     _mergedNotes = 'Manual inspection';
   }
-  console.log('[DIAG save] merge · transcript=' + _voiceTranscript.length + 'ch · typed=' + _typedNotes.length + 'ch · merged=' + _mergedNotes.length + 'ch');
+  _hkDiagLog('[DIAG save] merge · transcript=' + _voiceTranscript.length + 'ch · typed=' + _typedNotes.length + 'ch · merged=' + _mergedNotes.length + 'ch');
 
   const insp={
     id: _isEdit ? window._editingInspId : uid(),
@@ -7584,10 +7603,10 @@ function saveInspection(){
       // Safety fallback — shouldn't happen since we checked above
       inspections.unshift(insp);
     }
-    console.log('[DIAG save] UPDATED existing inspection at index', _idx, '· id=', insp.id);
+    _hkDiagLog('[DIAG save] UPDATED existing inspection at index', _idx, '· id=', insp.id);
   } else {
     inspections.unshift(insp);
-    console.log('[DIAG save] INSERTED new inspection · id=', insp.id);
+    _hkDiagLog('[DIAG save] INSERTED new inspection · id=', insp.id);
   }
   saveInspections(inspections);
   // Clear edit flag so a subsequent Save creates a new record (expected behaviour)
@@ -9386,14 +9405,14 @@ function formatRun(type, count, typeLabel) {
   return count + ' ' + label + 's';
 }
 function changeInspectHive(hiveId){
-  console.log('[DIAG inspect] changeInspectHive CALLED · hiveId=', hiveId, '· recording=', recording, '· _editingInspId=', window._editingInspId);
-  console.trace('[DIAG inspect] changeInspectHive trace');
+  _hkDiagLog('[DIAG inspect] changeInspectHive CALLED · hiveId=', hiveId, '· recording=', recording, '· _editingInspId=', window._editingInspId);
+  if (window._hkDiag) { try { console.trace('[DIAG inspect] changeInspectHive trace'); } catch(e) {} }
   if(!hiveId) return;
   // GUARD: never switch hive mid-recording. If the user is actively recording
   // and something triggers a hive change (shouldn't happen via UI but could
   // via cascade), refuse — the recording in progress is for the current hive.
   if (recording) {
-    console.warn('[DIAG inspect] changeInspectHive refused — recording in progress (hiveId=' + hiveId + ', currentHiveId=' + currentHiveId + ')');
+    _hkDiagWarn('[DIAG inspect] changeInspectHive refused — recording in progress (hiveId=' + hiveId + ', currentHiveId=' + currentHiveId + ')');
     return;
   }
   currentHiveId=hiveId;
@@ -13165,9 +13184,9 @@ function editInspection(inspId) {
 // Patch saveInspection to handle edit mode
 var _origSaveInspectionEdit = saveInspection;
 saveInspection = function() {
-  console.log('[DIAG save-patch] saveInspection WRAPPER CALLED · _editingInspId=', window._editingInspId);
+  _hkDiagLog('[DIAG save-patch] saveInspection WRAPPER CALLED · _editingInspId=', window._editingInspId);
   if (window._editingInspId) {
-    console.log('[DIAG save-patch] → taking EDIT path (update in place)');
+    _hkDiagLog('[DIAG save-patch] → taking EDIT path (update in place)');
     // Edit mode — update existing record
     var inspId = window._editingInspId;
     var inspections = loadInspections();
@@ -13194,7 +13213,7 @@ saveInspection = function() {
       // Either no new voice content, or user already incorporated it
       mergedNotes = typedNotes;
     }
-    console.log('[DIAG save-patch] merge · newTranscript=' + newTranscript.length + 'ch · typed=' + typedNotes.length + 'ch · merged=' + mergedNotes.length + 'ch');
+    _hkDiagLog('[DIAG save-patch] merge · newTranscript=' + newTranscript.length + 'ch · typed=' + typedNotes.length + 'ch · merged=' + mergedNotes.length + 'ch');
 
     inspections[idx] = Object.assign(inspections[idx], {
       notes: mergedNotes,
@@ -13218,7 +13237,7 @@ saveInspection = function() {
     });
 
     saveInspections(inspections);
-    console.log('[DIAG save-patch] UPDATED existing inspection at index', idx, '· id=', inspId);
+    _hkDiagLog('[DIAG save-patch] UPDATED existing inspection at index', idx, '· id=', inspId);
     window._editingInspId = null;
     // CRITICAL: clear dirty flag + mark just-saved BEFORE goTo so the
     // leave-without-saving prompt doesn't fire. Without these, the goTo
