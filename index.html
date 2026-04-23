@@ -11,6 +11,50 @@
 <meta property="og:image" content="https://gethivekeeper.com/og-image.jpg">
 <meta property="og:url" content="https://gethivekeeper.com">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="HiveKeeper">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="HiveKeeper — the UK beekeeper's field companion">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HiveKeeper — The UK beekeeper's field companion">
+<meta name="twitter:description" content="Built for the UK beekeeping year. By a 24-hive beekeeper in Northamptonshire.">
+<meta name="twitter:image" content="https://gethivekeeper.com/og-image.jpg">
+
+<link rel="canonical" href="https://gethivekeeper.com/">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Chris Culshaw, Culshaw Consulting Ltd">
+<meta name="theme-color" content="#1F4E3A">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "HiveKeeper",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "Android, iOS, Web",
+  "description": "The UK beekeeper's field companion. Voice-recorded inspections, satellite apiary mapping, Asian hornet alerts, crop spraying awareness, UK nectar calendar.",
+  "offers": [
+    {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "GBP"},
+    {"@type": "Offer", "name": "Pro", "price": "3.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"},
+    {"@type": "Offer", "name": "Commercial", "price": "19.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"}
+  ],
+  "author": {
+    "@type": "Organization",
+    "name": "Culshaw Consulting Ltd",
+    "url": "https://gethivekeeper.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "30 Stanion Road",
+      "addressLocality": "Brigstock",
+      "addressRegion": "Northamptonshire",
+      "postalCode": "NN14 3HW",
+      "addressCountry": "GB"
+    }
+  }
+}
+</script>
 
 <link rel="icon" type="image/png" href="hivekeeper-icon.png">
 <link rel="apple-touch-icon" href="hivekeeper-icon.png">
@@ -1039,7 +1083,7 @@ footer {
       <a href="#features">Features</a>
       <a href="#pricing">Pricing</a>
       <a href="#about">About</a>
-      <a href="#download" class="nav-cta">Start free</a>
+      <a href="/hivekeeper-beta1.html" class="nav-cta">Launch app</a>
     </div>
   </div>
 </nav>
@@ -1055,7 +1099,7 @@ footer {
         Voice-recorded inspections, satellite apiary mapping, Asian hornet alerts, crop spraying awareness, and the UK nectar calendar. Works with every UK hive type and built around the BBKA seasonal calendar, by a 24-hive beekeeper in Northamptonshire.
       </p>
       <div class="hero-ctas animate-in delay-3">
-        <a href="#download" class="btn btn-primary">
+        <a href="/hivekeeper-beta1.html" class="btn btn-primary">
           Start free · 14-day trial
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
@@ -1390,7 +1434,7 @@ footer {
           <li>Weather at your apiary</li>
           <li>HiveKeeper AI (5 messages/month)</li>
         </ul>
-        <a href="#download" class="price-cta">Get started free</a>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Get started free</a>
       </div>
 
       <div class="price-card featured">
@@ -1410,7 +1454,7 @@ footer {
           <li>Apiary sharing</li>
           <li>iCal calendar sync</li>
         </ul>
-        <a href="#download" class="price-cta">Start 14-day trial</a>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
       </div>
 
       <div class="price-card">
@@ -1426,7 +1470,7 @@ footer {
           <li>Advanced exports</li>
           <li>Bulk marketplace listings</li>
         </ul>
-        <a href="#download" class="price-cta">Start 14-day trial</a>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
       </div>
     </div>
 
@@ -1435,7 +1479,7 @@ footer {
         <h4>Founding Beekeepers — launch-price for life</h4>
         <p>Beekeepers who join during beta or at launch lock in <strong>today's Pro price for life</strong>. The price never rises for you, even as standard Pro does. It's our thank-you to the beekeepers who back HiveKeeper early.</p>
       </div>
-      <a href="#download" class="btn btn-primary">Join the beta</a>
+      <a href="/hivekeeper-beta1.html" class="btn btn-primary">Join the beta</a>
     </div>
   </div>
 </section>
@@ -1516,7 +1560,7 @@ footer {
     <p>14-day trial of the full thing. No credit card. Android now, iPhone coming shortly via TestFlight.</p>
 
     <div class="store-badges">
-      <a href="#" class="store-badge store-badge-disabled" aria-label="App Store — coming soon">
+      <a href="#" class="store-badge store-badge-disabled" aria-label="App Store — coming soon" onclick="return false;">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
         <div class="store-badge-text">
           <span class="store-badge-small">Coming soon</span>
@@ -1524,18 +1568,18 @@ footer {
         </div>
       </a>
 
-      <a href="#" class="store-badge" aria-label="Get it on Google Play">
+      <a href="/hivekeeper-beta1.html" class="store-badge" aria-label="Launch the HiveKeeper app">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.393 2.398-13.784 7.824L14.5 12.707zm3.766-4.303a1 1 0 01.502 1.76l-2.607 1.481L14.5 11.293l1.767-1.766 2.998-1.123zm-3.766-1.111L3.114 1.589 16.892 9.414 14.499 11.81 14.5 12z"/></svg>
         <div class="store-badge-text">
-          <span class="store-badge-small">Get it on</span>
+          <span class="store-badge-small">Coming to</span>
           <span class="store-badge-big">Google Play</span>
         </div>
       </a>
 
-      <a href="#" class="store-badge" aria-label="Use the web app">
+      <a href="/hivekeeper-beta1.html" class="store-badge" aria-label="Use the web app">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
         <div class="store-badge-text">
-          <span class="store-badge-small">Use it in your</span>
+          <span class="store-badge-small">Launch in your</span>
           <span class="store-badge-big">Browser</span>
         </div>
       </a>
@@ -1563,7 +1607,7 @@ footer {
           <li><a href="#why">Why HiveKeeper</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#download">Download</a></li>
+          <li><a href="/hivekeeper-beta1.html">Launch the app</a></li>
         </ul>
       </div>
 
@@ -1571,20 +1615,16 @@ footer {
         <h5>Company</h5>
         <ul>
           <li><a href="#about">About</a></li>
-          <li><a href="mailto:hello@gethivekeeper.com">Contact</a></li>
-          <li><a href="/blog">Blog</a></li>
-          <li><a href="/faq">FAQ</a></li>
+          <li><a href="mailto:privacy@gethivekeeper.com">Contact</a></li>
         </ul>
       </div>
 
       <div class="footer-col">
         <h5>Legal</h5>
         <ul>
-          <li><a href="/privacy">Privacy Policy</a></li>
-          <li><a href="/terms">Terms of Service</a></li>
+          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
           <li><a href="/security-policy.html">Security Policy</a></li>
-          <li><a href="delete-account.html">Delete my account</a></li>
-          <li><a href="mailto:privacy@gethivekeeper.com">privacy@</a></li>
+          <li><a href="/delete-account.html">Delete my account</a></li>
         </ul>
       </div>
     </div>
