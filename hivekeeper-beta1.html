@@ -123,6 +123,19 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .hive-mini-meta{font-size:10px;color:var(--text-l);margin-top:3px;line-height:1.3}
 /* MAP */
 .map-canvas-wrap{margin:12px 20px 0;border-radius:var(--r);border:2px solid var(--forest-l);box-shadow:var(--shadow-l);position:relative;overflow:hidden;isolation:isolate}
+
+/* Map over-render — rendered larger than the frame and cropped via overflow:hidden
+   on .map-canvas-wrap. Default (mobile portrait, narrow frame): 160% width, -30% margins.
+   Desktop/laptop (landscape, wider frame): 220% width, -60% margins so the frame is
+   properly filled. Also bumps height so the landscape frame gets a taller map.
+   Added 23 April — Chris reported the map didn't fill the frame on desktop. */
+@media (min-width: 900px) {
+  #leaflet-map {
+    width: 220% !important;
+    height: 640px !important;
+    margin: -150px -60% !important;
+  }
+}
 #map-canvas{display:block;width:100%}
 .map-legend{position:absolute;bottom:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap}
 .legend-pill{background:rgba(255,255,255,.92);border-radius:20px;padding:3px 8px;font-size:9px;font-weight:700;display:flex;align-items:center;gap:4px;color:var(--text)}
@@ -1161,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 01:15 · Box type + Colony form now independent</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 08:10 · Smaller pins + desktop map coverage</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
