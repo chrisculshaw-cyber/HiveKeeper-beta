@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 13:10 · Merge transcript → notes on save</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 14:45 · Home screen counts — apiary-scoped, excl hidden + demo</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -3452,7 +3452,25 @@ function seedRealData(){
 // ═══════════════════════════════════════════════
 
 function getApiarySummary(){
+  // 23 April 2026 fix: home screen tiles (Active/Lost/Unclear/Empty) were
+  // counting across ALL apiaries including hidden hives and demo data.
+  // Users saw home-screen totals that didn't match what they saw on the
+  // Apiary screen. Fix: scope to currentApiaryId, exclude hidden, exclude demo.
+  // Matches the filter logic used everywhere else in the app.
   var hives = loadHives();
+  var _currentApId = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
+  hives = hives.filter(function(h) {
+    // Exclude demo data
+    if (h.id && h.id.toString().startsWith('demo-')) return false;
+    // Exclude hidden hives
+    if (h.hidden || h.isHidden) return false;
+    // Scope to current apiary when one is selected; otherwise include
+    // hives with no apiaryId (legacy / pre-multi-apiary data)
+    if (_currentApId) {
+      return h.apiaryId === _currentApId;
+    }
+    return !h.apiaryId; // no apiary selected — show only orphan hives
+  });
   const active = hives.filter(h => h.status === 'active').length;
   const dead = hives.filter(h => h.status === 'dead').length;
   const empty = hives.filter(h => h.status === 'empty').length;
@@ -4077,8 +4095,18 @@ function renderDashboard(){
     healthSection.style.display = 'none';
   }
 
-  // Active hives scroll
-  const activeHives = loadHives().filter(h => h.status === 'active' && !h.id.toString().startsWith('demo-'));
+  // Active hives scroll — uses the SAME filters as getApiarySummary (23 April 2026):
+  // scope to current apiary, exclude hidden, exclude demo. Previously only
+  // demo was excluded, so the scroll showed hives from other apiaries + hidden
+  // ones, inconsistent with the tile count above.
+  const _curApForScroll = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
+  const activeHives = loadHives().filter(function(h) {
+    if (h.status !== 'active') return false;
+    if (h.id && h.id.toString().startsWith('demo-')) return false;
+    if (h.hidden || h.isHidden) return false;
+    if (_curApForScroll) return h.apiaryId === _curApForScroll;
+    return !h.apiaryId;
+  });
   if (activeHives.length === 0) {
     document.getElementById('dash-hives').innerHTML = `
       <div style="padding:20px 4px;text-align:center;">
