@@ -224,6 +224,12 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .msg.user{background:var(--forest);color:white;border-bottom-right-radius:4px;align-self:flex-end}
 .msg-sender{font-size:10px;font-weight:800;letter-spacing:.02em;margin-bottom:4px}
 .msg.ai .msg-sender{color:var(--purple)}.msg.user .msg-sender{color:rgba(255,255,255,.5)}
+.msg-copy-btn{position:absolute;top:8px;right:8px;background:transparent;border:none;padding:6px;cursor:pointer;opacity:.5;transition:opacity .15s,transform .15s;border-radius:6px;line-height:0}
+.msg-copy-btn:hover{opacity:1;background:rgba(0,0,0,.05)}
+.msg-copy-btn:active{transform:scale(.92)}
+.msg-copy-btn svg{width:14px;height:14px;stroke:var(--text-l);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.msg-copy-btn.copied svg{stroke:#2d7a3e}
+.msg.ai{position:relative;padding-right:34px}
 .typing-indicator{display:none;align-self:flex-start;background:var(--white);border:1px solid var(--wax);border-radius:16px;border-bottom-left-radius:4px;padding:12px 16px;gap:4px;align-items:center}
 .typing-indicator.show{display:flex}
 .typing-dot{width:6px;height:6px;background:var(--text-l);border-radius:50%;animation:tdot 1.2s infinite}
@@ -1174,7 +1180,18 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 21:30 · Server-side trial_ends_at respected (30-day beta courtesy)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 00:30 · Beta info block on auth + copy button on AI replies</div>
+
+  <!-- BETA STATUS INFO BLOCK (24 April 2026)
+       Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
+       Styled to match the auth overlay (muted white-on-forest-green, compact).
+       Not dismissible for now — can add dismiss later once launched. -->
+  <div id="auth-beta-info" style="width:100%;max-width:340px;margin-bottom:24px;padding:14px 16px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-family:'Syne',sans-serif;font-size:12px;line-height:1.55;">
+    <div style="font-weight:800;color:var(--honey);letter-spacing:.1em;text-transform:uppercase;font-size:10px;margin-bottom:6px;">Currently in beta</div>
+    <div style="margin-bottom:6px;">HiveKeeper is being used daily by real beekeepers managing real hives — but expect the odd rough edge while we polish for launch.</div>
+    <div style="margin-bottom:6px;">Native iOS and Android apps arriving <strong style="color:white;">May 2026</strong>. For now, add this page to your home screen for a native-like experience.</div>
+    <div style="color:rgba(255,255,255,.6);">Spot something broken? Email <a href="mailto:privacy@gethivekeeper.com" style="color:var(--honey);text-decoration:none;border-bottom:1px dotted rgba(228,163,58,.5);">privacy@gethivekeeper.com</a></div>
+  </div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -8000,7 +8017,96 @@ function getFallback(msg){
 }
 
 function sendSuggestion(el){ document.getElementById('ai-input').value=el.textContent; sendAI(); }
-function addMessage(role,text){ const msgs=document.getElementById('ai-messages'); const ti=document.getElementById('typing-indicator'); const d=document.createElement('div'); d.className='msg ' + role; d.innerHTML=`<div class="msg-sender">${role==='ai'?'HiveKeeper AI':'You'}</div>${text}`; msgs.insertBefore(d,ti); msgs.scrollTop=msgs.scrollHeight; }
+function addMessage(role,text){
+  const msgs=document.getElementById('ai-messages');
+  const ti=document.getElementById('typing-indicator');
+  const d=document.createElement('div');
+  d.className='msg ' + role;
+  var inner = `<div class="msg-sender">${role==='ai'?'HiveKeeper AI':'You'}</div>${text}`;
+  if (role === 'ai') {
+    // Copy button — clipboard SVG. Click copies the AI response (plain text) to clipboard.
+    // Particularly useful for users pasting advice into Facebook / forum replies.
+    // We stash the raw text in a data attribute so the handler can read it without
+    // having to strip HTML from innerText (which can mangle whitespace).
+    inner += '<button class="msg-copy-btn" aria-label="Copy reply" title="Copy reply" onclick="copyAIMessage(this)"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>';
+  }
+  d.innerHTML = inner;
+  if (role === 'ai') {
+    // Store the plain text version on the element itself so copyAIMessage can read
+    // it reliably regardless of any HTML formatting inside the message body.
+    d.dataset.copyText = _extractPlainTextFromAIMessage(text);
+  }
+  msgs.insertBefore(d,ti);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+// Extract a clean plain-text version of an AI message for clipboard.
+// Handles the markdown → HTML conversion that happens upstream (bold/italic/newlines).
+// Preserves line breaks, strips tags, collapses runs of whitespace to single spaces on each line.
+function _extractPlainTextFromAIMessage(html) {
+  try {
+    // Convert <br> to newlines before stripping
+    var withBreaks = String(html).replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div)>/gi, '\n');
+    // Strip all remaining HTML tags
+    var stripped = withBreaks.replace(/<[^>]+>/g, '');
+    // Decode common entities
+    stripped = stripped.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+    // Normalise multiple blank lines to max 2, trim
+    stripped = stripped.replace(/\n{3,}/g, '\n\n').trim();
+    return stripped;
+  } catch(e) {
+    return String(html);
+  }
+}
+
+// Copy an AI reply to the clipboard from the button inside the message element.
+// Uses navigator.clipboard.writeText where available, with a legacy textarea
+// fallback for older browsers or non-HTTPS contexts.
+function copyAIMessage(btn) {
+  try {
+    var msgEl = btn.closest('.msg');
+    if (!msgEl) return;
+    var text = msgEl.dataset.copyText || '';
+    if (!text) return;
+    var done = function() {
+      btn.classList.add('copied');
+      btn.title = 'Copied!';
+      // Swap the clipboard icon for a tick briefly
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+      if (typeof showToast === 'function') showToast('Copied to clipboard');
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.title = 'Copy reply';
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      }, 2000);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function() {
+        // Fall back to legacy method if permissions blocked
+        _legacyCopy(text, done);
+      });
+    } else {
+      _legacyCopy(text, done);
+    }
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('Copy failed');
+  }
+}
+
+function _legacyCopy(text, done) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0'; ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('Copy failed');
+  }
+}
 function showTyping(show){ const t=document.getElementById('typing-indicator'); if(!t) return; t.classList.toggle('show',show); document.getElementById('ai-messages').scrollTop=99999; }
 
 async function handleAIPhotoUpload(event) {
