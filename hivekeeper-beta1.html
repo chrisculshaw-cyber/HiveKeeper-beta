@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 21:00 · Trial UX improvements — progressive banner + welcome modal</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 21:30 · Server-side trial_ends_at respected (30-day beta courtesy)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -14395,7 +14395,7 @@ async function onAuthSuccess() {
 async function loadUserProfile() {
   if (!_currentUser) return;
   const sb = getSupabase();
-  const { data } = await sb.from('profiles').select('name, display_name, phone, address, sos_contact_name, sos_sms, sos_whatsapp, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus').eq('id', _currentUser.id).single();
+  const { data } = await sb.from('profiles').select('name, display_name, phone, address, sos_contact_name, sos_sms, sos_whatsapp, tier, is_subscribed, is_founding_beekeeper, referral_code, referral_hive_bonus, trial_ends_at').eq('id', _currentUser.id).single();
   if (data) {
     // Store tier for paywall checks — both in-memory and localStorage (canUsePremiumFeature reads from localStorage)
     if (data.tier) {
@@ -14403,6 +14403,15 @@ async function loadUserProfile() {
       localStorage.setItem('hk_tier', data.tier);
     }
     if (data.is_founding_beekeeper) localStorage.setItem('hk_founding_beekeeper', '1');
+    // Cache server-side trial end date (23 April 2026 - added for manual trial
+    // extensions like the 30-day beta courtesy). Trial logic prefers this over
+    // the default 14-day-from-local-start calculation when present.
+    if (data.trial_ends_at) {
+      localStorage.setItem('hk_trial_ends_at', data.trial_ends_at);
+    } else {
+      // Clear stale cache if server has removed the override
+      localStorage.removeItem('hk_trial_ends_at');
+    }
     if (data.referral_code) _referralCode = data.referral_code;
     if (data.referral_hive_bonus) _referralHiveBonus = data.referral_hive_bonus || 0;
     // Restore personal details on this device (account sync)
@@ -20699,19 +20708,34 @@ function getTrialStartDate() {
   return start;
 }
 
+// Returns the trial END timestamp. Prefers the server-side hk_trial_ends_at
+// (set by loadUserProfile from profiles.trial_ends_at). Falls back to the
+// default TRIAL_DAYS-from-local-start calculation when no override exists.
+// Added 23 April 2026 to support manual trial extensions for non-engaged
+// beta testers (30-day courtesy extension).
+function getTrialEndDate() {
+  var override = localStorage.getItem('hk_trial_ends_at');
+  if (override) {
+    var d = new Date(override);
+    if (!isNaN(d.getTime())) return d;
+  }
+  // Default: start + TRIAL_DAYS
+  var start = getTrialStartDate();
+  return new Date(start.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+}
+
 function isInTrial() {
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return false;
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   if (tier === 'pro' || tier === 'commercial') return false;
-  var start = getTrialStartDate();
-  var daysSince = (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24);
-  return daysSince < TRIAL_DAYS;
+  var end = getTrialEndDate();
+  return Date.now() < end.getTime();
 }
 
 function trialDaysLeft() {
-  var start = getTrialStartDate();
-  var daysSince = (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24);
-  return Math.max(0, Math.ceil(TRIAL_DAYS - daysSince));
+  var end = getTrialEndDate();
+  var msLeft = end.getTime() - Date.now();
+  return Math.max(0, Math.ceil(msLeft / (1000 * 60 * 60 * 24)));
 }
 
 function canUsePremiumFeature(feature) {
