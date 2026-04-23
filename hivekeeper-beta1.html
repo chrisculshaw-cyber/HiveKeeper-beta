@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 19:30 · Diagnostic logs gated behind window._hkDiag</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 21:00 · Trial UX improvements — progressive banner + welcome modal</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -14363,6 +14363,33 @@ async function onAuthSuccess() {
       loadReferralStats().catch(function(e){ console.warn('Referral stats load failed:', e); });
     }, 1200);
   }
+
+  // ── WELCOME-BACK PRICING MODAL (23 April 2026) ──
+  // Show the pricing comparison modal once per session for trial/expired users.
+  // Not for Founders or Pro/Commercial. Flag cleared on sign-out.
+  // Timing: 2500ms delay lets founding-status check + profile load finish so we
+  // don't flash the modal at a user we later realise is a Founder.
+  //
+  // FIRST-TIME-EVER bonus: if this is the user's very first sign-in, they get
+  // a friendlier welcome message (set by openPricingModal based on the flag).
+  setTimeout(function() {
+    try {
+      if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return;
+      var tier = localStorage.getItem('hk_tier') || _userTier || '';
+      if (tier === 'pro' || tier === 'commercial') return;
+      if (sessionStorage.getItem('hk_pricing_shown_this_session')) return;
+      sessionStorage.setItem('hk_pricing_shown_this_session', '1');
+      // Mark first-time flag so the modal can show a different opening message
+      if (!localStorage.getItem('hk_trial_welcome_seen')) {
+        localStorage.setItem('hk_trial_welcome_seen', '1');
+        window._hkFirstTrialView = true;
+      }
+      if (typeof openPricingModal === 'function') {
+        var context = (typeof isInTrial === 'function' && isInTrial()) ? 'welcome_back' : 'trial_expired';
+        openPricingModal(context);
+      }
+    } catch(e) { console.warn('Welcome-back modal failed:', e); }
+  }, 2500);
 }
 
 async function loadUserProfile() {
@@ -17243,15 +17270,27 @@ function updatePlanBadge() {
 
 // ── PRICING / UPGRADE MODAL ───────────────────────────────
 function openPricingModal(highlightTier) {
-  // Show context message based on reason
+  // Show context message based on reason. Two contexts added 23 April 2026:
+  // - welcome_back: shown once per session to trial users on sign-in.
+  //                 Welcoming + informative, reminds them of trial status
+  //                 and shows pricing so they can plan.
+  // - welcome_first: shown the very first time a trial user signs in.
+  //                  Slightly warmer opening than welcome_back.
   var reasonMessages = {
     hive: "You've reached the 3 hive limit on the Free plan. Upgrade to Pro for 50 hives.",
     apiary: "Multiple apiaries require a Pro or Commercial plan.",
     share: "Apiary sharing requires a Pro or Commercial plan.",
     photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline.",
     trial_banner: "You're on Pro while you try HiveKeeper — keep everything you're using by staying on Pro.",
-    trial_expired: "Your 14 days of Pro, on us, have ended. Keep full access by staying on Pro — or continue on the Free plan with the limits below."
+    trial_expired: "Your 14 days of Pro, on us, have ended. Keep full access by staying on Pro — or continue on the Free plan with the limits below.",
+    welcome_back: "While you try HiveKeeper, you're on Pro — and you've got " + (typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14) + " day" + ((typeof trialDaysLeft === 'function' && trialDaysLeft() === 1) ? '' : 's') + " left of your trial. Here's what you get on each plan.",
+    welcome_first: "Welcome to HiveKeeper! Your 14-day Pro trial has started — every feature unlocked while you try it. Here's what you get on each plan, so you can decide what suits you."
   };
+  // Auto-promote welcome_back to welcome_first if the user has never seen the trial modal before
+  if (highlightTier === 'welcome_back' && window._hkFirstTrialView) {
+    highlightTier = 'welcome_first';
+    window._hkFirstTrialView = false;
+  }
   var msgEl = document.getElementById('pricing-reason-msg');
   if (msgEl) {
     var msg = reasonMessages[highlightTier] || '';
@@ -20788,12 +20827,31 @@ function renderTrialBanner() {
   if (isInTrial()) {
     var dLeft = trialDaysLeft();
     banner.style.display = 'flex';
-    banner.innerHTML = '<span style="flex:1;font-size:12px;">Pro on us &mdash; <strong>' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + ' left</strong></span>'
-      + '<span onclick="openPricingModal(\'trial_banner\')" style="background:#BA7517;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Keep Pro</span>';
+    // 4-band colour progression matching the footer banner (23 April 2026)
+    var bg, fg, ctaBg, label;
+    if (dLeft >= 8) {
+      bg = '#E8F3E0'; fg = '#2D5016'; ctaBg = '#2D5016';     // light green bg, forest green text
+      label = 'Pro on us &mdash; <strong>' + dLeft + ' days left</strong>';
+    } else if (dLeft >= 4) {
+      bg = '#FAEEDA'; fg = '#412402'; ctaBg = '#BA7517';     // amber bg (existing)
+      label = '<strong>' + dLeft + ' days</strong> of Pro left';
+    } else if (dLeft >= 1) {
+      bg = '#FFEBEE'; fg = '#8B0000'; ctaBg = '#C62828';     // light red bg, dark red text
+      label = '<strong>Only ' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + '</strong> of Pro left!';
+    } else {
+      bg = '#8B0000'; fg = '#FFFFFF'; ctaBg = '#FFFFFF';     // solid dark red
+      label = '<strong>Last day of Pro trial</strong>';
+    }
+    banner.style.background = bg;
+    banner.style.color = fg;
+    banner.innerHTML = '<span style="flex:1;font-size:12px;">' + label + '</span>'
+      + '<span onclick="openPricingModal(\'trial_banner\')" style="background:' + ctaBg + ';color:' + (ctaBg === '#FFFFFF' ? '#8B0000' : 'white') + ';border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Keep Pro</span>';
   } else {
     banner.style.display = 'flex';
-    banner.innerHTML = '<span style="flex:1;font-size:12px;">&#x26A0;&#xFE0F; Your Pro access has ended &mdash; some features are restricted</span>'
-      + '<span onclick="openPricingModal(\'trial_expired\')" style="background:#C62828;color:white;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Get Pro</span>';
+    banner.style.background = '#8B0000';
+    banner.style.color = '#FFFFFF';
+    banner.innerHTML = '<span style="flex:1;font-size:12px;">&#x26A0;&#xFE0F; Your Pro trial has ended &mdash; some features are restricted</span>'
+      + '<span onclick="openPricingModal(\'trial_expired\')" style="background:#FFFFFF;color:#8B0000;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Get Pro</span>';
   }
 }
 
@@ -20813,18 +20871,32 @@ function renderTrialBanners() {
   if (inTrial) {
     var dLeft = typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14;
     b.style.display = 'block';
-    b.style.background = dLeft <= 2 ? '#C62828' : dLeft <= 5 ? '#BA7517' : '#C8730A';
     b.style.padding = '9px 20px';
-    b.textContent = dLeft <= 2 ? 'Only ' + dLeft + ' day' + (dLeft!==1?'s':'') + ' of Pro left — your bees need you! Tap to keep Pro' :
-                    dLeft <= 5 ? dLeft + ' days of Pro left — tap to keep Pro' :
-                    'HiveKeeper Pro on us — ' + dLeft + ' days remaining';
     b.style.cursor = 'pointer';
     b.style.pointerEvents = 'all';
+    // 4-band colour progression (23 April 2026):
+    // 14-8 days: green — welcoming, relaxed
+    // 7-4 days: amber — halfway point, start nudging
+    // 3-1 days: red — urgent
+    // 0 days (edge case, trial technically expired same day): dark red
+    if (dLeft >= 8) {
+      b.style.background = '#2D5016';                    // forest green
+      b.textContent = 'HiveKeeper Pro on us — ' + dLeft + ' days remaining';
+    } else if (dLeft >= 4) {
+      b.style.background = '#BA7517';                    // amber
+      b.textContent = dLeft + ' days of Pro left — tap to choose a plan';
+    } else if (dLeft >= 1) {
+      b.style.background = '#C62828';                    // red
+      b.textContent = 'Only ' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + ' of Pro left — your bees need you! Tap to keep Pro';
+    } else {
+      b.style.background = '#8B0000';                    // dark red
+      b.textContent = 'Last day of Pro trial — tap to choose a plan';
+    }
     b.onclick = function(){ try{ openPricingModal('trial_banner'); }catch(e){} };
   } else {
     b.style.display = 'block';
-    b.style.background = '#C62828';
-    b.textContent = 'Your Pro access has ended — tap to keep your hives on Pro';
+    b.style.background = '#8B0000';                       // dark red for expired
+    b.textContent = 'Your Pro trial has ended — tap to keep your hives on Pro';
     b.onclick = function(){ try{ openPricingModal('trial_expired'); }catch(e){} };
     if (!localStorage.getItem('hk_trial_expired_shown')) {
       localStorage.setItem('hk_trial_expired_shown', '1');
