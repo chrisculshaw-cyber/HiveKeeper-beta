@@ -1,80 +1,504 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HiveKeeper — Privacy Policy</title>
+<title>Privacy Policy · HiveKeeper</title>
+<meta name="description" content="How HiveKeeper collects, uses, and protects your personal data. GDPR-compliant privacy policy for UK beekeepers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { font-family: -apple-system, Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.7; }
-  h1 { color: #1b2d5b; font-size: 28px; margin-bottom: 4px; }
-  h2 { color: #1b2d5b; font-size: 18px; margin-top: 32px; }
-  .bee { font-size: 32px; }
-  .updated { color: #888; font-size: 13px; margin-bottom: 32px; }
-  footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; font-size: 13px; color: #888; }
-  a { color: #C8730A; }
+  :root {
+    --navy: #001646;
+    --navy-light: #1a2e5e;
+    --sky: #5b9bd5;
+    --sky-light: #8fbce3;
+    --bg: #fafbfc;
+    --bg-alt: #f2f5f9;
+    --text: #1a1a1a;
+    --text-muted: #555;
+    --border: #e1e5eb;
+    --danger: #b03030;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 40px 24px 50px;
+    text-align: center;
+    border-bottom: 4px solid var(--sky);
+  }
+  header .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  header .logo::before { content: "🐝 "; }
+  header .tagline {
+    font-size: 13px;
+    opacity: 0.8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: -1px;
+  }
+  header .meta {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .intro {
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    padding: 24px 28px;
+    background: white;
+    border-left: 4px solid var(--sky);
+    border-radius: 4px;
+  }
+  .toc {
+    background: var(--bg-alt);
+    padding: 24px 28px;
+    border-radius: 6px;
+    margin-bottom: 48px;
+  }
+  .toc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 16px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+  .toc li {
+    counter-increment: toc;
+    padding: 4px 0;
+    font-size: 15px;
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero) ".";
+    color: var(--sky);
+    font-weight: 600;
+    margin-right: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .toc a {
+    color: var(--navy);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .toc a:hover { border-bottom-color: var(--sky); }
+  section.clause {
+    margin-bottom: 44px;
+  }
+  section.clause h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--bg-alt);
+    letter-spacing: -0.3px;
+  }
+  section.clause h3 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--navy-light);
+    margin: 24px 0 10px;
+  }
+  section.clause p {
+    margin-bottom: 14px;
+  }
+  section.clause ul, section.clause ol {
+    margin: 0 0 14px 24px;
+  }
+  section.clause li {
+    margin-bottom: 6px;
+  }
+  section.clause strong {
+    color: var(--navy);
+    font-weight: 600;
+  }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 14px;
+  }
+  table.data-table th {
+    background: var(--navy);
+    color: white;
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+  table.data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:nth-child(even) td { background: var(--bg-alt); }
+  .callout {
+    background: #fff8e1;
+    border-left: 4px solid #c8730a;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  .callout strong { color: #8b5000; }
+  .callout-info {
+    background: #e8f3ff;
+    border-left: 4px solid var(--sky);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  a {
+    color: var(--sky);
+    text-decoration: none;
+    border-bottom: 1px solid var(--sky-light);
+    transition: all 0.15s;
+  }
+  a:hover {
+    color: var(--navy);
+    border-bottom-color: var(--navy);
+  }
+  footer {
+    background: var(--navy);
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+    font-size: 14px;
+  }
+  footer .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  footer .contact {
+    opacity: 0.8;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  footer a { color: var(--sky-light); border-bottom-color: transparent; }
+  footer a:hover { color: white; border-bottom-color: var(--sky-light); }
+  .back-to-app {
+    display: inline-block;
+    margin-top: 20px;
+    background: var(--sky);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    border: none;
+  }
+  .back-to-app:hover {
+    background: var(--sky-light);
+    color: var(--navy);
+    border: none;
+  }
+  @media (max-width: 640px) {
+    header { padding: 32px 20px 40px; }
+    header h1 { font-size: 32px; }
+    main { padding: 32px 20px 60px; }
+    section.clause h2 { font-size: 22px; }
+    .intro { font-size: 16px; padding: 18px 20px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="bee">🐝</div>
-<h1>HiveKeeper Privacy Policy</h1>
-<p class="updated">Last updated: April 2026</p>
+<header>
+  <div class="logo">HiveKeeper</div>
+  <div class="tagline">Beekeeping, kept simple</div>
+  <h1>Privacy Policy</h1>
+  <div class="meta">Effective 23 April 2026 &middot; Version 1.0</div>
+</header>
 
-<p>HiveKeeper is built by Chris Culshaw / Culshaw Consulting Ltd. This policy explains what data we collect, how we use it, and your rights.</p>
+<main>
 
-<h2>What data we collect</h2>
-<p>When you use HiveKeeper, we collect:</p>
-<ul>
-  <li><strong>Account information</strong> — your email address and display name when you register</li>
-  <li><strong>Apiary and hive data</strong> — hive names, locations, inspection records, varroa counts, harvest records, treatment records</li>
-  <li><strong>Photos</strong> — frame photos and hive cover photos you choose to upload. These are stored in Supabase cloud storage.</li>
-  <li><strong>Location</strong> — your apiary location (postcode or town name) for weather and Asian Hornet Watch. GPS location is only used for the SOS emergency feature and is never stored.</li>
-  <li><strong>Voice recordings</strong> — audio recorded during inspections is sent to OpenAI Whisper for transcription. We do not store the audio file — only the resulting transcript.</li>
-</ul>
+  <div class="intro">
+    This Privacy Policy explains how HiveKeeper collects, uses, stores, and protects your personal data when you use our app and website. We are committed to handling your information transparently and in compliance with UK data protection law.
+  </div>
 
-<h2>How we use your data</h2>
-<ul>
-  <li>To provide the HiveKeeper service — storing and syncing your beekeeping records across devices</li>
-  <li>To generate your calendar subscription — inspection reminders and seasonal events</li>
-  <li>To power AI features — frame photo analysis via Claude Vision (Anthropic) and voice transcription via Whisper (OpenAI)</li>
-  <li>We do not sell your data to third parties</li>
-  <li>We do not use your data for advertising</li>
-</ul>
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <ol>
+      <li><a href="#who-we-are">Who we are</a></li>
+      <li><a href="#what-we-collect">What data we collect</a></li>
+      <li><a href="#how-we-use">How we use your data</a></li>
+      <li><a href="#legal-basis">Legal basis for processing</a></li>
+      <li><a href="#subprocessors">Third parties and subprocessors</a></li>
+      <li><a href="#international">International data transfers</a></li>
+      <li><a href="#retention">How long we keep your data</a></li>
+      <li><a href="#your-rights">Your rights</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#children">Age restrictions</a></li>
+      <li><a href="#marketing">Marketing communications</a></li>
+      <li><a href="#cookies">Cookies and tracking</a></li>
+      <li><a href="#changes">Changes to this policy</a></li>
+      <li><a href="#contact">Contact us</a></li>
+    </ol>
+  </nav>
 
-<h2>Third party services</h2>
-<ul>
-  <li><strong>Supabase</strong> — database and file storage (supabase.com)</li>
-  <li><strong>OpenAI Whisper</strong> — voice transcription. Audio is processed and immediately discarded (openai.com)</li>
-  <li><strong>Anthropic Claude</strong> — AI frame photo analysis. Images are processed and not retained (anthropic.com)</li>
-  <li><strong>Open-Meteo</strong> — weather data. No personal data is shared (open-meteo.com)</li>
-  <li><strong>Cloudflare</strong> — API proxy and Worker hosting (cloudflare.com)</li>
-</ul>
+  <section class="clause" id="who-we-are">
+    <h2>1. Who we are</h2>
+    <p>HiveKeeper is operated by <strong>Culshaw Consulting Ltd</strong>, a company registered in England and Wales (company number 16938477).</p>
+    <p><strong>Registered office:</strong><br>
+      30 Stanion Road<br>
+      Brigstock<br>
+      Northamptonshire NN14 3HW<br>
+      United Kingdom
+    </p>
+    <p>For the purposes of UK GDPR, Culshaw Consulting Ltd is the <strong>data controller</strong> for the personal data we collect through HiveKeeper.</p>
+    <p>You can contact us about privacy matters at <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a>.</p>
+  </section>
 
-<h2>Data storage and security</h2>
-<p>Your data is stored on Supabase infrastructure with row-level security. Each user can only access their own data. Data is encrypted in transit (HTTPS) and at rest.</p>
+  <section class="clause" id="what-we-collect">
+    <h2>2. What data we collect</h2>
 
-<h2>Your rights</h2>
-<p>You can:</p>
-<ul>
-  <li>Export all your data at any time via Settings → Download data</li>
-  <li>Delete all your data via Settings → Start fresh</li>
-  <li>Request deletion of your account and all associated data by emailing chris@culshaw.consulting</li>
-</ul>
+    <h3>Account data</h3>
+    <p>When you create an account, we collect your email address, display name, and a hashed password. You may optionally provide a phone number, postal address, and emergency contact details for the in-app SOS feature.</p>
 
-<h2>Children</h2>
-<p>HiveKeeper is not directed at children under 13. We do not knowingly collect data from children under 13.</p>
+    <h3>Beekeeping data</h3>
+    <p>The core purpose of HiveKeeper is to help you manage your apiary. We store the data you record about:</p>
+    <ul>
+      <li>Your apiaries (names, locations, landmarks, photos)</li>
+      <li>Your hives (names, rows, status, box types, historical changes)</li>
+      <li>Inspections (dates, notes, frame composition, queen sightings, varroa counts, treatments, photos, voice recordings)</li>
+      <li>Harvests and equipment inventory</li>
+    </ul>
 
-<h2>Changes to this policy</h2>
-<p>We may update this policy. Significant changes will be notified in the app.</p>
+    <h3>Voice and photo data</h3>
+    <p>When you use voice recording during an inspection, audio is sent to our transcription service for conversion to text. The resulting text is stored as part of your inspection record; the audio itself is not retained by HiveKeeper beyond the time needed for transcription. Photos you upload are stored securely and linked to the relevant hive or inspection.</p>
 
-<h2>Contact</h2>
-<p>Questions about this policy: <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a></p>
-<p>Culshaw Consulting Ltd · Brigstock, Northamptonshire</p>
+    <h3>AI conversation data</h3>
+    <p>When you use the HiveKeeper AI chat or frame photo analysis, your question and relevant apiary context are sent to our AI providers. These providers process the data solely to generate a response; they do not retain it to train their models (in line with their enterprise data commitments).</p>
+
+    <h3>Location data</h3>
+    <p>If you choose to, you can record the precise location of your apiaries and hives using your device's GPS. This is optional. HiveKeeper does not track your device's location in the background.</p>
+
+    <h3>Payment data</h3>
+    <p>If you subscribe to a paid plan, payment is handled entirely by our payment processor, Stripe. We do not see or store your full card details &mdash; we only receive a subscription identifier and billing status.</p>
+
+    <h3>Technical data</h3>
+    <p>When you use the app, we automatically receive basic technical information including your IP address, device type, browser, and app version. This is used to help the app function and to diagnose issues.</p>
+  </section>
+
+  <section class="clause" id="how-we-use">
+    <h2>3. How we use your data</h2>
+    <p>We use your data for the following purposes:</p>
+    <ul>
+      <li><strong>Providing the service:</strong> Storing your hives, apiaries, and inspections so you can access them across devices.</li>
+      <li><strong>AI-powered features:</strong> Sending your question and apiary context to AI providers to generate personalised beekeeping advice or analyse frame photographs.</li>
+      <li><strong>Voice transcription:</strong> Converting your inspection voice notes into written text.</li>
+      <li><strong>Payment processing:</strong> Managing subscriptions and invoices via Stripe.</li>
+      <li><strong>Transactional communications:</strong> Sending essential emails such as sign-up confirmation, password resets, trial expiry notices, and subscription receipts.</li>
+      <li><strong>Marketing (opt-in):</strong> With your consent, sending product updates and newsletters. You can opt out at any time.</li>
+      <li><strong>Improving the service:</strong> Understanding general usage patterns and diagnosing bugs. We do not use your beekeeping data or voice recordings for product development or training AI models.</li>
+      <li><strong>Legal compliance:</strong> Retaining invoices and subscription records as required by UK tax law.</li>
+    </ul>
+  </section>
+
+  <section class="clause" id="legal-basis">
+    <h2>4. Legal basis for processing</h2>
+    <p>Under UK GDPR, we must have a lawful basis for processing your data. The bases we rely on are:</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Purpose</th><th>Legal basis</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Providing the HiveKeeper service</td><td>Contract (Article 6(1)(b))</td></tr>
+        <tr><td>Payment processing</td><td>Contract (Article 6(1)(b))</td></tr>
+        <tr><td>Transactional emails (essential)</td><td>Contract (Article 6(1)(b))</td></tr>
+        <tr><td>Marketing emails</td><td>Consent (Article 6(1)(a)) &mdash; opt-in required</td></tr>
+        <tr><td>Service improvement and security</td><td>Legitimate interest (Article 6(1)(f))</td></tr>
+        <tr><td>Legal and tax record keeping</td><td>Legal obligation (Article 6(1)(c))</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="clause" id="subprocessors">
+    <h2>5. Third parties and subprocessors</h2>
+    <p>To run HiveKeeper, we rely on the following trusted service providers. Each handles your data under their own privacy policies and contractually agreed data protection terms.</p>
+    <table class="data-table">
+      <thead>
+        <tr><th>Provider</th><th>Purpose</th><th>Location</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Supabase</strong></td><td>Database and user authentication</td><td>EU (London, UK)</td></tr>
+        <tr><td><strong>Cloudflare</strong></td><td>Worker functions, content delivery, security</td><td>Global edge</td></tr>
+        <tr><td><strong>OpenAI</strong></td><td>Voice transcription (Whisper)</td><td>United States</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td>AI chat and frame photo analysis (Claude)</td><td>United States</td></tr>
+        <tr><td><strong>Stripe</strong></td><td>Payment processing</td><td>United Kingdom / Ireland</td></tr>
+        <tr><td><strong>Resend</strong></td><td>Transactional and marketing email delivery</td><td>United States</td></tr>
+        <tr><td><strong>Median</strong></td><td>Mobile app wrapper (Android)</td><td>United States</td></tr>
+      </tbody>
+    </table>
+    <p>These providers are contractually bound to process your data only on our instructions and to maintain appropriate security measures.</p>
+  </section>
+
+  <section class="clause" id="international">
+    <h2>6. International data transfers</h2>
+    <p>Some of our subprocessors are based outside the UK and European Economic Area (EEA). Where data is transferred outside the UK/EEA, we rely on appropriate safeguards as required by UK GDPR, including the UK's International Data Transfer Agreement (IDTA), the EU Standard Contractual Clauses (SCCs) with the UK addendum, or adequacy decisions where applicable.</p>
+    <p>Your primary beekeeping data is stored on Supabase servers in West London (UK).</p>
+  </section>
+
+  <section class="clause" id="retention">
+    <h2>7. How long we keep your data</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th>Data type</th><th>Retention period</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Your account and beekeeping data</td><td>While your account is active</td></tr>
+        <tr><td>Deleted account data</td><td>Removed within 30 days of deletion request</td></tr>
+        <tr><td>Backup copies</td><td>Up to 90 days in rolling backups</td></tr>
+        <tr><td>Invoices and subscription records</td><td>6 years (UK tax and accounting law)</td></tr>
+        <tr><td>Error logs and security logs</td><td>90 days</td></tr>
+        <tr><td>Marketing consent records</td><td>Until you unsubscribe, plus 6 months</td></tr>
+      </tbody>
+    </table>
+    <div class="callout-info">
+      <strong>Voice recordings</strong> are never stored long-term. Audio is transmitted to our transcription provider, converted to text, and discarded. Only the resulting text becomes part of your inspection record.
+    </div>
+  </section>
+
+  <section class="clause" id="your-rights">
+    <h2>8. Your rights</h2>
+    <p>Under UK GDPR, you have the following rights in relation to your personal data:</p>
+    <ul>
+      <li><strong>Access</strong> &mdash; request a copy of the data we hold about you</li>
+      <li><strong>Rectification</strong> &mdash; ask us to correct inaccurate data</li>
+      <li><strong>Erasure</strong> &mdash; ask us to delete your data (&ldquo;right to be forgotten&rdquo;)</li>
+      <li><strong>Restriction</strong> &mdash; ask us to pause processing in certain circumstances</li>
+      <li><strong>Portability</strong> &mdash; receive your data in a machine-readable format</li>
+      <li><strong>Objection</strong> &mdash; object to processing based on legitimate interest, or to marketing</li>
+      <li><strong>Withdraw consent</strong> &mdash; at any time, where processing relies on consent</li>
+    </ul>
+    <p>Most of these can be exercised directly in the app: you can export or delete your data from the Settings screen. For anything else, email <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a> and we will respond within one month.</p>
+    <p>You also have the right to complain to the UK Information Commissioner's Office (ICO) at <a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a> if you believe we have not handled your data correctly. We'd appreciate the chance to put things right first &mdash; please contact us before going to the ICO.</p>
+  </section>
+
+  <section class="clause" id="security">
+    <h2>9. Security</h2>
+    <p>We take reasonable technical and organisational measures to protect your data:</p>
+    <ul>
+      <li>Encryption of data in transit (HTTPS / TLS 1.2+)</li>
+      <li>Encryption of data at rest (provided by Supabase and our subprocessors)</li>
+      <li>Role-based access controls and row-level security on our database</li>
+      <li>Hashed passwords (never stored in plain text)</li>
+      <li>Secure API keys stored as secrets, never exposed to client code</li>
+      <li>Regular software updates and dependency monitoring</li>
+    </ul>
+    <p>Despite our efforts, no online service is 100% secure. If we become aware of a security breach affecting your personal data, we will notify you and the ICO as required by law.</p>
+    <p>See also our <a href="security-policy.html">Security Policy</a> for more detail.</p>
+  </section>
+
+  <section class="clause" id="children">
+    <h2>10. Age restrictions</h2>
+    <p>HiveKeeper is intended for users aged <strong>16 or over</strong>. By signing up, you confirm that you are at least 16 years old.</p>
+    <p>We do not knowingly collect personal data from children under 16. If you are a parent or guardian and believe your child has signed up for HiveKeeper, please contact <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a> and we will delete the account and any associated data as soon as reasonably possible.</p>
+    <div class="callout">
+      <strong>Note for junior beekeepers:</strong> If you are under 16 and interested in beekeeping, please ask a parent or guardian to use HiveKeeper on your behalf. Many families share a single account and the junior beekeeper simply uses it supervised.
+    </div>
+  </section>
+
+  <section class="clause" id="marketing">
+    <h2>11. Marketing communications</h2>
+    <p>We may send you occasional product updates, newsletters, or offers related to HiveKeeper. We will only do this where:</p>
+    <ul>
+      <li>You have opted in at sign-up or in your account settings; or</li>
+      <li>You are an existing customer and the communication concerns similar services (under the &ldquo;soft opt-in&rdquo; rule in UK PECR), with a clear opt-out in every message.</li>
+    </ul>
+    <p>Every marketing email includes an unsubscribe link. You can also opt out at any time by emailing <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a>.</p>
+    <p>Transactional emails &mdash; password resets, trial expiry, payment receipts &mdash; will continue to be sent regardless of your marketing preferences, as they are essential to the service.</p>
+  </section>
+
+  <section class="clause" id="cookies">
+    <h2>12. Cookies and tracking</h2>
+    <p>HiveKeeper uses a small number of cookies and similar technologies, all for essential functionality:</p>
+    <ul>
+      <li><strong>Authentication cookies</strong> &mdash; to keep you signed in</li>
+      <li><strong>Preference storage</strong> (local storage and session storage) &mdash; to remember your settings, current apiary, and cached data for offline use</li>
+    </ul>
+    <p>We do not use advertising cookies. We do not use third-party analytics cookies. We do not share browsing data with advertising networks.</p>
+  </section>
+
+  <section class="clause" id="changes">
+    <h2>13. Changes to this policy</h2>
+    <p>We may update this Privacy Policy from time to time to reflect changes to our service, law, or best practice. When we make material changes, we will:</p>
+    <ul>
+      <li>Update the &ldquo;Effective&rdquo; date at the top of this page</li>
+      <li>Notify you in-app or by email if the change affects how we handle your data</li>
+      <li>Keep previous versions available on request</li>
+    </ul>
+  </section>
+
+  <section class="clause" id="contact">
+    <h2>14. Contact us</h2>
+    <p>For any questions about this Privacy Policy or how we handle your data:</p>
+    <p><strong>Email:</strong> <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a></p>
+    <p><strong>Post:</strong><br>
+      Privacy Enquiries<br>
+      Culshaw Consulting Ltd<br>
+      30 Stanion Road<br>
+      Brigstock<br>
+      Northamptonshire NN14 3HW<br>
+      United Kingdom
+    </p>
+    <p>You also have the right to complain to the UK Information Commissioner's Office:</p>
+    <p><a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a> &middot; 0303 123 1113</p>
+
+    <a href="/hivekeeper-beta1.html" class="back-to-app">Back to HiveKeeper</a>
+  </section>
+
+</main>
 
 <footer>
-  <a href="https://gethivekeeper.com">gethivekeeper.com</a> · 
-  chris@culshaw.consulting · 
-  culshaw.consulting
+  <div class="brand">🐝 HiveKeeper</div>
+  <div>Culshaw Consulting Ltd &middot; Company 16938477</div>
+  <div class="contact">
+    <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a> &middot;
+    <a href="https://gethivekeeper.com">gethivekeeper.com</a>
+  </div>
 </footer>
 
 </body>
