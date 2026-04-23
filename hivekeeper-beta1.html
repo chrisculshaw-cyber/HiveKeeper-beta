@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 12:40 · Fix monkeypatch dirty flag + goTo order</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 13:10 · Merge transcript → notes on save</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -7477,6 +7477,28 @@ function saveInspection(){
     }
   }
 
+  // MERGE TRANSCRIPT INTO NOTES (23 April 2026 13:00)
+  // Previously inspections had two separate fields — `transcript` (Whisper AI
+  // output) and `notes` (typed). The Apiary history display only shows `notes`,
+  // so if a user recorded a voice note but typed nothing, the inspection
+  // appeared empty in the history list. Fix: on every save, combine both
+  // into a single notes string. Transcript goes first (it's usually the
+  // main content), typed notes appended after a blank line if present.
+  // Transcript field is then cleared so we have one source of truth.
+  var _voiceTranscript = (document.getElementById('transcript-text')?document.getElementById('transcript-text').innerText.trim():'') || currentInspData.transcript || '';
+  var _typedNotes = (notes || '').trim();
+  var _mergedNotes;
+  if (_voiceTranscript && _typedNotes) {
+    _mergedNotes = _voiceTranscript + '\n\n' + _typedNotes;
+  } else if (_voiceTranscript) {
+    _mergedNotes = _voiceTranscript;
+  } else if (_typedNotes) {
+    _mergedNotes = _typedNotes;
+  } else {
+    _mergedNotes = 'Manual inspection';
+  }
+  console.log('[DIAG save] merge · transcript=' + _voiceTranscript.length + 'ch · typed=' + _typedNotes.length + 'ch · merged=' + _mergedNotes.length + 'ch');
+
   const insp={
     id: _isEdit ? window._editingInspId : uid(),
     hiveId: _isEdit ? _existingInsp.hiveId : currentHiveId,  // preserve original hive on edit
@@ -7504,8 +7526,8 @@ function saveInspection(){
       var meta = typeof _currentUser !== 'undefined' && _currentUser && _currentUser.user_metadata;
       return (meta && (meta.full_name || meta.name) ? (meta.full_name || meta.name).split(' ')[0] : 'Keeper');
     })(),
-    transcript:(document.getElementById('transcript-text')?document.getElementById('transcript-text').innerText.trim():'') || currentInspData.transcript || notes || 'Manual inspection',
-    notes, queenSeen:currentInspData.queenSeen===true ? true : currentInspData.queenSeen===false ? false : null, queenFrame:currentInspData.queenFrame||null,
+    transcript: '', // Merged into notes on save (23 April 2026) — one source of truth
+    notes: _mergedNotes, queenSeen:currentInspData.queenSeen===true ? true : currentInspData.queenSeen===false ? false : null, queenFrame:currentInspData.queenFrame||null,
     broodFrames:currentInspData.broodFrames||null, broodPattern:currentInspData.broodPattern||null,
     apiaryId: _isEdit ? (_existingInsp.apiaryId || null) : (currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null),
     storesLevel:currentInspData.storesLevel||'adequate', storesLevelUserSet:!!currentInspData.storesLevel, swarmRisk:currentInspData.swarmRisk||'none',
@@ -13031,12 +13053,31 @@ saveInspection = function() {
     var idx = inspections.findIndex(function(i){ return i.id === inspId; });
     if (idx === -1) { window._editingInspId = null; _origSaveInspectionEdit(); return; }
 
-    var notes = document.getElementById('inspect-notes') ? document.getElementById('inspect-notes').value : '';
+    var typedNotes = (document.getElementById('inspect-notes') ? document.getElementById('inspect-notes').value : '').trim();
     var frameDataCopy = typeof frameData !== 'undefined' ? Object.assign({}, frameData) : {};
 
+    // Merge transcript + typed notes (23 April 2026 13:00 — same logic as
+    // main saveInspection). In edit mode, typedNotes usually already
+    // contains the existing saved notes (populated by editInspection's
+    // hydrate step), so we need to detect whether there's NEW transcript
+    // content from this session and append it rather than overwrite.
+    var newTranscript = (document.getElementById('transcript-text') ? document.getElementById('transcript-text').innerText.trim() : '') || currentInspData.transcript || '';
+    var existingSavedNotes = (inspections[idx] && inspections[idx].notes) || '';
+    var mergedNotes;
+    // If the current typed notes match what was saved, and there's a new
+    // transcript from this session, append the transcript to the saved notes.
+    if (newTranscript && newTranscript !== existingSavedNotes && typedNotes.indexOf(newTranscript) === -1) {
+      // New voice content not yet in the notes — append it
+      mergedNotes = (typedNotes ? typedNotes + '\n\n' + newTranscript : newTranscript);
+    } else {
+      // Either no new voice content, or user already incorporated it
+      mergedNotes = typedNotes;
+    }
+    console.log('[DIAG save-patch] merge · newTranscript=' + newTranscript.length + 'ch · typed=' + typedNotes.length + 'ch · merged=' + mergedNotes.length + 'ch');
+
     inspections[idx] = Object.assign(inspections[idx], {
-      notes: notes,
-      transcript: notes || currentInspData.transcript,
+      notes: mergedNotes,
+      transcript: '', // Cleared — notes is the single source of truth after save
       queenSeen: currentInspData.queenSeen,
       queenFrame: currentInspData.queenFrame || null,
       broodFrames: currentInspData.broodFrames || null,
