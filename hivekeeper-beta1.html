@@ -1174,7 +1174,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 14:45 · Home screen counts — apiary-scoped, excl hidden + demo</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 23 April 2026 at 15:30 · AI chat live (Claude Haiku via Worker v9)</div>
 
   <!-- Tabs -->
   <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
@@ -7866,25 +7866,118 @@ async function sendAI(){
     return;
   }
 
-  // ── AI CHAT TEMPORARILY UNAVAILABLE ──
-  // The previous implementation called the Anthropic API directly from the
-  // browser (no auth header — every call returned 401) and silently fell
-  // back to hardcoded "demo" answers that referenced fictional hives and
-  // events from the demo data set (Row 2 H6, Row 4 robbing, Meadowbrook
-  // Farm, etc). That was actively misleading testers. Disabled 21 April
-  // pending proper implementation via the Cloudflare Worker with a
-  // server-side API key and real-data system prompt built from
-  // loadHives/loadInspections. For now: show an honest failure message
-  // so testers know the service isn't available rather than seeing
-  // fake bespoke advice.
-  showTyping(false);
-  addMessage('ai', 'AI chat is temporarily unavailable while the backend is being rebuilt — Chris is working on it. In the meantime, ask a beekeeper, check your notes, or use the seasonal tips on the home screen.');
+  // ── AI CHAT (rebuilt 23 April 2026) ──
+  // Calls the Cloudflare Worker /chat handler. Worker proxies to Claude Haiku 4.5
+  // with a UK beekeeping system prompt and the keeper's full apiary context.
+  // Tier gating already enforced above via checkFeatureLimit('ai_chat'):
+  //   Free 5/day (existing), Pro 100/day, Commercial 500/day.
+  // Usage count is already incremented at that check, so we don't touch it here.
+  try {
+    // Build full apiary context — current apiary's hives + last 5 inspections
+    // across those hives. Kept compact (<3k tokens typically) to keep API cost
+    // down while giving the model enough specifics to answer about THIS
+    // keeper's hives rather than generic advice.
+    var _curAp = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
+    var _allHives = loadHives();
+    var _apiaryHives = _allHives.filter(function(h) {
+      if (h.id && h.id.toString().startsWith('demo-')) return false;
+      if (h.hidden || h.isHidden) return false;
+      if (_curAp) return h.apiaryId === _curAp;
+      return !h.apiaryId;
+    });
+    var _apiaryName = (function(){
+      var a = loadApiaries().find(function(x){ return x.id === _curAp; });
+      return a ? a.name : 'Main apiary';
+    })();
+
+    var _hivesForAI = _apiaryHives.map(function(h) {
+      return {
+        name: h.name,
+        status: h.status || 'active',
+        boxType: h.boxType || h.hiveType || null,
+        storesLevel: h.storesLevel || null,
+        swarmRisk: h.swarmRisk || null,
+        varroaLevel: h.varroaLevel || null,
+        waxMoth: !!h.waxMoth
+      };
+    });
+
+    var _apiaryHiveIds = _apiaryHives.map(function(h){ return h.id; });
+    var _recentInsps = loadInspections()
+      .filter(function(i){ return _apiaryHiveIds.indexOf(i.hiveId) !== -1; })
+      .slice(0, 5)
+      .map(function(i) {
+        var h = _allHives.find(function(x){ return x.id === i.hiveId; });
+        return {
+          inspectedAt: i.inspectedAt,
+          hiveName: h ? h.name : 'Unknown',
+          notes: i.notes || i.transcript || ''
+        };
+      });
+
+    var _aiCtx = {
+      apiaryName: _apiaryName,
+      hives: _hivesForAI,
+      recentInspections: _recentInsps,
+      todayDate: new Date().toISOString().slice(0, 10)
+    };
+
+    var _res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'chat',
+        message: msg,
+        context: _aiCtx,
+        tier: localStorage.getItem('hk_tier') || _userTier || 'free'
+      })
+    });
+
+    showTyping(false);
+
+    if (!_res.ok) {
+      var _errBody = null;
+      try { _errBody = await _res.json(); } catch(e) {}
+      if (_errBody && _errBody.code === 'too_long') {
+        addMessage('ai', 'That message is a bit long — please shorten it and try again.');
+      } else if (_errBody && _errBody.code === 'upstream_error') {
+        addMessage('ai', 'The AI service is having a moment. Please try again in a minute or two.');
+      } else {
+        addMessage('ai', 'Something went wrong (' + _res.status + '). Please try again in a moment.');
+      }
+      return;
+    }
+
+    var _data = await _res.json();
+    if (_data.reply) {
+      // Convert newlines to <br> since addMessage inserts as innerHTML.
+      // Also handle the basic markdown (*italic*, **bold**) the model uses.
+      var _html = _data.reply
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        .replace(/_([^_]+)_/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+      addMessage('ai', _html);
+    } else {
+      addMessage('ai', 'I couldn\'t generate a response. Please try rephrasing your question.');
+    }
+  } catch (e) {
+    console.warn('AI chat error:', e);
+    showTyping(false);
+    if (!navigator.onLine) {
+      addMessage('ai', 'AI chat needs an internet connection. Check your signal and try again.');
+    } else {
+      addMessage('ai', 'AI chat failed — check your connection and try again.');
+    }
+  }
 }
 
-// Stub retained for any legacy call-sites. Returns the honest unavailability
-// message rather than hardcoded demo answers.
+// Stub retained for any legacy call-sites.
 function getFallback(msg){
-  return 'AI chat is temporarily unavailable — please try again later.';
+  return 'AI chat is unavailable right now — please try again later.';
 }
 
 function sendSuggestion(el){ document.getElementById('ai-input').value=el.textContent; sendAI(); }
@@ -20586,6 +20679,15 @@ var FREE_LIMITS = {
   ai_frame: { count: 1,  per: 'month', label: 'AI frame analyses' }
 };
 
+// Pro/Commercial daily caps for AI chat (added 23 April 2026).
+// Protects against runaway usage / prompt-injection abuse that could drive
+// up API costs. Invisible to typical users but catches outliers. Warning
+// fires at 50 remaining so users know before they hit the wall.
+var PAID_AI_CHAT_LIMITS = {
+  pro:        { count: 100, warnAt: 50 },
+  commercial: { count: 500, warnAt: 50 }
+};
+
 function _usagePeriodKey(per) {
   var d = new Date();
   if (per === 'day') return d.getUTCFullYear() + '-' + (d.getUTCMonth()+1) + '-' + d.getUTCDate();
@@ -20609,9 +20711,35 @@ function incrementUsage(feature) {
 
 // Returns true if the user can use the feature now. Shows upgrade modal if not.
 // Increments usage automatically for Free users. Founders/paid/trial bypass everything.
+// 23 April 2026: For ai_chat specifically, Pro/Commercial now have daily caps
+// (100/500) with a 50-remaining warning. Protects API bill from abuse.
 function checkFeatureLimit(feature) {
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return true;
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
+
+  // Pro/Commercial AI chat: soft daily cap with warning
+  if (feature === 'ai_chat' && (tier === 'pro' || tier === 'commercial')) {
+    var paidLimit = PAID_AI_CHAT_LIMITS[tier];
+    if (paidLimit) {
+      // Use same storage key pattern as Free tier (daily period)
+      var periodKey = _usagePeriodKey('day');
+      var storageKey = 'hk_usage_ai_chat_' + periodKey;
+      var used = parseInt(localStorage.getItem(storageKey) || '0', 10);
+      if (used >= paidLimit.count) {
+        showToast('Daily AI chat limit reached (' + paidLimit.count + ' messages). Resets at midnight UTC.');
+        return false;
+      }
+      // Increment
+      localStorage.setItem(storageKey, (used + 1).toString());
+      // Warning at warnAt-remaining threshold
+      var remaining = paidLimit.count - (used + 1);
+      if (remaining === paidLimit.warnAt) {
+        showToast(paidLimit.warnAt + ' AI messages remaining today');
+      }
+      return true;
+    }
+  }
+
   if (tier === 'pro' || tier === 'commercial') return true;
   if (typeof isInTrial === 'function' && isInTrial()) return true;
   // Free tier — enforce limit
