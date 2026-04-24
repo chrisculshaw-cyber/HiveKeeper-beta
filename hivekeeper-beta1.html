@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 17:45 · Offline queue row shapes fixed (apiaries/hives/harvests/treatments/varroa) + retry cap</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 18:20 · Fix: hive delete now actually fires to Supabase + tombstones survive pull</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -12792,7 +12792,7 @@ function confirmDeleteHive(hiveId) {
 }
 
 function deleteHiveAndData(hiveId) {
-  // Remove hive
+  // Remove hive from local first — instant UI response
   var hives = loadHives().filter(function(h){ return h.id !== hiveId; });
   saveHives(hives);
   // Remove all associated records
@@ -12805,20 +12805,47 @@ function deleteHiveAndData(hiveId) {
   var treatments = loadTreatments().filter(function(t){ return t.hiveId !== hiveId; });
   saveTreatments(treatments);
 
-  // Push delete to Supabase immediately
+  // Tombstone FIRST — ensures pullFromSupabase filters this ID out even if the
+  // cloud delete below fails/is delayed. Survives pull wipes via keysToKeep.
+  try {
+    var _del=JSON.parse(localStorage.getItem('hk_deleted_hives')||'[]');
+    if(_del.indexOf(hiveId)<0){_del.push(hiveId);}
+    localStorage.setItem('hk_deleted_hives', JSON.stringify(_del));
+    // Clean map positions for this hive
+    var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');
+    delete _p[hiveId];
+    localStorage.setItem('hk_map_positions', JSON.stringify(_p));
+  } catch(e) {}
+
+  // Push delete to Supabase. 24 April 2026 fix: must AWAIT the delete call
+  // or it never actually fires — supabase-js v2 query builder only executes
+  // on await/.then(). Previously this line existed but did nothing, which
+  // is why deleted hives kept reappearing after pullFromSupabase.
   try {
     var _sb=getSupabase(), _uid=getUserId();
     if (_uid && hiveId && !hiveId.toString().startsWith('demo-')) {
-      _sb.from('hives').delete().eq('id', hiveId).eq('user_id', _uid);
-      var _p=JSON.parse(localStorage.getItem('hk_map_positions')||'{}');
-      delete _p[hiveId];
-      localStorage.setItem('hk_map_positions', JSON.stringify(_p));
-      // Track deleted ID so pull doesn't restore it
-      var _del=JSON.parse(localStorage.getItem('hk_deleted_hives')||'[]');
-      if(_del.indexOf(hiveId)<0){_del.push(hiveId);}
-      localStorage.setItem('hk_deleted_hives', JSON.stringify(_del));
+      if (isOnline()) {
+        // Fire and forget with .then() so the call actually executes,
+        // but don't block the UI response
+        _sb.from('hives').delete().eq('id', hiveId).eq('user_id', _uid)
+          .then(function(res) {
+            if (res.error) {
+              console.warn('[deleteHive] Supabase delete failed:', res.error.message);
+              // Tombstone will protect against re-sync until manually retried
+            }
+          });
+      } else {
+        // Offline — queue the delete. On reconnect, flushOfflineQueue uses
+        // upsert by default, not delete. So we store the intent as a special
+        // marker. Simpler approach: just rely on the tombstone + retry the
+        // delete on next online event. For now, we queue a "delete intent"
+        // by setting a pending flag in localStorage.
+        var _pending = JSON.parse(localStorage.getItem('hk_pending_deletes')||'[]');
+        if (_pending.indexOf(hiveId) < 0) _pending.push(hiveId);
+        localStorage.setItem('hk_pending_deletes', JSON.stringify(_pending));
+      }
     }
-  } catch(e) {}
+  } catch(e) { console.warn('[deleteHive] exception:', e); }
 
   showToast('Hive deleted');
   goTo('s-apiary');
@@ -16902,6 +16929,12 @@ async function pullFromSupabase() {
         // the user's unsynced data isn't lost. On the next successful push
         // they'll reach the cloud.
         'hk_sprays','hk_movements_v1','hk_offline_queue',
+        // 24 April 2026 — tombstones for deleted hives must survive pulls,
+        // otherwise the filter at "mapped.filter(function(h){return _delList.indexOf..." 
+        // can't protect against a freshly-pulled hive that the user has just deleted
+        // locally. Before this fix, deleting a hive "worked" locally but the hive
+        // came back on the next pull.
+        'hk_deleted_hives','hk_pending_deletes',
         // 24 April 2026 — CRITICAL: hk_seeded_beta must survive pulls, otherwise
         // seedRealData() re-runs on next login and creates duplicate Meadowbrook
         // Apiary entries. This was the root cause of the "2 Meadowbrook apiaries"
@@ -20046,6 +20079,9 @@ async function flushOfflineQueue() {
 window.addEventListener('online', function() {
   showToast('Back online — syncing...');
   setTimeout(function() {
+    // Process any pending deletes first (24 April 2026 — delete intents
+    // queued while offline so they actually execute on reconnect).
+    processPendingDeletes();
     flushOfflineQueue().then(function() {
       // After queue flushed, trigger a full push of everything to make sure
       // any state that was only written locally (edge cases) gets synced too.
@@ -20056,9 +20092,37 @@ window.addEventListener('online', function() {
   }, 1000);
 });
 
+// Fire pending delete intents against Supabase. Called on reconnect + login.
+function processPendingDeletes() {
+  try {
+    var pending = JSON.parse(localStorage.getItem('hk_pending_deletes') || '[]');
+    if (!pending.length || !getUserId()) return;
+    var sb = getSupabase();
+    var uid = getUserId();
+    var remaining = [];
+    pending.forEach(function(hiveId) {
+      sb.from('hives').delete().eq('id', hiveId).eq('user_id', uid)
+        .then(function(res) {
+          if (res.error) {
+            console.warn('[processPendingDeletes] failed for', hiveId, ':', res.error.message);
+            // Keep in pending list for next retry
+            var current = JSON.parse(localStorage.getItem('hk_pending_deletes') || '[]');
+            if (current.indexOf(hiveId) < 0) current.push(hiveId);
+            localStorage.setItem('hk_pending_deletes', JSON.stringify(current));
+          }
+        });
+    });
+    // Clear the list — any failures re-add themselves via the .then() above
+    localStorage.setItem('hk_pending_deletes', '[]');
+  } catch(e) { console.warn('[processPendingDeletes] exception:', e); }
+}
+
 // Also try flush on each login
 function initOfflineSync() {
   if (isOnline()) {
+    // Process pending deletes first so they happen before any potential pull
+    // that might bring the hive back from the cloud.
+    processPendingDeletes();
     var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
     if (q.length) {
       showToast(q.length + ' offline record(s) queued — syncing...');
