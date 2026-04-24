@@ -1293,7 +1293,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18:11 24 April 2026 BST · Screen identity colours: Calendar now slate blue, AI now deep teal, Environment now sage olive. Accent bars retained for subtle top highlight. Home/Apiary/Hive/Inspect/Market keep their existing base colours. Fixed: missing closing div on stamp (earlier build).</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18:34 24 April 2026 BST · User-friendly sync error toasts. Raw Postgres error text replaced with reassuring language (your data is already saved locally; the queue retries automatically). Protective for weekend Founder inspections.</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -16731,7 +16731,10 @@ async function pushHives() {
   var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
   if (error) {
     console.warn('Hive push error:', error.message, error.code);
-    showToast('⚠️ Sync error: ' + error.message);
+    // 24 April 2026: don't show raw Postgres error text to users — it's alarming
+    // and unhelpful. Your data is already saved locally (write-first architecture);
+    // the queue will retry automatically. Keep the console log for diagnostics.
+    showToast('A hive couldn\u2019t sync just now — we\u2019ll try again shortly');
   }
 }
 
@@ -16787,7 +16790,7 @@ async function pushInspections() {
     };
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
-  if (error) { console.warn('Inspection push error:', error.message); showToast('⚠️ Sync error (inspections): ' + error.message); }
+  if (error) { console.warn('Inspection push error:', error.message); showToast('Cloud backup will retry shortly \u2014 your inspection is safe on your phone'); }
 }
 
 async function pushHarvests() {
@@ -21891,7 +21894,7 @@ async function pushMapPositions() {
       .select('id');
     if (res.error) {
       hkLog('PUSH ERROR: '+res.error.message+' ('+res.error.code+')');
-      showToast('Map sync error: '+res.error.message);
+      showToast('Positions saved on your phone \u2014 cloud sync will retry shortly');
     } else {
       hkLog('PUSH OK rows='+(res.data?res.data.length:0));
       showToast('Positions saved to cloud');
