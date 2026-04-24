@@ -1293,7 +1293,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17:52 24 April 2026 BST · Apiary & Inspect headers: WhatsApp icon removed (was pushing Help button off the edge on narrow viewports). Inspect gets its missing accent bar (honey orange). All 8 screens now have coloured accent bars for visual differentiation. WhatsApp still reachable via Environment header, Market button, and Settings modal.
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 17:52 24 April 2026 BST · Apiary & Inspect headers: WhatsApp icon removed (was pushing Help button off the edge on narrow viewports). Inspect gets its missing accent bar (honey orange). All 8 screens now have coloured accent bars for visual differentiation. WhatsApp still reachable via Environment header, Market button, and Settings modal.</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -22309,5 +22309,8 @@ function renderTrialBanners() {
 }
 
 </script>
+</div><!-- /#app-container — wraps the whole app. Was left unclosed during
+       the 24 April 2026 desktop-layout restructure; browsers auto-close at
+       </body> but explicit is better. -->
 </body>
 </html>
