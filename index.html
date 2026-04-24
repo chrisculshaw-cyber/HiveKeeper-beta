@@ -847,6 +847,131 @@ p { font-size: 17px; line-height: 1.7; }
 }
 .charter-banner-text p strong { color: var(--forest); font-weight: 600; }
 
+/* PHOTO BAND — 24 April 2026
+   Real-beekeeping photo + credibility copy between Features and Pricing.
+   Dark forest background so the photo can pop, honey accent on quote. */
+.photo-band {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #1F4E3A 0%, #2A4A2A 50%, #1F4E3A 100%);
+  color: white;
+  position: relative;
+}
+.photo-band-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .photo-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .photo-band { padding: 60px 0; }
+}
+.photo-band-image {
+  position: relative;
+}
+.photo-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px -15px rgba(0,0,0,0.5);
+}
+.photo-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+}
+.photo-band-text .eyebrow {
+  color: var(--honey);
+  display: block;
+  margin-bottom: 16px;
+}
+.photo-band-text h2 {
+  color: white;
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.photo-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.photo-band-text p {
+  color: rgba(255,255,255,0.88);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* FAMILY BAND — 24 April 2026
+   Smaller, warmer companion to .photo-band. Cream background to contrast with
+   the dark forest photo-band above, image on the RIGHT so the eye flows
+   differently. Used to show Tilly in a bee suit — the personal angle. */
+.family-band {
+  padding: 100px 0;
+  background: var(--cream-warm);
+  position: relative;
+}
+.family-band-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .family-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .family-band { padding: 60px 0; }
+  /* On mobile, put image above text for a natural read order */
+  .family-band-image { order: -1; }
+}
+.family-band-image {
+  position: relative;
+}
+.family-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+}
+.family-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.35;
+  z-index: -1;
+  pointer-events: none;
+}
+.family-band-text .eyebrow {
+  display: block;
+  margin-bottom: 16px;
+}
+.family-band-text h2 {
+  color: var(--forest);
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.family-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.family-band-text p {
+  color: var(--bark);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
 .about {
   padding: 120px 0;
   background: var(--cream-warm);
@@ -865,7 +990,7 @@ p { font-size: 17px; line-height: 1.7; }
 .about-portrait-col { position: relative; }
 .about-icon-frame {
   position: relative;
-  aspect-ratio: 1;
+  aspect-ratio: 4/5;  /* portrait aspect — bee suit photo is vertical */
   max-width: 360px;
   margin: 0 auto;
 }
@@ -873,6 +998,7 @@ p { font-size: 17px; line-height: 1.7; }
   width: 100%;
   height: 100%;
   border-radius: 16px;
+  object-fit: cover;  /* crop to fit the frame cleanly regardless of source aspect */
   box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
 }
 .about-hex-behind {
@@ -1412,6 +1538,27 @@ footer {
   </div>
 </section>
 
+<!-- PHOTO BAND — 24 April 2026: real beekeeping credibility
+     Shows Chris actively moving hives on a trailer, anchoring the claim that
+     HiveKeeper is built by a working beekeeper, not a theoretical product. -->
+<section class="photo-band">
+  <div class="wrap photo-band-inner">
+    <div class="photo-band-image">
+      <img src="IMG-20250412-WA0006.jpg" alt="Chris Culshaw moving beehives on a trailer in Northamptonshire, demonstrating real beekeeping experience behind HiveKeeper">
+    </div>
+    <div class="photo-band-text">
+      <span class="eyebrow">Built in the field</span>
+      <h2>Not designed in a boardroom. <em>Designed on a trailer.</em></h2>
+      <p>
+        Every feature in HiveKeeper exists because I needed it at 6am, in a field, with 24 hives to get through. Voice notes because your hands are in the hive. Asian hornet tracking because the threat is real. Crop-spraying alerts because losing a colony to drift is devastating. Lone-worker SOS because some apiaries have no signal and no one nearby.
+      </p>
+      <p>
+        This is beekeeping software written by someone who still drops the hive tool in the grass.
+      </p>
+    </div>
+  </div>
+</section>
+
 <section class="pricing" id="pricing">
   <div class="wrap">
     <div class="section-head">
@@ -1488,7 +1635,7 @@ footer {
   <div class="wrap about-inner">
     <div class="about-portrait-col">
       <div class="about-icon-frame">
-        <img src="hivekeeper-icon.png" alt="HiveKeeper logo">
+        <img src="FB_IMG_1776981969106.jpg" alt="Chris Culshaw, beekeeper and founder of HiveKeeper, in bee suit at his apiary" style="width:100%;height:auto;object-fit:cover;border-radius:16px;">
         <div class="about-hex-behind"></div>
       </div>
     </div>
@@ -1534,6 +1681,23 @@ footer {
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAMILY BAND — 24 April 2026: the next generation of beekeepers
+     Photo of Chris's daughter Tilly in a bee suit. Small, warm, humanising.
+     Positioned after About so it reinforces the personal angle. -->
+<section class="family-band">
+  <div class="wrap family-band-inner">
+    <div class="family-band-text">
+      <span class="eyebrow">The next generation</span>
+      <h2>Beekeeping is <em>better shared.</em></h2>
+      <p>My daughter Tilly is already spotting the queens faster than me. HiveKeeper isn't just about making my beekeeping easier — it's about passing the knowledge on.</p>
+      <p>Apiary sharing lets you invite a partner, a mentor, or your local association to co-manage a hive. Everything you see, they see.</p>
+    </div>
+    <div class="family-band-image">
+      <img src="PXL_20260304_112319172.jpg" alt="Tilly Culshaw in a bee suit inspecting a hive — the next generation of UK beekeepers">
     </div>
   </div>
 </section>
