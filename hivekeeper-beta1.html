@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 16:50 · Meadowbrook re-seed bug fixed + hk_seeded_beta preserved across pulls</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 17:45 · Offline queue row shapes fixed (apiaries/hives/harvests/treatments/varroa) + retry cap</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -2128,37 +2128,12 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 
   <!-- MODAL: ADD HIVE -->
-  <div class="modal-overlay" id="modal-add-hive" onclick="closeModal(event,'modal-add-hive')">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-      <div class="modal-handle"></div>
-      <div class="modal-title">Add new hive</div>
-      <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
-      <div class="form-group"><label>Row <span style="font-size:10px;color:var(--text-l);font-weight:400;">(optional — drag to position on map in Edit Layout)</span></label><select id="new-hive-row"><option value="">No row — free position</option><option>Row 1</option><option>Row 2</option><option>Row 3</option><option>Row 4</option><option>Row 5</option></select></div>
-      <div class="form-group"><label>Hive type</label>
-        <select id="new-hive-type">
-          <option value="overwintered">Overwintered colony</option>
-          <option value="nuc">New nucleus (nuc)</option>
-          <option value="double_nuc">Double-brood nuc</option>
-          <option value="swarm_prime">Prime swarm</option>
-          <option value="swarm_cast">Cast swarm</option>
-          <option value="split">Split / artificial swarm</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>Box type</label><select id="new-hive-box"><option value="national">National</option><option value="commercial">Commercial</option><option value="wbc">WBC</option><option value="langstroth">Langstroth</option><option value="smith">Smith</option><option value="top-bar">Top Bar</option><option value="warre">Warré</option></select></div>
-        <div class="form-group"><label>Roof style</label><select id="new-hive-roof"><option value="flat">Flat</option><option value="pointy">Pointy (pitched)</option><option value="deep">Deep</option><option value="shallow">Shallow</option></select></div>
-      </div>
-      <div class="form-group"><label>Established</label><input type="date" id="new-hive-date"></div>
-      <div class="form-group"><label>Queen status</label>
-        <select id="new-hive-queen">
-          <option value="laying">Laying queen</option><option value="virgin">Virgin queen</option>
-          <option value="cells">Queen cells</option><option value="unknown">Unknown</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Notes</label><textarea id="new-hive-notes" rows="2" placeholder="Initial observations..."></textarea></div>
-      <button class="btn-primary" onclick="saveNewHive()">Add hive</button>
-    </div>
-  </div>
+  <!-- Duplicate modal-add-hive removed 24 April 2026 — there were TWO copies of this
+       modal in the DOM (this one + the one at line 1994). Both had input elements with
+       the same IDs (new-hive-name, new-hive-row, etc.) and both had buttons calling
+       saveNewHive(). This caused duplicate hive creation when "Add hive" was tapped
+       because document.getElementById() returned the first match but DOM-level event
+       handling fired on both. Keeping the earlier, fuller version at line 1994. -->
 
   <!-- MODAL: EDIT CHIP -->
   <div class="modal-overlay" id="modal-edit-chip" onclick="closeModal(event,'modal-edit-chip')">
@@ -8289,7 +8264,23 @@ function openAddHive(){
   openModalEl('modal-add-hive');
 }
 
+// Global lock to prevent double-save of a new hive from rapid taps, duplicate
+// event handlers, or leftover duplicate modal DOMs. Reset when modal closes.
+// Added 24 April 2026 after Chris reported 4 identical hives being created
+// from a single "Add hive" tap during offline testing.
+var _saveNewHiveInProgress = false;
+
 function saveNewHive(){
+  if (_saveNewHiveInProgress) {
+    console.warn('[saveNewHive] ignoring duplicate call — already in progress');
+    return;
+  }
+  _saveNewHiveInProgress = true;
+  // Reset the lock after a short delay so subsequent adds work normally.
+  // 1500ms is enough to cover any double-tap / bubbling scenario without
+  // blocking the user if they genuinely want to add another hive after this one.
+  setTimeout(function(){ _saveNewHiveInProgress = false; }, 1500);
+
   if (isSharedApiary(currentApiaryId) && !canEditSharedApiary(currentApiaryId)) {
     showToast('Viewers cannot add hives to a shared apiary');
     return;
@@ -9278,12 +9269,15 @@ function saveVarroa(d){
   if (!getUserId()) return;
   if (!isOnline()) {
     var uid = getUserId();
+    // Row shape MUST match pushVarroa() — local varroa records use .date and .count
+    // not .countedAt/.miteCount. Fix applied 24 April 2026 after apiaries drift bug.
     d.forEach(function(v) {
       queueOfflineSave('varroa_counts', {
         id: v.id, user_id: uid, hive_id: v.hiveId,
-        counted_at: v.countedAt ? new Date(v.countedAt).toISOString() : new Date().toISOString(),
-        mite_count: v.miteCount != null ? v.miteCount : null,
-        method: v.method || '', notes: v.notes || ''
+        counted_at: new Date(v.date || v.createdAt || Date.now()).toISOString(),
+        method: v.method || 'natural_drop',
+        mite_count: parseInt(v.count || 0),
+        notes: v.notes || ''
       });
     });
   } else {
@@ -13545,13 +13539,22 @@ function saveApiaries(a) {
     var uid = getUserId();
     a.forEach(function(ap) {
       if (ap.sharedWith) return;  // don't push shared apiaries (we're not the owner)
+      // Row shape must match pushApiaries() at line 16625+ — if these drift,
+      // offline-queued apiaries fail to sync when the user comes back online.
+      // 24 April 2026 fix: was using 'location_name' (doesn't exist) — real column is 'location'.
       queueOfflineSave('apiaries', {
-        id: ap.id, user_id: uid, name: ap.name || '',
-        location_name: ap.locationName || null,
+        id: ap.id,
+        user_id: uid,
+        name: ap.name || '',
+        location: ap.location || '',
         lat: ap.lat != null ? ap.lat : null,
         lng: ap.lng != null ? ap.lng : null,
-        map_positions: ap.mapPositions ? JSON.stringify(ap.mapPositions) : null,
-        map_bearing: ap.mapBearing != null ? ap.mapBearing : 0
+        map_view_lat: (typeof ap.mapViewLat === 'number') ? ap.mapViewLat : null,
+        map_view_lng: (typeof ap.mapViewLng === 'number') ? ap.mapViewLng : null,
+        map_zoom: (typeof ap.mapZoom === 'number') ? ap.mapZoom : null,
+        map_bearing: (typeof ap.mapBearing === 'number') ? Math.round(ap.mapBearing) : 0,
+        is_default: ap.isDefault === true,
+        created_at: new Date(ap.createdAt || Date.now()).toISOString()
       });
     });
   } else {
@@ -17344,34 +17347,46 @@ function pushWithQueueFallback(tableName, pushFn, loadFn, recordBuilder) {
   };
 }
 
+// Single source of truth for the Supabase 'hives' row shape — used by both
+// pushHives and the offline queue so they can't drift out of sync.
+// Added 24 April 2026 after an identical drift bug on apiaries (location_name
+// vs location) caused the queue to permanently fail.
+function hiveToRow(h, uid) {
+  return {
+    id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
+    name: h.name, row: h.row || '', status: h.status || 'active',
+    hive_type: h.hiveType || 'national', box_type: h.boxType || 'brood',
+    brood_boxes: h.broodBoxes || 1, supers: h.supers || 0,
+    queen_status: h.queenStatus || '', stores_level: h.storesLevel || '',
+    varroa_level: h.varroaLevel || '', health_score: h.healthScore || null,
+    map_x: h.mapX || 0, map_y: h.mapY || 0,
+    is_hidden: h.isHidden || false, notes: h.notes || '',
+    wax_moth: h.waxMoth || false, temper: h.temper || '',
+    cover_photo: h.coverPhoto || null,
+    map_lat: h.map_lat || null,
+    map_lng: h.map_lng || null,
+    list_order: (typeof h.listOrder === 'number') ? h.listOrder : null,
+    roof_style: h.roofStyle || 'flat',
+    stack: h.stack || null
+  };
+}
+
 var _origSaveHivesSync = saveHives;
 saveHives = function(hives) {
   _origSaveHivesSync(hives);
   if (!getUserId()) return;
   if (!isOnline()) {
-    // Queue each hive for sync
+    // Queue each hive for sync using the SAME row shape as pushHives
     var uid = getUserId();
     hives.forEach(function(h) {
-      queueOfflineSave('hives', {
-        id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
-        name: h.name, status: h.status || 'active',
-        box_type: h.boxType || null, queen_status: h.queenStatus || null,
-        stores_level: h.storesLevel || null, varroa_level: h.varroaLevel || null,
-        swarm_risk: h.swarmRisk || null, wax_moth: !!h.waxMoth,
-        health_score: h.healthScore != null ? h.healthScore : null,
-        notes: h.notes || '', cover_photo: h.coverPhoto || null,
-        created_at: h.createdAt ? new Date(h.createdAt).toISOString() : new Date().toISOString()
-      });
+      queueOfflineSave('hives', hiveToRow(h, uid));
     });
   } else {
     pushHives().catch(function(e) {
       console.warn('[saveHives push failed — queueing]:', e);
       var uid = getUserId();
       hives.forEach(function(h) {
-        queueOfflineSave('hives', {
-          id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
-          name: h.name, status: h.status || 'active'
-        });
+        queueOfflineSave('hives', hiveToRow(h, uid));
       });
     });
   }
@@ -17417,13 +17432,14 @@ if (typeof saveHarvest === 'function') {
     _origSaveHarvest.apply(this, arguments);
     if (!getUserId()) return;
     if (!isOnline()) {
-      // Queue all harvests
+      // Row shape matches pushHarvests() — local uses .date and .kg, not harvestedAt/weightKg
       var uid = getUserId();
       (JSON.parse(localStorage.getItem('hk_harvest_v1') || '[]')).forEach(function(h) {
         queueOfflineSave('harvests', {
           id: h.id, user_id: uid, hive_id: h.hiveId,
-          harvested_at: h.harvestedAt ? new Date(h.harvestedAt).toISOString() : new Date().toISOString(),
-          weight_kg: h.weightKg || null, frames: h.frames || null,
+          harvested_at: new Date(h.date || h.createdAt || Date.now()).toISOString(),
+          weight_kg: parseFloat(h.kg || h.weightKg || 0),
+          supers_removed: h.supers || 0,
           notes: h.notes || ''
         });
       });
@@ -17439,12 +17455,15 @@ if (typeof saveTreatment === 'function') {
     _origSaveTreatment.apply(this, arguments);
     if (!getUserId()) return;
     if (!isOnline()) {
+      // Row shape matches pushTreatments() — column is 'treated_at', not 'applied_at'
       var uid = getUserId();
       (JSON.parse(localStorage.getItem('hk_treatment_v1') || '[]')).forEach(function(t) {
         queueOfflineSave('treatments', {
           id: t.id, user_id: uid, hive_id: t.hiveId,
-          product: t.product || '', applied_at: t.appliedAt ? new Date(t.appliedAt).toISOString() : new Date().toISOString(),
-          dose: t.dose || '', notes: t.notes || ''
+          treated_at: new Date(t.date || t.createdAt || Date.now()).toISOString(),
+          product: t.product || '', dose: t.dose || '',
+          next_treatment_date: t.nextDate ? new Date(t.nextDate).toISOString() : null,
+          notes: t.notes || ''
         });
       });
     } else {
@@ -19893,12 +19912,18 @@ function queueOfflineSave(table, data) {
     // (most recent local write is authoritative — avoid pushing stale
     // versions from earlier in the offline session).
     var rowId = data && data.id;
+    var existingAttempts = 0;
     if (rowId) {
+      // Preserve retry count across dedupes so we don't reset on every save
+      var existing = q.find(function(item) {
+        return item.table === table && item.data && item.data.id === rowId;
+      });
+      if (existing) existingAttempts = existing.attempts || 0;
       q = q.filter(function(item) {
         return !(item.table === table && item.data && item.data.id === rowId);
       });
     }
-    q.push({ table: table, data: data, queuedAt: Date.now() });
+    q.push({ table: table, data: data, queuedAt: Date.now(), attempts: existingAttempts });
     localStorage.setItem('hk_offline_queue', JSON.stringify(q));
   } catch(e) {}
 }
@@ -19966,6 +19991,7 @@ async function flushOfflineQueue() {
   var remaining = [];
   var syncedByTable = {};
   var errorsByTable = {};
+  var droppedCount = 0;
   for (var i = 0; i < q.length; i++) {
     try {
       var item = q[i];
@@ -19973,16 +19999,27 @@ async function flushOfflineQueue() {
       if (error) {
         console.warn('Offline queue flush error [' + item.table + ']:', error.message);
         errorsByTable[item.table] = error.message;
-        remaining.push(item);
+        item.attempts = (item.attempts || 0) + 1;
+        // If this item has failed 5+ times, it's almost certainly malformed
+        // (e.g. wrong column name, invalid FK). Drop it to prevent the queue
+        // from getting permanently stuck. The error is logged so we can see
+        // what went wrong.
+        if (item.attempts >= 5) {
+          console.error('[sync] DROPPING permanently-failed queue item after 5 attempts:', item.table, item.data.id, '—', error.message);
+          droppedCount++;
+        } else {
+          remaining.push(item);
+        }
       } else {
         syncedByTable[item.table] = (syncedByTable[item.table] || 0) + 1;
       }
     } catch(e) {
+      // Network error etc — retry without incrementing attempts (not our data's fault)
       remaining.push(q[i]);
     }
   }
   localStorage.setItem('hk_offline_queue', JSON.stringify(remaining));
-  var totalSynced = q.length - remaining.length;
+  var totalSynced = q.length - remaining.length - droppedCount;
   if (totalSynced > 0) {
     var parts = [];
     Object.keys(syncedByTable).forEach(function(t) {
@@ -19990,17 +20027,16 @@ async function flushOfflineQueue() {
     });
     showToast('✓ Synced ' + parts.join(', '));
   }
-  // If some errored, surface a helpful message — the user deserves to know
-  // their data hasn't fully synced. Shows the first error to avoid toast spam.
+  if (droppedCount > 0) {
+    console.warn('[sync] Dropped ' + droppedCount + ' permanently-failing queue items — see console errors above for details');
+    showToast('⚠ ' + droppedCount + ' record(s) could not be synced (see console)');
+  }
+  // If some errored but are still retrying, surface a helpful message
   if (remaining.length > 0) {
     var firstTable = Object.keys(errorsByTable)[0];
-    if (firstTable) {
+    if (firstTable && totalSynced === 0 && droppedCount === 0) {
       console.warn('[sync] ' + remaining.length + ' record(s) failed: ' + errorsByTable[firstTable]);
-      // Only show a toast if there's no "synced OK" one firing alongside,
-      // to avoid stacking toasts.
-      if (totalSynced === 0) {
-        showToast('⚠ ' + remaining.length + ' record(s) could not sync — will retry');
-      }
+      showToast('⚠ ' + remaining.length + ' record(s) could not sync — will retry');
     }
   }
 }
