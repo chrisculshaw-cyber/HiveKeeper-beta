@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 16:05 · FK-ordered queue flush + real connectivity check (airplane mode)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 16:50 · Meadowbrook re-seed bug fixed + hk_seeded_beta preserved across pulls</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -3697,6 +3697,23 @@ function uid(){
 
 function seedRealData(){
   if(localStorage.getItem('hk_seeded_beta')==='2') return;
+  // 24 April 2026 — additional guards to prevent duplicate Meadowbrook creation.
+  // The flag-only guard isn't sufficient when localStorage gets wiped by
+  // pullFromSupabase (now fixed, but this is belt-and-braces for older builds).
+  // If the user already has apiaries or hives, they're not a fresh user — skip seeding.
+  try {
+    var existingApiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
+    if (existingApiaries.length > 0) {
+      // User already has apiaries — they're not fresh. Mark seeded and bail.
+      localStorage.setItem('hk_seeded_beta', '2');
+      return;
+    }
+    var existingHives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
+    if (existingHives.length > 0) {
+      localStorage.setItem('hk_seeded_beta', '2');
+      return;
+    }
+  } catch(e) { /* if parsing fails, fall through to seed as normal */ }
   // Seed apiary record
   var defaultApiaryId = 'apiary_meadowbrook';
   localStorage.setItem('hk_apiaries_v1', JSON.stringify([{id:defaultApiaryId, name:'Meadowbrook Apiary', location:'Northamptonshire', createdAt:1712000000000}]));
@@ -6887,8 +6904,11 @@ function startRecording(){
 
   // ── FIX A: ONLINE CHECK ──
   // Whisper transcription needs internet. If offline, explain clearly and don't pretend to record.
+  // 24 April 2026: use _realConnectivity (Worker-ping-based) because navigator.onLine
+  // is unreliable on mobile, especially with airplane mode.
   // TODO (next build): queue audio blob in IndexedDB and transcribe on reconnect
-  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+  var _voiceOnline = navigator.onLine !== false && (typeof _realConnectivity === 'undefined' || _realConnectivity !== false);
+  if (!_voiceOnline) {
     showToast('⚠️ Voice needs internet — connect and try again, or type notes manually');
     document.getElementById('voice-status').textContent = 'Offline — connect to internet to use voice';
     var _rbOff = document.getElementById('rec-btn'); if (_rbOff) { _rbOff.disabled = false; _rbOff.style.opacity = ''; }
@@ -16878,7 +16898,12 @@ async function pullFromSupabase() {
         // mid-login, auth token expired, etc.) these keys surviving means
         // the user's unsynced data isn't lost. On the next successful push
         // they'll reach the cloud.
-        'hk_sprays','hk_movements_v1','hk_offline_queue'];
+        'hk_sprays','hk_movements_v1','hk_offline_queue',
+        // 24 April 2026 — CRITICAL: hk_seeded_beta must survive pulls, otherwise
+        // seedRealData() re-runs on next login and creates duplicate Meadowbrook
+        // Apiary entries. This was the root cause of the "2 Meadowbrook apiaries"
+        // bug discovered during the data-sync audit.
+        'hk_seeded_beta'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
