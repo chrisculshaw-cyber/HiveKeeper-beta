@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 14:30 · Offline-first sync refactor + sprays + hive_movements sync</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 15:10 · Global offline banner + offline-aware apiary map render</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -1383,7 +1383,15 @@ input[type="checkbox"].hk-chk:checked::after {
 <div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;position:relative;">
 <div id="app" style="width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);visibility:hidden;z-index:1;">
 <div id="toast"></div>
-  
+
+<!-- GLOBAL OFFLINE BANNER — 24 April 2026
+     Sits at the very top of #app, visible on every screen via position:absolute
+     inside the #app flex container. Shows when navigator.onLine is false OR
+     when an online-dependent operation has failed. Hidden by default.
+     Z-index above screens (10) and nav (100) but below modals (which are 1000+). -->
+<div id="offline-banner" style="display:none;position:absolute;top:0;left:0;right:0;background:#E65100;color:white;padding:6px 14px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;text-align:center;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.15);letter-spacing:.02em;">
+  📵 Offline — your changes will sync when you reconnect
+</div>
 
 
 <div class="screen active" id="s-home">
@@ -1404,7 +1412,6 @@ input[type="checkbox"].hk-chk:checked::after {
             <span style="background:linear-gradient(90deg,#3B6D11,#6BA23A);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🍯 HiveKeeper Commercial</span>
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
-          <div id="offline-indicator" style="display:none;font-size:10px;color:#FFB74D;margin-top:2px;">&#x1F4F5; Offline — inspections will sync when online</div>
           <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;"><span id="apiary-name-text">My Apiary</span></div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
@@ -4037,7 +4044,19 @@ function goTo(id){
     history.pushState({ screen: id }, '', window.location.pathname);
   }
   if(id==='s-home'||id==='s-dashboard') renderDashboard();
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{ pullMapPositions().then(function(){ renderLeafletHives(false); }); }catch(e){} }, 1100); }
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
+    // OFFLINE-AWARE MAP LOAD (24 April 2026)
+    // If online: pull latest map_positions from Supabase, then render hives.
+    // If offline: skip the pull (it would hang/timeout) and render hives from
+    // cached localStorage positions straight away. Without this the hive list
+    // never appears on the map when offline because renderLeafletHives was
+    // only called after pullMapPositions resolved.
+    if (isOnline()) {
+      pullMapPositions().then(function(){ renderLeafletHives(false); });
+    } else {
+      renderLeafletHives(false);
+    }
+  }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
   if(id==='s-inspect') renderInspectHeader();
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
@@ -19861,14 +19880,28 @@ function initOfflineSync() {
 }
 
 window.addEventListener('online', function() {
-  var el = document.getElementById('offline-indicator');
+  var el = document.getElementById('offline-banner');
   if (el) el.style.display = 'none';
+  // Legacy indicator (safe no-op if removed)
+  var elLegacy = document.getElementById('offline-indicator');
+  if (elLegacy) elLegacy.style.display = 'none';
 });
 window.addEventListener('offline', function() {
-  var el = document.getElementById('offline-indicator');
+  var el = document.getElementById('offline-banner');
   if (el) el.style.display = 'block';
+  var elLegacy = document.getElementById('offline-indicator');
+  if (elLegacy) elLegacy.style.display = 'block';
   // Updated message — we now queue everything, not just inspections
   showToast('📵 Gone offline — changes will sync when reconnected');
+});
+
+// Show banner immediately on load if we're already offline when the app starts
+// (the 'offline' event only fires on TRANSITIONS — not if we boot offline).
+document.addEventListener('DOMContentLoaded', function() {
+  if (!isOnline()) {
+    var el = document.getElementById('offline-banner');
+    if (el) el.style.display = 'block';
+  }
 });
 
 // ── FOUNDING BEEKEEPER BADGE ─────────────────────────────
