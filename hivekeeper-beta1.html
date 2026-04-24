@@ -1180,7 +1180,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 00:30 · Beta info block on auth + copy button on AI replies</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 09:30 · Next-inspection notes extraction from voice transcripts</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -1582,6 +1582,19 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="padding:12px 14px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;" id="inspect-last-stats"></div>
+
+        <!-- NEXT INSPECTION NOTES BANNER (24 April 2026, Pro/Commercial feature)
+             Populated by loadLastInspectionForHive when the last inspection has
+             extracted follow-up actions. Uses honey-coloured accent so beekeeper's
+             eye lands on it immediately — this is the "take action now" area. -->
+        <div id="inspect-next-notes-panel" style="display:none;margin-bottom:10px;background:#FFF4E0;border-left:4px solid #C8730A;border-radius:8px;padding:12px 14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;">
+            <div style="font-size:11px;font-weight:800;color:#8B4F00;text-transform:uppercase;letter-spacing:.06em;">⚠ Actions from last inspection</div>
+            <button id="inspect-next-notes-done-btn" onclick="markNextInspectionNotesDone()" style="background:#C8730A;color:white;border:none;border-radius:14px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">Mark done</button>
+          </div>
+          <div id="inspect-next-notes-text" style="font-size:13px;color:#4a3100;line-height:1.5;white-space:pre-line;"></div>
+        </div>
+
         <button id="inspect-last-expand-btn" onclick="toggleLastInspNotes()" style="width:100%;margin-bottom:8px;padding:16px;background:#F0F7EE;border:2px solid #2D5016;border-radius:12px;font-size:16px;font-weight:800;color:#2D5016;cursor:pointer;font-family:'Syne',sans-serif;display:block;text-align:center;min-height:54px;">&#x1F4CB; Show inspection notes</button>
         <div id="inspect-last-notes" style="font-size:12px;color:var(--text-m);line-height:1.6;overflow:hidden;max-height:0;transition:max-height 0.3s ease;"></div>
       </div>
@@ -1753,6 +1766,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;cursor:pointer;" onclick="openHiveEditor(currentHiveId)" title="Tap to edit"></div>
       </div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
+      <div id="hive-next-inspection-section" style="margin-top:12px;"></div>
       <div id="hive-advice-section" style="margin-top:12px;"></div>
       <div id="hive-detail-content" style="margin-top:12px;"></div>
     </div>
@@ -5860,6 +5874,39 @@ function renderHiveCoverBanner(hive) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// NEXT-INSPECTION NOTES CARD on Hive Detail (24 April 2026)
+// ═══════════════════════════════════════════════════════════════
+// Surfaces follow-up actions from the most recent inspection's voice/text
+// notes. Only shows when the latest inspection has nextInspectionNotes
+// captured AND nextInspectionNotesDoneAt is null (not yet marked done).
+// Tap "Mark done" stamps the timestamp and the card hides on next render.
+function renderHiveNextInspectionNotes(hive, latest) {
+  var host = document.getElementById('hive-next-inspection-section');
+  if (!host) return;
+  if (!latest || !latest.nextInspectionNotes || latest.nextInspectionNotesDoneAt) {
+    host.innerHTML = '';
+    return;
+  }
+  var notesHtml = latest.nextInspectionNotes
+    .split('\n')
+    .filter(function(line){ return line.trim().length > 0; })
+    .map(function(line){ return '<div style="display:flex;gap:8px;padding:4px 0;"><span style="color:var(--honey);flex-shrink:0;">&#9679;</span><span>' + escapeHtml(line) + '</span></div>'; })
+    .join('');
+  var daysAgo = Math.floor((Date.now() - latest.inspectedAt) / 86400000);
+  var daysStr = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+  host.innerHTML =
+    '<div style="margin:0 20px;background:#FFF8E7;border:1px solid #FAEEDA;border-left:4px solid var(--honey);border-radius:var(--rs);padding:14px 16px;">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
+    +   '<span style="font-size:18px;">&#x1F4DD;</span>'
+    +   '<div style="flex:1;"><div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;">For next inspection</div>'
+    +   '<div style="font-size:10px;color:#854F0B;opacity:.7;">From ' + escapeHtml(daysStr) + '\'s inspection</div></div>'
+    + '</div>'
+    + '<div style="font-size:13px;color:#633806;line-height:1.5;margin-bottom:10px;">' + notesHtml + '</div>'
+    + '<button onclick="markNextInspectionNotesDone(\'' + latest.id + '\')" style="background:transparent;border:1px solid #854F0B;color:#854F0B;border-radius:16px;padding:6px 14px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">&#x2713; Mark done</button>'
+    + '</div>';
+}
+
 function renderHiveDetail(){
   const hive = loadHives().find(h => h.id === currentHiveId);
   if(!hive) return;
@@ -5948,6 +5995,19 @@ function renderHiveDetail(){
       </div>
     `;
   } else { qsEl.innerHTML = ''; }
+
+  // Next-inspection notes card (24 April 2026) — Pro/Commercial only.
+  // Surfaces follow-up actions from the most recent inspection. If the user is
+  // on Free tier OR the latest inspection has no pending notes, the section
+  // renders empty and occupies no space.
+  try {
+    if (typeof canUsePremiumFeature === 'function' && canUsePremiumFeature('next_inspection_notes')) {
+      renderHiveNextInspectionNotes(hive, latest);
+    } else {
+      var _nextHost = document.getElementById('hive-next-inspection-section');
+      if (_nextHost) _nextHost.innerHTML = '';
+    }
+  } catch(e) { console.warn('[hive-detail] next-inspection render failed:', e); }
 
   // Advice
   const adviceEl = document.getElementById('hive-advice-section');
@@ -7489,6 +7549,61 @@ function resetInspectStatusButtons() {
   document.addEventListener('change', onInput, true);
 })();
 
+// ─── NEXT-INSPECTION NOTES EXTRACTION ─────────────────────────
+// Added 24 April 2026. Parses inspection notes/transcript for trigger phrases
+// and extracts the follow-up text into a separate field. Case-insensitive
+// matching on a list of common beekeeper phrases. Takes everything from the
+// trigger phrase up to the next full stop, question mark, exclamation, or end
+// of text. Multiple matches are concatenated with newlines and deduplicated.
+//
+// Trigger phrases chosen based on how UK beekeepers actually talk during
+// voice inspections — not every phrase is natural for everyone, so we cast a
+// reasonably wide net. Exact-match for v1 (easy to debug, easy to extend).
+// Whisper transcription errors on these phrases (homophones, word breaks)
+// will cause misses — acceptable risk in v1, refine once we see real data.
+function extractNextInspectionNotes(text) {
+  if (!text || typeof text !== 'string') return '';
+  // Trigger phrases as regex fragments. \b word boundary prevents matching
+  // "remind me to..." as part of a longer word. Ordering matters slightly —
+  // longer phrases first so "for the next inspection" matches before "next
+  // inspection" would.
+  var triggers = [
+    'for the next inspection',
+    'next inspection[,:]?',        // covers "next inspection," / "next inspection:"
+    'next time i(?:\\\'m)? ?(?:am|back)?',  // "next time I", "next time I'm back", "next time I am"
+    'next time[,:]?',
+    'remind me to',
+    'do not forget to',
+    "don't forget to",
+    'must do next time',
+    'for next week',
+    'when i(?:\\\'m)? back',       // "when I'm back" / "when I am back"
+    'follow up on'
+  ];
+  // Build combined case-insensitive regex. Match the trigger, then capture
+  // everything up to next terminator. Non-greedy to stop at first terminator.
+  var pattern = new RegExp(
+    '\\b(?:' + triggers.join('|') + ')\\b\\s*([^.!?\\n]+?)(?=[.!?\\n]|$)',
+    'gi'
+  );
+  var matches = [];
+  var m;
+  var seen = {};  // dedupe case-insensitively
+  while ((m = pattern.exec(text)) !== null) {
+    var captured = (m[1] || '').trim();
+    // Strip leading punctuation/connectives
+    captured = captured.replace(/^[,:;\s]+(?:please\s+)?(?:also\s+)?/i, '').trim();
+    if (!captured) continue;
+    // First letter upper-case for display polish
+    var display = captured.charAt(0).toUpperCase() + captured.slice(1);
+    var key = display.toLowerCase();
+    if (seen[key]) continue;
+    seen[key] = true;
+    matches.push(display);
+  }
+  return matches.join('\n');
+}
+
 function saveInspection(){
   _hkDiagLog('[DIAG save] saveInspection CALLED · _editingInspId=', window._editingInspId, '· _inspectionDirty=', window._inspectionDirty);
   try {
@@ -7563,6 +7678,19 @@ function saveInspection(){
   }
   _hkDiagLog('[DIAG save] merge · transcript=' + _voiceTranscript.length + 'ch · typed=' + _typedNotes.length + 'ch · merged=' + _mergedNotes.length + 'ch');
 
+  // ─── NEXT-INSPECTION NOTES EXTRACTION (24 April 2026) ───
+  // Pro + Commercial feature: parse the merged notes for trigger phrases like
+  // "for the next inspection" and extract follow-up actions into a separate
+  // nextInspectionNotes field. Surfaced at the top of the next inspection form
+  // for this hive, and (in v2) on a dedicated Pending Tasks report.
+  // Free tier gets the raw notes without extraction — same voice recording,
+  // same transcript, just no auto-parsed follow-ups.
+  var _nextInspectionNotes = '';
+  if (typeof canUsePremiumFeature === 'function' && canUsePremiumFeature('next_inspection_notes')) {
+    _nextInspectionNotes = extractNextInspectionNotes(_mergedNotes);
+    _hkDiagLog('[DIAG save] nextInspectionNotes extracted: ' + _nextInspectionNotes.length + 'ch');
+  }
+
   const insp={
     id: _isEdit ? window._editingInspId : uid(),
     hiveId: _isEdit ? _existingInsp.hiveId : currentHiveId,  // preserve original hive on edit
@@ -7598,7 +7726,15 @@ function saveInspection(){
     playCups:currentInspData.playCups||false, queenCells:currentInspData.queenCells||false,
     varroaLevel:currentInspData.varroaLevel||'low', varroaCount:currentInspData.varroaCount||null,
     temper:currentInspData.temper||'good', photos:(currentInspData.photos||[]).map(function(p){ return { url: p.url||null, label: p.label||'', analysed: p.analysed||false }; }), syncStatus:'synced',
-    weather: _isEdit ? (_existingInsp.weather || null) : (typeof getCurrentWeatherSnapshot === 'function' ? getCurrentWeatherSnapshot() : null)
+    weather: _isEdit ? (_existingInsp.weather || null) : (typeof getCurrentWeatherSnapshot === 'function' ? getCurrentWeatherSnapshot() : null),
+    // Next-inspection follow-ups extracted from voice transcript (Pro/Commercial only).
+    // On edit: preserve existing value rather than re-extracting, so manual edits to
+    // the follow-up text aren't overwritten by a re-parse of the transcript.
+    nextInspectionNotes: _isEdit ? (_existingInsp.nextInspectionNotes || '') : _nextInspectionNotes,
+    // Timestamp when nextInspectionNotes was marked done (null = still open).
+    // Allows the Hive Detail chip to render a "Mark done" button, and the
+    // v2 Pending Tasks report to filter out completed items.
+    nextInspectionNotesDoneAt: _isEdit ? (_existingInsp.nextInspectionNotesDoneAt || null) : null
   };
   let s=0;
   if(insp.queenSeen) s+=20; else s+=5;
@@ -15998,7 +16134,11 @@ async function pushInspections() {
       frames_stores: i.framesStores || null,
       frames_foundation: i.framesFoundation || null,
       frames_empty: i.framesEmpty || null,
-      weather: i.weather || null
+      weather: i.weather || null,
+      // Next-inspection notes (24 April 2026) — extracted from voice/text on save,
+      // cleared when user taps Mark done (stamps next_inspection_notes_done_at)
+      next_inspection_notes: i.nextInspectionNotes || null,
+      next_inspection_notes_done_at: i.nextInspectionNotesDoneAt ? new Date(i.nextInspectionNotesDoneAt).toISOString() : null
     };
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
@@ -16261,7 +16401,9 @@ async function pullFromSupabase() {
           healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
           framesBrood: i.frames_brood, framesStores: i.frames_stores,
           framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
-          weather: i.weather || null
+          weather: i.weather || null,
+          nextInspectionNotes: i.next_inspection_notes || null,
+          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mapped));
@@ -16371,7 +16513,9 @@ async function pullFromSupabase() {
                 temper: i.temper, healthScore: i.health_score, notes: i.notes, transcript: i.transcript,
                 framesBrood: i.frames_brood, framesStores: i.frames_stores,
                 framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
-                weather: i.weather || null });
+                weather: i.weather || null,
+                nextInspectionNotes: i.next_inspection_notes || null,
+                nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null });
             }
           });
           localStorage.setItem('hk_inspections_v2', JSON.stringify(existingInspections));
@@ -17917,7 +18061,9 @@ async function loadTesterData() {
           photoUrls: i.photo_urls || [],
           framesBrood: i.frames_brood, framesStores: i.frames_stores,
           framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
-          weather: i.weather || null
+          weather: i.weather || null,
+          nextInspectionNotes: i.next_inspection_notes || null,
+          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mappedI));
@@ -19332,6 +19478,28 @@ function loadLastInspectionForHive(hiveId) {
 
   if (panel) panel.style.display = 'block';
 
+  // ─── NEXT-INSPECTION NOTES PANEL (Pro/Commercial feature) ───
+  // Surface extracted follow-ups from the most recent inspection that had any,
+  // but ONLY if not already marked done. This is the "take action now" area.
+  // Stash the inspection id on the panel so markNextInspectionNotesDone knows
+  // which record to update.
+  var nextPanel = document.getElementById('inspect-next-notes-panel');
+  var nextText = document.getElementById('inspect-next-notes-text');
+  if (nextPanel && nextText) {
+    // Search backwards for the most recent inspection with UNRESOLVED next-inspection notes
+    var pending = sorted.find(function(i){
+      return i.nextInspectionNotes && i.nextInspectionNotes.trim() && !i.nextInspectionNotesDoneAt;
+    });
+    if (pending && typeof canUsePremiumFeature === 'function' && canUsePremiumFeature('next_inspection_notes')) {
+      nextText.textContent = pending.nextInspectionNotes;
+      nextPanel.dataset.inspectionId = pending.id;
+      nextPanel.style.display = 'block';
+    } else {
+      nextPanel.style.display = 'none';
+      nextPanel.dataset.inspectionId = '';
+    }
+  }
+
   var notesEl = document.getElementById('inspect-last-notes');
   var expandBtn = document.getElementById('inspect-last-expand-btn');
   if (notesEl) {
@@ -19371,6 +19539,44 @@ function loadLastInspectionForHive(hiveId) {
   if (last.queenSeen !== undefined && last.queenSeen !== null) {
     var qBtn = document.querySelector('#s-inspect .toggle-btn[data-field="queenSeen"][data-value="' + String(last.queenSeen) + '"]');
     if (qBtn) { qBtn.classList.add('active'); qBtn.style.background='var(--forest)'; qBtn.style.color='white'; }
+  }
+}
+
+// Mark the next-inspection notes as done for an inspection record.
+// Sets nextInspectionNotesDoneAt to now() so the panel no longer surfaces it.
+// Can be called with an explicit inspection ID (from the Hive Detail card) OR
+// with no argument (from the Inspect screen banner, which reads the ID from the
+// panel's dataset). Both call sites land here so the logic is in one place.
+function markNextInspectionNotesDone(inspId) {
+  if (!inspId) {
+    // No explicit ID — fall back to reading from the Inspect screen panel
+    var panel = document.getElementById('inspect-next-notes-panel');
+    if (!panel) return;
+    inspId = panel.dataset.inspectionId;
+  }
+  if (!inspId) return;
+  var inspections = loadInspections();
+  var idx = inspections.findIndex(function(i){ return i.id === inspId; });
+  if (idx < 0) return;
+  inspections[idx].nextInspectionNotesDoneAt = Date.now();
+  saveInspections(inspections);
+  showToast('Marked as done');
+  // Hide the Inspect-screen panel immediately
+  var panel2 = document.getElementById('inspect-next-notes-panel');
+  if (panel2 && panel2.dataset.inspectionId === inspId) {
+    panel2.style.display = 'none';
+  }
+  // Re-render the Hive Detail card (will hide itself on re-render since DoneAt is set)
+  if (typeof renderHiveDetail === 'function' && currentHiveId) {
+    try { renderHiveDetail(); } catch(e) {}
+  }
+  // Re-render the Inspect panel too, in case an older inspection has pending notes
+  if (currentHiveId) {
+    setTimeout(function(){
+      if (typeof loadLastInspectionForHive === 'function') {
+        loadLastInspectionForHive(currentHiveId);
+      }
+    }, 100);
   }
 }
 
