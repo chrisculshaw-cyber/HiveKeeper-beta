@@ -1293,7 +1293,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 · Desktop layout audit fix — all screens now inside #app phone frame (was fighting for 9 days)</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 · Fix: orphaned modal-feedback-sheet now properly wrapped — phone frame will centre on desktop</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -21013,6 +21013,14 @@ function goToApiaryAlerts() {
       </div>
     </div>
   </div>
+
+  <!-- MODAL: FEEDBACK — 24 April 2026: wrapper was missing, leaving the sheet
+       orphaned as a direct child of #app-container. Invisible on mobile but
+       broke flex centering on desktop. Now properly wrapped in modal-overlay
+       like every other modal. The sheet is filled dynamically by code at
+       line 20388 (document.getElementById('modal-feedback-sheet')) and opened
+       via openModalEl('modal-feedback'). -->
+  <div class="modal-overlay" id="modal-feedback" onclick="closeModal(event,'modal-feedback')">
     <div class="modal-sheet" id="modal-feedback-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
     </div>
   </div>
