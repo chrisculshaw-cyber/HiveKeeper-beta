@@ -1298,7 +1298,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 10:15 · Next-inspection notes + laptop/desktop layout phase 1 &amp; 2</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 10:45 · Next Inspection Report on home + pending badge + trial-tier fix</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -1534,6 +1534,18 @@ input[type="checkbox"].hk-chk:checked::after {
         <div style="font-size:24px;margin-bottom:6px;">📊</div>
         <div class="hive-mini-name">Session report</div>
         <div class="hive-mini-meta">Inspection notes, photos, weather</div>
+      </div>
+      <!-- Next Inspection tile (24 April 2026) — quick access to the Next Inspection Report.
+           Opens the Reports modal and (if the user has access) runs the next_inspection_report
+           directly rather than making them scroll to find it. Pro/Commercial/Founder/Trial only,
+           so for Free-tier users the Reports modal opens and shows the paywall instead.
+           A honey-coloured badge in the top-right shows the count of pending items so the
+           keeper sees at a glance whether there is work to do — populated by renderDashboard. -->
+      <div class="hive-mini" onclick="openNextInspectionReport()" style="position:relative;">
+        <div id="next-insp-tile-badge" style="display:none;position:absolute;top:6px;right:6px;background:var(--honey);color:white;border-radius:12px;min-width:22px;height:22px;padding:0 7px;font-size:11px;font-weight:800;line-height:22px;text-align:center;font-family:'Syne',sans-serif;box-shadow:0 1px 3px rgba(0,0,0,.15);"></div>
+        <div style="font-size:24px;margin-bottom:6px;">📋</div>
+        <div class="hive-mini-name">Next inspection</div>
+        <div class="hive-mini-meta">Pending follow-ups from your voice notes</div>
       </div>
     </div>
     <div style="height:20px;"></div>
@@ -4311,6 +4323,41 @@ function renderDashboard(){
   if (typeof updateDashTipTeaser === 'function') updateDashTipTeaser();
   // Spray status pill on home
   try { renderSprayStatus(); } catch(e) { console.warn('spray status:', e); }
+
+  // ─── NEXT INSPECTION TILE BADGE (24 April 2026) ───
+  // Count inspections with pending next-inspection notes across the user's
+  // currently-selected apiary. One badge number = one hive with open actions
+  // (we only surface the most recent inspection per hive, matching the report
+  // logic). Hidden when count is zero. Pro/Commercial/Founder/Trial only.
+  try {
+    var badgeEl = document.getElementById('next-insp-tile-badge');
+    if (badgeEl) {
+      var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
+      var canSeeReport = (tier === 'pro' || tier === 'commercial' || tier === 'trial');
+      if (!canSeeReport) {
+        badgeEl.style.display = 'none';
+      } else {
+        var allInspections = loadInspections();
+        var allHives = loadHives();
+        var currApiary = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY);
+        var apiaryHiveIds = allHives
+          .filter(function(h){ return !currApiary || h.apiaryId === currApiary; })
+          .map(function(h){ return h.id; });
+        var pendingHiveCount = 0;
+        apiaryHiveIds.forEach(function(hid){
+          var hiveInsps = allInspections
+            .filter(function(i){ return i.hiveId === hid && i.nextInspectionNotes && (i.nextInspectionNotes||'').trim() && !i.nextInspectionNotesDoneAt; });
+          if (hiveInsps.length > 0) pendingHiveCount++;
+        });
+        if (pendingHiveCount > 0) {
+          badgeEl.textContent = pendingHiveCount;
+          badgeEl.style.display = 'block';
+        } else {
+          badgeEl.style.display = 'none';
+        }
+      }
+    }
+  } catch(e) { console.warn('[dash] next-insp badge:', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -10050,8 +10097,12 @@ var REPORTS_BY_TIER = {
   free: [
     { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true }
   ],
+  // Trial users get the full Pro report set so they can try everything during
+  // their 30-day courtesy period. Aliased below to REPORTS_BY_TIER.pro after
+  // the object literal so the two stay in sync without duplication.
   pro: [
     { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true },
+    { id: 'next_inspection_report', label: 'Next Inspection Report', icon: '📋', desc: 'All pending follow-ups extracted from your voice notes, grouped by hive.' },
     { id: 'apiary_health', label: 'Apiary Health Summary', icon: '🏥', desc: 'All hives, health scores and current status' },
     { id: 'inspection_history', label: 'Inspection History', icon: '📋', desc: 'All inspections for this apiary (last 90 days)' },
     { id: 'varroa_log', label: 'Varroa Monitoring Log', icon: '🔬', desc: 'All varroa counts and treatments' },
@@ -10060,6 +10111,7 @@ var REPORTS_BY_TIER = {
   ],
   commercial: [
     { id: 'session_report', label: 'Session Report', icon: '📝', desc: 'Every inspection from a visit — notes, photos, weather. Choose date range.', dateRangeSelector: true },
+    { id: 'next_inspection_report', label: 'Next Inspection Report', icon: '📋', desc: 'All pending follow-ups extracted from your voice notes, grouped by hive.' },
     { id: 'apiary_health', label: 'Apiary Health Summary', icon: '🏥', desc: 'All hives, health scores and current status' },
     { id: 'inspection_history', label: 'Inspection History', icon: '📋', desc: 'All inspections for this apiary (last 90 days)' },
     { id: 'varroa_log', label: 'Varroa Monitoring Log', icon: '🔬', desc: 'All varroa counts and treatments' },
@@ -10072,6 +10124,29 @@ var REPORTS_BY_TIER = {
     { id: 'nbu_compliance', label: 'NBU/BeeBase Compliance Export', icon: '🏛️', desc: 'NBU format CSV for inspector compliance' }
   ]
 };
+// Trial users get the full Pro report set (see comment on REPORTS_BY_TIER.pro above).
+REPORTS_BY_TIER.trial = REPORTS_BY_TIER.pro;
+
+// Quick-access helper from the home screen "Next inspection" tile (24 April 2026).
+// Opens the Reports modal and, if the user has access to the next_inspection_report,
+// jumps straight into viewing it. For Free-tier users without access, the normal
+// modal opens with the paywall. For edge cases (modal doesn't render, no tier info)
+// this falls back to openReportsModal so the user always lands somewhere sensible.
+function openNextInspectionReport() {
+  var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
+  var reports = REPORTS_BY_TIER[tier] || REPORTS_BY_TIER.free;
+  var hasIt = reports.some(function(r){ return r.id === 'next_inspection_report'; });
+  if (!hasIt) {
+    // Free tier — open reports modal which will show the paywall
+    openReportsModal();
+    return;
+  }
+  // User has access — open modal and jump straight to the report
+  openReportsModal();
+  setTimeout(function(){
+    try { viewReport('next_inspection_report'); } catch(e) { console.warn('[next-insp-report] viewReport failed:', e); }
+  }, 200);
+}
 
 function openReportsModal() {
   var tier = getUserTier();
@@ -10165,6 +10240,66 @@ function generateReport(id) {
       + '<table style="' + tableStyle + '">'
       + '<tr><th style="' + thStyle + '">Hive</th><th style="' + thStyle + '">Status</th><th style="' + thStyle + '">Health</th><th style="' + thStyle + '">Queen</th><th style="' + thStyle + '">Stores</th><th style="' + thStyle + '">Varroa</th><th style="' + thStyle + '">Swarm Risk</th></tr>'
       + rows + '</table>';
+  }
+
+  if (id === 'next_inspection_report') {
+    // For each hive, find the most recent inspection that has unresolved next-inspection notes.
+    // Group by hive so the beekeeper sees per-hive action items for weekend planning.
+    // Only inspections with nextInspectionNotes set AND nextInspectionNotesDoneAt null.
+    var pendingByHive = [];
+    hives.forEach(function(h) {
+      var hiveInsps = inspections
+        .filter(function(i){ return i.hiveId === h.id && i.nextInspectionNotes && (i.nextInspectionNotes||'').trim() && !i.nextInspectionNotesDoneAt; })
+        .sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
+      if (hiveInsps.length > 0) {
+        // Only surface the most recent — if a keeper logged tasks 3 times in a row without
+        // ticking them off, they only want the latest (most inspections supersede earlier ones).
+        pendingByHive.push({ hive: h, inspection: hiveInsps[0] });
+      }
+    });
+
+    if (pendingByHive.length === 0) {
+      return header('Next Inspection Report')
+        + '<div style="padding:40px 20px;text-align:center;font-family:sans-serif;color:#666;">'
+        +   '<div style="font-size:48px;margin-bottom:12px;">✨</div>'
+        +   '<div style="font-size:16px;font-weight:700;color:#2D5016;margin-bottom:6px;">Nothing pending</div>'
+        +   '<div style="font-size:13px;line-height:1.5;">No follow-up actions from recent inspections. Your voice notes will capture future action items automatically when you say things like &ldquo;for the next inspection…&rdquo; or &ldquo;remind me to…&rdquo;</div>'
+        + '</div>';
+    }
+
+    // Sort hives by most recently inspected first so the freshest items rise to the top
+    pendingByHive.sort(function(a,b){ return b.inspection.inspectedAt - a.inspection.inspectedAt; });
+
+    var cards = pendingByHive.map(function(p) {
+      var daysAgo = Math.floor((Date.now() - p.inspection.inspectedAt) / 86400000);
+      var daysStr = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+      var items = (p.inspection.nextInspectionNotes || '').split('\n')
+        .filter(function(line){ return line.trim().length > 0; })
+        .map(function(line){
+          return '<div style="display:flex;gap:10px;padding:6px 0;font-family:sans-serif;">'
+            +   '<span style="color:#C8730A;flex-shrink:0;font-weight:800;">●</span>'
+            +   '<span style="color:#3a2800;font-size:13px;line-height:1.5;">' + escapeHtml(line) + '</span>'
+            + '</div>';
+        }).join('');
+      return '<div style="background:#FFF8E7;border:1px solid #FAEEDA;border-left:4px solid #C8730A;border-radius:8px;padding:14px 16px;margin-bottom:10px;font-family:sans-serif;">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">'
+        +   '<div>'
+        +     '<div style="font-size:15px;font-weight:800;color:#2D5016;">' + escapeHtml(p.hive.name) + '</div>'
+        +     '<div style="font-size:11px;color:#854F0B;opacity:.85;">From ' + escapeHtml(daysStr) + '\'s inspection</div>'
+        +   '</div>'
+        +   '<button onclick="markNextInspectionNotesDone(\'' + p.inspection.id + '\'); setTimeout(function(){ var id=document.getElementById(\'report-current-id\'); if(id) viewReport(id.value); }, 150);" style="background:#C8730A;color:white;border:none;border-radius:14px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">Mark done</button>'
+        + '</div>'
+        + '<div>' + items + '</div>'
+        + '</div>';
+    }).join('');
+
+    return header('Next Inspection Report')
+      + '<input type="hidden" id="report-current-id" value="next_inspection_report">'
+      + '<div style="padding:16px;background:#f5f0e8;font-family:sans-serif;font-size:12px;color:#633806;line-height:1.5;border-bottom:1px solid #e0d8c8;">'
+      +   '<strong>' + pendingByHive.length + '</strong> hive' + (pendingByHive.length !== 1 ? 's' : '') + ' with pending follow-up action' + (pendingByHive.length !== 1 ? 's' : '')
+      +   ' &middot; Extracted from your voice notes using phrases like &ldquo;for the next inspection&rdquo;, &ldquo;remind me to&rdquo;, &ldquo;next time&rdquo;.'
+      + '</div>'
+      + '<div style="padding:14px;background:white;">' + cards + '</div>';
   }
 
   if (id === 'inspection_history') {
