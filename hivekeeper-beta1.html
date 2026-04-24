@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 18:20 · Fix: hive delete now actually fires to Supabase + tombstones survive pull</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 · Fix: hive editor delete path was passing null hiveId after closeHiveEditor() — now captures ID first</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -6140,12 +6140,15 @@ function hiveEditorRemovePhoto() {
 
 function hiveEditorDelete() {
   if (!confirm('Permanently delete this hive? All inspection records for this hive will also be removed. This cannot be undone.')) return;
+  // 24 April 2026 CRITICAL FIX: capture the ID BEFORE closeHiveEditor() nulls
+  // _hiveEditorHiveId. Previously confirmDeleteHive received null and silently
+  // did nothing — Chris saw the "are you sure" popup, clicked OK, and the hive
+  // stayed put. Also skip the redundant second confirmation (confirmDeleteHive's
+  // bottom sheet) since the user has already confirmed via the native popup above.
+  var hiveId = _hiveEditorHiveId;
   closeHiveEditor();
-  if (typeof confirmDeleteHive === 'function') {
-    // Use the existing delete flow — it has its own confirm but we already confirmed,
-    // so jump straight to the actual deletion if a direct function exists.
-    // Falling back to confirmDeleteHive (which re-confirms) is acceptable.
-    confirmDeleteHive(_hiveEditorHiveId);
+  if (hiveId && typeof deleteHiveAndData === 'function') {
+    deleteHiveAndData(hiveId);
   }
 }
 
