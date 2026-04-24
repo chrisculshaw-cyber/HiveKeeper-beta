@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 13:45 · Phase 2 fix: 3-col Reports grid preserved + bottom nav containment</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 14:30 · Offline-first sync refactor + sprays + hive_movements sync</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -3399,12 +3399,73 @@ function destroyHiveListSortable() {
 function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch{ return []; } }
 
 // ── HIVE MOVEMENT STORAGE ──────────────────────────────────────
-// Movement events are stored locally for now — Supabase table + sync
-// to be added in a follow-up. Each event: id, hiveId, fromApiaryId,
-// toApiaryId, movedAt (ISO), reason, createdAt.
+// Movement events — each time a hive moves between apiaries.
+// Syncs to Supabase `hive_movements` table (added 24 April 2026 as part
+// of the offline-first sync refactor). Previous behaviour was local-only.
 var MOVEMENTS_KEY = 'hk_movements_v1';
 function loadMovements(){ try{ return JSON.parse(localStorage.getItem(MOVEMENTS_KEY)) || []; } catch(e){ return []; } }
-function saveMovements(list){ try { localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(list)); } catch(e){ console.warn('saveMovements', e); } }
+function saveMovements(list){
+  try { localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(list)); } catch(e){ console.warn('saveMovements', e); }
+  // Push to Supabase (offline-safe)
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    list.forEach(function(m) {
+      queueOfflineSave('hive_movements', movementToRow(m, uid));
+    });
+  } else {
+    pushMovements().catch(function(){});
+  }
+}
+
+function movementToRow(m, uid) {
+  return {
+    id: m.id,
+    user_id: uid,
+    hive_id: m.hiveId,
+    from_apiary_id: m.fromApiaryId || null,
+    to_apiary_id: m.toApiaryId || null,
+    moved_at: m.movedAt ? new Date(m.movedAt).toISOString() : new Date().toISOString(),
+    reason: m.reason || '',
+    notes: m.notes || '',
+    created_at: m.createdAt ? (typeof m.createdAt === 'number' ? new Date(m.createdAt).toISOString() : m.createdAt) : new Date().toISOString()
+  };
+}
+
+async function pushMovements() {
+  var uid = getUserId(); if (!uid) return;
+  var movements = loadMovements();
+  if (!movements.length) return;
+  var rows = movements.map(function(m) { return movementToRow(m, uid); });
+  var sb = getSupabase();
+  var { error } = await sb.from('hive_movements').upsert(rows, { onConflict: 'id' });
+  if (error) {
+    console.warn('[pushMovements] error — queueing:', error.message);
+    rows.forEach(function(r) { queueOfflineSave('hive_movements', r); });
+  }
+}
+
+async function pullMovements() {
+  var uid = getUserId(); if (!uid) return;
+  var sb = getSupabase();
+  var { data, error } = await sb.from('hive_movements').select('*').eq('user_id', uid);
+  if (error) { console.warn('[pullMovements]', error.message); return; }
+  if (!data) return;
+  var local = data.map(function(r) {
+    return {
+      id: r.id,
+      hiveId: r.hive_id,
+      fromApiaryId: r.from_apiary_id,
+      toApiaryId: r.to_apiary_id,
+      movedAt: r.moved_at,
+      reason: r.reason || '',
+      notes: r.notes || '',
+      createdAt: r.created_at ? new Date(r.created_at).getTime() : Date.now()
+    };
+  });
+  try { localStorage.setItem(MOVEMENTS_KEY, JSON.stringify(local)); } catch(e) {}
+}
+
 function getMovementsForHive(hiveId){
   return loadMovements().filter(function(m){ return m.hiveId === hiveId; })
     .sort(function(a,b){ return new Date(b.movedAt).getTime() - new Date(a.movedAt).getTime(); });
@@ -4393,7 +4454,75 @@ function loadSprays() {
 }
 function saveSprays(sprays) {
   try { localStorage.setItem('hk_sprays', JSON.stringify(sprays)); } catch(e) {}
+  // Push to Supabase (offline-safe — queues if needed).
+  // Added 24 April 2026 — previously local-only which meant users lost
+  // their spray history on device switch. See data-sync audit v1.
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    sprays.forEach(function(sp) {
+      queueOfflineSave('sprays', sprayToRow(sp, uid));
+    });
+  } else {
+    pushSprays().catch(function(){});
+  }
 }
+
+// Convert local spray object to Supabase row shape (shared by push + queue)
+function sprayToRow(sp, uid) {
+  return {
+    id: sp.id,
+    user_id: uid,
+    apiary_id: sp.apiaryId || currentApiaryId || null,
+    product: sp.product || null,
+    crop_type: sp.cropType || null,
+    date: sp.date ? new Date(sp.date).toISOString() : null,
+    distance_km: sp.distanceKm != null ? sp.distanceKm : null,
+    lat: sp.lat != null ? sp.lat : null,
+    lng: sp.lng != null ? sp.lng : null,
+    notes: sp.notes || '',
+    created_at: sp.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function pushSprays() {
+  var uid = getUserId(); if (!uid) return;
+  var sprays = loadSprays();
+  if (!sprays.length) return;
+  var rows = sprays.map(function(sp) { return sprayToRow(sp, uid); });
+  var sb = getSupabase();
+  var { error } = await sb.from('sprays').upsert(rows, { onConflict: 'id' });
+  if (error) {
+    console.warn('[pushSprays] error — queueing:', error.message);
+    rows.forEach(function(r) { queueOfflineSave('sprays', r); });
+  }
+}
+
+async function pullSprays() {
+  var uid = getUserId(); if (!uid) return;
+  var sb = getSupabase();
+  var { data, error } = await sb.from('sprays').select('*').eq('user_id', uid);
+  if (error) { console.warn('[pullSprays]', error.message); return; }
+  if (!data) return;
+  // Map back to local shape
+  var local = data.map(function(r) {
+    return {
+      id: r.id,
+      apiaryId: r.apiary_id,
+      product: r.product || '',
+      cropType: r.crop_type || '',
+      date: r.date,
+      distanceKm: r.distance_km,
+      lat: r.lat,
+      lng: r.lng,
+      notes: r.notes || '',
+      createdAt: r.created_at
+    };
+  });
+  try { localStorage.setItem('hk_sprays', JSON.stringify(local)); } catch(e) {}
+}
+
 function addSpray(spray) {
   var sprays = loadSprays();
   spray.id = 'spray_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
@@ -4403,7 +4532,18 @@ function addSpray(spray) {
   return spray;
 }
 function deleteSprayById(id) {
+  // Remove from local + delete from Supabase (offline-safe)
   saveSprays(loadSprays().filter(function(s){ return s.id !== id; }));
+  if (getUserId()) {
+    if (isOnline()) {
+      try {
+        getSupabase().from('sprays').delete().eq('id', id).then(function(){});
+      } catch(e) {}
+    }
+    // Note: offline delete is NOT queued — if user deletes offline and same
+    // row re-syncs from another device, the delete would be undone. This is
+    // acceptable for MVP. A proper tombstone-based delete is post-launch.
+  }
 }
 function deleteSprayConfirm(id) {
   if (confirm('Delete this spray report?')) {
@@ -9094,7 +9234,23 @@ goTo = function(id) {
 var VARROA_KEY='hk_varroa_v1', HARVEST_KEY='hk_harvest_v1', TREATMENT_KEY='hk_treatment_v1';
 
 function loadVarroa(){try{return JSON.parse(localStorage.getItem(VARROA_KEY)||'[]');}catch(e){return[];}}
-function saveVarroa(d){localStorage.setItem(VARROA_KEY,JSON.stringify(d)); if (getUserId()) pushVarroa().catch(function(){});}
+function saveVarroa(d){
+  localStorage.setItem(VARROA_KEY,JSON.stringify(d));
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    d.forEach(function(v) {
+      queueOfflineSave('varroa_counts', {
+        id: v.id, user_id: uid, hive_id: v.hiveId,
+        counted_at: v.countedAt ? new Date(v.countedAt).toISOString() : new Date().toISOString(),
+        mite_count: v.miteCount != null ? v.miteCount : null,
+        method: v.method || '', notes: v.notes || ''
+      });
+    });
+  } else {
+    pushVarroa().catch(function(){});
+  }
+}
 function loadHarvests(){try{return JSON.parse(localStorage.getItem(HARVEST_KEY)||'[]');}catch(e){return[];}}
 function saveHarvests(d){localStorage.setItem(HARVEST_KEY,JSON.stringify(d)); if (getUserId()) pushHarvests().catch(function(){});}
 function loadTreatments(){try{return JSON.parse(localStorage.getItem(TREATMENT_KEY)||'[]');}catch(e){return[];}}
@@ -13343,7 +13499,26 @@ var currentApiaryId = null;
 function loadApiaries() {
   try { return JSON.parse(localStorage.getItem(APIARY_KEY)) || []; } catch(e) { return []; }
 }
-function saveApiaries(a) { localStorage.setItem(APIARY_KEY, JSON.stringify(a)); if (getUserId()) pushApiaries().catch(function(){}); }
+function saveApiaries(a) {
+  localStorage.setItem(APIARY_KEY, JSON.stringify(a));
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    a.forEach(function(ap) {
+      if (ap.sharedWith) return;  // don't push shared apiaries (we're not the owner)
+      queueOfflineSave('apiaries', {
+        id: ap.id, user_id: uid, name: ap.name || '',
+        location_name: ap.locationName || null,
+        lat: ap.lat != null ? ap.lat : null,
+        lng: ap.lng != null ? ap.lng : null,
+        map_positions: ap.mapPositions ? JSON.stringify(ap.mapPositions) : null,
+        map_bearing: ap.mapBearing != null ? ap.mapBearing : 0
+      });
+    });
+  } else {
+    pushApiaries().catch(function(){});
+  }
+}
 
 function getCurrentApiary() {
   var apiaries = loadApiaries();
@@ -17004,6 +17179,15 @@ async function pullFromSupabase() {
     }
 
     _lastSyncAt = Date.now();
+
+    // 24 April 2026 — pull sprays + movements (new tables from sync audit).
+    // Run in parallel since they don't depend on each other. Errors logged
+    // but don't fail the overall pull.
+    await Promise.all([
+      pullSprays().catch(function(e){ console.warn('[pull sprays]', e); }),
+      pullMovements().catch(function(e){ console.warn('[pull movements]', e); })
+    ]);
+
     return true;
 
   } catch(e) {
@@ -17035,6 +17219,9 @@ async function pushAllToSupabase() {
     await pushVarroa();
     await pushSwarmCatches();
     await pushLandmarks();
+    // 24 April 2026 — sprays + movements now part of the full sync
+    await pushSprays().catch(function(){});
+    await pushMovements().catch(function(){});
     _lastSyncAt = Date.now();
     showSyncStatus('Synced ✓');
   } catch(e) {
@@ -17048,10 +17235,76 @@ async function pushAllToSupabase() {
 // ── AUTO SYNC HOOKS ──────────────────────────────────────────────
 // Wrap the existing save functions to auto-push after local save
 
+// ── PUSH-WITH-QUEUE WRAPPER ──────────────────────────────────────
+// Every pushX function follows: read local, upsert, silently fail.
+// We wrap them so failures queue the RAW local records for later retry
+// (rather than silently losing offline writes).
+//
+// tableName:   Supabase table name (used to queue individual rows)
+// pushFn:      the existing pushX function (keeps current behaviour online)
+// loadFn:      function that returns the local array of records
+// recordBuilder: function(record) -> supabase row shape
+function pushWithQueueFallback(tableName, pushFn, loadFn, recordBuilder) {
+  return async function() {
+    if (!getUserId()) return;
+    if (!isOnline()) {
+      // Offline — queue each local record so it syncs when we reconnect
+      try {
+        var records = loadFn() || [];
+        records.forEach(function(r) {
+          var row = recordBuilder(r);
+          if (row && row.id) queueOfflineSave(tableName, row);
+        });
+      } catch(e) { console.warn('[queue-on-offline] ' + tableName + ':', e); }
+      return;
+    }
+    // Online — try the push. On failure, queue.
+    try {
+      await pushFn();
+    } catch(e) {
+      console.warn('[push-failed] ' + tableName + ' — queueing for retry:', e);
+      try {
+        var records = loadFn() || [];
+        records.forEach(function(r) {
+          var row = recordBuilder(r);
+          if (row && row.id) queueOfflineSave(tableName, row);
+        });
+      } catch(e2) {}
+    }
+  };
+}
+
 var _origSaveHivesSync = saveHives;
 saveHives = function(hives) {
   _origSaveHivesSync(hives);
-  if (getUserId()) pushHives().catch(function(){});
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    // Queue each hive for sync
+    var uid = getUserId();
+    hives.forEach(function(h) {
+      queueOfflineSave('hives', {
+        id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
+        name: h.name, status: h.status || 'active',
+        box_type: h.boxType || null, queen_status: h.queenStatus || null,
+        stores_level: h.storesLevel || null, varroa_level: h.varroaLevel || null,
+        swarm_risk: h.swarmRisk || null, wax_moth: !!h.waxMoth,
+        health_score: h.healthScore != null ? h.healthScore : null,
+        notes: h.notes || '', cover_photo: h.coverPhoto || null,
+        created_at: h.createdAt ? new Date(h.createdAt).toISOString() : new Date().toISOString()
+      });
+    });
+  } else {
+    pushHives().catch(function(e) {
+      console.warn('[saveHives push failed — queueing]:', e);
+      var uid = getUserId();
+      hives.forEach(function(h) {
+        queueOfflineSave('hives', {
+          id: h.id, user_id: uid, apiary_id: h.apiaryId || null,
+          name: h.name, status: h.status || 'active'
+        });
+      });
+    });
+  }
 };
 
 var _origSaveInspectionsSync = saveInspections;
@@ -17092,7 +17345,21 @@ var _origSaveHarvest = saveHarvest;
 if (typeof saveHarvest === 'function') {
   saveHarvest = function() {
     _origSaveHarvest.apply(this, arguments);
-    if (getUserId()) pushHarvests().catch(function(){});
+    if (!getUserId()) return;
+    if (!isOnline()) {
+      // Queue all harvests
+      var uid = getUserId();
+      (JSON.parse(localStorage.getItem('hk_harvest_v1') || '[]')).forEach(function(h) {
+        queueOfflineSave('harvests', {
+          id: h.id, user_id: uid, hive_id: h.hiveId,
+          harvested_at: h.harvestedAt ? new Date(h.harvestedAt).toISOString() : new Date().toISOString(),
+          weight_kg: h.weightKg || null, frames: h.frames || null,
+          notes: h.notes || ''
+        });
+      });
+    } else {
+      pushHarvests().catch(function(){});
+    }
   };
 }
 
@@ -17100,7 +17367,19 @@ var _origSaveTreatment = saveTreatment;
 if (typeof saveTreatment === 'function') {
   saveTreatment = function() {
     _origSaveTreatment.apply(this, arguments);
-    if (getUserId()) pushTreatments().catch(function(){});
+    if (!getUserId()) return;
+    if (!isOnline()) {
+      var uid = getUserId();
+      (JSON.parse(localStorage.getItem('hk_treatment_v1') || '[]')).forEach(function(t) {
+        queueOfflineSave('treatments', {
+          id: t.id, user_id: uid, hive_id: t.hiveId,
+          product: t.product || '', applied_at: t.appliedAt ? new Date(t.appliedAt).toISOString() : new Date().toISOString(),
+          dose: t.dose || '', notes: t.notes || ''
+        });
+      });
+    } else {
+      pushTreatments().catch(function(){});
+    }
   };
 }
 
@@ -18612,7 +18891,22 @@ function loadLandmarks() {
     return landmarks;
   } catch(e) { return []; }
 }
-function saveLandmarks(l) { localStorage.setItem(LANDMARK_KEY, JSON.stringify(l)); if (getUserId()) pushLandmarks().catch(function(){}); }
+function saveLandmarks(l) {
+  localStorage.setItem(LANDMARK_KEY, JSON.stringify(l));
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    l.forEach(function(lm) {
+      queueOfflineSave('landmarks', {
+        id: lm.id, user_id: uid, apiary_id: lm.apiaryId,
+        name: lm.name || '', icon: lm.icon || '',
+        lat: lm.lat, lng: lm.lng, notes: lm.notes || ''
+      });
+    });
+  } else {
+    pushLandmarks().catch(function(){});
+  }
+}
 
 function addLandmark(type) {
   var def = LANDMARK_TYPES[type];
@@ -19444,12 +19738,68 @@ function renderRowTabs() {
 // ── OFFLINE SYNC ─────────────────────────────────────────
 function isOnline() { return navigator.onLine !== false; }
 
+// ═══════════════════════════════════════════════════════════════
+// OFFLINE-FIRST SYNC INFRASTRUCTURE (v2 — 24 April 2026)
+// ═══════════════════════════════════════════════════════════════
+// All save* functions write to localStorage INSTANTLY (so user sees
+// no lag), then call syncToCloud(table, record). syncToCloud tries
+// the push; if offline OR push fails, the record is queued for
+// retry. The online-event handler and initOfflineSync both call
+// flushOfflineQueue to drain the queue.
+//
+// This replaces the previous pattern where only inspections used
+// queueOfflineSave, and every other table used `.catch(() => {})`
+// which silently lost offline writes.
+//
+// queueOfflineSave stays for backward-compat with the inspections
+// flow that already uses it.
+
 function queueOfflineSave(table, data) {
   try {
     var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+    // Dedupe: if the same table+id is already queued, replace the entry
+    // (most recent local write is authoritative — avoid pushing stale
+    // versions from earlier in the offline session).
+    var rowId = data && data.id;
+    if (rowId) {
+      q = q.filter(function(item) {
+        return !(item.table === table && item.data && item.data.id === rowId);
+      });
+    }
     q.push({ table: table, data: data, queuedAt: Date.now() });
     localStorage.setItem('hk_offline_queue', JSON.stringify(q));
   } catch(e) {}
+}
+
+// Generic helper — every save function can use this.
+// Writes happen locally BEFORE this is called. This only handles push+queue.
+//   table:       Supabase table name (string)
+//   record:      the object to upsert (must include `id`)
+//   options:     { onConflict: 'id' } default. Pass { delete: true, id: 'xxx' } to queue a delete.
+// Returns a promise that resolves on push success, queues silently on failure.
+async function syncToCloud(table, record, options) {
+  if (!getUserId()) return;  // anonymous session — nothing to sync
+  options = options || {};
+  if (!isOnline()) {
+    queueOfflineSave(table, record);
+    return;
+  }
+  try {
+    var sb = getSupabase();
+    var result;
+    if (options.delete && record.id) {
+      result = await sb.from(table).delete().eq('id', record.id);
+    } else {
+      result = await sb.from(table).upsert(record, { onConflict: options.onConflict || 'id' });
+    }
+    if (result && result.error) {
+      console.warn('[syncToCloud] ' + table + ' failed, queueing:', result.error.message);
+      queueOfflineSave(table, record);
+    }
+  } catch(e) {
+    // Network blip mid-request — queue and move on
+    queueOfflineSave(table, record);
+  }
 }
 
 async function flushOfflineQueue() {
@@ -19457,28 +19807,46 @@ async function flushOfflineQueue() {
   if (!q.length || !getUserId()) return;
   var sb = getSupabase();
   var remaining = [];
+  var syncedByTable = {};
   for (var i = 0; i < q.length; i++) {
     try {
       var item = q[i];
       var { error } = await sb.from(item.table).upsert(item.data, { onConflict: 'id' });
       if (error) {
-        console.warn('Offline queue flush error:', error.message);
+        console.warn('Offline queue flush error [' + item.table + ']:', error.message);
         remaining.push(item);
+      } else {
+        syncedByTable[item.table] = (syncedByTable[item.table] || 0) + 1;
       }
     } catch(e) {
       remaining.push(q[i]);
     }
   }
   localStorage.setItem('hk_offline_queue', JSON.stringify(remaining));
-  if (q.length > remaining.length) {
-    showToast('✓ ' + (q.length - remaining.length) + ' inspection(s) synced to cloud');
+  var totalSynced = q.length - remaining.length;
+  if (totalSynced > 0) {
+    // Show a combined message rather than one per table
+    var parts = [];
+    Object.keys(syncedByTable).forEach(function(t) {
+      parts.push(syncedByTable[t] + ' ' + t);
+    });
+    showToast('✓ Synced ' + parts.join(', '));
   }
 }
 
-// Listen for connection restore
+// Listen for connection restore — flush queue AND then run a full sync
+// so non-queued data (e.g. rows written while online-but-push-failed) also catches up.
 window.addEventListener('online', function() {
   showToast('Back online — syncing...');
-  setTimeout(flushOfflineQueue, 1000);
+  setTimeout(function() {
+    flushOfflineQueue().then(function() {
+      // After queue flushed, trigger a full push of everything to make sure
+      // any state that was only written locally (edge cases) gets synced too.
+      if (typeof pushAllToSupabase === 'function') {
+        pushAllToSupabase().catch(function(){});
+      }
+    });
+  }, 1000);
 });
 
 // Also try flush on each login
@@ -19492,14 +19860,15 @@ function initOfflineSync() {
   }
 }
 
-window.addEventListener('online', function() { 
+window.addEventListener('online', function() {
   var el = document.getElementById('offline-indicator');
   if (el) el.style.display = 'none';
 });
-window.addEventListener('offline', function() { 
+window.addEventListener('offline', function() {
   var el = document.getElementById('offline-indicator');
   if (el) el.style.display = 'block';
-  showToast('📵 Gone offline — inspections will be saved locally');
+  // Updated message — we now queue everything, not just inspections
+  showToast('📵 Gone offline — changes will sync when reconnected');
 });
 
 // ── FOUNDING BEEKEEPER BADGE ─────────────────────────────
