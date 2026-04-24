@@ -123,8 +123,12 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
   .quick-stats{
     gap:12px;
   }
-  /* Apiary hive cards — use more of the width */
-  .hive-scroll{
+  /* Apiary hive cards — 2 columns at this breakpoint (was implicit via existing
+     768px+ media query). Targeted to the Apiary + Home Active hives only —
+     the Reports section uses an inline 3-column grid that we must NOT override. */
+  #dash-hives.hive-scroll,
+  #apiary-hives.hive-scroll,
+  .hive-scroll:not([style*="grid-template-columns"]){
     display:grid !important;
     grid-template-columns:repeat(2, 1fr) !important;
     gap:12px;
@@ -145,6 +149,14 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
   #s-inspect .scroll-area{
     padding-left:8px;
     padding-right:8px;
+  }
+  /* Bottom nav should remain CONSTRAINED within #app (it already is via
+     position:absolute on a positioned ancestor, but reasserting
+     left/right to 0 makes sure it doesn't accidentally stretch beyond
+     the container on wider viewports). */
+  #bottom-nav{
+    left:0 !important;
+    right:0 !important;
   }
 }
 @media(min-width:1280px){
@@ -1298,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 11:20 · Home reports tiles: 3-tile layout (Session direct + Next insp + All reports) with Change range picker</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 13:45 · Phase 2 fix: 3-col Reports grid preserved + bottom nav containment</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
