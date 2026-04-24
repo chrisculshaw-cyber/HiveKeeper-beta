@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service · HiveKeeper</title>
+<meta name="description" content="Terms of Service for HiveKeeper — the UK beekeeping management app. Clear, fair terms for beta users and paying customers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #001646;
+    --navy-light: #1a2e5e;
+    --sky: #5b9bd5;
+    --sky-light: #8fbce3;
+    --bg: #fafbfc;
+    --bg-alt: #f2f5f9;
+    --text: #1a1a1a;
+    --text-muted: #555;
+    --border: #e1e5eb;
+    --danger: #b03030;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-weight: 400;
+    font-size: 16px;
+  }
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 40px 24px 50px;
+    text-align: center;
+    border-bottom: 4px solid var(--sky);
+  }
+  header .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  header .logo::before { content: "🐝 "; }
+  header .tagline {
+    font-size: 13px;
+    opacity: 0.8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: -1px;
+  }
+  header .meta {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+  }
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .intro {
+    font-size: 18px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    padding: 24px 28px;
+    background: white;
+    border-left: 4px solid var(--sky);
+    border-radius: 4px;
+  }
+  .toc {
+    background: var(--bg-alt);
+    padding: 24px 28px;
+    border-radius: 6px;
+    margin-bottom: 48px;
+  }
+  .toc-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 16px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+  .toc li {
+    counter-increment: toc;
+    padding: 4px 0;
+    font-size: 15px;
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero) ".";
+    color: var(--sky);
+    font-weight: 600;
+    margin-right: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .toc a {
+    color: var(--navy);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  .toc a:hover { border-bottom-color: var(--sky); }
+  section.clause {
+    margin-bottom: 44px;
+  }
+  section.clause h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--bg-alt);
+    letter-spacing: -0.3px;
+  }
+  section.clause h3 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--navy-light);
+    margin: 24px 0 10px;
+  }
+  section.clause p {
+    margin-bottom: 14px;
+  }
+  section.clause ul, section.clause ol {
+    margin: 0 0 14px 24px;
+  }
+  section.clause li {
+    margin-bottom: 6px;
+  }
+  section.clause strong {
+    color: var(--navy);
+    font-weight: 600;
+  }
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 14px;
+  }
+  table.data-table th {
+    background: var(--navy);
+    color: white;
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+  table.data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:nth-child(even) td { background: var(--bg-alt); }
+  .callout {
+    background: #fff8e1;
+    border-left: 4px solid #c8730a;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  .callout strong { color: #8b5000; }
+  .callout-info {
+    background: #e8f3ff;
+    border-left: 4px solid var(--sky);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  .callout-warn {
+    background: #fdecec;
+    border-left: 4px solid var(--danger);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+  .callout-warn strong { color: var(--danger); }
+  a {
+    color: var(--sky);
+    text-decoration: none;
+    border-bottom: 1px solid var(--sky-light);
+    transition: all 0.15s;
+  }
+  a:hover {
+    color: var(--navy);
+    border-bottom-color: var(--navy);
+  }
+  footer {
+    background: var(--navy);
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+    font-size: 14px;
+  }
+  footer .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  footer .contact {
+    opacity: 0.8;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  footer a { color: var(--sky-light); border-bottom-color: transparent; }
+  footer a:hover { color: white; border-bottom-color: var(--sky-light); }
+  .back-to-app {
+    display: inline-block;
+    margin-top: 20px;
+    background: var(--sky);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    border: none;
+  }
+  .back-to-app:hover {
+    background: var(--sky-light);
+    color: var(--navy);
+    border: none;
+  }
+  @media (max-width: 640px) {
+    header { padding: 32px 20px 40px; }
+    header h1 { font-size: 32px; }
+    main { padding: 32px 20px 60px; }
+    section.clause h2 { font-size: 22px; }
+    .intro { font-size: 16px; padding: 18px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HiveKeeper</div>
+  <div class="tagline">Beekeeping, kept simple</div>
+  <h1>Terms of Service</h1>
+  <div class="meta">Effective 24 April 2026 &middot; Version 1.0</div>
+</header>
+
+<main>
+
+  <div class="intro">
+    These Terms of Service form the agreement between you and HiveKeeper. They explain what you can expect from us, what we expect from you, how subscriptions work, and what happens if something goes wrong. We've tried to write them plainly &mdash; please read them before signing up.
+  </div>
+
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <ol>
+      <li><a href="#who-we-are">Who we are</a></li>
+      <li><a href="#the-service">What HiveKeeper is</a></li>
+      <li><a href="#account">Your account</a></li>
+      <li><a href="#age">Age restrictions</a></li>
+      <li><a href="#subscriptions">Subscriptions, pricing, and trials</a></li>
+      <li><a href="#founding">Founding Beekeepers</a></li>
+      <li><a href="#cancellation">Cancellation and refunds</a></li>
+      <li><a href="#your-content">Your data and content</a></li>
+      <li><a href="#shared-apiaries">Shared apiaries</a></li>
+      <li><a href="#acceptable-use">Acceptable use</a></li>
+      <li><a href="#ai-features">AI features</a></li>
+      <li><a href="#hornet-reports">Asian hornet reporting</a></li>
+      <li><a href="#beta">Beta status</a></li>
+      <li><a href="#availability">Service availability</a></li>
+      <li><a href="#liability">Limitation of liability</a></li>
+      <li><a href="#termination">Termination</a></li>
+      <li><a href="#changes">Changes to these Terms</a></li>
+      <li><a href="#law">Governing law</a></li>
+      <li><a href="#contact">Contact us</a></li>
+    </ol>
+  </nav>
+
+  <section class="clause" id="who-we-are">
+    <h2>1. Who we are</h2>
+    <p>HiveKeeper is operated by <strong>Culshaw Consulting Ltd</strong>, a company registered in England and Wales (company number 16938477).</p>
+    <p><strong>Registered office:</strong><br>
+      30 Stanion Road<br>
+      Brigstock<br>
+      Northamptonshire NN14 3HW<br>
+      United Kingdom
+    </p>
+    <p>For the purposes of these Terms, "we", "us", "our", and "HiveKeeper" refer to Culshaw Consulting Ltd. "You" and "your" refer to the individual using the HiveKeeper app, website, or related services.</p>
+    <p>You can contact us at <a href="mailto:hello@gethivekeeper.com">hello@gethivekeeper.com</a>.</p>
+  </section>
+
+  <section class="clause" id="the-service">
+    <h2>2. What HiveKeeper is</h2>
+    <p>HiveKeeper is a beekeeping management application designed for UK beekeepers. It helps you record inspections, track hive health, log harvests and treatments, receive alerts about Asian hornet sightings and nearby crop spraying, and get AI-assisted guidance based on UK beekeeping practice.</p>
+    <p>HiveKeeper is accessible through:</p>
+    <ul>
+      <li>Our web application at <a href="https://gethivekeeper.com">gethivekeeper.com</a></li>
+      <li>Native iOS and Android apps available from the Apple App Store and Google Play</li>
+    </ul>
+    <p>By creating an account or using HiveKeeper in any form, you agree to these Terms of Service. If you don't agree, please don't use the service.</p>
+  </section>
+
+  <section class="clause" id="account">
+    <h2>3. Your account</h2>
+    <p>To use HiveKeeper you need an account. You are responsible for:</p>
+    <ul>
+      <li>Keeping your login credentials (email, password, or magic link access) secure</li>
+      <li>All activity that happens under your account</li>
+      <li>Notifying us promptly at <a href="mailto:hello@gethivekeeper.com">hello@gethivekeeper.com</a> if you believe your account has been accessed without your permission</li>
+    </ul>
+    <p>Each HiveKeeper account is for a single named user. You may not share your login credentials. If you want multiple beekeepers to access the same apiary, use the <a href="#shared-apiaries">shared apiary</a> feature instead of sharing an account.</p>
+    <p>Information you provide must be accurate and kept up to date. If we discover that an account has been created using false information, or by someone who does not meet the <a href="#age">age requirement</a>, we may suspend or close the account.</p>
+  </section>
+
+  <section class="clause" id="age">
+    <h2>4. Age restrictions</h2>
+    <p>HiveKeeper is intended for users aged <strong>18 or over</strong>. By signing up, you confirm that you are at least 18 years old. This reflects that paid subscriptions are processed via standard payment cards, which are generally only available to adults.</p>
+    <div class="callout-info">
+      <strong>Note for junior beekeepers:</strong> If you are under 18 and interested in beekeeping, please ask a parent or guardian to set up HiveKeeper on their behalf. Many families share a single account &mdash; the parent owns the apiary record, and the junior beekeeper uses the app together with them. When you turn 18 you can create your own account and the apiary can be shared with you.
+    </div>
+    <p>We do not knowingly collect personal data from anyone under 18. If you believe a minor has signed up for HiveKeeper, please contact <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a> and we will delete the account as soon as reasonably possible.</p>
+  </section>
+
+  <section class="clause" id="subscriptions">
+    <h2>5. Subscriptions, pricing, and trials</h2>
+
+    <h3>Tiers</h3>
+    <p>HiveKeeper is offered on three tiers:</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>What's included</th>
+          <th>Price (at time of writing)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Free</strong></td>
+          <td>Up to 5 hives, 1 apiary, core inspection logging, limited reports</td>
+          <td>Free</td>
+        </tr>
+        <tr>
+          <td><strong>Pro</strong></td>
+          <td>Unlimited hives, multiple apiaries, voice inspections, AI chat, full reports, photo history</td>
+          <td>£3.99 per month or £39.99 per year</td>
+        </tr>
+        <tr>
+          <td><strong>Commercial</strong></td>
+          <td>All Pro features plus commercial operator tools, team features, and priority support</td>
+          <td>£19.99 per month or £199.99 per year</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Prices shown above are indicative and may change. The price you pay will be the price displayed at the point of purchase. We will always tell you in advance if we change prices for your existing subscription.</p>
+
+    <h3>Free trial</h3>
+    <p>We offer a <strong>14-day free trial</strong> of Pro features to new accounts that don't qualify for Founding Beekeeper status. During the trial you have full Pro access. At the end of the trial:</p>
+    <ul>
+      <li>Your account reverts to the Free tier automatically</li>
+      <li>You will not be charged unless you actively choose to upgrade</li>
+      <li>Data you created during the trial stays with you; some features (voice inspections, AI chat, extended reports) simply become unavailable until you upgrade</li>
+    </ul>
+
+    <h3>Billing</h3>
+    <p>Paid subscriptions renew automatically at the end of each billing period (monthly or annually) at the then-current rate, until cancelled. Payments are processed via:</p>
+    <ul>
+      <li><strong>Stripe</strong> for subscriptions purchased through our website</li>
+      <li><strong>Apple App Store</strong> for subscriptions purchased through our iOS app</li>
+      <li><strong>Google Play Billing</strong> for subscriptions purchased through our Android app</li>
+    </ul>
+    <p>If you subscribed through the App Store or Google Play, their terms and cancellation processes apply alongside these Terms.</p>
+
+    <h3>VAT</h3>
+    <p>Prices shown are inclusive of UK VAT where applicable.</p>
+  </section>
+
+  <section class="clause" id="founding">
+    <h2>6. Founding Beekeepers</h2>
+    <p>Founding Beekeepers are users who helped shape HiveKeeper during its closed beta. If you are a Founding Beekeeper:</p>
+    <ul>
+      <li>You receive <strong>HiveKeeper Pro free of charge, for as long as your HiveKeeper account remains active</strong></li>
+      <li>This benefit is tied to your individual account. It is not transferable to other people, other accounts, or new accounts created after the original account is deleted</li>
+      <li>If you close your account, the Founding Beekeeper benefit ends. We cannot reinstate it on a new account</li>
+      <li>You may downgrade, cancel, or change tiers at any time just like any other user</li>
+    </ul>
+    <p>We reserve the right to withdraw Founding Beekeeper status in cases of serious breach of these Terms (for example, abuse of the service or attempts to defraud us or other users).</p>
+  </section>
+
+  <section class="clause" id="cancellation">
+    <h2>7. Cancellation and refunds</h2>
+
+    <h3>Cancelling your subscription</h3>
+    <p>You can cancel a paid subscription at any time:</p>
+    <ul>
+      <li><strong>Subscriptions via gethivekeeper.com:</strong> manage or cancel from the Billing section of your account settings, or email us at <a href="mailto:hello@gethivekeeper.com">hello@gethivekeeper.com</a></li>
+      <li><strong>Subscriptions via iOS:</strong> manage via Settings &rarr; [your name] &rarr; Subscriptions on your Apple device</li>
+      <li><strong>Subscriptions via Android:</strong> manage via Google Play &rarr; Subscriptions</li>
+    </ul>
+    <p>If you cancel, your subscription continues until the end of the period you've already paid for. You will not be charged for the next period.</p>
+
+    <h3>Refunds</h3>
+    <p>Under UK consumer law, you have a <strong>14-day right to cancel and receive a full refund</strong> after first purchasing a paid subscription, provided you have not materially used the paid features during that period. If you have used the paid features (for example, run voice inspections or AI chat) you may forfeit this right.</p>
+    <p>Outside of the 14-day cancellation period, subscription payments are generally non-refundable. We may offer pro-rata refunds at our discretion in exceptional circumstances &mdash; for example, an extended service outage.</p>
+    <p>For subscriptions purchased through the Apple App Store or Google Play, refund requests must be made directly through Apple or Google respectively, in line with their refund policies.</p>
+
+    <h3>Account deletion</h3>
+    <p>You can delete your account at any time via the <a href="https://gethivekeeper.com/delete-account">Delete Account</a> page. Deleting your account does not automatically trigger a refund of unused subscription time unless you also request one within the 14-day window above.</p>
+  </section>
+
+  <section class="clause" id="your-content">
+    <h2>8. Your data and content</h2>
+
+    <h3>You own your data</h3>
+    <p>All the beekeeping data you create in HiveKeeper &mdash; apiaries, hives, inspections, photos, voice recordings, harvests, treatments, notes &mdash; belongs to you. We do not claim ownership of your content.</p>
+
+    <h3>Licence to operate the service</h3>
+    <p>To run HiveKeeper on your behalf, you grant us a limited, non-exclusive, royalty-free licence to store, process, display, and transmit your content for the purpose of providing the service to you. This licence ends when you delete the content or close your account.</p>
+
+    <h3>How we handle your data</h3>
+    <p>How we collect, store, and process your personal data is set out in our <a href="https://gethivekeeper.com/privacy-policy">Privacy Policy</a>. That policy forms part of these Terms by reference.</p>
+
+    <h3>Data export</h3>
+    <p>You can export your beekeeping records at any time via the in-app export features. We encourage you to export a copy periodically as a personal backup.</p>
+  </section>
+
+  <section class="clause" id="shared-apiaries">
+    <h2>9. Shared apiaries</h2>
+    <p>HiveKeeper allows you to share access to one of your apiaries with other HiveKeeper users, so that (for example) a partner, association secretary, or helper can view or contribute to the records.</p>
+
+    <h3>The owner keeps ownership</h3>
+    <p>When you invite another beekeeper to your apiary:</p>
+    <ul>
+      <li><strong>You remain the owner</strong> of all data in that apiary &mdash; the hives, the inspection records, the photos, everything</li>
+      <li>The person you invite has <strong>access permissions only</strong>, not ownership</li>
+      <li>You can revoke their access at any time, and when you do, their access ends immediately with no right to retain or re-use the data</li>
+    </ul>
+
+    <h3>If you're the invitee</h3>
+    <p>Likewise, if another beekeeper grants you access to their apiary:</p>
+    <ul>
+      <li>The data in that apiary belongs to them, not you</li>
+      <li>You may view and (if permitted) edit it within HiveKeeper, but you must not export, scrape, screenshot, or otherwise retain a copy of their data for use outside HiveKeeper without their explicit permission</li>
+      <li>If access is revoked, you must stop using any information obtained through that shared access</li>
+    </ul>
+    <p>This clause exists to protect both primary beekeepers (so their records stay theirs) and shared-access users (so expectations are clear).</p>
+  </section>
+
+  <section class="clause" id="acceptable-use">
+    <h2>10. Acceptable use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Use HiveKeeper for any unlawful purpose, or to infringe anyone's rights</li>
+      <li>Attempt to gain unauthorised access to other users' accounts, data, or apiaries</li>
+      <li>Upload content that is unlawful, abusive, harassing, obscene, or otherwise objectionable</li>
+      <li>Upload or store data that is not reasonably related to beekeeping (the service is not a general-purpose storage or messaging platform)</li>
+      <li>Reverse-engineer, decompile, or attempt to extract the source code of the app, except to the limited extent permitted by UK law</li>
+      <li>Use automated systems (bots, scrapers) to access, mass-download, or otherwise interact with the service without our written permission</li>
+      <li>Resell, sublicense, or commercially redistribute access to HiveKeeper without our written permission</li>
+      <li>Use HiveKeeper in a way that could overload, disrupt, or damage our systems or those of other users</li>
+    </ul>
+    <p>We may suspend or close accounts that breach these rules, without refund in serious cases.</p>
+  </section>
+
+  <section class="clause" id="ai-features">
+    <h2>11. AI features</h2>
+    <p>HiveKeeper includes AI-powered features such as the in-app chat assistant, inspection transcription, and frame analysis from photos. These features use third-party AI services to produce their output.</p>
+
+    <div class="callout-warn">
+      <strong>Important:</strong> AI output is <strong>guidance, not professional advice</strong>. The AI assistant is trained on UK beekeeping practice but it is not a veterinarian, a bee inspector, or a legal advisor. Always apply your own judgement, and consult a qualified professional (your local bee inspector, a vet, or your association mentor) for any decision that materially affects the welfare of your colonies, your business, or compliance with UK law.
+    </div>
+
+    <p>Specifically:</p>
+    <ul>
+      <li>AI transcriptions may contain errors. You should review them and correct anything important before relying on them</li>
+      <li>AI advice about varroa treatments, disease diagnosis, queen-rearing, or colony interventions is a starting point, not a substitute for expert consultation</li>
+      <li>We do not warrant that AI output will be accurate, complete, current, or fit for your specific situation</li>
+    </ul>
+    <p>You retain responsibility for all decisions made about your apiary.</p>
+  </section>
+
+  <section class="clause" id="hornet-reports">
+    <h2>12. Asian hornet reporting</h2>
+    <p>HiveKeeper includes a feature that lets you report Asian hornet (<em>Vespa velutina</em>) sightings. Because Asian hornet is an invasive species posing serious risk to UK beekeeping, these reports are forwarded on your behalf to the <strong>UK Centre for Ecology &amp; Hydrology (CEH)</strong> at <a href="mailto:alertnonnative@ceh.ac.uk">alertnonnative@ceh.ac.uk</a>, as part of the national invasive species monitoring programme.</p>
+    <p>When you submit a hornet sighting, the information shared with CEH includes:</p>
+    <ul>
+      <li>The date and location of your sighting</li>
+      <li>Any photographs you attached</li>
+      <li>Any notes or description you added</li>
+      <li>Your name and email address, so CEH can follow up if needed</li>
+    </ul>
+    <p>By submitting a hornet sighting through HiveKeeper you consent to this data being shared with CEH for the purpose of invasive species monitoring and response. This data sharing is additional to our general Privacy Policy.</p>
+    <p>If you'd rather report hornets directly without involving HiveKeeper, you can do so via the <a href="https://risc.brc.ac.uk/alert.php?species=asian_hornet">Asian Hornet Watch</a> app or the CEH contact above.</p>
+  </section>
+
+  <section class="clause" id="beta">
+    <h2>13. Beta status</h2>
+    <p>HiveKeeper is currently in a <strong>public beta</strong> phase. This means:</p>
+    <ul>
+      <li>Features may change, be added, or be removed without advance notice</li>
+      <li>You may encounter bugs, performance issues, or data inconsistencies. We fix them as quickly as we can when they are reported</li>
+      <li>Our infrastructure is production-grade but the service has not yet had the benefit of years of real-world use at scale</li>
+      <li>We strongly encourage you to keep your own records outside HiveKeeper &mdash; for example, by exporting your data periodically &mdash; until the beta period is over</li>
+    </ul>
+    <p>During the beta period, HiveKeeper is provided on an <strong>"as is" and "as available"</strong> basis. The warranty disclaimers and limits of liability in these Terms apply with particular force during the beta.</p>
+  </section>
+
+  <section class="clause" id="availability">
+    <h2>14. Service availability</h2>
+    <p>We aim to keep HiveKeeper available 24 hours a day, 7 days a week. However:</p>
+    <ul>
+      <li>We may need to temporarily suspend access for maintenance, updates, or emergency repairs. Where possible we'll give advance notice</li>
+      <li>We rely on third-party infrastructure (Supabase, Cloudflare, hosting providers) and cannot guarantee uninterrupted service</li>
+      <li>Poor mobile signal, device issues, or problems with your internet connection may stop the app working for you even when our systems are fully operational &mdash; HiveKeeper is designed to work offline and sync later, but some features require a live connection</li>
+    </ul>
+    <p>We do not offer a formal Service Level Agreement (SLA) on the Free, Pro, or Commercial consumer tiers.</p>
+  </section>
+
+  <section class="clause" id="liability">
+    <h2>15. Limitation of liability</h2>
+    <p>Nothing in these Terms limits or excludes our liability for: death or personal injury caused by our negligence; fraud or fraudulent misrepresentation; or any other liability which cannot be limited or excluded under UK law.</p>
+    <p>Subject to that, to the fullest extent permitted by law:</p>
+    <ul>
+      <li>HiveKeeper is provided to consumer (non-business) users on the terms set out in the Consumer Rights Act 2015. We do not exclude statutory rights you have as a consumer</li>
+      <li>We are not liable for indirect or consequential losses, loss of business, loss of profit, loss of reputation, or any losses arising from your reliance on information produced by AI features</li>
+      <li>We are not liable for the welfare of your bees, the performance of your colonies, the quality of your harvest, or financial consequences of decisions you make as a beekeeper, even where you used HiveKeeper in the process</li>
+      <li>Our total aggregate liability to you in any 12-month period will not exceed the amount you paid for HiveKeeper during the 12 months immediately preceding the event giving rise to the claim, or £100, whichever is greater</li>
+    </ul>
+    <p>You are the beekeeper. You are responsible for your bees. HiveKeeper is a tool to help you; it is not a substitute for your own skill, care, and judgement.</p>
+  </section>
+
+  <section class="clause" id="termination">
+    <h2>16. Termination</h2>
+
+    <h3>By you</h3>
+    <p>You may stop using HiveKeeper at any time. You can delete your account via the <a href="https://gethivekeeper.com/delete-account">Delete Account</a> page.</p>
+
+    <h3>By us</h3>
+    <p>We may suspend or close your account if:</p>
+    <ul>
+      <li>You seriously or repeatedly breach these Terms</li>
+      <li>We reasonably suspect fraud, abuse, or other unlawful activity</li>
+      <li>You are under 18 and signed up without meeting the <a href="#age">age requirement</a></li>
+      <li>We are required to do so by law</li>
+      <li>We discontinue HiveKeeper (we'd give reasonable notice and help you export your data)</li>
+    </ul>
+
+    <h3>What happens on termination</h3>
+    <p>On termination of your account:</p>
+    <ul>
+      <li>You lose access to the service immediately (for serious breaches) or at the end of your current billing period (for normal cancellations)</li>
+      <li>Your personal data is handled as set out in our <a href="https://gethivekeeper.com/privacy-policy">Privacy Policy</a></li>
+      <li>Clauses that by their nature should survive termination (including <a href="#your-content">your data rights</a>, <a href="#liability">limitation of liability</a>, and <a href="#law">governing law</a>) continue to apply</li>
+    </ul>
+  </section>
+
+  <section class="clause" id="changes">
+    <h2>17. Changes to these Terms</h2>
+    <p>We may update these Terms from time to time &mdash; for example, to reflect new features, changes in the law, or changes in how we operate.</p>
+    <p>When we make significant changes we will:</p>
+    <ul>
+      <li>Update the version number and effective date at the top of this page</li>
+      <li>Notify registered users by email, in-app message, or both, at least 14 days before the changes take effect</li>
+    </ul>
+    <p>If you don't agree to the new Terms, you can cancel your subscription and close your account before they take effect. Continuing to use HiveKeeper after the effective date means you accept the updated Terms.</p>
+    <p>Minor corrections (fixing typos, clarifying wording without changing meaning) may be made without notice.</p>
+  </section>
+
+  <section class="clause" id="law">
+    <h2>18. Governing law</h2>
+    <p>These Terms, and any disputes arising out of or in connection with them or the HiveKeeper service, are governed by the laws of <strong>England and Wales</strong>.</p>
+    <p>You agree that the courts of England and Wales have exclusive jurisdiction, except that if you are a consumer resident in another part of the United Kingdom, you may also bring proceedings in the courts of the part of the UK where you live.</p>
+    <p>Nothing in this clause affects your rights under mandatory local consumer protection law.</p>
+  </section>
+
+  <section class="clause" id="contact">
+    <h2>19. Contact us</h2>
+    <p>For questions about these Terms, your account, billing, or anything else, please get in touch:</p>
+    <ul>
+      <li><strong>General:</strong> <a href="mailto:hello@gethivekeeper.com">hello@gethivekeeper.com</a></li>
+      <li><strong>Privacy and data protection:</strong> <a href="mailto:privacy@gethivekeeper.com">privacy@gethivekeeper.com</a></li>
+      <li><strong>Postal:</strong> Culshaw Consulting Ltd, 30 Stanion Road, Brigstock, Northamptonshire NN14 3HW, United Kingdom</li>
+    </ul>
+    <p>We aim to respond to account and billing queries within 2 working days.</p>
+  </section>
+
+  <p style="text-align:center;margin-top:48px;">
+    <a href="https://gethivekeeper.com" class="back-to-app">Back to HiveKeeper</a>
+  </p>
+
+</main>
+
+<footer>
+  <div class="brand">🐝 HiveKeeper</div>
+  <div>Beekeeping, kept simple.</div>
+  <div class="contact">
+    <a href="https://gethivekeeper.com">gethivekeeper.com</a> &middot;
+    <a href="mailto:hello@gethivekeeper.com">hello@gethivekeeper.com</a><br>
+    <a href="https://gethivekeeper.com/privacy-policy">Privacy Policy</a> &middot;
+    <a href="https://gethivekeeper.com/security-policy">Security Policy</a> &middot;
+    <a href="https://gethivekeeper.com/terms">Terms of Service</a>
+  </div>
+  <div class="contact" style="margin-top:12px;font-size:12px;opacity:0.6;">
+    HiveKeeper is operated by Culshaw Consulting Ltd, registered in England and Wales (16938477).
+  </div>
+</footer>
+
+</body>
+</html>
