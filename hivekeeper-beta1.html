@@ -1310,7 +1310,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 15:35 · Fix: flush offline queue BEFORE pull wipes local data</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 16:05 · FK-ordered queue flush + real connectivity check (airplane mode)</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -19784,6 +19784,68 @@ function renderRowTabs() {
 function isOnline() { return navigator.onLine !== false; }
 
 // ═══════════════════════════════════════════════════════════════
+// CONNECTION DETECTION (24 April 2026 — robustness fix)
+// ═══════════════════════════════════════════════════════════════
+// navigator.onLine is unreliable on mobile Chrome — airplane mode
+// sometimes doesn't fire the 'offline' event immediately, or it
+// reports online because of a local wifi signal with no internet.
+// We supplement with a periodic ping to our Worker to detect real
+// connectivity. Banner display state is driven by the combined result.
+
+var _realConnectivity = navigator.onLine !== false;  // optimistic start
+
+function setOfflineBanner(show) {
+  var el = document.getElementById('offline-banner');
+  if (el) el.style.display = show ? 'block' : 'none';
+  var elLegacy = document.getElementById('offline-indicator');
+  if (elLegacy) elLegacy.style.display = show ? 'block' : 'none';
+}
+
+async function checkRealConnectivity() {
+  // If browser says offline, trust it immediately (true negative)
+  if (navigator.onLine === false) {
+    _realConnectivity = false;
+    setOfflineBanner(true);
+    return false;
+  }
+  // Browser says online — verify with a tiny fetch. Cache-bust to prevent
+  // stale caching, tiny timeout (2s) so it doesn't hang the UI.
+  try {
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function(){ controller.abort(); }, 2500);
+    // Use the Worker as our canary — it's already CORS-configured and
+    // a HEAD against it returns quickly even when Anthropic/Supabase
+    // are slow.
+    var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/ping?t=' + Date.now(), {
+      method: 'GET',
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    clearTimeout(timeoutId);
+    _realConnectivity = res.ok || res.status < 500;  // any response at all = online
+  } catch(e) {
+    // Fetch failed or timed out — we're effectively offline even if
+    // navigator.onLine said true
+    _realConnectivity = false;
+  }
+  setOfflineBanner(!_realConnectivity);
+  return _realConnectivity;
+}
+
+// Kick off a connectivity check every 15 seconds. Low enough to feel
+// responsive, high enough to not drain battery.
+setInterval(checkRealConnectivity, 15000);
+
+// Also check on focus/visibility change — user returning to tab after
+// being away is a likely moment for connectivity to have changed.
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    checkRealConnectivity();
+  }
+});
+window.addEventListener('focus', checkRealConnectivity);
+
+// ═══════════════════════════════════════════════════════════════
 // OFFLINE-FIRST SYNC INFRASTRUCTURE (v2 — 24 April 2026)
 // ═══════════════════════════════════════════════════════════════
 // All save* functions write to localStorage INSTANTLY (so user sees
@@ -19850,15 +19912,42 @@ async function syncToCloud(table, record, options) {
 async function flushOfflineQueue() {
   var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
   if (!q.length || !getUserId()) return;
+
+  // Sort queue by FK dependency order (24 April 2026 fix).
+  // Parents MUST push before children or Supabase rejects with FK violation:
+  //   apiaries (no FK)
+  //   → hives, rows, landmarks, sprays (FK → apiaries)
+  //   → inspections (FK → hives + apiaries)
+  //   → harvests, treatments, varroa_counts, swarm_catches (FK → hives)
+  //   → hive_movements (FK → hives + apiaries)
+  // Within the same "tier" order is preserved (stable sort).
+  var TABLE_ORDER = {
+    'apiaries': 1,
+    'hives': 2, 'rows': 2, 'landmarks': 2, 'sprays': 2,
+    'inspections': 3,
+    'harvests': 4, 'treatments': 4, 'varroa_counts': 4, 'swarm_catches': 4,
+    'hive_movements': 5,
+    'profiles': 1
+  };
+  q.sort(function(a, b) {
+    var ao = TABLE_ORDER[a.table] || 99;
+    var bo = TABLE_ORDER[b.table] || 99;
+    if (ao !== bo) return ao - bo;
+    // same tier — preserve original order (by queuedAt)
+    return (a.queuedAt || 0) - (b.queuedAt || 0);
+  });
+
   var sb = getSupabase();
   var remaining = [];
   var syncedByTable = {};
+  var errorsByTable = {};
   for (var i = 0; i < q.length; i++) {
     try {
       var item = q[i];
       var { error } = await sb.from(item.table).upsert(item.data, { onConflict: 'id' });
       if (error) {
         console.warn('Offline queue flush error [' + item.table + ']:', error.message);
+        errorsByTable[item.table] = error.message;
         remaining.push(item);
       } else {
         syncedByTable[item.table] = (syncedByTable[item.table] || 0) + 1;
@@ -19870,12 +19959,24 @@ async function flushOfflineQueue() {
   localStorage.setItem('hk_offline_queue', JSON.stringify(remaining));
   var totalSynced = q.length - remaining.length;
   if (totalSynced > 0) {
-    // Show a combined message rather than one per table
     var parts = [];
     Object.keys(syncedByTable).forEach(function(t) {
       parts.push(syncedByTable[t] + ' ' + t);
     });
     showToast('✓ Synced ' + parts.join(', '));
+  }
+  // If some errored, surface a helpful message — the user deserves to know
+  // their data hasn't fully synced. Shows the first error to avoid toast spam.
+  if (remaining.length > 0) {
+    var firstTable = Object.keys(errorsByTable)[0];
+    if (firstTable) {
+      console.warn('[sync] ' + remaining.length + ' record(s) failed: ' + errorsByTable[firstTable]);
+      // Only show a toast if there's no "synced OK" one firing alongside,
+      // to avoid stacking toasts.
+      if (totalSynced === 0) {
+        showToast('⚠ ' + remaining.length + ' record(s) could not sync — will retry');
+      }
+    }
   }
 }
 
@@ -19906,29 +20007,29 @@ function initOfflineSync() {
 }
 
 window.addEventListener('online', function() {
-  var el = document.getElementById('offline-banner');
-  if (el) el.style.display = 'none';
-  // Legacy indicator (safe no-op if removed)
-  var elLegacy = document.getElementById('offline-indicator');
-  if (elLegacy) elLegacy.style.display = 'none';
+  setOfflineBanner(false);
+  // Verify with a real ping in case browser lied
+  checkRealConnectivity();
 });
 window.addEventListener('offline', function() {
-  var el = document.getElementById('offline-banner');
-  if (el) el.style.display = 'block';
-  var elLegacy = document.getElementById('offline-indicator');
-  if (elLegacy) elLegacy.style.display = 'block';
-  // Updated message — we now queue everything, not just inspections
+  setOfflineBanner(true);
   showToast('📵 Gone offline — changes will sync when reconnected');
 });
 
-// Show banner immediately on load if we're already offline when the app starts
-// (the 'offline' event only fires on TRANSITIONS — not if we boot offline).
-document.addEventListener('DOMContentLoaded', function() {
-  if (!isOnline()) {
-    var el = document.getElementById('offline-banner');
-    if (el) el.style.display = 'block';
-  }
-});
+// Initial state check — if we booted offline, show banner immediately.
+// Fires via both DOMContentLoaded (for fresh loads) and immediately (if
+// DOM already ready when the script ran).
+function _initOfflineBanner() {
+  if (!isOnline()) setOfflineBanner(true);
+  // Also do a real connectivity check to catch airplane-mode-on-boot cases
+  // where navigator.onLine lies.
+  setTimeout(checkRealConnectivity, 500);
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initOfflineBanner);
+} else {
+  _initOfflineBanner();
+}
 
 // ── FOUNDING BEEKEEPER BADGE ─────────────────────────────
 function isFoundingBeekeeper() {
