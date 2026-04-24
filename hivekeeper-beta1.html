@@ -107,10 +107,14 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
    - Hive Detail: retains mobile width (already well-tuned)
    The app container widens to 720px above 1024px viewports, so the
    previously-capped 480px feels less claustrophobic on laptops. */
+/* 24 April 2026 — desktop layout audit fix.
+   Phase 1+2 attempt widened #app to 720px but the real problem was that
+   screens (s-apiary, s-inspect etc.) were living outside #app as direct
+   children of <body>, so they ignored #app's width entirely. Structural
+   fix applied: all screens, bottom-nav and side-rail are now children of
+   #app. Width stays at 430px (inline on #app) for a proper phone feel.
+   This media query now adjusts the INSIDE of the phone frame, not its width. */
 @media(min-width:1024px){
-  #app{
-    max-width:720px !important;
-  }
   /* AI message bubbles use more of the available width on wide screens.
      On mobile stays at 88% (narrow), on desktop up to ~85% of wider column. */
   .msg{
@@ -123,32 +127,11 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
   .quick-stats{
     gap:12px;
   }
-  /* Apiary hive cards — 2 columns at this breakpoint (was implicit via existing
-     768px+ media query). Targeted to the Apiary + Home Active hives only —
-     the Reports section uses an inline 3-column grid that we must NOT override. */
-  #dash-hives.hive-scroll,
-  #apiary-hives.hive-scroll,
-  .hive-scroll:not([style*="grid-template-columns"]){
-    display:grid !important;
-    grid-template-columns:repeat(2, 1fr) !important;
-    gap:12px;
-    overflow-x:visible !important;
-    padding:0 20px !important;
-  }
-  /* Map canvas gets taller */
-  #map-canvas{
-    height:400px !important;
-  }
   /* Voice recorder stays centred nicely */
   .voice-recorder{
     max-width:520px;
     margin-left:auto;
     margin-right:auto;
-  }
-  /* Inspection form fields benefit from a little more padding on desktop */
-  #s-inspect .scroll-area{
-    padding-left:8px;
-    padding-right:8px;
   }
   /* Bottom nav should remain CONSTRAINED within #app (it already is via
      position:absolute on a positioned ancestor, but reasserting
@@ -975,7 +958,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 
 /* SIDE RAIL - primary action buttons - draggable */
 #side-rail {
-  position: fixed;
+  position: absolute;  /* 24 April 2026: was 'fixed' which anchored to viewport — now anchors to #app right edge */
   right: 0;
   top: 40%;
   display: flex;
@@ -1310,7 +1293,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 · Terms of Service checkbox added to signup + age fixed to 18+ · POLICY_VERSION bumped to 2.0</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 · Desktop layout audit fix — all screens now inside #app phone frame (was fighting for 9 days)</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -1380,8 +1363,8 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="margin-top:24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;">Your data is encrypted and stored securely.<br>HiveKeeper never shares your information.</div>
 </div>
 
-<div id="app-container" style="width:100%;height:100dvh;background:var(--forest);display:block;position:relative;">
-<div id="app" style="width:100%;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);visibility:hidden;z-index:1;">
+<div id="app-container" style="width:100%;min-height:100dvh;background:var(--forest);display:flex;align-items:center;justify-content:center;position:relative;">
+<div id="app" style="width:100%;max-width:430px;height:100dvh;margin:0 auto;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--cream);visibility:hidden;z-index:1;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
 <div id="toast"></div>
 
 <!-- GLOBAL OFFLINE BANNER — 24 April 2026
@@ -1583,8 +1566,12 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 </div>
 
-  </div>
-</div>
+<!-- #app stays open here — all screens, bottom-nav, and side-rail are now
+     children of #app so the phone-frame containment works correctly on desktop.
+     Layout audit fix: 24 April 2026. Previously #app closed at this point,
+     which meant s-apiary, s-inspect, s-hive, s-ai, s-calendar, s-market,
+     s-forage, bottom-nav, and side-rail were direct children of <body>,
+     stretching to full viewport width on desktop browsers. -->
 
 <!-- APIARY MAP -->
 <div class="screen" id="s-apiary">
@@ -2946,6 +2933,11 @@ input[type="checkbox"].hk-chk:checked::after {
     </button>
 
   </div>
+
+</div><!-- /#app — closes here so screens, bottom-nav, side-rail are all children.
+       Modals below are intentionally outside #app: they are position:fixed
+       full-viewport overlays that must cover the entire browser (including
+       dark background outside the phone frame) when open. -->
 
 
   <!-- MODAL: HIVE COMPONENTS (reused for type, components, market detail) -->
