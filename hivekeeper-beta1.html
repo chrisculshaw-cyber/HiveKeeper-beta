@@ -1298,7 +1298,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 10:45 · Next Inspection Report on home + pending badge + trial-tier fix</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 24 April 2026 at 11:20 · Home reports tiles: 3-tile layout (Session direct + Next insp + All reports) with Change range picker</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -1529,16 +1529,20 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="section-head" style="margin-top:4px;"><div class="section-title">Active hives</div><button class="section-action" onclick="goTo('s-apiary')">Map →</button></div>
     <div class="hive-scroll" id="dash-hives"></div>
     <div class="section-head" style="margin-top:14px;"><div class="section-title">Reports</div></div>
-    <div class="hive-scroll" style="grid-template-columns:repeat(2,1fr);">
-      <div class="hive-mini" onclick="openReportsModal()">
+    <div class="hive-scroll" style="grid-template-columns:repeat(3,1fr);">
+      <!-- Session Report — direct jump to today's session with a "Change date range"
+           link in the report view for users who want a different range.
+           Available to all tiers, no paywall gate. -->
+      <div class="hive-mini" onclick="openSessionReportDirect()">
         <div style="font-size:24px;margin-bottom:6px;">📊</div>
         <div class="hive-mini-name">Session report</div>
         <div class="hive-mini-meta">Inspection notes, photos, weather</div>
       </div>
-      <!-- Next Inspection tile (24 April 2026) — quick access to the Next Inspection Report.
-           Opens the Reports modal and (if the user has access) runs the next_inspection_report
-           directly rather than making them scroll to find it. Pro/Commercial/Founder/Trial only,
-           so for Free-tier users the Reports modal opens and shows the paywall instead.
+      <!-- Next Inspection tile (24 April 2026) — direct jump to the Next Inspection Report.
+           No date filtering needed (report shows all pending regardless of date), so the
+           direct-jump path gives the best UX with no flash of the list modal.
+           Pro/Commercial/Founder/Trial only — Free-tier taps fall through to the Reports
+           modal which shows the paywall.
            A honey-coloured badge in the top-right shows the count of pending items so the
            keeper sees at a glance whether there is work to do — populated by renderDashboard. -->
       <div class="hive-mini" onclick="openNextInspectionReport()" style="position:relative;">
@@ -1546,6 +1550,14 @@ input[type="checkbox"].hk-chk:checked::after {
         <div style="font-size:24px;margin-bottom:6px;">📋</div>
         <div class="hive-mini-name">Next inspection</div>
         <div class="hive-mini-meta">Pending follow-ups from your voice notes</div>
+      </div>
+      <!-- All Reports tile (24 April 2026) — opens the full Reports modal with the list
+           of every report available to the user's tier. Session Report also lands here
+           because of its date range selector needing the list view. -->
+      <div class="hive-mini" onclick="openReportsModal()">
+        <div style="font-size:24px;margin-bottom:6px;">📁</div>
+        <div class="hive-mini-name">All reports</div>
+        <div class="hive-mini-meta">Every report available to you</div>
       </div>
     </div>
     <div style="height:20px;"></div>
@@ -10128,10 +10140,9 @@ var REPORTS_BY_TIER = {
 REPORTS_BY_TIER.trial = REPORTS_BY_TIER.pro;
 
 // Quick-access helper from the home screen "Next inspection" tile (24 April 2026).
-// Opens the Reports modal and, if the user has access to the next_inspection_report,
-// jumps straight into viewing it. For Free-tier users without access, the normal
-// modal opens with the paywall. For edge cases (modal doesn't render, no tier info)
-// this falls back to openReportsModal so the user always lands somewhere sensible.
+// Jumps DIRECTLY to the Next Inspection Report rather than opening the list first
+// (eliminates the 200ms flash of the list that used to happen).
+// Free tier (no access) → open the reports modal which will show the paywall.
 function openNextInspectionReport() {
   var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
   var reports = REPORTS_BY_TIER[tier] || REPORTS_BY_TIER.free;
@@ -10141,11 +10152,119 @@ function openNextInspectionReport() {
     openReportsModal();
     return;
   }
-  // User has access — open modal and jump straight to the report
-  openReportsModal();
-  setTimeout(function(){
-    try { viewReport('next_inspection_report'); } catch(e) { console.warn('[next-insp-report] viewReport failed:', e); }
-  }, 200);
+  // User has access — jump straight to the report, no flash of the list
+  try { viewReport('next_inspection_report'); } catch(e) { console.warn('[next-insp-report] viewReport failed:', e); }
+}
+
+// Quick-access helper from the home screen "Session report" tile (24 April 2026).
+// Mirrors openNextInspectionReport — jumps straight to the Session Report instead
+// of opening the list first. Session Report is available on all tiers so no gate.
+// Uses today's range by default; user can change range via the "📅 Change range"
+// button in the report view (openSessionReportRangePicker below).
+function openSessionReportDirect() {
+  // Reset range override to 'today' on each fresh open so the direct-jump is
+  // predictable. If the user has changed the range during a previous view, they
+  // get a fresh "today" start next time they tap the tile.
+  window._sessionReportRangeOverride = 'today';
+  window._sessionReportCustomFrom = null;
+  window._sessionReportCustomTo = null;
+  try { viewReport('session_report'); } catch(e) { console.warn('[session-report] viewReport failed:', e); }
+}
+
+// Range picker modal for Session Report — shown via the "📅 Change range" button
+// inside the report view. Lets the user change the date range without having to
+// back out to the Reports list. Rebuilds the report in place on confirm.
+function openSessionReportRangePicker() {
+  var current = window._sessionReportRangeOverride || 'today';
+  var opts = [
+    { v: 'today',     l: 'Today' },
+    { v: 'yesterday', l: 'Yesterday' },
+    { v: '3days',     l: 'Last 3 days' },
+    { v: '7days',     l: 'Last 7 days' },
+    { v: '14days',    l: 'Last 14 days' },
+    { v: '30days',    l: 'Last 30 days' },
+    { v: 'custom',    l: 'Custom range…' }
+  ];
+  var html = '<div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">'
+    + '<div class="modal-handle"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    +   '<div class="modal-title">📅 Date range</div>'
+    +   '<div onclick="document.getElementById(\'modal-session-range\').remove()" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">✕</div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:var(--text-l);margin-bottom:10px;">Choose how far back to look for inspections</div>'
+    + '<div id="session-range-options" style="display:flex;flex-direction:column;gap:6px;">';
+  opts.forEach(function(o){
+    var sel = o.v === current;
+    html += '<button onclick="pickSessionRange(\'' + o.v + '\')" style="text-align:left;padding:12px 14px;border-radius:10px;border:1px solid ' + (sel ? 'var(--honey)' : 'var(--wax)') + ';background:' + (sel ? '#FFF4E0' : 'white') + ';cursor:pointer;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:' + (sel ? '800' : '600') + ';color:var(--text);">' + (sel ? '● ' : '○ ') + o.l + '</button>';
+  });
+  html += '</div>';
+  // Custom range date inputs — shown only when 'custom' is the current selection
+  html += '<div id="session-range-custom-wrap" style="' + (current === 'custom' ? '' : 'display:none;') + 'margin-top:12px;padding:10px;background:#FAEEDA;border-radius:8px;">'
+    + '<div style="font-size:11px;font-weight:700;color:#412402;margin-bottom:6px;">Custom dates</div>'
+    + '<div style="display:flex;gap:8px;align-items:center;">'
+    +   '<input type="date" id="session-range-from" value="' + (window._sessionReportCustomFrom || '') + '" style="flex:1;padding:8px;border:1px solid var(--wax);border-radius:6px;font-family:Syne,sans-serif;font-size:12px;">'
+    +   '<span style="font-size:11px;color:var(--text-l);">to</span>'
+    +   '<input type="date" id="session-range-to" value="' + (window._sessionReportCustomTo || '') + '" style="flex:1;padding:8px;border:1px solid var(--wax);border-radius:6px;font-family:Syne,sans-serif;font-size:12px;">'
+    + '</div>'
+    + '<button onclick="applySessionCustomRange()" style="width:100%;margin-top:10px;background:var(--forest);border:none;color:white;border-radius:8px;padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Apply custom range</button>'
+    + '</div>'
+    + '</div>';
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'modal-session-range';
+  overlay.onclick = function(e){ if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+// Called from each range option button in the picker. For presets, immediately
+// applies and re-renders. For 'custom', reveals the date inputs and waits for
+// the user to tap Apply.
+function pickSessionRange(val) {
+  if (val === 'custom') {
+    // Just show the date inputs — user will tap Apply to commit
+    window._sessionReportRangeOverride = 'custom';
+    var wrap = document.getElementById('session-range-custom-wrap');
+    if (wrap) wrap.style.display = 'block';
+    // Repaint buttons to show custom as selected
+    var btns = document.querySelectorAll('#session-range-options button');
+    btns.forEach(function(b){
+      if (b.textContent.indexOf('Custom') !== -1) {
+        b.style.border = '1px solid var(--honey)';
+        b.style.background = '#FFF4E0';
+        b.style.fontWeight = '800';
+        b.textContent = '● ' + b.textContent.replace(/^[●○]\s*/, '');
+      } else {
+        b.style.border = '1px solid var(--wax)';
+        b.style.background = 'white';
+        b.style.fontWeight = '600';
+        b.textContent = '○ ' + b.textContent.replace(/^[●○]\s*/, '');
+      }
+    });
+    return;
+  }
+  window._sessionReportRangeOverride = val;
+  window._sessionReportCustomFrom = null;
+  window._sessionReportCustomTo = null;
+  var overlay = document.getElementById('modal-session-range');
+  if (overlay) overlay.remove();
+  // Re-render the session report with the new range
+  try { viewReport('session_report'); } catch(e) { console.warn('[session-range] viewReport failed:', e); }
+}
+
+function applySessionCustomRange() {
+  var fromEl = document.getElementById('session-range-from');
+  var toEl = document.getElementById('session-range-to');
+  if (!fromEl || !fromEl.value || !toEl || !toEl.value) {
+    showToast('Pick both a from and a to date');
+    return;
+  }
+  window._sessionReportRangeOverride = 'custom';
+  window._sessionReportCustomFrom = fromEl.value;
+  window._sessionReportCustomTo = toEl.value;
+  var overlay = document.getElementById('modal-session-range');
+  if (overlay) overlay.remove();
+  try { viewReport('session_report'); } catch(e) { console.warn('[session-range] viewReport failed:', e); }
 }
 
 function openReportsModal() {
@@ -10435,9 +10554,19 @@ function generateReport(id) {
   }
 
   if (id === 'session_report') {
-    // Resolve date range from the selector
+    // Resolve date range. Precedence:
+    //   1. In-list selector if present (existing behaviour for users coming via the list)
+    //   2. Override from the home-screen direct-jump + Change range flow (24 April 2026)
+    //   3. Default 'today'
     var rangeEl = document.getElementById('report-range-session_report');
-    var rangeVal = rangeEl ? rangeEl.value : 'today';
+    var rangeVal;
+    if (rangeEl) {
+      rangeVal = rangeEl.value;
+    } else if (window._sessionReportRangeOverride) {
+      rangeVal = window._sessionReportRangeOverride;
+    } else {
+      rangeVal = 'today';
+    }
     var fromMs, toMs, rangeLabel;
     var now = new Date();
     var startOfDay = function(d){ var c = new Date(d); c.setHours(0,0,0,0); return c.getTime(); };
@@ -10453,12 +10582,16 @@ function generateReport(id) {
       fromMs = startOfDay(start); toMs = endOfDay(now);
       rangeLabel = 'Last ' + days + ' days · ' + new Date(fromMs).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' – ' + new Date(toMs).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
     } else if (rangeVal === 'custom') {
+      // Try the in-list custom inputs first; fall back to the override globals
+      // set by the home-screen Change range picker.
       var fromEl = document.getElementById('report-range-from-session_report');
       var toEl = document.getElementById('report-range-to-session_report');
-      if (!fromEl || !fromEl.value || !toEl || !toEl.value) {
+      var fromVal = (fromEl && fromEl.value) ? fromEl.value : (window._sessionReportCustomFrom || '');
+      var toVal = (toEl && toEl.value) ? toEl.value : (window._sessionReportCustomTo || '');
+      if (!fromVal || !toVal) {
         return '<div style="font-family:sans-serif;padding:20px;background:#FFEBEE;border-radius:8px;color:#C62828;">Please select a from and to date for the custom range.</div>';
       }
-      var fp = fromEl.value.split('-'), tp = toEl.value.split('-');
+      var fp = fromVal.split('-'), tp = toVal.split('-');
       var fd = new Date(parseInt(fp[0]), parseInt(fp[1])-1, parseInt(fp[2]));
       var td = new Date(parseInt(tp[0]), parseInt(tp[1])-1, parseInt(tp[2]));
       fromMs = startOfDay(fd); toMs = endOfDay(td);
@@ -10480,6 +10613,7 @@ function generateReport(id) {
         + '<div style="font-size:14px;font-weight:700;color:#333;margin-bottom:4px;">No inspections in this date range</div>'
         + '<div style="font-size:12px;color:#666;">Range: ' + rangeLabel + '</div>'
         + '<div style="font-size:12px;color:#666;margin-top:4px;">Apiary: ' + (apiary ? apiary.name : 'My Apiary') + '</div>'
+        + '<button onclick="openSessionReportRangePicker()" style="margin-top:14px;background:var(--forest);border:none;color:white;border-radius:14px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:sans-serif;">📅 Try a different date range</button>'
         + '</div>';
     }
 
@@ -10625,8 +10759,9 @@ function generateReport(id) {
         }).join('')
       + '</div>';
 
-    var rangeHtml = '<div style="font-family:sans-serif;padding:10px 16px;background:#f5f0e8;font-size:11px;color:#412402;">'
-      + '<strong>Range:</strong> ' + sr_esc(rangeLabel) + ' · <strong>Apiary:</strong> ' + sr_esc(apiary ? apiary.name : 'My Apiary')
+    var rangeHtml = '<div style="font-family:sans-serif;padding:10px 16px;background:#f5f0e8;font-size:11px;color:#412402;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+      + '<div><strong>Range:</strong> ' + sr_esc(rangeLabel) + ' · <strong>Apiary:</strong> ' + sr_esc(apiary ? apiary.name : 'My Apiary') + '</div>'
+      + '<button onclick="openSessionReportRangePicker()" style="background:var(--forest);border:none;color:white;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:\'Syne\',sans-serif;white-space:nowrap;">📅 Change range</button>'
       + '</div>';
 
     return header('Session Report')
