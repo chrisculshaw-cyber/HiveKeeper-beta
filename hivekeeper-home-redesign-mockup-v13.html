@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HiveKeeper — Home v13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3;
+  --paper-deep:#EBE3D1;
+  --paper-soft:#FAF6EC;
+  --paper-card:#FBF7ED;
+  --ink:#1F1A0F;
+  --ink-soft:#3D352A;
+  --ink-muted:#6B6051;
+  --ink-faint:#9A8E7C;
+  --rule:rgba(31,26,15,.12);
+  --rule-soft:rgba(31,26,15,.06);
+  --rule-strong:rgba(31,26,15,.22);
+
+  --honey:#B8761A;
+  --honey-rich:#8B5A0F;
+  --honey-pale:#E8D5A8;
+  --honey-glow:rgba(184,118,26,.18);
+  --forest:#2A3F2C;
+  --copper:#A8512A;
+  --copper-deep:#823D1F;
+  --moss:#4F6647;
+
+  --gutter:24px;
+  --rs:14px;
+  --rs-sm:10px;
+
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-sans:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  background:#1a1a1a;
+  font-family:var(--font-sans);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+body{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:24px;
+  background:radial-gradient(ellipse at center, #2a2520 0%, #0a0905 70%);
+}
+
+.phone{
+  width:430px;
+  height:860px;
+  background:var(--paper);
+  border-radius:42px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.55),
+    0 0 0 8px #1a1a1a,
+    0 0 0 9px #2a2a2a,
+    inset 0 0 60px rgba(0,0,0,.04);
+}
+.phone-screen{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+}
+.scrollable{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:none;
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 25% 35%, rgba(0,0,0,.012) 1px, transparent 1px),
+    radial-gradient(circle at 75% 65%, rgba(0,0,0,.008) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(184,118,26,.015) 1px, transparent 1px);
+  background-size:43px 43px, 67px 67px, 91px 91px;
+}
+.scrollable::-webkit-scrollbar{display:none}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER (unchanged)
+   ═══════════════════════════════════════════════════════════ */
+.header{
+  padding:36px var(--gutter) 0;
+  position:relative;
+  isolation:isolate;
+}
+.header::before{
+  content:'';
+  position:absolute;
+  top:0;
+  right:-30px;
+  width:200px;
+  height:200px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23B8761A' stroke-width='0.7' opacity='0.16'><polygon points='100,15 130,32 130,68 100,85 70,68 70,32'/><polygon points='160,50 190,67 190,103 160,120 130,103 130,67'/><polygon points='40,50 70,67 70,103 40,120 10,103 10,67'/><polygon points='100,85 130,102 130,138 100,155 70,138 70,102'/><polygon points='160,120 190,137 190,173 160,190 130,173 130,137'/><polygon points='40,120 70,137 70,173 40,190 10,173 10,137'/></g></svg>");
+  background-size:contain;
+  background-repeat:no-repeat;
+  z-index:-1;
+  pointer-events:none;
+}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.header-brand{display:flex;align-items:center;gap:10px}
+.crest-mark{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--honey);flex-shrink:0}
+.brand-stack{display:flex;flex-direction:column;gap:1px}
+.brand-name{font-family:var(--font-sans);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.22em;color:var(--ink);line-height:1}
+.brand-tier{font-family:var(--font-display);font-size:11px;font-weight:600;font-style:italic;color:var(--honey-rich);line-height:1.1;letter-spacing:.01em}
+.header-utility{display:flex;gap:8px;align-items:center}
+.iconlink{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(31,26,15,.04);border:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s ease;position:relative;color:var(--ink-soft);
+}
+.iconlink:hover{background:rgba(31,26,15,.08)}
+.iconlink .indicator{
+  position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;
+  background:var(--honey);box-shadow:0 0 0 2px var(--paper);
+  animation:gentlePulse 2.5s ease-in-out infinite;
+}
+@keyframes gentlePulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+.apiary-name{
+  font-family:var(--font-display);font-size:42px;font-weight:500;
+  line-height:.95;letter-spacing:-.025em;color:var(--ink);
+  margin-bottom:14px;font-feature-settings:"liga" on, "calt" on, "dlig" on;
+}
+.apiary-name em{font-style:italic;font-weight:500;color:var(--honey-rich)}
+.apiary-meta-row{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--font-sans);font-size:11.5px;font-weight:500;
+  color:var(--ink-muted);letter-spacing:.01em;margin-bottom:24px;
+}
+.apiary-meta-row .now-mark{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:10px;font-weight:600;
+  color:var(--honey-rich);letter-spacing:.04em;text-transform:uppercase;
+}
+.apiary-meta-row .now-mark::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:var(--honey);
+  box-shadow:0 0 6px var(--honey-glow);
+  animation:livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.45}}
+.meta-dot{width:3px;height:3px;background:var(--ink-faint);border-radius:50%}
+
+/* Stats folio */
+.stats-folio{
+  display:flex;gap:0;padding:14px 0 0;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+}
+.stat-cell{
+  flex:1;padding:14px 0 16px;
+  display:flex;flex-direction:column;align-items:flex-start;gap:5px;position:relative;
+}
+.stat-cell:not(:last-child)::after{
+  content:'';position:absolute;right:0;top:18%;bottom:18%;width:1px;background:var(--rule);
+}
+.stat-num{
+  font-family:var(--font-display);font-size:30px;font-weight:500;
+  letter-spacing:-.03em;color:var(--ink);line-height:1;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.stat-label{
+  font-family:var(--font-sans);font-size:8.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted);
+}
+.stat-cell.attention .stat-num{color:var(--copper)}
+.stat-cell.attention .stat-label{color:var(--copper)}
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION SHELL
+   ═══════════════════════════════════════════════════════════ */
+.section{padding:0 var(--gutter);margin-top:36px}
+.section-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:18px;padding-bottom:10px;
+  border-bottom:1px solid var(--rule);gap:12px;
+}
+.section-title{
+  font-family:var(--font-display);font-size:22px;font-weight:500;
+  letter-spacing:-.015em;color:var(--ink);line-height:1;
+  display:flex;align-items:baseline;gap:8px;
+}
+.section-title em{font-style:italic;color:var(--ink-muted);font-weight:400;font-size:14px;margin-left:2px}
+.section-title .count{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:0}
+.section-meta{
+  font-family:var(--font-sans);font-size:9.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted);white-space:nowrap;
+}
+.section-link{
+  font-family:var(--font-sans);font-size:10.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--honey-rich);
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+}
+.section-link:hover{color:var(--honey)}
+
+/* ═══════════════════════════════════════════════════════════
+   TODAY — combined Today + Conditions section
+   ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS BAR — online/offline indicator at the very top
+   ═══════════════════════════════════════════════════════════ */
+.status-bar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:22px;
+  font-family:var(--font-mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.06em;
+}
+.status-bar.online{color:var(--moss)}
+.status-bar.offline{color:var(--copper)}
+
+.status-dot{
+  position:relative;
+  width:8px;
+  height:8px;
+  flex-shrink:0;
+}
+.status-dot::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:currentColor;
+}
+.status-bar.online .status-dot::after{
+  content:'';
+  position:absolute;
+  inset:-3px;
+  border-radius:50%;
+  background:currentColor;
+  opacity:0.35;
+  animation:onlinePulse 2.4s ease-in-out infinite;
+}
+@keyframes onlinePulse{
+  0%,100%{transform:scale(1);opacity:.4}
+  50%{transform:scale(1.7);opacity:0}
+}
+.status-text{
+  font-weight:700;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.status-meta{
+  color:var(--ink-faint);
+  font-weight:500;
+  letter-spacing:.04em;
+  text-transform:none;
+  font-size:10.5px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WEATHER CARD — pictorial, hero of the Today section
+   ═══════════════════════════════════════════════════════════ */
+.weather-card{
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs);
+  padding:18px 18px 16px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+/* Subtle paper-grain wash to feel like an almanac plate */
+.weather-card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(184,118,26,.04), transparent 60%),
+    radial-gradient(circle at 85% 80%, rgba(31,26,15,.025), transparent 50%);
+  pointer-events:none;
+}
+.weather-card > *{position:relative;z-index:1}
+
+.weather-top{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:18px;
+  align-items:center;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--rule);
+  margin-bottom:14px;
+}
+.weather-sun{
+  width:78px;
+  height:78px;
+  flex-shrink:0;
+}
+.weather-temp-block{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+.weather-num{
+  font-family:var(--font-display);
+  font-size:54px;
+  font-weight:500;
+  letter-spacing:-.035em;
+  color:var(--ink);
+  line-height:.9;
+  font-variant-numeric:tabular-nums lining-nums;
+  display:inline-flex;
+  align-items:flex-start;
+}
+.weather-num .deg{
+  font-size:34px;
+  font-weight:400;
+  color:var(--ink-faint);
+  margin-left:1px;
+  line-height:1;
+  margin-top:4px;
+  font-style:italic;
+}
+.weather-desc-line{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.weather-desc{
+  font-family:var(--font-display);
+  font-size:18px;
+  font-weight:500;
+  font-style:italic;
+  color:var(--ink-soft);
+  letter-spacing:-.005em;
+  line-height:1;
+}
+.weather-feel{
+  font-family:var(--font-sans);
+  font-size:11px;
+  font-weight:500;
+  color:var(--ink-faint);
+  letter-spacing:.005em;
+}
+
+.weather-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+}
+.weather-cell{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:0 12px;
+  position:relative;
+}
+.weather-cell:first-child{padding-left:0}
+.weather-cell:last-child{padding-right:0}
+.weather-cell:not(:last-child)::after{
+  content:'';
+  position:absolute;
+  right:0;
+  top:8%;
+  bottom:8%;
+  width:1px;
+  background:var(--rule);
+}
+.weather-cell-label{
+  font-family:var(--font-sans);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  color:var(--ink-muted);
+}
+.weather-cell-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.weather-cell-icon{
+  width:30px;
+  height:30px;
+  flex-shrink:0;
+  color:var(--honey-rich);
+}
+.weather-cell-text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+.weather-cell-value{
+  font-family:var(--font-display);
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:-.012em;
+  color:var(--ink);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.weather-cell-value .small{
+  font-size:13px;
+  color:var(--ink-faint);
+  font-style:italic;
+  font-weight:400;
+  margin-left:3px;
+}
+.weather-cell-sub{
+  font-family:var(--font-sans);
+  font-size:10px;
+  font-weight:500;
+  color:var(--ink-muted);
+  letter-spacing:.01em;
+  line-height:1.2;
+}
+
+/* Conditions — 4 tiles at top of Today */
+.fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:24px;
+}
+.field{
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs-sm);
+  padding:14px 16px;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.field:hover{background:var(--paper-soft);border-color:var(--rule-strong)}
+.field-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.field-label{font-family:var(--font-sans);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted)}
+.field-glyph{display:flex;align-items:center;color:var(--honey);opacity:.9}
+.field.warn .field-glyph{color:var(--copper)}
+.field.honey .field-glyph{color:var(--honey-rich);opacity:1}
+.field-value{
+  font-family:var(--font-display);font-size:24px;font-weight:500;
+  letter-spacing:-.022em;color:var(--ink);line-height:1;
+  font-variant-numeric:tabular-nums;margin-bottom:4px;
+}
+.field-value .unit{font-size:13px;font-weight:500;font-style:italic;color:var(--ink-faint);margin-left:2px}
+.field-note{font-family:var(--font-sans);font-size:10.5px;color:var(--ink-muted);line-height:1.4;font-weight:400}
+.field.honey .field-value{color:var(--honey-rich)}
+.field.warn .field-value{color:var(--copper)}
+
+/* Internal divider — between conditions and the lead */
+.today-divider{
+  height:1px;
+  background:linear-gradient(90deg, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+  margin:0 0 22px;
+}
+
+/* The lead — without its own kicker now (it's inside Today) */
+.lead-headline{
+  font-family:var(--font-display);
+  font-size:30px;
+  font-weight:500;
+  line-height:1.05;
+  letter-spacing:-.018em;
+  color:var(--ink);
+  margin-bottom:14px;
+  text-wrap:balance;
+}
+.lead-headline em{font-style:italic;color:var(--honey-rich);font-weight:500}
+
+/* Drop cap kept */
+.lead-headline::first-letter{
+  font-family:var(--font-display);
+  font-size:74px;
+  font-weight:500;
+  font-style:italic;
+  float:left;
+  line-height:.85;
+  margin:6px 8px -4px 0;
+  color:var(--honey-rich);
+  font-feature-settings:"swsh" on, "liga" on;
+}
+
+.lead-deck{
+  font-family:var(--font-sans);
+  font-size:14px;
+  font-weight:400;
+  line-height:1.55;
+  letter-spacing:0;
+  color:var(--ink-soft);
+  margin-bottom:22px;
+  text-wrap:pretty;
+}
+
+.lead-meta{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
+  padding:14px 0;
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+}
+.meta-window{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--font-sans);font-size:11px;font-weight:600;
+  color:var(--ink);letter-spacing:.01em;
+}
+.meta-window .icon{color:var(--honey);flex-shrink:0}
+.meta-window strong{font-weight:700}
+.meta-divider{width:1px;height:14px;background:var(--rule)}
+.meta-progress{flex:1;display:flex;align-items:center;gap:8px}
+.progress-track{flex:1;height:2px;background:var(--rule);position:relative;overflow:hidden}
+.progress-fill{position:absolute;inset:0;width:30%;background:linear-gradient(90deg, var(--honey), var(--honey-rich))}
+.progress-num{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--ink);letter-spacing:0}
+.progress-num em{font-style:normal;color:var(--ink-faint);font-weight:400}
+
+.cta{
+  display:inline-flex;align-items:center;gap:14px;
+  background:var(--ink);color:var(--paper-soft);
+  font-family:var(--font-sans);font-size:11.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.16em;
+  border:none;border-radius:var(--rs-sm);padding:15px 22px;
+  cursor:pointer;transition:all .25s ease;
+  box-shadow:0 4px 14px rgba(31,26,15,.18);
+}
+.cta:hover{background:var(--honey-rich);transform:translateY(-1px);box-shadow:0 8px 24px rgba(184,118,26,.32)}
+.cta:active{transform:translateY(0)}
+.cta-arrow{width:14px;height:1px;background:currentColor;position:relative;transition:width .25s ease}
+.cta-arrow::after{
+  content:'';position:absolute;right:0;top:-2.5px;
+  width:5px;height:5px;
+  border-top:1px solid currentColor;border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.cta:hover .cta-arrow{width:18px}
+
+/* ═══════════════════════════════════════════════════════════
+   BRIEFINGS (unchanged)
+   ═══════════════════════════════════════════════════════════ */
+.brief{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--rule-soft);cursor:pointer;transition:opacity .2s ease}
+.brief:hover{opacity:.85}
+.brief:last-child{border-bottom:none}
+.brief-mark{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--paper-card);border:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;color:var(--honey-rich);
+}
+.brief-mark.urgent{background:var(--copper);border-color:var(--copper-deep);color:var(--paper-soft)}
+.brief-content{flex:1;min-width:0}
+.brief-meta-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.brief-tag{
+  font-family:var(--font-sans);font-size:8.5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.16em;
+  padding:3px 8px;border-radius:4px;
+  background:var(--paper-card);color:var(--ink-soft);border:1px solid var(--rule);
+}
+.brief-tag.urgent{background:var(--copper);color:var(--paper-soft);border-color:var(--copper-deep)}
+.brief-source{font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--ink-muted);letter-spacing:0}
+.brief-title{font-family:var(--font-display);font-size:17px;font-weight:500;color:var(--ink);letter-spacing:-.01em;line-height:1.25;margin-bottom:3px}
+.brief-body{font-family:var(--font-sans);font-size:11.5px;color:var(--ink-muted);line-height:1.45;font-weight:400}
+
+/* ═══════════════════════════════════════════════════════════
+   ATTENTION — restrained list of hives needing a closer look
+   ═══════════════════════════════════════════════════════════ */
+.attention-list{display:flex;flex-direction:column}
+.attention-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:14px;
+  align-items:baseline;
+  padding:14px 0;
+  border-bottom:1px solid var(--rule-soft);
+  cursor:pointer;
+  transition:opacity .2s ease;
+}
+.attention-row:hover{opacity:.7}
+.attention-row:last-child{border-bottom:none}
+.attention-num{
+  font-family:var(--font-display);
+  font-size:28px;
+  font-weight:500;
+  font-style:italic;
+  letter-spacing:-.02em;
+  color:var(--copper);
+  font-variant-numeric:tabular-nums;
+  width:30px;
+  text-align:right;
+  line-height:1;
+}
+.attention-row.due .attention-num{color:var(--honey-rich)}
+.attention-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.attention-name{
+  font-family:var(--font-display);
+  font-size:17px;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:-.005em;
+  line-height:1.1;
+}
+.attention-status{
+  font-family:var(--font-sans);
+  font-size:11.5px;
+  font-weight:400;
+  color:var(--ink-muted);
+  letter-spacing:.01em;
+  line-height:1.3;
+}
+.attention-status strong{font-weight:600;color:var(--ink-soft)}
+.attention-arrow{
+  font-family:var(--font-display);
+  font-size:18px;
+  color:var(--ink-faint);
+  font-style:italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REPORTS — premium data viz with cadence calendar
+   ═══════════════════════════════════════════════════════════ */
+.report-card{
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs);
+  padding:22px 20px 20px;
+  position:relative;
+}
+
+/* Featured metric at top of report */
+.report-feature{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--rule);
+  margin-bottom:18px;
+}
+.report-feature-text{flex:1;min-width:0}
+.report-feature-label{
+  font-family:var(--font-sans);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  color:var(--ink-muted);
+  margin-bottom:6px;
+}
+.report-feature-value{
+  font-family:var(--font-display);
+  font-size:36px;
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.025em;
+  color:var(--honey-rich);
+  font-variant-numeric:tabular-nums;
+  margin-bottom:4px;
+}
+.report-feature-value .unit{
+  font-size:18px;
+  font-weight:500;
+  font-style:italic;
+  color:var(--ink-faint);
+  margin-left:2px;
+}
+.report-feature-note{
+  font-family:var(--font-sans);
+  font-size:11px;
+  color:var(--ink-muted);
+  letter-spacing:0;
+}
+.report-feature-note .delta{
+  color:var(--moss);
+  font-weight:600;
+}
+
+/* Inline mini-chart on the right of the feature */
+.report-feature-chart{
+  width:90px;
+  height:54px;
+  flex-shrink:0;
+}
+
+/* Next inspection report — outstanding tasks list */
+.next-tasks{
+  padding-bottom:18px;
+  margin-bottom:18px;
+  border-bottom:1px solid var(--rule);
+}
+.nt-list{
+  display:flex;
+  flex-direction:column;
+}
+.nt-row{
+  display:grid;
+  grid-template-columns:36px 1fr auto;
+  gap:14px;
+  align-items:baseline;
+  padding:11px 0;
+  border-bottom:1px solid var(--rule-soft);
+  cursor:pointer;
+  transition:opacity .2s ease;
+}
+.nt-row:hover{opacity:.7}
+.nt-row:last-child{border-bottom:none;padding-bottom:2px}
+.nt-row:first-child{padding-top:2px}
+.nt-num{
+  font-family:var(--font-display);
+  font-size:24px;
+  font-weight:500;
+  font-style:italic;
+  letter-spacing:-.02em;
+  color:var(--honey-rich);
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+  text-align:right;
+}
+.nt-task{
+  font-family:var(--font-sans);
+  font-size:13px;
+  font-weight:500;
+  color:var(--ink-soft);
+  line-height:1.4;
+  letter-spacing:.005em;
+  min-width:0;
+}
+.nt-meta{
+  font-family:var(--font-display);
+  font-size:11px;
+  font-style:italic;
+  font-weight:400;
+  color:var(--ink-faint);
+  letter-spacing:.01em;
+  white-space:nowrap;
+}
+
+/* Last inspection — session summary card */
+.last-inspection{margin-bottom:14px}
+.li-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:14px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--rule);
+  gap:12px;
+}
+.li-header-text{display:flex;flex-direction:column;gap:4px;min-width:0}
+.li-eyebrow{
+  font-family:var(--font-sans);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  color:var(--ink-muted);
+}
+.li-title{
+  font-family:var(--font-display);
+  font-size:18px;
+  font-weight:500;
+  color:var(--ink);
+  letter-spacing:-.005em;
+  line-height:1.1;
+}
+.li-title em{
+  font-style:italic;
+  color:var(--ink-muted);
+  font-weight:400;
+  font-size:14px;
+}
+.li-link{
+  font-family:var(--font-sans);
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--honey-rich);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
+}
+.li-link:hover{color:var(--honey)}
+
+.li-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:0;
+  margin-bottom:0;
+}
+.li-cell{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  padding:0 10px;
+  position:relative;
+}
+.li-cell:first-child{padding-left:0}
+.li-cell:last-child{padding-right:0}
+.li-cell:not(:last-child)::after{
+  content:'';
+  position:absolute;
+  right:0;
+  top:12%;
+  bottom:12%;
+  width:1px;
+  background:var(--rule);
+}
+.li-cell-label{
+  font-family:var(--font-sans);
+  font-size:8.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  color:var(--ink-muted);
+}
+.li-cell-value{
+  font-family:var(--font-display);
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:-.01em;
+  line-height:1.1;
+  color:var(--ink);
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+}
+.li-cell.good .li-cell-value{color:var(--moss)}
+.li-cell.warn .li-cell-value{color:var(--copper)}
+.li-cell.honey .li-cell-value{color:var(--honey-rich)}
+.li-cell-check{
+  font-size:13px;
+  line-height:1;
+  position:relative;
+  top:-1px;
+}
+
+.li-note{
+  margin-top:14px;
+  padding:12px 0 0;
+  border-top:1px solid var(--rule);
+  font-family:var(--font-display);
+  font-size:14px;
+  font-style:italic;
+  font-weight:500;
+  color:var(--ink-soft);
+  line-height:1.45;
+  letter-spacing:.005em;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.li-note-mark{
+  flex-shrink:0;
+  font-family:var(--font-display);
+  font-size:24px;
+  font-weight:600;
+  color:var(--honey-rich);
+  line-height:.7;
+  font-style:italic;
+}
+.li-note-text{flex:1}
+
+/* Bottom row — quick metrics */
+.report-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:0;
+  padding-top:14px;
+  border-top:1px solid var(--rule);
+  margin-top:14px;
+}
+.report-stat{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:3px;
+  position:relative;
+  padding:0 12px;
+}
+.report-stat:first-child{padding-left:0}
+.report-stat:last-child{padding-right:0}
+.report-stat:not(:last-child)::after{
+  content:'';
+  position:absolute;
+  right:0;
+  top:10%;
+  bottom:10%;
+  width:1px;
+  background:var(--rule);
+}
+.report-stat-num{
+  font-family:var(--font-display);
+  font-size:22px;
+  font-weight:500;
+  letter-spacing:-.025em;
+  line-height:1;
+  color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.report-stat-num em{
+  font-size:14px;
+  font-style:italic;
+  color:var(--ink-faint);
+  font-weight:400;
+  margin-left:1px;
+}
+.report-stat-label{
+  font-family:var(--font-sans);
+  font-size:8.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  color:var(--ink-muted);
+}
+
+/* Botanical specimen — moved here as a closing flourish */
+.specimen{
+  margin-top:36px;
+  margin-left:var(--gutter);
+  margin-right:var(--gutter);
+  padding:18px 16px;
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs-sm);
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:18px;
+  align-items:center;
+}
+.specimen-illustration{width:80px;height:90px;flex-shrink:0;color:var(--moss)}
+.specimen-text{display:flex;flex-direction:column;gap:4px}
+.specimen-eyebrow{font-family:var(--font-sans);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--ink-muted)}
+.specimen-name{font-family:var(--font-display);font-size:18px;font-weight:500;font-style:italic;color:var(--ink);letter-spacing:-.005em;line-height:1.1}
+.specimen-latin{font-family:var(--font-display);font-size:12px;font-weight:400;font-style:italic;color:var(--ink-faint);letter-spacing:.01em}
+.specimen-detail{font-family:var(--font-sans);font-size:11px;font-weight:500;color:var(--ink-muted);line-height:1.4;margin-top:4px}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDE RAIL & BOTTOM NAV
+   ═══════════════════════════════════════════════════════════ */
+.side-rail{
+  position:absolute;right:0;top:46%;transform:translateY(-50%);
+  background:var(--ink);border-radius:14px 0 0 14px;padding:6px 4px;
+  display:flex;flex-direction:column;gap:4px;z-index:50;
+  box-shadow:-3px 4px 14px rgba(0,0,0,.18);
+}
+.rail-btn{
+  width:48px;height:54px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  cursor:pointer;border-radius:10px;color:var(--paper-soft);transition:background .2s ease;
+}
+.rail-btn:hover{background:rgba(255,255,255,.08)}
+.rail-icon{color:var(--honey-pale);display:flex;align-items:center}
+.rail-label{font-family:var(--font-sans);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--paper-soft);opacity:.85}
+
+.nav{
+  flex-shrink:0;height:74px;background:var(--paper);
+  border-top:1px solid var(--rule);
+  display:flex;justify-content:space-around;align-items:flex-start;padding:14px 12px 0;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  cursor:pointer;padding:6px 6px;flex:1;max-width:68px;position:relative;
+  transition:opacity .2s ease;
+}
+.nav-item:hover{opacity:.7}
+.nav-item .dot-mark{
+  position:absolute;top:-2px;left:50%;transform:translateX(-50%);
+  width:18px;height:2px;background:var(--honey);
+  border-radius:0 0 2px 2px;opacity:0;transition:opacity .2s ease;
+}
+.nav-item.active .dot-mark{opacity:1}
+.nav-icon{color:var(--ink-muted);transition:color .2s ease}
+.nav-item.active .nav-icon{color:var(--ink)}
+.nav-label{
+  font-family:var(--font-sans);font-size:9px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);
+}
+.nav-item.active .nav-label{color:var(--ink);font-weight:700}
+
+.scroll-end{height:24px}
+
+@media (max-width:520px){
+  body{padding:0;background:var(--paper)}
+  .phone{width:100vw;height:100vh;border-radius:0;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="crest" viewBox="0 0 36 36">
+      <polygon points="18,3 31,10 31,26 18,33 5,26 5,10" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <polygon points="18,8 27,13 27,23 18,28 9,23 9,13" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
+      <ellipse cx="18" cy="19" rx="3.2" ry="4.5" fill="currentColor" opacity="0.92"/>
+      <line x1="15.4" y1="17.5" x2="20.6" y2="17.5" stroke="#F4EFE3" stroke-width="0.6"/>
+      <line x1="15.4" y1="20.5" x2="20.6" y2="20.5" stroke="#F4EFE3" stroke-width="0.6"/>
+      <ellipse cx="14" cy="15.5" rx="2.6" ry="1.6" fill="none" stroke="currentColor" stroke-width="0.5" transform="rotate(-25 14 15.5)"/>
+      <ellipse cx="22" cy="15.5" rx="2.6" ry="1.6" fill="none" stroke="currentColor" stroke-width="0.5" transform="rotate(25 22 15.5)"/>
+    </symbol>
+
+    <symbol id="clock" viewBox="0 0 14 14">
+      <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
+      <line x1="7" y1="7" x2="7" y2="3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="7" y1="7" x2="9.5" y2="7" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="brief-hornet" viewBox="0 0 24 24">
+      <ellipse cx="12" cy="13" rx="3" ry="5" fill="currentColor"/>
+      <line x1="9.5" y1="11" x2="14.5" y2="11" stroke="#F4EFE3" stroke-width="0.9"/>
+      <line x1="9.5" y1="14" x2="14.5" y2="14" stroke="#F4EFE3" stroke-width="0.9"/>
+      <ellipse cx="8" cy="9" rx="3" ry="1.5" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(-25 8 9)"/>
+      <ellipse cx="16" cy="9" rx="3" ry="1.5" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(25 16 9)"/>
+    </symbol>
+    <symbol id="brief-spray" viewBox="0 0 24 24">
+      <path d="M12,4 Q8,11 8,15 Q8,19 12,19 Q16,19 16,15 Q16,11 12,4 Z" fill="currentColor" opacity="0.85"/>
+      <circle cx="6" cy="8" r="1" fill="currentColor"/>
+      <circle cx="18" cy="8" r="1" fill="currentColor"/>
+      <circle cx="5" cy="13" r="0.8" fill="currentColor" opacity="0.7"/>
+      <circle cx="19" cy="13" r="0.8" fill="currentColor" opacity="0.7"/>
+    </symbol>
+    <symbol id="brief-forage" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+      <ellipse cx="12" cy="6" rx="2.4" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.3"/>
+      <ellipse cx="12" cy="18" rx="2.4" ry="3.6" fill="none" stroke="currentColor" stroke-width="1.3"/>
+      <ellipse cx="6" cy="12" rx="3.6" ry="2.4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+      <ellipse cx="18" cy="12" rx="3.6" ry="2.4" fill="none" stroke="currentColor" stroke-width="1.3"/>
+    </symbol>
+
+    <symbol id="glyph-sun" viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="4" fill="currentColor"/>
+      <g stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+        <line x1="11" y1="2" x2="11" y2="4"/>
+        <line x1="11" y1="18" x2="11" y2="20"/>
+        <line x1="2" y1="11" x2="4" y2="11"/>
+        <line x1="18" y1="11" x2="20" y2="11"/>
+        <line x1="4.6" y1="4.6" x2="6" y2="6"/>
+        <line x1="16" y1="16" x2="17.4" y2="17.4"/>
+        <line x1="4.6" y1="17.4" x2="6" y2="16"/>
+        <line x1="16" y1="6" x2="17.4" y2="4.6"/>
+      </g>
+    </symbol>
+    <symbol id="glyph-flower" viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="2.2" fill="currentColor"/>
+      <g fill="none" stroke="currentColor" stroke-width="1.4">
+        <ellipse cx="11" cy="5" rx="2" ry="3"/>
+        <ellipse cx="11" cy="17" rx="2" ry="3"/>
+        <ellipse cx="5" cy="11" rx="3" ry="2"/>
+        <ellipse cx="17" cy="11" rx="3" ry="2"/>
+      </g>
+    </symbol>
+    <symbol id="glyph-rain" viewBox="0 0 22 22">
+      <path d="M5,11 Q3,11 3,8 Q3,5 6,5 Q7,3 10,3 Q14,3 14,7 Q17,7 17,10 Q17,12 15,12 L7,12 Q5,12 5,11 Z" fill="currentColor" opacity="0.55"/>
+      <g fill="currentColor">
+        <rect x="6.5" y="14" width="1.6" height="4" rx="0.8"/>
+        <rect x="10.5" y="15" width="1.6" height="4" rx="0.8"/>
+        <rect x="14.5" y="14" width="1.6" height="4" rx="0.8"/>
+      </g>
+    </symbol>
+    <symbol id="glyph-jar" viewBox="0 0 22 22">
+      <path d="M7,5 L15,5 L15,7 L17,7 L17,9 L16,10 L16,18 Q16,20 14,20 L8,20 Q6,20 6,18 L6,10 L5,9 L5,7 L7,7 Z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M6.5,12 Q11,11 15.5,12 L15.5,18 Q15.5,19.5 14,19.5 L8,19.5 Q6.5,19.5 6.5,18 Z" fill="currentColor" opacity="0.65"/>
+    </symbol>
+
+    <symbol id="rail-apiary" viewBox="0 0 24 24">
+      <path d="M12,4 Q6,4 5,11 Q5,18 12,19 Q19,18 19,11 Q18,4 12,4 Z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="6" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="0.8"/>
+      <line x1="6" y1="13" x2="18" y2="13" stroke="currentColor" stroke-width="0.8"/>
+      <line x1="6" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="0.8"/>
+      <rect x="11" y="17" width="2" height="3" fill="currentColor"/>
+    </symbol>
+    <symbol id="rail-inspect" viewBox="0 0 24 24">
+      <polygon points="11,5 16,8 16,13 11,16 6,13 6,8" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <circle cx="14" cy="14" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="17" y1="17" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="nav-home" viewBox="0 0 24 24">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="nav-apiary" viewBox="0 0 24 24">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+    </symbol>
+    <symbol id="nav-inspect" viewBox="0 0 24 24">
+      <rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="nav-insights" viewBox="0 0 24 24">
+      <path d="M3 21V9l9-6 9 6v12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M7 21v-7l5-3 5 3v7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="nav-more" viewBox="0 0 24 24">
+      <circle cx="5" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+      <circle cx="19" cy="12" r="1.5" fill="currentColor"/>
+    </symbol>
+    <symbol id="nav-sos" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="12" y1="3" x2="12" y2="8.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="12" y1="15.2" x2="12" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="3" y1="12" x2="8.8" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="15.2" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="icon-bell" viewBox="0 0 24 24">
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="arrow-right" viewBox="0 0 24 24">
+      <path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="lavender-specimen" viewBox="0 0 80 90">
+      <path d="M40,85 Q39,60 41,30" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M40,68 Q32,64 28,58 Q34,62 40,66" fill="currentColor" opacity="0.45"/>
+      <path d="M41,56 Q49,52 53,46 Q47,50 41,54" fill="currentColor" opacity="0.45"/>
+      <path d="M40,46 Q33,42 29,36 Q35,40 40,44" fill="currentColor" opacity="0.45"/>
+      <g fill="currentColor">
+        <ellipse cx="41" cy="28" rx="2.2" ry="2.6"/>
+        <ellipse cx="39" cy="24" rx="2" ry="2.4"/>
+        <ellipse cx="42" cy="21" rx="2.2" ry="2.6"/>
+        <ellipse cx="40" cy="17" rx="2.4" ry="2.8"/>
+        <ellipse cx="42" cy="13" rx="2.2" ry="2.6" opacity="0.85"/>
+        <ellipse cx="40" cy="9" rx="2" ry="2.4" opacity="0.7"/>
+        <ellipse cx="41" cy="5" rx="1.8" ry="2.2" opacity="0.55"/>
+      </g>
+      <g fill="currentColor" opacity="0.6">
+        <circle cx="36" cy="22" r="1.4"/>
+        <circle cx="45" cy="18" r="1.3"/>
+        <circle cx="36" cy="14" r="1.2"/>
+        <circle cx="44" cy="10" r="1.1"/>
+      </g>
+      <g transform="translate(58 28)">
+        <ellipse cx="0" cy="0" rx="2.2" ry="3" fill="#B8761A"/>
+        <line x1="-1.6" y1="-1" x2="1.6" y2="-1" stroke="#1F1A0F" stroke-width="0.5"/>
+        <line x1="-1.6" y1="1" x2="1.6" y2="1" stroke="#1F1A0F" stroke-width="0.5"/>
+        <ellipse cx="-2.5" cy="-2" rx="1.6" ry="0.8" fill="none" stroke="#B8761A" stroke-width="0.4" transform="rotate(-25)"/>
+        <ellipse cx="2.5" cy="-2" rx="1.6" ry="0.8" fill="none" stroke="#B8761A" stroke-width="0.4" transform="rotate(25)"/>
+      </g>
+      <line x1="20" y1="86" x2="60" y2="86" stroke="currentColor" stroke-width="0.5" opacity="0.4"/>
+    </symbol>
+
+    <!-- Inspection rhythm — bar chart, last bar = current week (dashed) -->
+    <symbol id="inspection-bars" viewBox="0 0 90 54">
+      <!-- Hairline grid -->
+      <g stroke="#1F1A0F" stroke-width="0.3" opacity="0.18">
+        <line x1="0" y1="14" x2="90" y2="14"/>
+        <line x1="0" y1="28" x2="90" y2="28"/>
+        <line x1="0" y1="42" x2="90" y2="42"/>
+      </g>
+      <!-- Completed weeks (filled honey) -->
+      <g fill="#8B5A0F">
+        <rect x="1" y="22" width="8" height="28" rx="0.6"/>
+        <rect x="12" y="15" width="8" height="35" rx="0.6"/>
+        <rect x="23" y="8" width="8" height="42" rx="0.6"/>
+        <rect x="34" y="15" width="8" height="35" rx="0.6"/>
+        <rect x="45" y="1" width="8" height="49" rx="0.6"/>
+        <rect x="56" y="22" width="8" height="28" rx="0.6"/>
+        <rect x="67" y="8" width="8" height="42" rx="0.6"/>
+      </g>
+      <!-- Current week — in progress, dashed outline -->
+      <rect x="78" y="29" width="8" height="21" rx="0.6" fill="none" stroke="#B8761A" stroke-width="1" stroke-dasharray="2,2"/>
+      <!-- Baseline rule -->
+      <line x1="0" y1="50" x2="90" y2="50" stroke="#1F1A0F" stroke-width="0.4" opacity="0.4"/>
+    </symbol>
+
+    <!-- Honey forecast inline chart — soft area curve ascending -->
+    <symbol id="honey-curve" viewBox="0 0 90 54">
+      <!-- Hairline grid -->
+      <g stroke="#1F1A0F" stroke-width="0.3" opacity="0.18">
+        <line x1="0" y1="14" x2="90" y2="14"/>
+        <line x1="0" y1="28" x2="90" y2="28"/>
+        <line x1="0" y1="42" x2="90" y2="42"/>
+      </g>
+      <!-- Last year reference (dashed) -->
+      <polyline points="0,46 15,42 30,38 45,34 60,30 75,28 90,26" fill="none" stroke="#9A8E7C" stroke-width="0.9" stroke-dasharray="2,2" opacity="0.7"/>
+      <!-- This year (solid honey) -->
+      <path d="M0,48 L15,42 L30,34 L45,26 L60,18 L75,12 L90,8 L90,54 L0,54 Z" fill="#B8761A" opacity="0.16"/>
+      <polyline points="0,48 15,42 30,34 45,26 60,18 75,12 90,8" fill="none" stroke="#8B5A0F" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- End point dot -->
+      <circle cx="90" cy="8" r="2" fill="#B8761A"/>
+      <circle cx="90" cy="8" r="3.5" fill="none" stroke="#B8761A" stroke-width="0.6" opacity="0.5"/>
+    </symbol>
+    <!-- ════════════════════════════════════════════════════════
+         WEATHER ILLUSTRATIONS — almanac-plate style
+         ════════════════════════════════════════════════════════ -->
+    <symbol id="sun-illus" viewBox="0 0 78 78">
+      <!-- Outer halo rings (subtle) -->
+      <circle cx="39" cy="39" r="34" fill="none" stroke="#B8761A" stroke-width="0.5" opacity="0.18"/>
+      <circle cx="39" cy="39" r="29" fill="none" stroke="#B8761A" stroke-width="0.4" opacity="0.12"/>
+
+      <!-- Long primary rays — 8 cardinal/intercardinal -->
+      <g stroke="#8B5A0F" stroke-width="1.3" stroke-linecap="round">
+        <line x1="39" y1="3" x2="39" y2="13"/>
+        <line x1="39" y1="65" x2="39" y2="75"/>
+        <line x1="3" y1="39" x2="13" y2="39"/>
+        <line x1="65" y1="39" x2="75" y2="39"/>
+        <line x1="13.4" y1="13.4" x2="20.5" y2="20.5"/>
+        <line x1="57.5" y1="57.5" x2="64.6" y2="64.6"/>
+        <line x1="13.4" y1="64.6" x2="20.5" y2="57.5"/>
+        <line x1="57.5" y1="20.5" x2="64.6" y2="13.4"/>
+      </g>
+
+      <!-- Short secondary rays alternating between primaries -->
+      <g stroke="#B8761A" stroke-width="1" stroke-linecap="round" opacity="0.6">
+        <line x1="24.7" y1="5.8" x2="26.5" y2="11.2"/>
+        <line x1="53.3" y1="5.8" x2="51.5" y2="11.2"/>
+        <line x1="24.7" y1="72.2" x2="26.5" y2="66.8"/>
+        <line x1="53.3" y1="72.2" x2="51.5" y2="66.8"/>
+        <line x1="5.8" y1="24.7" x2="11.2" y2="26.5"/>
+        <line x1="5.8" y1="53.3" x2="11.2" y2="51.5"/>
+        <line x1="72.2" y1="24.7" x2="66.8" y2="26.5"/>
+        <line x1="72.2" y1="53.3" x2="66.8" y2="51.5"/>
+      </g>
+
+      <!-- Sun body — solid honey -->
+      <circle cx="39" cy="39" r="17" fill="#B8761A"/>
+      <!-- Inner warm highlight off-centre, like an etched plate -->
+      <circle cx="35" cy="35.5" r="9" fill="#E89923" opacity="0.7"/>
+      <circle cx="34" cy="34" r="3.5" fill="#F4D03F" opacity="0.6"/>
+      <!-- Hairline outer body ring for definition -->
+      <circle cx="39" cy="39" r="17" fill="none" stroke="#8B5A0F" stroke-width="0.5" opacity="0.6"/>
+    </symbol>
+
+    <!-- Wind compass with directional arrow. Rotation is set via inline transform on use -->
+    <symbol id="wind-compass" viewBox="0 0 30 30">
+      <!-- Outer ring -->
+      <circle cx="15" cy="15" r="12.5" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.45"/>
+      <circle cx="15" cy="15" r="9.5" fill="none" stroke="currentColor" stroke-width="0.4" opacity="0.25"/>
+      <!-- Cardinal tick marks -->
+      <g stroke="currentColor" stroke-width="0.7" opacity="0.55" stroke-linecap="round">
+        <line x1="15" y1="2" x2="15" y2="4.2"/>
+        <line x1="15" y1="25.8" x2="15" y2="28"/>
+        <line x1="2" y1="15" x2="4.2" y2="15"/>
+        <line x1="25.8" y1="15" x2="28" y2="15"/>
+      </g>
+      <!-- Tiny N marker -->
+      <text x="15" y="2.4" font-family="Cormorant Garamond, serif" font-size="3.5" font-style="italic" fill="currentColor" text-anchor="middle" opacity="0.7">N</text>
+      <!-- Wind arrow — points where the wind is blowing TO. For wind from W (270°), arrow points East (90°) -->
+      <g transform="rotate(90 15 15)">
+        <path d="M15,5 L18.4,16.5 L15,13.5 L11.6,16.5 Z" fill="currentColor"/>
+        <line x1="15" y1="13.5" x2="15" y2="22" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.5"/>
+      </g>
+    </symbol>
+
+    <!-- Sunset — sun half on horizon with descent arrow -->
+    <symbol id="sunset-mark" viewBox="0 0 30 30">
+      <!-- Horizon line -->
+      <line x1="3" y1="22" x2="27" y2="22" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      <!-- Half sun -->
+      <path d="M9,22 A6,6 0 0 1 21,22 Z" fill="currentColor" opacity="0.85"/>
+      <!-- Sun rays -->
+      <g stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.7">
+        <line x1="15" y1="9" x2="15" y2="11.5"/>
+        <line x1="6.5" y1="13.5" x2="8.5" y2="14.8"/>
+        <line x1="23.5" y1="13.5" x2="21.5" y2="14.8"/>
+      </g>
+      <!-- Descent arrow -->
+      <g stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.55" fill="none">
+        <line x1="25" y1="6" x2="27" y2="9.5"/>
+        <polyline points="25.5,9.5 27,9.5 27,8"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+
+<div class="phone">
+  <div class="phone-screen">
+
+    <div class="scrollable">
+
+      <!-- HEADER -->
+      <header class="header">
+        <!-- Online/offline indicator at the very top -->
+        <div class="status-bar online">
+          <span class="status-dot"></span>
+          <span class="status-text">Online</span>
+          <span class="meta-dot"></span>
+          <span class="status-meta">Synced just now · all data current</span>
+        </div>
+
+        <div class="header-top">
+          <div class="header-brand">
+            <div class="crest-mark"><svg width="36" height="36"><use href="#crest"/></svg></div>
+            <div class="brand-stack">
+              <span class="brand-name">HiveKeeper</span>
+              <span class="brand-tier">Pro · Founder</span>
+            </div>
+          </div>
+          <div class="header-utility">
+            <div class="iconlink"><svg width="14" height="14"><use href="#icon-bell"/></svg><span class="indicator"></span></div>
+            <div class="iconlink"><svg width="14" height="14"><use href="#icon-settings"/></svg></div>
+          </div>
+        </div>
+
+        <h1 class="apiary-name">Nene Valley<br><em>Lavender Farm</em></h1>
+
+        <div class="apiary-meta-row">
+          <span>Brigstock · Northants</span>
+          <span class="meta-dot"></span>
+          <span>28 colonies</span>
+          <span class="meta-dot"></span>
+          <span>Sat 25 April</span>
+        </div>
+
+        <div class="stats-folio">
+          <div class="stat-cell"><div class="stat-num">21</div><div class="stat-label">Active</div></div>
+          <div class="stat-cell attention"><div class="stat-num">2</div><div class="stat-label">Unclear</div></div>
+          <div class="stat-cell"><div class="stat-num">1</div><div class="stat-label">Lost</div></div>
+          <div class="stat-cell"><div class="stat-num">4</div><div class="stat-label">Empty</div></div>
+        </div>
+      </header>
+
+      <!-- ═════════════════════════════════════════
+           1. TODAY (combined Today + Conditions)
+           ═════════════════════════════════════════ -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Today <span class="count">Sat 25 Apr</span></h3>
+          <span class="section-meta">Brigstock</span>
+        </div>
+
+        <!-- Weather hero card -->
+        <div class="weather-card">
+          <div class="weather-top">
+            <svg class="weather-sun" viewBox="0 0 78 78"><use href="#sun-illus"/></svg>
+            <div class="weather-temp-block">
+              <div class="weather-num">17<span class="deg">°</span></div>
+              <div class="weather-desc-line">
+                <span class="weather-desc">Clear, light cloud</span>
+                <span class="weather-feel">feels 18°</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="weather-grid">
+            <div class="weather-cell">
+              <div class="weather-cell-label">Wind</div>
+              <div class="weather-cell-row">
+                <svg class="weather-cell-icon" viewBox="0 0 30 30"><use href="#wind-compass"/></svg>
+                <div class="weather-cell-text">
+                  <div class="weather-cell-value">8<span class="small">mph W</span></div>
+                  <div class="weather-cell-sub">Gusts 14 · light SW breeze</div>
+                </div>
+              </div>
+            </div>
+            <div class="weather-cell">
+              <div class="weather-cell-label">Sunset</div>
+              <div class="weather-cell-row">
+                <svg class="weather-cell-icon" viewBox="0 0 30 30"><use href="#sunset-mark"/></svg>
+                <div class="weather-cell-text">
+                  <div class="weather-cell-value">8:34<span class="small">pm</span></div>
+                  <div class="weather-cell-sub">5h 22m daylight left</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditions tiles up top -->
+        <div class="fields">
+          <div class="field">
+            <div class="field-top">
+              <div class="field-label">Window</div>
+              <div class="field-glyph"><svg width="20" height="20"><use href="#glyph-sun"/></svg></div>
+            </div>
+            <div class="field-value">2 – 5<span class="unit">pm</span></div>
+            <div class="field-note">Ideal · temp, wind, light</div>
+          </div>
+          <div class="field honey">
+            <div class="field-top">
+              <div class="field-label">Nectar</div>
+              <div class="field-glyph"><svg width="20" height="20"><use href="#glyph-flower"/></svg></div>
+            </div>
+            <div class="field-value">Strong</div>
+            <div class="field-note">Lavender · hawthorn</div>
+          </div>
+          <div class="field warn">
+            <div class="field-top">
+              <div class="field-label">Rain risk</div>
+              <div class="field-glyph"><svg width="20" height="20"><use href="#glyph-rain"/></svg></div>
+            </div>
+            <div class="field-value">Tomorrow</div>
+            <div class="field-note">2.5mm from 2pm · plan Mon</div>
+          </div>
+          <div class="field">
+            <div class="field-top">
+              <div class="field-label">Honey</div>
+              <div class="field-glyph"><svg width="20" height="20"><use href="#glyph-jar"/></svg></div>
+            </div>
+            <div class="field-value">42<span class="unit">kg</span></div>
+            <div class="field-note">+18% on last season</div>
+          </div>
+        </div>
+
+        <!-- Soft divider before the lead -->
+        <div class="today-divider"></div>
+
+        <!-- Lead article inside Today -->
+        <h2 class="lead-headline">Three colonies are <em>now overdue</em> for inspection</h2>
+        <p class="lead-deck">Conditions hold steady through the afternoon. Hive 4, Hive 12 and Hive 17 all need a closer look before swarm season takes proper hold.</p>
+
+        <button class="cta">Begin inspection<span class="cta-arrow"></span></button>
+      </section>
+
+      <!-- ═════════════════════════════════════════
+           2. BRIEFINGS
+           ═════════════════════════════════════════ -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Briefings <span class="count">3</span></h3>
+          <span class="section-link">All <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+        </div>
+
+        <div class="brief">
+          <div class="brief-mark urgent"><svg width="20" height="20"><use href="#brief-hornet"/></svg></div>
+          <div class="brief-content">
+            <div class="brief-meta-row">
+              <span class="brief-tag urgent">Watch</span>
+              <span class="brief-source">2.3 mi · CEH confirmed</span>
+            </div>
+            <div class="brief-title">Vespa velutina sighting at Lyveden</div>
+            <div class="brief-body">Reported yesterday at 14:20. Worth checking entrance traffic over the next fortnight.</div>
+          </div>
+        </div>
+
+        <div class="brief">
+          <div class="brief-mark"><svg width="20" height="20"><use href="#brief-spray"/></svg></div>
+          <div class="brief-content">
+            <div class="brief-meta-row">
+              <span class="brief-tag">Spray</span>
+              <span class="brief-source">1.8 mi W · BeeConnected</span>
+            </div>
+            <div class="brief-title">OSR spray notice for Tuesday morning</div>
+            <div class="brief-body">Sulfoxaflor 09:00–11:30 · Brockley Farm · wind SSE 6mph.</div>
+          </div>
+        </div>
+
+        <div class="brief">
+          <div class="brief-mark"><svg width="20" height="20"><use href="#brief-forage"/></svg></div>
+          <div class="brief-content">
+            <div class="brief-meta-row">
+              <span class="brief-tag">Forage</span>
+              <span class="brief-source">Local phenology</span>
+            </div>
+            <div class="brief-title">Hawthorn now in early bloom</div>
+            <div class="brief-body">Three days ahead of last year — strong nectar return expected through May.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════════════════════════════════
+           In flower now — botanical specimen, sits with Briefings
+           ═════════════════════════════════════════ -->
+      <div class="specimen">
+        <div class="specimen-illustration">
+          <svg width="80" height="90"><use href="#lavender-specimen"/></svg>
+        </div>
+        <div class="specimen-text">
+          <div class="specimen-eyebrow">In flower now</div>
+          <div class="specimen-name">Lavender</div>
+          <div class="specimen-latin">Lavandula angustifolia</div>
+          <div class="specimen-detail">Strong nectar return · open until late June. Well-worked by your colonies — expect light, citrusy honey.</div>
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════
+           NEEDS A CLOSER LOOK — restrained list
+           ═════════════════════════════════════════ -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Needs a closer look <span class="count">3</span></h3>
+          <span class="section-link">All hives <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+        </div>
+
+        <div class="attention-list">
+          <div class="attention-row">
+            <div class="attention-num">4</div>
+            <div class="attention-body">
+              <div class="attention-name">Hive 4</div>
+              <div class="attention-status"><strong>Queen unknown</strong> · 18 days since sighting</div>
+            </div>
+            <div class="attention-arrow">›</div>
+          </div>
+          <div class="attention-row">
+            <div class="attention-num">12</div>
+            <div class="attention-body">
+              <div class="attention-name">Hive 12</div>
+              <div class="attention-status">Varroa rising · last count <strong>8 mites</strong></div>
+            </div>
+            <div class="attention-arrow">›</div>
+          </div>
+          <div class="attention-row due">
+            <div class="attention-num">17</div>
+            <div class="attention-body">
+              <div class="attention-name">Hive 17</div>
+              <div class="attention-status">Inspection due · <strong>11 days</strong> since last visit</div>
+            </div>
+            <div class="attention-arrow">›</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════════════════════════════════
+           4. REPORTS — premium data viz
+           ═════════════════════════════════════════ -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Reports <em>this season</em></h3>
+          <span class="section-link">View full <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+        </div>
+
+        <div class="report-card">
+
+          <!-- Next inspection report — tasks recorded for next time -->
+          <div class="next-tasks">
+            <div class="li-header">
+              <div class="li-header-text">
+                <div class="li-eyebrow">Next inspection report</div>
+                <div class="li-title">For next time <em>· 4 tasks</em></div>
+              </div>
+              <span class="li-link">Open <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+            </div>
+
+            <div class="nt-list">
+              <div class="nt-row">
+                <div class="nt-num">4</div>
+                <div class="nt-task">Mark new queen, confirm laying pattern across brood box</div>
+                <div class="nt-meta">18 Apr</div>
+              </div>
+              <div class="nt-row">
+                <div class="nt-num">12</div>
+                <div class="nt-task">Recount varroa drop board — was rising last visit</div>
+                <div class="nt-meta">22 Apr</div>
+              </div>
+              <div class="nt-row">
+                <div class="nt-num">8</div>
+                <div class="nt-task">Replace damaged frame in super 2, top up syrup if needed</div>
+                <div class="nt-meta">Thu</div>
+              </div>
+              <div class="nt-row">
+                <div class="nt-num">17</div>
+                <div class="nt-task">Treat for chalkbrood if still present at entrance</div>
+                <div class="nt-meta">14 Apr</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Last inspection — session summary -->
+          <div class="last-inspection">
+            <div class="li-header">
+              <div class="li-header-text">
+                <div class="li-eyebrow">Last inspection</div>
+                <div class="li-title">Hive 8 <em>· Thursday, 3:14pm</em></div>
+              </div>
+              <span class="li-link">Open <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+            </div>
+
+            <div class="li-grid">
+              <div class="li-cell good">
+                <div class="li-cell-label">Queen</div>
+                <div class="li-cell-value"><span class="li-cell-check">✓</span>Seen</div>
+              </div>
+              <div class="li-cell good">
+                <div class="li-cell-label">Brood</div>
+                <div class="li-cell-value">Solid</div>
+              </div>
+              <div class="li-cell warn">
+                <div class="li-cell-label">Stores</div>
+                <div class="li-cell-value">Light</div>
+              </div>
+              <div class="li-cell honey">
+                <div class="li-cell-label">Varroa</div>
+                <div class="li-cell-value">2</div>
+              </div>
+            </div>
+
+            <div class="li-note">
+              <span class="li-note-mark">&ldquo;</span>
+              <span class="li-note-text">Added super 7. Watch food stores into next week — strong colony but lighter than expected after the cold snap.</span>
+            </div>
+          </div>
+
+          <!-- Bottom row metrics -->
+          <div class="report-stats">
+            <div class="report-stat">
+              <div class="report-stat-num">87<em>%</em></div>
+              <div class="report-stat-label">Cadence</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-num">3.2</div>
+              <div class="report-stat-label">Mites avg</div>
+            </div>
+            <div class="report-stat">
+              <div class="report-stat-num">14</div>
+              <div class="report-stat-label">Inspections</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="scroll-end"></div>
+
+    </div>
+
+    <!-- Side rail -->
+    <div class="side-rail">
+      <div class="rail-btn"><span class="rail-icon"><svg width="22" height="22"><use href="#rail-apiary"/></svg></span><span class="rail-label">Apiary</span></div>
+      <div class="rail-btn"><span class="rail-icon"><svg width="22" height="22"><use href="#rail-inspect"/></svg></span><span class="rail-label">Inspect</span></div>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="nav">
+      <div class="nav-item active"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-home"/></svg><span class="nav-label">Home</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-apiary"/></svg><span class="nav-label">Apiary</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-inspect"/></svg><span class="nav-label">Inspect</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-insights"/></svg><span class="nav-label">Insights</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-sos"/></svg><span class="nav-label">SOS</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-more"/></svg><span class="nav-label">More</span></div>
+    </nav>
+
+  </div>
+</div>
+
+</body>
+</html>

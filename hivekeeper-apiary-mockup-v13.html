@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HiveKeeper — Apiary v13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3;--paper-deep:#EBE3D1;--paper-soft:#FAF6EC;--paper-card:#FBF7ED;
+  --ink:#1F1A0F;--ink-soft:#3D352A;--ink-muted:#6B6051;--ink-faint:#9A8E7C;
+  --rule:rgba(31,26,15,.12);--rule-soft:rgba(31,26,15,.06);--rule-strong:rgba(31,26,15,.22);
+  --honey:#B8761A;--honey-rich:#8B5A0F;--honey-pale:#E8D5A8;--honey-glow:rgba(184,118,26,.18);
+  --forest:#2A3F2C;--copper:#A8512A;--copper-deep:#823D1F;--moss:#4F6647;
+  --map-paper:#E8DEC4;--map-field:#D9CFB1;--map-water:#A9C5C9;--map-road:#F4EFE3;
+  --gutter:24px;--rs:14px;--rs-sm:10px;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-sans:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#1a1a1a;font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at center, #2a2520 0%, #0a0905 70%)}
+.phone{width:430px;height:860px;background:var(--paper);border-radius:42px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 8px #1a1a1a,0 0 0 9px #2a2a2a,inset 0 0 60px rgba(0,0,0,.04)}
+.phone-screen{width:100%;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column}
+.scrollable{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;background:var(--paper)}
+.scrollable::-webkit-scrollbar{display:none}
+
+/* HEADER */
+.header{padding:36px var(--gutter) 0;position:relative;isolation:isolate}
+.header::before{content:'';position:absolute;top:0;right:-30px;width:200px;height:200px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><g fill='none' stroke='%23B8761A' stroke-width='0.7' opacity='0.16'><polygon points='100,15 130,32 130,68 100,85 70,68 70,32'/><polygon points='160,50 190,67 190,103 160,120 130,103 130,67'/><polygon points='40,50 70,67 70,103 40,120 10,103 10,67'/><polygon points='100,85 130,102 130,138 100,155 70,138 70,102'/><polygon points='160,120 190,137 190,173 160,190 130,173 130,137'/><polygon points='40,120 70,137 70,173 40,190 10,173 10,137'/></g></svg>");background-size:contain;background-repeat:no-repeat;z-index:-1;pointer-events:none}
+
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:22px;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.06em}
+.status-bar.online{color:var(--moss)}
+.status-dot{position:relative;width:8px;height:8px;flex-shrink:0}
+.status-dot::before{content:'';position:absolute;inset:0;border-radius:50%;background:currentColor}
+.status-bar.online .status-dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;background:currentColor;opacity:0.35;animation:onlinePulse 2.4s ease-in-out infinite}
+@keyframes onlinePulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.7);opacity:0}}
+.status-text{font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.status-meta{color:var(--ink-faint);font-weight:500;letter-spacing:.04em;text-transform:none;font-size:10.5px}
+.meta-dot{width:3px;height:3px;background:var(--ink-faint);border-radius:50%}
+
+.subnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.back-link{display:flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--font-sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-muted);transition:color .2s ease}
+.back-link:hover{color:var(--ink)}
+.back-arrow{font-family:var(--font-display);font-size:18px;line-height:1;color:var(--honey-rich);font-style:italic}
+.utility-icons{display:flex;gap:8px}
+.iconlink{width:34px;height:34px;border-radius:50%;background:rgba(31,26,15,.04);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-soft);transition:all .2s ease}
+.iconlink:hover{background:rgba(31,26,15,.08)}
+
+.eyebrow{font-family:var(--font-sans);font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.32em;color:var(--honey-rich);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.eyebrow::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--honey),transparent);opacity:.5}
+.screen-title{font-family:var(--font-display);font-size:42px;font-weight:500;line-height:.95;letter-spacing:-.025em;color:var(--ink);margin-bottom:14px}
+.screen-title em{font-style:italic;font-weight:500;color:var(--honey-rich)}
+
+/* Apiary switcher pill */
+.apiary-switcher{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;background:var(--paper-card);border:1px solid var(--rule);border-radius:30px;font-family:var(--font-sans);font-size:11px;font-weight:600;color:var(--ink-soft);cursor:pointer;margin-bottom:18px;transition:all .2s ease}
+.apiary-switcher:hover{border-color:var(--rule-strong);background:var(--paper-soft)}
+.apiary-switcher-mark{width:20px;height:20px;border-radius:50%;background:var(--honey);display:flex;align-items:center;justify-content:center;color:var(--paper-soft);font-family:var(--font-display);font-style:italic;font-size:11px;font-weight:600}
+.apiary-switcher-arrow{margin-left:4px;color:var(--ink-faint);font-size:9px}
+
+/* Stats folio */
+.stats-folio{display:flex;gap:0;padding:14px 0 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.stat-cell{flex:1;padding:14px 0 16px;display:flex;flex-direction:column;align-items:flex-start;gap:5px;position:relative}
+.stat-cell:not(:last-child)::after{content:'';position:absolute;right:0;top:18%;bottom:18%;width:1px;background:var(--rule)}
+.stat-num{font-family:var(--font-display);font-size:30px;font-weight:500;letter-spacing:-.03em;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums lining-nums}
+.stat-label{font-family:var(--font-sans);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted)}
+.stat-cell.attention .stat-num{color:var(--copper)}
+.stat-cell.attention .stat-label{color:var(--copper)}
+
+/* Map canvas — illustrated, not a real map */
+.map-section{margin-top:24px;padding:0 var(--gutter)}
+.map-frame{position:relative;width:100%;border-radius:var(--rs);overflow:hidden;border:1px solid var(--rule-strong);box-shadow:0 4px 14px rgba(31,26,15,.08)}
+.map-canvas{width:100%;height:340px;display:block;background:var(--map-field)}
+.map-overlay-tl{position:absolute;top:12px;left:12px;background:rgba(251,247,237,.94);backdrop-filter:blur(8px);border:1px solid var(--rule);border-radius:8px;padding:6px 10px;font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--ink-soft);letter-spacing:.04em}
+.map-overlay-tr{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px}
+.map-btn{width:36px;height:36px;border-radius:50%;background:rgba(251,247,237,.94);backdrop-filter:blur(8px);border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink-soft);transition:all .2s ease;box-shadow:0 2px 6px rgba(31,26,15,.1)}
+.map-btn:hover{background:var(--paper-soft)}
+.map-overlay-bl{position:absolute;bottom:12px;left:12px;background:rgba(251,247,237,.94);backdrop-filter:blur(8px);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px}
+.scale-line{display:flex;flex-direction:column;align-items:center;gap:3px}
+.scale-bar{width:40px;height:1.5px;background:var(--ink-soft);position:relative}
+.scale-bar::before,.scale-bar::after{content:'';position:absolute;top:-3px;width:1px;height:7px;background:var(--ink-soft)}
+.scale-bar::before{left:0}
+.scale-bar::after{right:0}
+.scale-label{font-family:var(--font-mono);font-size:9px;color:var(--ink-muted);letter-spacing:.04em}
+
+/* Action grid */
+.action-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.action-btn{background:var(--paper-card);border:1px solid var(--rule);border-radius:var(--rs-sm);padding:14px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s ease}
+.action-btn:hover{background:var(--paper-soft);border-color:var(--rule-strong);transform:translateY(-1px)}
+.action-icon{color:var(--honey-rich);display:flex;align-items:center;justify-content:center}
+.action-label{font-family:var(--font-sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-soft);text-align:center}
+
+/* Section heads */
+.section{padding:0 var(--gutter);margin-top:32px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--rule);gap:12px}
+.section-title{font-family:var(--font-display);font-size:22px;font-weight:500;letter-spacing:-.015em;color:var(--ink);line-height:1;display:flex;align-items:baseline;gap:8px}
+.section-title em{font-style:italic;color:var(--ink-muted);font-weight:400;font-size:14px}
+.section-title .count{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:0}
+.section-link{font-family:var(--font-sans);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--honey-rich);cursor:pointer;display:flex;align-items:center;gap:5px}
+.section-link:hover{color:var(--honey)}
+
+/* Hive list — register style */
+.hive-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule-soft);cursor:pointer;transition:opacity .2s ease}
+.hive-row:hover{opacity:.7}
+.hive-row:last-child{border-bottom:none}
+.hive-num{font-family:var(--font-display);font-size:26px;font-weight:500;font-style:italic;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;width:34px;text-align:right;line-height:1}
+.hive-row.attend .hive-num{color:var(--copper)}
+.hive-row.due .hive-num{color:var(--honey-rich)}
+.hive-row.healthy .hive-num{color:var(--moss)}
+.hive-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.hive-name{font-family:var(--font-display);font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.005em;line-height:1.1}
+.hive-meta{font-family:var(--font-sans);font-size:11px;font-weight:400;color:var(--ink-muted);letter-spacing:.005em;line-height:1.3}
+.hive-meta strong{font-weight:600;color:var(--ink-soft)}
+.hive-status-pill{font-family:var(--font-sans);font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.16em;padding:3px 7px;border-radius:4px;background:var(--paper-card);color:var(--ink-soft);border:1px solid var(--rule);white-space:nowrap}
+.hive-status-pill.attend{background:var(--copper);color:var(--paper-soft);border-color:var(--copper-deep)}
+.hive-status-pill.due{background:transparent;color:var(--honey-rich);border-color:var(--honey)}
+.hive-status-pill.healthy{background:transparent;color:var(--moss);border-color:var(--moss)}
+.hive-arrow{font-family:var(--font-display);font-size:18px;color:var(--ink-faint);font-style:italic}
+
+/* Filter strip */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+
+/* ═══════════════════════════════════════════════════════════
+   HIVE STACKS — horizontal scroll, structural overview
+   Each stack is built bottom-up: floor, brood, excluder, supers, crown, roof
+   ═══════════════════════════════════════════════════════════ */
+.stacks-scroll{
+  display:flex;
+  gap:18px;
+  overflow-x:auto;
+  overflow-y:visible;
+  scrollbar-width:none;
+  margin:0 calc(var(--gutter) * -1);
+  padding:8px var(--gutter) 14px;
+  scroll-snap-type:x proximity;
+  min-height:170px;
+  align-items:flex-end;
+}
+.stacks-scroll::-webkit-scrollbar{display:none}
+
+.stack-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  flex-shrink:0;
+  cursor:pointer;
+  scroll-snap-align:start;
+  transition:transform .2s ease;
+  min-width:52px;
+  height:160px;
+}
+.stack-card:hover{transform:translateY(-2px)}
+
+/* The actual stack — column-reverse so we can author bottom→top in markup
+   No fixed height; auto-sizes to children. Card's flex-end anchors it to bottom. */
+.stack{
+  display:flex;
+  flex-direction:column-reverse;
+  align-items:center;
+  width:46px;
+  position:relative;
+  flex-shrink:0;
+}
+
+/* Floor / stand — dark wood plank */
+.stack-floor{
+  width:50px;
+  height:4px;
+  background:#3D2E1F;
+  border-radius:1px;
+  flex-shrink:0;
+  position:relative;
+}
+
+/* Brood box — deep, hatched texture */
+.stack-brood{
+  width:42px;
+  height:24px;
+  flex-shrink:0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(31,26,15,.08) 5px 6px),
+    var(--paper-deep);
+  border:1px solid var(--ink-soft);
+  border-radius:1px;
+  position:relative;
+}
+/* Brood entrance slot at bottom */
+.stack-brood::before{
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  left:8px;
+  right:8px;
+  height:3px;
+  background:#1F1A0F;
+  border-radius:0 0 1px 1px;
+}
+/* Inner panel hint */
+.stack-brood::after{
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  right:3px;
+  bottom:6px;
+  border:0.5px solid var(--ink-soft);
+  opacity:0.4;
+}
+
+/* Queen excluder — slim hatched separator */
+.stack-excluder{
+  width:42px;
+  height:3px;
+  flex-shrink:0;
+  background-image:repeating-linear-gradient(
+    90deg,
+    var(--ink-soft) 0,
+    var(--ink-soft) 1.5px,
+    var(--paper-deep) 1.5px,
+    var(--paper-deep) 3px
+  );
+  border-left:1px solid var(--ink-soft);
+  border-right:1px solid var(--ink-soft);
+}
+
+/* Super — shallower than brood, lighter */
+.stack-super{
+  width:42px;
+  height:15px;
+  flex-shrink:0;
+  background:var(--paper-card);
+  border:1px solid var(--ink-soft);
+  border-radius:1px;
+  position:relative;
+}
+.stack-super::after{
+  content:'';
+  position:absolute;
+  inset:2px;
+  border:0.5px solid var(--ink-soft);
+  opacity:0.35;
+}
+/* Honey-laden super — gradient honey-pale */
+.stack-super.honey{
+  background:linear-gradient(180deg, var(--honey-pale) 0%, #F0DEB5 100%);
+}
+
+/* Crown board — thin separator above supers */
+.stack-crown{
+  width:42px;
+  height:1.5px;
+  flex-shrink:0;
+  background:var(--ink-soft);
+  opacity:0.7;
+}
+
+/* Roof — wider than boxes, coloured by status */
+.stack-roof{
+  width:50px;
+  height:8px;
+  flex-shrink:0;
+  background:var(--ink-soft);
+  border-radius:1px 1px 0 0;
+  position:relative;
+  z-index:2;
+}
+.stack-roof::before{
+  content:'';
+  position:absolute;
+  top:-3px;
+  left:5px;
+  right:5px;
+  height:4px;
+  background:inherit;
+  border-radius:2px 2px 0 0;
+}
+
+/* Status colour the roof */
+.stack-card.attend .stack-roof{background:var(--copper)}
+.stack-card.due .stack-roof{background:var(--honey)}
+.stack-card.healthy .stack-roof{background:var(--moss)}
+
+/* Subtle status glow under attention hives */
+.stack-card.attend .stack::before{
+  content:'';
+  position:absolute;
+  inset:-4px;
+  background:radial-gradient(ellipse at center, rgba(168,81,42,.15), transparent 60%);
+  pointer-events:none;
+}
+
+/* Stack meta — number + super count */
+.stack-meta{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:1px;
+}
+.stack-num{
+  font-family:var(--font-display);
+  font-size:18px;
+  font-weight:500;
+  font-style:italic;
+  color:var(--ink);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+.stack-card.attend .stack-num{color:var(--copper)}
+.stack-card.due .stack-num{color:var(--honey-rich)}
+.stack-card.healthy .stack-num{color:var(--moss)}
+.stack-supers-label{
+  font-family:var(--font-mono);
+  font-size:8.5px;
+  font-weight:500;
+  color:var(--ink-faint);
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+
+/* Empty / lost hive — different treatment */
+.stack-card.empty .stack{justify-content:center}
+.stack-card.empty .stack::after{
+  content:'';
+  width:38px;
+  height:24px;
+  background:transparent;
+  border:1px dashed var(--rule-strong);
+  border-radius:1px;
+  position:absolute;
+  bottom:3px;
+}
+.stack-card.empty .stack-num{color:var(--ink-faint);font-style:italic}
+
+/* Quiet legend below the scroll explaining roof colours */
+.stacks-legend{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:0 var(--gutter);
+  margin-top:-4px;
+  margin-bottom:6px;
+  font-family:var(--font-sans);
+  font-size:9.5px;
+  font-weight:500;
+  color:var(--ink-faint);
+  letter-spacing:.02em;
+  flex-wrap:wrap;
+}
+.stacks-legend-item{display:flex;align-items:center;gap:5px}
+.stacks-legend-mark{
+  width:10px;
+  height:3px;
+  border-radius:1px;
+}
+.stacks-legend-mark.attend{background:var(--copper)}
+.stacks-legend-mark.due{background:var(--honey)}
+.stacks-legend-mark.healthy{background:var(--moss)}
+
+.filter-pill{font-family:var(--font-sans);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;padding:5px 10px;border-radius:30px;background:transparent;border:1px solid var(--rule);color:var(--ink-muted);cursor:pointer;transition:all .2s ease}
+.filter-pill:hover{border-color:var(--rule-strong);color:var(--ink-soft)}
+.filter-pill.active{background:var(--ink);color:var(--paper-soft);border-color:var(--ink)}
+
+/* Side rail & nav */
+.side-rail{position:absolute;right:0;top:46%;transform:translateY(-50%);background:var(--ink);border-radius:14px 0 0 14px;padding:6px 4px;display:flex;flex-direction:column;gap:4px;z-index:50;box-shadow:-3px 4px 14px rgba(0,0,0,.18)}
+.rail-btn{width:48px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;border-radius:10px;color:var(--paper-soft);transition:background .2s ease}
+.rail-btn:hover{background:rgba(255,255,255,.08)}
+.rail-icon{color:var(--honey-pale);display:flex;align-items:center}
+.rail-label{font-family:var(--font-sans);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--paper-soft);opacity:.85}
+
+.nav{flex-shrink:0;height:74px;background:var(--paper);border-top:1px solid var(--rule);display:flex;justify-content:space-around;align-items:flex-start;padding:14px 12px 0}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 6px;flex:1;max-width:68px;position:relative;transition:opacity .2s ease}
+.nav-item:hover{opacity:.7}
+.nav-item .dot-mark{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:18px;height:2px;background:var(--honey);border-radius:0 0 2px 2px;opacity:0;transition:opacity .2s ease}
+.nav-item.active .dot-mark{opacity:1}
+.nav-icon{color:var(--ink-muted);transition:color .2s ease}
+.nav-item.active .nav-icon{color:var(--ink)}
+.nav-label{font-family:var(--font-sans);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted)}
+.nav-item.active .nav-label{color:var(--ink);font-weight:700}
+
+.scroll-end{height:24px}
+
+@media (max-width:520px){body{padding:0;background:var(--paper)}.phone{width:100vw;height:100vh;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+
+    <symbol id="action-add" viewBox="0 0 24 24"><polygon points="12,4 18,8 18,16 12,20 6,16 6,8" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="9" x2="12" y2="15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="9" y1="12" x2="15" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="action-swarm" viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="3" ry="4" fill="currentColor"/><line x1="9.5" y1="11" x2="14.5" y2="11" stroke="#FBF7ED" stroke-width="0.7"/><line x1="9.5" y1="14" x2="14.5" y2="14" stroke="#FBF7ED" stroke-width="0.7"/><ellipse cx="8" cy="9" rx="3" ry="1.5" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(-25 8 9)"/><ellipse cx="16" cy="9" rx="3" ry="1.5" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(25 16 9)"/><circle cx="4" cy="6" r="1" fill="currentColor" opacity="0.6"/><circle cx="20" cy="6" r="0.8" fill="currentColor" opacity="0.5"/><circle cx="5" cy="18" r="0.7" fill="currentColor" opacity="0.5"/></symbol>
+    <symbol id="action-mark" viewBox="0 0 24 24"><path d="M12 21s-7-7-7-12a7 7 0 0 1 14 0c0 5-7 12-7 12z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="9" r="2.5" fill="currentColor"/></symbol>
+    <symbol id="action-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="6" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="8.5" y1="10.5" x2="15.5" y2="7.5" stroke="currentColor" stroke-width="1.5"/><line x1="8.5" y1="13.5" x2="15.5" y2="16.5" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="action-edit" viewBox="0 0 24 24"><path d="M14 4l6 6-12 12H2v-6L14 4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="13" y1="5" x2="19" y2="11" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="action-export" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+
+    <symbol id="map-recenter" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol>
+    <symbol id="map-layers" viewBox="0 0 24 24"><polygon points="12,3 22,8 12,13 2,8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><polyline points="2,12 12,17 22,12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><polyline points="2,16 12,21 22,16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+
+    <symbol id="rail-apiary" viewBox="0 0 24 24"><path d="M12,4 Q6,4 5,11 Q5,18 12,19 Q19,18 19,11 Q18,4 12,4 Z" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="6" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="0.8"/><line x1="6" y1="13" x2="18" y2="13" stroke="currentColor" stroke-width="0.8"/><line x1="6" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="0.8"/><rect x="11" y="17" width="2" height="3" fill="currentColor"/></symbol>
+    <symbol id="rail-inspect" viewBox="0 0 24 24"><polygon points="11,5 16,8 16,13 11,16 6,13 6,8" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="14" cy="14" r="4" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="17" y1="17" x2="20" y2="20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+
+    <symbol id="nav-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="nav-apiary" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="nav-inspect" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="8" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="nav-insights" viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 21v-7l5-3 5 3v7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="nav-sos" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="12" y1="3" x2="12" y2="8.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="12" y1="15.2" x2="12" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="3" y1="12" x2="8.8" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="15.2" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="nav-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></symbol>
+
+    <!-- ════════════════════════════════════════════════════════
+         APIARY MAP — Brigstock area, real geography
+         Styled to match editorial palette (cream/moss/honey/water)
+         As if a custom Mapbox/Google Maps style were applied
+         ════════════════════════════════════════════════════════ -->
+    <symbol id="apiary-map" viewBox="0 0 430 340">
+
+      <!-- Land base — cream paper -->
+      <rect width="430" height="340" fill="#EDE3CC"/>
+
+      <!-- Subtle paper grain -->
+      <g opacity="0.05">
+        <circle cx="60" cy="40" r="0.5" fill="#1F1A0F"/>
+        <circle cx="120" cy="80" r="0.5" fill="#1F1A0F"/>
+        <circle cx="200" cy="50" r="0.5" fill="#1F1A0F"/>
+        <circle cx="300" cy="90" r="0.5" fill="#1F1A0F"/>
+        <circle cx="380" cy="60" r="0.5" fill="#1F1A0F"/>
+        <circle cx="80" cy="180" r="0.5" fill="#1F1A0F"/>
+        <circle cx="180" cy="220" r="0.5" fill="#1F1A0F"/>
+        <circle cx="280" cy="260" r="0.5" fill="#1F1A0F"/>
+        <circle cx="360" cy="200" r="0.5" fill="#1F1A0F"/>
+        <circle cx="40" cy="290" r="0.5" fill="#1F1A0F"/>
+        <circle cx="320" cy="300" r="0.5" fill="#1F1A0F"/>
+      </g>
+
+      <!-- ROCKINGHAM FOREST blocks (south & west) — moss green
+           Drawn as natural irregular shapes, not perfect polygons -->
+      <path d="M0,200 Q15,185 35,195 Q55,185 80,200 Q100,210 95,235 Q90,265 75,280 Q55,295 30,290 Q10,285 0,275 Z"
+            fill="#5A7050" opacity="0.85"/>
+      <path d="M0,200 Q15,185 35,195 Q55,185 80,200 Q100,210 95,235 Q90,265 75,280 Q55,295 30,290 Q10,285 0,275 Z"
+            fill="none" stroke="#3D4F35" stroke-width="0.6" opacity="0.5"/>
+
+      <!-- Smaller Rockingham edge (south central) -->
+      <path d="M120,290 Q145,280 175,290 Q200,295 210,315 Q200,335 175,335 Q145,340 120,330 Q105,315 120,290 Z"
+            fill="#5A7050" opacity="0.85"/>
+      <path d="M120,290 Q145,280 175,290 Q200,295 210,315 Q200,335 175,335 Q145,340 120,330 Q105,315 120,290 Z"
+            fill="none" stroke="#3D4F35" stroke-width="0.6" opacity="0.5"/>
+
+      <!-- FERMYN WOODS (large block top-right) — denser woodland -->
+      <path d="M280,15 Q310,5 345,12 Q380,8 410,20 Q425,40 425,75 Q428,100 415,120 Q395,135 365,130 Q335,135 305,120 Q275,108 270,80 Q265,50 280,15 Z"
+            fill="#4F6647" opacity="0.9"/>
+      <path d="M280,15 Q310,5 345,12 Q380,8 410,20 Q425,40 425,75 Q428,100 415,120 Q395,135 365,130 Q335,135 305,120 Q275,108 270,80 Q265,50 280,15 Z"
+            fill="none" stroke="#3D4F35" stroke-width="0.7" opacity="0.55"/>
+
+      <!-- Tree stipples within Fermyn Woods — small darker dots -->
+      <g fill="#3D4F35" opacity="0.4">
+        <circle cx="305" cy="35" r="2"/>
+        <circle cx="335" cy="28" r="2.2"/>
+        <circle cx="370" cy="35" r="2"/>
+        <circle cx="395" cy="42" r="1.8"/>
+        <circle cx="290" cy="60" r="2"/>
+        <circle cx="320" cy="55" r="1.8"/>
+        <circle cx="355" cy="65" r="2.2"/>
+        <circle cx="385" cy="75" r="2"/>
+        <circle cx="405" cy="62" r="1.8"/>
+        <circle cx="300" cy="90" r="2"/>
+        <circle cx="335" cy="95" r="2.2"/>
+        <circle cx="370" cy="100" r="2"/>
+        <circle cx="400" cy="105" r="1.8"/>
+        <circle cx="285" cy="115" r="1.8"/>
+        <circle cx="320" cy="120" r="2"/>
+      </g>
+
+      <!-- Lyveden Way / smaller wood block (east) -->
+      <path d="M395,145 Q415,140 425,155 Q428,180 415,195 Q400,205 385,200 Q375,185 380,165 Z"
+            fill="#5A7050" opacity="0.8"/>
+
+      <!-- Lavender field — Nene Valley Lavender Farm (south of Brigstock village)
+           Distinctive purple-tinted plot, the apiary location -->
+      <path d="M200,170 Q230,165 260,170 Q290,175 295,200 Q295,225 270,235 Q240,242 215,238 Q190,232 188,210 Q188,190 200,170 Z"
+            fill="#C9B8D9" opacity="0.5"/>
+      <path d="M200,170 Q230,165 260,170 Q290,175 295,200 Q295,225 270,235 Q240,242 215,238 Q190,232 188,210 Q188,190 200,170 Z"
+            fill="none" stroke="#9B7EB7" stroke-width="0.5" opacity="0.6"/>
+      <!-- Lavender row striations -->
+      <g stroke="#9B7EB7" stroke-width="0.4" opacity="0.55">
+        <line x1="205" y1="180" x2="285" y2="185"/>
+        <line x1="200" y1="195" x2="290" y2="200"/>
+        <line x1="198" y1="210" x2="290" y2="215"/>
+        <line x1="200" y1="225" x2="285" y2="230"/>
+      </g>
+
+      <!-- HARPERS BROOK — winding water -->
+      <path d="M0,135 Q35,128 65,135 Q100,142 135,135 Q170,128 200,135 Q230,140 265,145 Q300,150 335,148 Q365,148 395,155 Q415,160 430,158"
+            fill="none" stroke="#A9C5C9" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M0,135 Q35,128 65,135 Q100,142 135,135 Q170,128 200,135 Q230,140 265,145 Q300,150 335,148 Q365,148 395,155 Q415,160 430,158"
+            fill="none" stroke="#7A9DA2" stroke-width="0.5" opacity="0.4"/>
+
+      <!-- Small pond near apiary -->
+      <ellipse cx="172" cy="220" rx="14" ry="9" fill="#A9C5C9" opacity="0.85"/>
+      <ellipse cx="172" cy="220" rx="14" ry="9" fill="none" stroke="#7A9DA2" stroke-width="0.5" opacity="0.5"/>
+
+      <!-- ROAD NETWORK (cream-honey for major, paler for minor) -->
+      <!-- A6116 — main diagonal road through Brigstock area -->
+      <path d="M0,80 Q40,90 85,105 Q130,118 175,118 Q220,118 265,108 Q310,98 355,90 Q395,82 430,75"
+            fill="none" stroke="#D9B679" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M0,80 Q40,90 85,105 Q130,118 175,118 Q220,118 265,108 Q310,98 355,90 Q395,82 430,75"
+            fill="none" stroke="#1F1A0F" stroke-width="0.4" opacity="0.25"/>
+
+      <!-- Side road south to lavender farm -->
+      <path d="M180,118 Q190,140 200,165 Q210,185 215,210"
+            fill="none" stroke="#E5D2A1" stroke-width="3.5" stroke-linecap="round"/>
+
+      <!-- Side road to Sudborough (northeast from Brigstock) -->
+      <path d="M195,118 Q220,100 250,90 Q280,80 305,70"
+            fill="none" stroke="#E5D2A1" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Side road south to Stanion area -->
+      <path d="M125,118 Q105,150 90,180 Q75,205 60,225"
+            fill="none" stroke="#E5D2A1" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- BRIGSTOCK VILLAGE — small cluster of buildings -->
+      <g>
+        <!-- Village footprint (light wash) -->
+        <path d="M150,105 Q195,100 215,115 Q220,135 200,140 Q175,138 155,128 Q145,118 150,105 Z"
+              fill="#D4C8A8" opacity="0.5"/>
+        <!-- Buildings -->
+        <g fill="#1F1A0F" opacity="0.85">
+          <rect x="160" y="108" width="4" height="3"/>
+          <rect x="167" y="110" width="3" height="4"/>
+          <rect x="173" y="106" width="4" height="3"/>
+          <rect x="180" y="109" width="3" height="3"/>
+          <rect x="186" y="111" width="4" height="3"/>
+          <rect x="193" y="108" width="3" height="4"/>
+          <rect x="200" y="112" width="3" height="3"/>
+          <rect x="165" y="117" width="3" height="4"/>
+          <rect x="172" y="119" width="4" height="3"/>
+          <rect x="180" y="118" width="3" height="3"/>
+          <rect x="188" y="120" width="4" height="3"/>
+          <rect x="196" y="121" width="3" height="3"/>
+          <rect x="170" y="127" width="3" height="3"/>
+          <rect x="178" y="128" width="4" height="3"/>
+          <rect x="186" y="130" width="3" height="3"/>
+        </g>
+        <!-- Church marker (St Andrew's) - small cross -->
+        <g transform="translate(178 113)" fill="#8B5A0F">
+          <rect x="-1" y="-3" width="2" height="6"/>
+          <rect x="-2.5" y="-1" width="5" height="2"/>
+        </g>
+      </g>
+
+      <!-- STANION — smaller cluster (south-west) -->
+      <g>
+        <path d="M55,200 Q75,195 90,205 Q90,220 75,222 Q60,222 53,213 Z"
+              fill="#D4C8A8" opacity="0.5"/>
+        <g fill="#1F1A0F" opacity="0.8">
+          <rect x="62" y="203" width="3" height="3"/>
+          <rect x="68" y="205" width="3" height="3"/>
+          <rect x="75" y="206" width="3" height="3"/>
+          <rect x="82" y="208" width="3" height="3"/>
+          <rect x="65" y="212" width="3" height="3"/>
+          <rect x="73" y="214" width="3" height="3"/>
+          <rect x="80" y="215" width="3" height="3"/>
+        </g>
+      </g>
+
+      <!-- SUDBOROUGH — tiny cluster (north-east) -->
+      <g>
+        <path d="M295,68 Q310,63 320,72 Q318,82 308,82 Q298,80 293,75 Z"
+              fill="#D4C8A8" opacity="0.5"/>
+        <g fill="#1F1A0F" opacity="0.8">
+          <rect x="298" y="70" width="3" height="3"/>
+          <rect x="304" y="72" width="3" height="3"/>
+          <rect x="310" y="71" width="3" height="3"/>
+          <rect x="301" y="77" width="3" height="3"/>
+          <rect x="307" y="78" width="3" height="3"/>
+        </g>
+      </g>
+
+      <!-- Lyveden New Bield ruin marker (east, in the woods) -->
+      <g transform="translate(380 175)" opacity="0.7">
+        <rect x="-3" y="-3" width="6" height="6" fill="none" stroke="#8B5A0F" stroke-width="0.8"/>
+        <rect x="-1.5" y="-3" width="1.5" height="3" fill="#8B5A0F"/>
+        <rect x="0.5" y="-3" width="1.5" height="3" fill="#8B5A0F"/>
+      </g>
+
+      <!-- Field boundaries — hairline hawthorn hedges -->
+      <g fill="none" stroke="#4F6647" stroke-width="0.5" opacity="0.45">
+        <!-- North fields -->
+        <path d="M30,65 Q70,60 110,65"/>
+        <path d="M120,55 Q150,50 195,52"/>
+        <path d="M225,55 Q255,52 280,55"/>
+        <!-- South-central field divisions -->
+        <path d="M120,150 Q150,148 175,155"/>
+        <path d="M115,175 Q140,170 170,175"/>
+        <path d="M125,200 Q145,195 165,200"/>
+        <!-- East fields -->
+        <path d="M285,160 Q315,158 350,165"/>
+        <path d="M295,200 Q325,195 365,200"/>
+        <path d="M310,235 Q335,230 370,235"/>
+        <!-- South of lavender -->
+        <path d="M210,260 Q240,258 275,265"/>
+        <path d="M220,285 Q250,280 285,288"/>
+      </g>
+
+      <!-- HIVE MARKERS — apiary location, south of Brigstock in the lavender field -->
+      <!-- Hive 4 — attend (copper) -->
+      <g transform="translate(220 192)">
+        <circle cx="0" cy="0" r="14" fill="#A8512A" opacity="0.2"/>
+        <polygon points="0,-9 7.8,-4.5 7.8,4.5 0,9 -7.8,4.5 -7.8,-4.5" fill="#A8512A" stroke="#823D1F" stroke-width="0.7"/>
+        <text x="0" y="2.5" font-family="Manrope, sans-serif" font-size="8" font-weight="800" fill="#FAF6EC" text-anchor="middle">4</text>
+      </g>
+      <!-- Hive 12 — attend -->
+      <g transform="translate(265 205)">
+        <circle cx="0" cy="0" r="14" fill="#A8512A" opacity="0.2"/>
+        <polygon points="0,-9 7.8,-4.5 7.8,4.5 0,9 -7.8,4.5 -7.8,-4.5" fill="#A8512A" stroke="#823D1F" stroke-width="0.7"/>
+        <text x="0" y="2.5" font-family="Manrope, sans-serif" font-size="8" font-weight="800" fill="#FAF6EC" text-anchor="middle">12</text>
+      </g>
+      <!-- Hive 17 — due -->
+      <g transform="translate(238 213)">
+        <polygon points="0,-9 7.8,-4.5 7.8,4.5 0,9 -7.8,4.5 -7.8,-4.5" fill="#FBF7ED" stroke="#B8761A" stroke-width="1.2"/>
+        <text x="0" y="2.5" font-family="Manrope, sans-serif" font-size="8" font-weight="800" fill="#8B5A0F" text-anchor="middle">17</text>
+      </g>
+      <!-- Hive 8 — due -->
+      <g transform="translate(275 220)">
+        <polygon points="0,-9 7.8,-4.5 7.8,4.5 0,9 -7.8,4.5 -7.8,-4.5" fill="#FBF7ED" stroke="#B8761A" stroke-width="1.2"/>
+        <text x="0" y="2.5" font-family="Manrope, sans-serif" font-size="8" font-weight="800" fill="#8B5A0F" text-anchor="middle">8</text>
+      </g>
+      <!-- Hive 3 — healthy (moss) -->
+      <g transform="translate(248 188)">
+        <polygon points="0,-7.5 6.5,-3.7 6.5,3.7 0,7.5 -6.5,3.7 -6.5,-3.7" fill="#4F6647" stroke="#3a4d35" stroke-width="0.6"/>
+        <text x="0" y="2" font-family="Manrope, sans-serif" font-size="7" font-weight="800" fill="#FAF6EC" text-anchor="middle">3</text>
+      </g>
+      <!-- Healthy hives — smaller ink hexes scattered through lavender plot -->
+      <g fill="#1F1A0F" opacity="0.78">
+        <polygon points="207,205 213,209 213,217 207,221 201,217 201,209"/>
+        <polygon points="225,224 231,228 231,236 225,240 219,236 219,228"/>
+        <polygon points="252,228 258,232 258,240 252,244 246,240 246,232"/>
+        <polygon points="282,196 288,200 288,208 282,212 276,208 276,200"/>
+        <polygon points="218,178 224,182 224,190 218,194 212,190 212,182"/>
+        <polygon points="262,178 268,182 268,190 262,194 256,190 256,182"/>
+        <polygon points="285,212 291,216 291,224 285,228 279,224 279,216"/>
+        <polygon points="200,222 206,226 206,234 200,238 194,234 194,226"/>
+        <polygon points="265,235 271,239 271,247 265,251 259,247 259,239"/>
+        <polygon points="232,202 238,206 238,214 232,218 226,214 226,206"/>
+        <polygon points="240,237 246,241 246,249 240,253 234,249 234,241"/>
+        <polygon points="218,232 224,236 224,244 218,248 212,244 212,236"/>
+        <polygon points="295,180 301,184 301,192 295,196 289,192 289,184"/>
+        <polygon points="270,193 276,197 276,205 270,209 264,205 264,197"/>
+      </g>
+
+      <!-- Empty hive positions (dashed) -->
+      <g opacity="0.5">
+        <g transform="translate(208 245)"><polygon points="0,-7.5 6.5,-3.7 6.5,3.7 0,7.5 -6.5,3.7 -6.5,-3.7" fill="none" stroke="#1F1A0F" stroke-width="0.6" stroke-dasharray="2,2"/></g>
+        <g transform="translate(290 232)"><polygon points="0,-7.5 6.5,-3.7 6.5,3.7 0,7.5 -6.5,3.7 -6.5,-3.7" fill="none" stroke="#1F1A0F" stroke-width="0.6" stroke-dasharray="2,2"/></g>
+      </g>
+
+      <!-- ═══════════════════════════════════════════════════
+           PLACE LABELS — italic Cormorant, hierarchical
+           ═══════════════════════════════════════════════════ -->
+      <!-- Brigstock — main village label -->
+      <text x="178" y="153" font-family="Cormorant Garamond, serif" font-size="13" font-weight="600" font-style="italic" fill="#1F1A0F" text-anchor="middle" letter-spacing="0.5">Brigstock</text>
+
+      <!-- Stanion -->
+      <text x="73" y="240" font-family="Cormorant Garamond, serif" font-size="10" font-weight="500" font-style="italic" fill="#3D352A" text-anchor="middle" letter-spacing="0.3">Stanion</text>
+
+      <!-- Sudborough -->
+      <text x="308" y="93" font-family="Cormorant Garamond, serif" font-size="9" font-weight="500" font-style="italic" fill="#3D352A" text-anchor="middle" letter-spacing="0.3">Sudborough</text>
+
+      <!-- Fermyn Woods (label inside woods) -->
+      <text x="350" y="68" font-family="Cormorant Garamond, serif" font-size="11" font-weight="500" font-style="italic" fill="#FAF6EC" text-anchor="middle" letter-spacing="0.5" opacity="0.85">Fermyn Woods</text>
+
+      <!-- Rockingham Forest (label inside the south-west block) -->
+      <text x="45" y="248" font-family="Cormorant Garamond, serif" font-size="9" font-weight="500" font-style="italic" fill="#FAF6EC" text-anchor="middle" letter-spacing="0.3" opacity="0.85">Rockingham</text>
+      <text x="45" y="259" font-family="Cormorant Garamond, serif" font-size="9" font-weight="500" font-style="italic" fill="#FAF6EC" text-anchor="middle" letter-spacing="0.3" opacity="0.85">Forest</text>
+
+      <!-- A6116 road label -->
+      <text x="105" y="98" font-family="Manrope, sans-serif" font-size="7" font-weight="700" fill="#6B6051" letter-spacing="0.5">A6116</text>
+
+      <!-- Harpers Brook -->
+      <text x="55" y="131" font-family="Cormorant Garamond, serif" font-size="8" font-weight="400" font-style="italic" fill="#3D5358" letter-spacing="0.3">Harpers Brook</text>
+
+      <!-- Lyveden New Bield label -->
+      <text x="394" y="172" font-family="Cormorant Garamond, serif" font-size="7" font-weight="500" font-style="italic" fill="#3D352A" text-anchor="end" letter-spacing="0.2">Lyveden</text>
+
+      <!-- The apiary — labeled prominently -->
+      <text x="245" y="167" font-family="Cormorant Garamond, serif" font-size="10" font-weight="600" font-style="italic" fill="#8B5A0F" text-anchor="middle" letter-spacing="0.4">Nene Valley · Lavender Farm</text>
+      <line x1="220" y1="170" x2="270" y2="170" stroke="#8B5A0F" stroke-width="0.4" opacity="0.5"/>
+
+      <!-- Compass rosette top-left -->
+      <g transform="translate(28 50)" opacity="0.55">
+        <circle cx="0" cy="0" r="9" fill="#FBF7ED" stroke="#B8761A" stroke-width="0.6"/>
+        <line x1="0" y1="-9" x2="0" y2="9" stroke="#B8761A" stroke-width="0.5"/>
+        <line x1="-9" y1="0" x2="9" y2="0" stroke="#B8761A" stroke-width="0.5"/>
+        <polygon points="0,-9 1.8,0 0,9 -1.8,0" fill="#B8761A" opacity="0.7"/>
+        <text x="0" y="-12" font-family="Cormorant Garamond, serif" font-size="7" font-style="italic" fill="#8B5A0F" text-anchor="middle">N</text>
+      </g>
+    </symbol>
+
+  </defs>
+</svg>
+
+
+<div class="phone">
+  <div class="phone-screen">
+
+    <div class="scrollable">
+
+      <!-- HEADER -->
+      <header class="header">
+        <div class="status-bar online">
+          <span class="status-dot"></span>
+          <span class="status-text">Online</span>
+          <span class="meta-dot"></span>
+          <span class="status-meta">Synced just now · 28 hives current</span>
+        </div>
+
+        <div class="subnav">
+          <span class="back-link">
+            <span class="back-arrow">‹</span>
+            <span>Home</span>
+          </span>
+          <div class="utility-icons">
+            <div class="iconlink"><svg width="14" height="14"><use href="#icon-bell"/></svg></div>
+            <div class="iconlink"><svg width="14" height="14"><use href="#icon-settings"/></svg></div>
+          </div>
+        </div>
+
+        <div class="eyebrow">Plate II · The Apiary</div>
+        <h1 class="screen-title">Nene Valley<br><em>Lavender Farm</em></h1>
+
+        <div class="apiary-switcher">
+          <span class="apiary-switcher-mark">N</span>
+          <span>Switch apiary</span>
+          <span>·</span>
+          <span style="color:var(--ink-faint)">2 locations</span>
+          <span class="apiary-switcher-arrow">▼</span>
+        </div>
+
+        <div class="stats-folio">
+          <div class="stat-cell"><div class="stat-num">21</div><div class="stat-label">Active</div></div>
+          <div class="stat-cell attention"><div class="stat-num">2</div><div class="stat-label">Attend</div></div>
+          <div class="stat-cell"><div class="stat-num">1</div><div class="stat-label">Lost</div></div>
+          <div class="stat-cell"><div class="stat-num">4</div><div class="stat-label">Empty</div></div>
+        </div>
+      </header>
+
+      <!-- MAP -->
+      <section class="map-section">
+        <div class="map-frame">
+          <svg class="map-canvas" viewBox="0 0 430 340" preserveAspectRatio="xMidYMid slice"><use href="#apiary-map"/></svg>
+          <div class="map-overlay-tl">2.4 ACRES · S-FACING</div>
+          <div class="map-overlay-tr">
+            <div class="map-btn"><svg width="16" height="16"><use href="#map-recenter"/></svg></div>
+            <div class="map-btn"><svg width="16" height="16"><use href="#map-layers"/></svg></div>
+          </div>
+          <div class="map-overlay-bl">
+            <div class="scale-line">
+              <div class="scale-bar"></div>
+              <div class="scale-label">10 m</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-add"/></svg></span>
+            <span class="action-label">Add hive</span>
+          </div>
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-swarm"/></svg></span>
+            <span class="action-label">Swarm</span>
+          </div>
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-mark"/></svg></span>
+            <span class="action-label">Landmark</span>
+          </div>
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-share"/></svg></span>
+            <span class="action-label">Share</span>
+          </div>
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-edit"/></svg></span>
+            <span class="action-label">Layout</span>
+          </div>
+          <div class="action-btn">
+            <span class="action-icon"><svg width="22" height="22"><use href="#action-export"/></svg></span>
+            <span class="action-label">Export</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- STACKS — structural overview of all hives -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Stacks <span class="count">28</span></h3>
+          <span class="section-meta">Configurations</span>
+        </div>
+
+        <div class="stacks-scroll">
+
+          <!-- Hive 4 — attend, struggling, no supers -->
+          <div class="stack-card attend">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">4</div>
+              <div class="stack-supers-label">brood only</div>
+            </div>
+          </div>
+
+          <!-- Hive 12 — attend, 1 super -->
+          <div class="stack-card attend">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">12</div>
+              <div class="stack-supers-label">+1 super</div>
+            </div>
+          </div>
+
+          <!-- Hive 17 — due, 2 supers -->
+          <div class="stack-card due">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">17</div>
+              <div class="stack-supers-label">+2 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 8 — due, 2 supers, one honey-laden -->
+          <div class="stack-card due">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">8</div>
+              <div class="stack-supers-label">+2 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 3 — healthy, 3 supers -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">3</div>
+              <div class="stack-supers-label">+3 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 21 — strongest colony, 4 supers all honey -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">21</div>
+              <div class="stack-supers-label">+4 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 27 — healthy, 3 supers -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">27</div>
+              <div class="stack-supers-label">+3 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 24 — healthy, 2 supers -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super honey"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">24</div>
+              <div class="stack-supers-label">+2 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 6 — healthy, 1 super -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">6</div>
+              <div class="stack-supers-label">+1 super</div>
+            </div>
+          </div>
+
+          <!-- Hive 9 — healthy, 2 supers -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super"></div>
+              <div class="stack-super"></div>
+              <div class="stack-crown"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">9</div>
+              <div class="stack-supers-label">+2 supers</div>
+            </div>
+          </div>
+
+          <!-- Hive 15 — healthy, brood + 1 -->
+          <div class="stack-card healthy">
+            <div class="stack">
+              <div class="stack-floor"></div>
+              <div class="stack-brood"></div>
+              <div class="stack-excluder"></div>
+              <div class="stack-super"></div>
+              <div class="stack-roof"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">15</div>
+              <div class="stack-supers-label">+1 super</div>
+            </div>
+          </div>
+
+          <!-- Hive 19 — empty, awaiting colony -->
+          <div class="stack-card empty">
+            <div class="stack">
+              <div class="stack-floor"></div>
+            </div>
+            <div class="stack-meta">
+              <div class="stack-num">19</div>
+              <div class="stack-supers-label">empty</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="stacks-legend">
+          <div class="stacks-legend-item"><span class="stacks-legend-mark attend"></span>Attend</div>
+          <div class="stacks-legend-item"><span class="stacks-legend-mark due"></span>Due</div>
+          <div class="stacks-legend-item"><span class="stacks-legend-mark healthy"></span>Healthy</div>
+          <div class="stacks-legend-item">Honey-tinted = laden super</div>
+        </div>
+      </section>
+
+      <!-- HIVE LIST -->
+      <section class="section">
+        <div class="section-head">
+          <h3 class="section-title">Colonies <span class="count">28</span></h3>
+          <span class="section-link">A–Z <svg width="10" height="10"><use href="#arrow-right"/></svg></span>
+        </div>
+
+        <div class="filters">
+          <span class="filter-pill active">All</span>
+          <span class="filter-pill">Attend · 2</span>
+          <span class="filter-pill">Due · 2</span>
+          <span class="filter-pill">Healthy · 17</span>
+          <span class="filter-pill">Empty · 4</span>
+        </div>
+
+        <div class="hive-row attend">
+          <div class="hive-num">4</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 4</div>
+            <div class="hive-meta">Queen unknown · <strong>18 days</strong> · last seen 7 Apr</div>
+          </div>
+          <span class="hive-status-pill attend">Attend</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row attend">
+          <div class="hive-num">12</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 12</div>
+            <div class="hive-meta">Varroa rising · <strong>8 mites</strong> · last count 22 Apr</div>
+          </div>
+          <span class="hive-status-pill attend">Attend</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row due">
+          <div class="hive-num">17</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 17</div>
+            <div class="hive-meta">Inspection due · <strong>11 days</strong> since last visit</div>
+          </div>
+          <span class="hive-status-pill due">Due</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row due">
+          <div class="hive-num">8</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 8</div>
+            <div class="hive-meta">Queen seen · <strong>brood solid</strong> · stores light</div>
+          </div>
+          <span class="hive-status-pill due">Due</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row healthy">
+          <div class="hive-num">3</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 3</div>
+            <div class="hive-meta">Strong colony · last inspected 23 Apr</div>
+          </div>
+          <span class="hive-status-pill healthy">Strong</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row healthy">
+          <div class="hive-num">21</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 21</div>
+            <div class="hive-meta">Strong · spotless cadence · super 3 added</div>
+          </div>
+          <span class="hive-status-pill healthy">Strong</span>
+          <span class="hive-arrow">›</span>
+        </div>
+
+        <div class="hive-row healthy">
+          <div class="hive-num">27</div>
+          <div class="hive-body">
+            <div class="hive-name">Hive 27</div>
+            <div class="hive-meta">Healthy · queen marked yellow · last visit 24 Apr</div>
+          </div>
+          <span class="hive-status-pill healthy">Strong</span>
+          <span class="hive-arrow">›</span>
+        </div>
+      </section>
+
+      <div class="scroll-end"></div>
+
+    </div>
+
+    <!-- Side rail -->
+    <div class="side-rail">
+      <div class="rail-btn"><span class="rail-icon"><svg width="22" height="22"><use href="#rail-apiary"/></svg></span><span class="rail-label">Apiary</span></div>
+      <div class="rail-btn"><span class="rail-icon"><svg width="22" height="22"><use href="#rail-inspect"/></svg></span><span class="rail-label">Inspect</span></div>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="nav">
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-home"/></svg><span class="nav-label">Home</span></div>
+      <div class="nav-item active"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-apiary"/></svg><span class="nav-label">Apiary</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-inspect"/></svg><span class="nav-label">Inspect</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-insights"/></svg><span class="nav-label">Insights</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-sos"/></svg><span class="nav-label">SOS</span></div>
+      <div class="nav-item"><span class="dot-mark"></span><svg class="nav-icon" width="18" height="18"><use href="#nav-more"/></svg><span class="nav-label">More</span></div>
+    </nav>
+
+  </div>
+</div>
+
+</body>
+</html>

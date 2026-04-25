@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HiveKeeper — Inspect v13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EFE3;--paper-deep:#EBE3D1;--paper-soft:#FAF6EC;--paper-card:#FBF7ED;
+  --ink:#1F1A0F;--ink-soft:#3D352A;--ink-muted:#6B6051;--ink-faint:#9A8E7C;
+  --rule:rgba(31,26,15,.12);--rule-soft:rgba(31,26,15,.06);--rule-strong:rgba(31,26,15,.22);
+  --honey:#B8761A;--honey-rich:#8B5A0F;--honey-pale:#E8D5A8;--honey-glow:rgba(184,118,26,.18);
+  --forest:#2A3F2C;--copper:#A8512A;--copper-deep:#823D1F;--moss:#4F6647;
+  --gutter:24px;--rs:14px;--rs-sm:10px;
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-sans:'Manrope',-apple-system,BlinkMacSystemFont,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#1a1a1a;font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:radial-gradient(ellipse at center,#2a2520 0%,#0a0905 70%)}
+.phone{width:430px;height:860px;background:var(--paper);border-radius:42px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 8px #1a1a1a,0 0 0 9px #2a2a2a,inset 0 0 60px rgba(0,0,0,.04)}
+.phone-screen{width:100%;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column}
+
+/* STICKY HEADER — always shows what hive you're on */
+.sticky-header{
+  flex-shrink:0;
+  background:var(--ink);
+  color:var(--paper-soft);
+  padding:36px var(--gutter) 14px;
+  position:relative;
+  z-index:10;
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+}
+.sh-status-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+  font-family:var(--font-mono);
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.sh-status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 8px 3px 6px;
+  border-radius:30px;
+  background:rgba(255,255,255,.08);
+  color:var(--moss);
+}
+.sh-status-pill.awake{color:var(--honey-pale)}
+.sh-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.sh-meta{color:rgba(250,246,236,.55);font-weight:500;letter-spacing:.04em;text-transform:none}
+.sh-meta-dot{width:3px;height:3px;background:rgba(250,246,236,.4);border-radius:50%}
+
+.sh-identity-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.sh-identity{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sh-eyebrow{font-family:var(--font-sans);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:rgba(250,246,236,.55)}
+.sh-title{font-family:var(--font-display);font-size:26px;font-weight:500;line-height:1;color:var(--paper-soft);letter-spacing:-.015em;display:flex;align-items:baseline;gap:10px}
+.sh-title em{font-style:italic;color:var(--copper)}
+.sh-title-meta{font-family:var(--font-display);font-size:14px;font-weight:400;font-style:italic;color:rgba(250,246,236,.7);letter-spacing:0}
+
+.sh-cancel{
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--paper-soft);
+  flex-shrink:0;
+  transition:all .2s ease;
+}
+.sh-cancel:hover{background:rgba(255,255,255,.15)}
+
+/* Progress crumb under title */
+.sh-progress{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-family:var(--font-sans);
+  font-size:10px;
+  font-weight:600;
+  color:rgba(250,246,236,.7);
+  letter-spacing:.04em;
+}
+.sh-progress-bar{
+  flex:1;
+  height:2px;
+  background:rgba(255,255,255,.12);
+  border-radius:1px;
+  position:relative;
+  overflow:hidden;
+}
+.sh-progress-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  width:62%;
+  background:linear-gradient(90deg,var(--honey),var(--copper));
+  border-radius:1px;
+}
+.sh-progress-num{font-family:var(--font-mono);font-weight:600;letter-spacing:0}
+.sh-progress-num strong{color:var(--paper-soft);font-weight:700}
+
+/* SCROLL AREA */
+.scrollable{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:none;
+  background:var(--paper);
+}
+.scrollable::-webkit-scrollbar{display:none}
+
+/* Stack frame picker — at top of form */
+.frame-picker{
+  display:flex;
+  align-items:flex-end;
+  gap:18px;
+  padding:24px var(--gutter) 20px;
+  background:var(--paper-card);
+  border-bottom:1px solid var(--rule);
+  position:relative;
+}
+.frame-picker::before{
+  content:'';
+  position:absolute;
+  left:0;right:0;top:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--honey),transparent);
+  opacity:.7;
+}
+.fp-stack{
+  display:flex;
+  flex-direction:column-reverse;
+  align-items:center;
+  width:64px;
+  flex-shrink:0;
+}
+.fp-floor{width:72px;height:5px;background:#3D2E1F;border-radius:1px;flex-shrink:0}
+.fp-brood{
+  width:60px;height:38px;flex-shrink:0;
+  background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(31,26,15,.08) 7px 8px),var(--paper-deep);
+  border:1.4px solid var(--ink-soft);border-radius:1px;position:relative;cursor:pointer;
+  box-shadow:0 0 0 3px var(--copper),0 0 18px rgba(168,81,42,.4);
+  transition:all .2s ease;
+}
+.fp-brood::before{
+  content:'';position:absolute;
+  bottom:-1px;left:10px;right:10px;height:4px;
+  background:#1F1A0F;border-radius:0 0 1px 1px;
+}
+.fp-brood::after{
+  content:'';position:absolute;
+  top:4px;left:4px;right:4px;bottom:8px;
+  border:0.6px solid var(--ink-soft);opacity:0.4;
+}
+.fp-roof{
+  width:72px;height:11px;background:var(--copper);
+  border-radius:1px 1px 0 0;flex-shrink:0;position:relative;z-index:2;
+}
+.fp-roof::before{
+  content:'';position:absolute;
+  top:-4px;left:7px;right:7px;height:5px;
+  background:inherit;border-radius:2px 2px 0 0;
+}
+.fp-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.fp-eyebrow{font-family:var(--font-sans);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.22em;color:var(--copper)}
+.fp-current{font-family:var(--font-display);font-size:22px;font-weight:500;font-style:italic;color:var(--ink);letter-spacing:-.012em;line-height:1.05}
+.fp-current em{font-style:normal;color:var(--copper);font-weight:600}
+.fp-help{font-family:var(--font-sans);font-size:11px;color:var(--ink-muted);line-height:1.4;font-weight:400}
+
+/* SECTION SHELL */
+.iform-section{padding:22px var(--gutter) 4px}
+.iform-section + .iform-section{border-top:1px solid var(--rule-soft)}
+.iform-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:12px;gap:12px;
+}
+.iform-title{
+  font-family:var(--font-display);
+  font-size:18px;font-weight:500;
+  letter-spacing:-.012em;color:var(--ink);
+  line-height:1;display:flex;align-items:baseline;gap:8px;
+}
+.iform-title em{font-family:var(--font-sans);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted);font-style:normal;margin-left:2px}
+.iform-title.required em{color:var(--copper)}
+.iform-question{
+  font-family:var(--font-sans);
+  font-size:13px;font-weight:500;
+  color:var(--ink-muted);
+  margin-bottom:14px;
+  letter-spacing:.005em;
+  line-height:1.4;
+}
+
+/* Pill button group — for Queen, etc. */
+.pill-group{display:flex;gap:8px;flex-wrap:wrap}
+.pill{
+  flex:1;min-width:80px;
+  padding:14px 12px;
+  border-radius:var(--rs-sm);
+  border:1.4px solid var(--rule);
+  background:var(--paper-card);
+  font-family:var(--font-sans);
+  font-size:13px;font-weight:600;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:all .15s ease;
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+}
+.pill:hover{border-color:var(--rule-strong);background:var(--paper-soft)}
+.pill .pill-icon{display:flex;align-items:center;justify-content:center;color:var(--ink-muted);transition:color .15s ease}
+.pill.selected{
+  background:var(--ink);border-color:var(--ink);color:var(--paper-soft);
+  box-shadow:0 4px 12px rgba(31,26,15,.18);
+}
+.pill.selected .pill-icon{color:var(--honey-pale)}
+.pill.selected.warn{background:var(--copper);border-color:var(--copper-deep)}
+.pill.selected.good{background:var(--moss);border-color:#3a4d35}
+.pill.selected.honey{background:var(--honey-rich);border-color:var(--honey-rich)}
+.pill-sub{font-family:var(--font-display);font-size:10px;font-style:italic;color:var(--ink-faint);font-weight:400;letter-spacing:.005em}
+.pill.selected .pill-sub{color:rgba(250,246,236,.7)}
+
+/* Brood pattern visual selector */
+.brood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.brood-pill{
+  padding:10px 4px 12px;
+  border-radius:var(--rs-sm);
+  border:1.4px solid var(--rule);
+  background:var(--paper-card);
+  cursor:pointer;
+  transition:all .15s ease;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.brood-pill:hover{border-color:var(--rule-strong);background:var(--paper-soft)}
+.brood-pill.selected{border-color:var(--copper);border-width:2px;background:var(--paper-soft);box-shadow:0 0 0 3px rgba(168,81,42,.12)}
+.brood-pattern{width:46px;height:30px;background:var(--paper-deep);border-radius:3px;position:relative;overflow:hidden}
+/* Solid: cells densely filled */
+.brood-pattern.solid::before{
+  content:'';position:absolute;inset:3px;
+  background-image:radial-gradient(circle 2px at center,var(--honey-rich) 1.5px,transparent 2px);
+  background-size:6px 6px;background-position:0 0;
+}
+/* Patchy: cells with some gaps */
+.brood-pattern.patchy::before{
+  content:'';position:absolute;inset:3px;
+  background-image:
+    radial-gradient(circle 1.8px at 0 0,var(--honey-rich) 1.5px,transparent 2px),
+    radial-gradient(circle 1.8px at 6px 0,var(--honey-rich) 1.5px,transparent 2px),
+    radial-gradient(circle 1.8px at 0 6px,transparent 1.5px,transparent 2px),
+    radial-gradient(circle 1.8px at 6px 6px,var(--honey-rich) 1.5px,transparent 2px);
+  background-size:12px 12px;
+}
+/* Spotty: more gaps - pepperpot */
+.brood-pattern.spotty{background:repeating-conic-gradient(var(--paper-deep) 0deg 90deg,var(--honey-pale) 90deg 180deg) 0 0/7px 7px}
+.brood-pattern.spotty::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 40%,transparent 30%,var(--paper-deep) 60%);
+  opacity:0.55;
+}
+/* None: empty */
+.brood-pattern.none{background:var(--paper-deep);border:1px dashed var(--rule-strong)}
+.brood-label{font-family:var(--font-sans);font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.005em}
+.brood-pill.selected .brood-label{color:var(--copper);font-weight:700}
+
+/* Numeric stepper — for varroa, frames */
+.steppers{display:flex;gap:14px}
+.stepper{
+  flex:1;background:var(--paper-card);border:1px solid var(--rule);border-radius:var(--rs-sm);
+  padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.stepper-label{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stepper-name{font-family:var(--font-sans);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--ink-muted)}
+.stepper-sub{font-family:var(--font-display);font-size:11px;font-style:italic;color:var(--ink-faint);font-weight:400}
+.stepper-controls{display:flex;align-items:center;gap:0;flex-shrink:0}
+.stepper-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:1.2px solid var(--rule-strong);
+  background:var(--paper);color:var(--ink-soft);
+  font-family:var(--font-display);font-size:18px;font-weight:500;
+  cursor:pointer;transition:all .15s ease;
+  display:flex;align-items:center;justify-content:center;line-height:1;padding:0;
+}
+.stepper-btn:hover{background:var(--paper-deep);border-color:var(--ink-soft)}
+.stepper-num{
+  font-family:var(--font-display);font-size:24px;font-weight:500;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+  letter-spacing:-.025em;line-height:1;
+  width:42px;text-align:center;
+}
+.stepper.warn .stepper-num{color:var(--copper)}
+
+/* Voice notes block */
+.voice-block{
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs);
+  padding:18px;
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+}
+.mic-btn{
+  width:54px;height:54px;border-radius:50%;
+  background:var(--copper);color:var(--paper-soft);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  transition:all .15s ease;
+  box-shadow:0 4px 14px rgba(168,81,42,.3),0 0 0 0 rgba(168,81,42,.5);
+  animation:micPulse 2.5s ease-in-out infinite;
+}
+@keyframes micPulse{
+  0%,100%{box-shadow:0 4px 14px rgba(168,81,42,.3),0 0 0 0 rgba(168,81,42,.5)}
+  50%{box-shadow:0 4px 14px rgba(168,81,42,.3),0 0 0 8px rgba(168,81,42,0)}
+}
+.voice-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.voice-prompt{font-family:var(--font-sans);font-size:11.5px;font-weight:600;color:var(--ink);letter-spacing:.005em}
+.voice-helper{font-family:var(--font-display);font-size:13px;font-style:italic;color:var(--ink-muted);line-height:1.4}
+.voice-transcript{
+  background:var(--paper);
+  border:1px solid var(--rule);
+  border-radius:var(--rs-sm);
+  padding:12px 14px;
+  font-family:var(--font-display);
+  font-size:14px;font-weight:500;font-style:italic;
+  color:var(--ink-soft);
+  line-height:1.5;
+  margin-top:6px;
+}
+.voice-transcript-meta{
+  display:flex;align-items:center;gap:8px;margin-top:8px;
+  font-family:var(--font-mono);font-size:9.5px;font-weight:500;
+  color:var(--ink-faint);letter-spacing:.04em;
+}
+.voice-tag{
+  padding:2px 7px;border-radius:30px;
+  background:rgba(184,118,26,.12);color:var(--honey-rich);
+  font-family:var(--font-sans);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+}
+
+/* For-next-time block */
+.next-callout{
+  background:linear-gradient(135deg,rgba(184,118,26,.08),rgba(168,81,42,.04));
+  border:1px dashed var(--honey);
+  border-radius:var(--rs);
+  padding:16px 18px;
+  display:flex;gap:14px;align-items:center;
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.next-callout:hover{background:linear-gradient(135deg,rgba(184,118,26,.12),rgba(168,81,42,.06))}
+.next-callout-icon{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--honey);color:var(--paper-soft);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.next-callout-text{flex:1;display:flex;flex-direction:column;gap:3px}
+.next-callout-title{font-family:var(--font-display);font-size:15px;font-weight:600;font-style:italic;color:var(--ink);letter-spacing:-.005em}
+.next-callout-sub{font-family:var(--font-sans);font-size:11px;color:var(--ink-muted);line-height:1.4}
+
+/* Photos strip */
+.photo-strip{
+  display:flex;gap:8px;overflow-x:auto;
+  scrollbar-width:none;
+  margin:0 calc(var(--gutter) * -1);
+  padding:0 var(--gutter) 4px;
+}
+.photo-strip::-webkit-scrollbar{display:none}
+.photo-tile{
+  width:78px;height:78px;
+  flex-shrink:0;
+  border-radius:var(--rs-sm);
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .15s ease;
+}
+.photo-tile:hover{transform:translateY(-2px)}
+.photo-tile.add{
+  background:var(--paper-card);
+  border:1.4px dashed var(--rule-strong);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;color:var(--ink-muted);
+}
+.photo-tile.add:hover{border-color:var(--honey);color:var(--honey-rich)}
+.photo-tile.add-label{font-family:var(--font-sans);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em}
+/* Drawn comb photo */
+.photo-tile.comb{
+  background:
+    radial-gradient(circle at 20% 30%,#E8D5A8 0%,#D4B772 70%);
+  border:1px solid var(--honey-rich);
+}
+.photo-tile.comb::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(circle 4px at 12px 12px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 30px 12px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 48px 12px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 21px 26px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 39px 26px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 12px 40px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 30px 40px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 48px 40px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 21px 54px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 39px 54px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 57px 54px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 12px 68px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 30px 68px,rgba(139,90,15,.4) 3px,transparent 4px),
+    radial-gradient(circle 4px at 48px 68px,rgba(139,90,15,.4) 3px,transparent 4px);
+}
+.photo-tile.comb-frame::after{
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 11px,rgba(139,90,15,.5) 11px 12px),
+    radial-gradient(ellipse 18px 12px at 50% 30%,rgba(139,90,15,.35) 0%,transparent 70%);
+}
+.photo-tile.queen{
+  background:radial-gradient(circle at center,#E8D5A8,#B8761A);
+}
+.photo-tile.queen::after{
+  content:'';position:absolute;
+  left:50%;top:50%;width:16px;height:18px;
+  transform:translate(-50%,-50%);
+  background:#F4D03F;border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  border:1.5px solid #1F1A0F;
+}
+.photo-meta{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(180deg,transparent,rgba(31,26,15,.7));
+  padding:14px 6px 4px;
+  font-family:var(--font-mono);font-size:8.5px;font-weight:600;
+  color:var(--paper-soft);letter-spacing:.04em;
+  text-align:center;
+}
+
+/* Weather captured strip */
+.captured{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;
+  background:var(--paper-card);
+  border:1px solid var(--rule);
+  border-radius:var(--rs-sm);
+  margin-top:6px;
+}
+.captured-icon{color:var(--honey-rich);display:flex;align-items:center}
+.captured-text{flex:1;display:flex;flex-direction:column;gap:1px}
+.captured-title{font-family:var(--font-sans);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-muted)}
+.captured-detail{font-family:var(--font-display);font-size:13px;font-style:italic;color:var(--ink);letter-spacing:-.005em;font-weight:500}
+.captured-detail strong{font-style:normal;font-weight:600;color:var(--ink)}
+
+/* STICKY FOOTER — Save and SOS */
+.sticky-footer{
+  flex-shrink:0;
+  background:var(--paper);
+  border-top:1px solid var(--rule);
+  padding:12px var(--gutter) 16px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  box-shadow:0 -4px 16px rgba(31,26,15,.06);
+}
+.save-btn{
+  flex:1;
+  background:var(--ink);color:var(--paper-soft);
+  font-family:var(--font-sans);font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.16em;
+  border:none;border-radius:var(--rs-sm);
+  padding:14px 18px;
+  cursor:pointer;transition:all .25s ease;
+  box-shadow:0 4px 14px rgba(31,26,15,.18);
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+}
+.save-btn:hover{background:var(--moss)}
+.save-btn-arrow{width:14px;height:1px;background:currentColor;position:relative}
+.save-btn-arrow::after{content:'';position:absolute;right:0;top:-2.5px;width:5px;height:5px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+
+.sos-btn{
+  width:54px;height:54px;
+  border-radius:50%;
+  background:#C62828;color:var(--paper-soft);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 4px 14px rgba(198,40,40,.4);
+  transition:all .15s ease;
+  position:relative;
+}
+.sos-btn:active{transform:scale(.95)}
+.sos-btn::after{
+  content:'SOS';
+  position:absolute;
+  bottom:-18px;left:50%;
+  transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:8.5px;font-weight:700;
+  color:#C62828;letter-spacing:.16em;
+}
+
+.scroll-end{height:32px}
+.bottom-padding{padding-bottom:8px}
+
+@media (max-width:520px){body{padding:0;background:var(--paper)}.phone{width:100vw;height:100vh;border-radius:0;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-close" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+
+    <symbol id="pill-eye" viewBox="0 0 24 24"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="pill-eye-closed" viewBox="0 0 24 24"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="pill-mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="currentColor"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+    <symbol id="icon-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+
+    <symbol id="icon-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+
+    <symbol id="icon-camera" viewBox="0 0 24 24"><path d="M3 7h4l2-3h6l2 3h4v13H3V7z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+
+    <symbol id="icon-weather" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.1" y2="4.9"/></g></symbol>
+
+    <symbol id="icon-sos" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="12" y1="3" x2="12" y2="8.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="15.2" x2="12" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="8.8" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="15.2" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+
+<div class="phone">
+  <div class="phone-screen">
+
+    <!-- STICKY HEADER -->
+    <header class="sticky-header">
+      <div class="sh-status-row">
+        <span class="sh-status-pill"><span class="sh-status-dot"></span>Recording</span>
+        <span class="sh-status-pill awake"><span class="sh-status-dot"></span>Stay awake</span>
+        <span class="sh-meta-dot"></span>
+        <span class="sh-meta">14:23 · 17°C · clear</span>
+      </div>
+
+      <div class="sh-identity-row">
+        <div class="sh-identity">
+          <div class="sh-eyebrow">Inspecting</div>
+          <div class="sh-title">Hive <em>4</em> <span class="sh-title-meta">· Nene Valley</span></div>
+        </div>
+        <div class="sh-cancel"><svg width="14" height="14"><use href="#icon-close"/></svg></div>
+      </div>
+
+      <div class="sh-progress">
+        <span class="sh-progress-num"><strong>5</strong>/8</span>
+        <div class="sh-progress-bar"><div class="sh-progress-fill"></div></div>
+        <span>Brood box</span>
+      </div>
+    </header>
+
+    <!-- SCROLLABLE FORM -->
+    <div class="scrollable">
+
+      <!-- FRAME PICKER — which layer of the stack you're inspecting -->
+      <div class="frame-picker">
+        <div class="fp-stack">
+          <div class="fp-floor"></div>
+          <div class="fp-brood"></div>
+          <div class="fp-roof"></div>
+        </div>
+        <div class="fp-info">
+          <div class="fp-eyebrow">Inspecting</div>
+          <div class="fp-current">Brood box <em>· only layer</em></div>
+          <div class="fp-help">Tap a layer above to focus inspection there. Hive 4 has no supers — strict brood-only check today.</div>
+        </div>
+      </div>
+
+      <!-- QUEEN -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Queen <em>Required</em></h3>
+        </div>
+        <div class="iform-question">Did you see the queen, or signs she's still laying?</div>
+        <div class="pill-group">
+          <button class="pill">
+            <span class="pill-icon"><svg width="20" height="20"><use href="#pill-eye"/></svg></span>
+            <span>Seen</span>
+            <span class="pill-sub">queen sighted</span>
+          </button>
+          <button class="pill selected warn">
+            <span class="pill-icon"><svg width="20" height="20"><use href="#pill-eye-closed"/></svg></span>
+            <span>Unseen</span>
+            <span class="pill-sub">eggs / larvae?</span>
+          </button>
+          <button class="pill">
+            <span class="pill-icon"><svg width="20" height="20"><use href="#pill-mark"/></svg></span>
+            <span>Marked</span>
+            <span class="pill-sub">change colour</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- BROOD PATTERN -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Brood pattern <em>Required</em></h3>
+        </div>
+        <div class="iform-question">How does the brood read across the frames?</div>
+        <div class="brood-grid">
+          <button class="brood-pill">
+            <div class="brood-pattern solid"></div>
+            <span class="brood-label">Solid</span>
+          </button>
+          <button class="brood-pill">
+            <div class="brood-pattern patchy"></div>
+            <span class="brood-label">Patchy</span>
+          </button>
+          <button class="brood-pill selected">
+            <div class="brood-pattern spotty"></div>
+            <span class="brood-label">Spotty</span>
+          </button>
+          <button class="brood-pill">
+            <div class="brood-pattern none"></div>
+            <span class="brood-label">None</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- VARROA + FRAMES -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Counts</h3>
+        </div>
+        <div class="steppers">
+          <div class="stepper warn">
+            <div class="stepper-label">
+              <div class="stepper-name">Varroa</div>
+              <div class="stepper-sub">drop / 7 days</div>
+            </div>
+            <div class="stepper-controls">
+              <button class="stepper-btn">−</button>
+              <span class="stepper-num">14</span>
+              <button class="stepper-btn">+</button>
+            </div>
+          </div>
+          <div class="stepper">
+            <div class="stepper-label">
+              <div class="stepper-name">Frames</div>
+              <div class="stepper-sub">drawn comb</div>
+            </div>
+            <div class="stepper-controls">
+              <button class="stepper-btn">−</button>
+              <span class="stepper-num">8</span>
+              <button class="stepper-btn">+</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STORES + TEMPER -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Stores</h3>
+        </div>
+        <div class="pill-group">
+          <button class="pill"><span>Heavy</span><span class="pill-sub">8+ frames</span></button>
+          <button class="pill"><span>Medium</span><span class="pill-sub">5–7 frames</span></button>
+          <button class="pill selected warn"><span>Light</span><span class="pill-sub">&lt; 4 frames</span></button>
+          <button class="pill"><span>Empty</span><span class="pill-sub">feed now</span></button>
+        </div>
+      </section>
+
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Temper</h3>
+        </div>
+        <div class="pill-group">
+          <button class="pill selected good"><span>Calm</span><span class="pill-sub">workers settled</span></button>
+          <button class="pill"><span>Active</span><span class="pill-sub">but workable</span></button>
+          <button class="pill"><span>Defensive</span><span class="pill-sub">smoke advised</span></button>
+        </div>
+      </section>
+
+      <!-- VOICE NOTES -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Notes</h3>
+          <span class="iform-title em" style="font-style:normal;letter-spacing:.18em;font-size:9px;color:var(--ink-muted);font-family:var(--font-sans);font-weight:700;text-transform:uppercase;">Voice or text</span>
+        </div>
+        <div class="voice-block">
+          <button class="mic-btn">
+            <svg width="22" height="22"><use href="#icon-mic"/></svg>
+          </button>
+          <div class="voice-text">
+            <div class="voice-prompt">Recording — tap mic to stop</div>
+            <div class="voice-helper">Talk through what you see. Mention "next time" to flag a task for the next inspection automatically.</div>
+            <div class="voice-transcript">
+              "Pepperpot brood pattern across five frames. No fresh eggs visible to me. Drone brood present in cells where workers should be. Varroa drop board reads fourteen over seven days. <strong style="color:var(--honey-rich);font-weight:600;">Next time</strong> — confirm queen presence, recount varroa, decide on Apivar treatment if drop is still over ten…"
+              <div class="voice-transcript-meta">
+                <span>0:42 recording</span>
+                <span class="meta-dot"></span>
+                <span class="voice-tag">2 next-time tasks captured</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEXT TIME (highlighted) -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">For next inspection <em>Auto-captured</em></h3>
+        </div>
+        <div class="next-callout">
+          <div class="next-callout-icon"><svg width="18" height="18"><use href="#icon-bookmark"/></svg></div>
+          <div class="next-callout-text">
+            <div class="next-callout-title">2 tasks flagged from your notes</div>
+            <div class="next-callout-sub">Confirm queen presence · Decide on Apivar if varroa still &gt; 10. Tap to review or add more.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PHOTOS -->
+      <section class="iform-section">
+        <div class="iform-head">
+          <h3 class="iform-title">Photos <em>3 captured</em></h3>
+        </div>
+        <div class="photo-strip">
+          <div class="photo-tile add">
+            <svg width="20" height="20"><use href="#icon-camera"/></svg>
+            <span class="add-label">Add</span>
+          </div>
+          <div class="photo-tile comb">
+            <div class="photo-meta">Brood F4</div>
+          </div>
+          <div class="photo-tile comb-frame">
+            <div class="photo-meta">Brood F6</div>
+          </div>
+          <div class="photo-tile queen">
+            <div class="photo-meta">No queen</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WEATHER AUTO-CAPTURED -->
+      <section class="iform-section bottom-padding">
+        <div class="iform-head">
+          <h3 class="iform-title">Captured automatically</h3>
+        </div>
+        <div class="captured">
+          <span class="captured-icon"><svg width="22" height="22"><use href="#icon-weather"/></svg></span>
+          <div class="captured-text">
+            <div class="captured-title">Weather at inspection</div>
+            <div class="captured-detail"><strong>17°C · clear</strong> · wind 8mph W · sunset 8:34pm</div>
+          </div>
+        </div>
+        <div class="captured" style="margin-top:8px">
+          <span class="captured-icon"><svg width="22" height="22"><use href="#pill-mark"/></svg></span>
+          <div class="captured-text">
+            <div class="captured-title">Location · GPS confirmed</div>
+            <div class="captured-detail"><strong>Hive 4 position</strong> · Nene Valley · NW corner · ±2m</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="scroll-end"></div>
+
+    </div>
+
+    <!-- STICKY FOOTER — Save + SOS always available -->
+    <footer class="sticky-footer">
+      <button class="save-btn">
+        Save inspection
+        <span class="save-btn-arrow"></span>
+      </button>
+      <button class="sos-btn">
+        <svg width="22" height="22"><use href="#icon-sos"/></svg>
+      </button>
+    </footer>
+
+  </div>
+</div>
+
+</body>
+</html>
