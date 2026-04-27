@@ -4169,21 +4169,22 @@ function updateInspectConnPill() {
   var pill = document.getElementById('inspect-conn-pill');
   var dot  = document.getElementById('inspect-conn-dot');
   var text = document.getElementById('inspect-conn-text');
-  // 27 April 2026 v2 — also drive the visual state of the voice record
-  // button itself, so the keeper sees the offline state BEFORE tapping.
-  // Previously they tapped, got a toast saying "voice needs internet", then
-  // had to figure out what to do next.
+  // 27 April 2026 Phase 2a — voice now works offline (records, queues to
+  // IndexedDB, transcribes when reconnected). The pill explains the new
+  // behaviour rather than blocking. The button is no longer dimmed offline.
   var recBtn   = document.getElementById('rec-btn');
   var voiceMsg = document.getElementById('voice-status');
   var isOffline = (navigator.onLine === false)
                || (typeof _realConnectivity !== 'undefined' && _realConnectivity === false);
   if (pill && dot && text) {
     if (isOffline) {
-      pill.style.background   = '#FFEBEE';
-      pill.style.borderColor  = '#E53935';
-      pill.style.color        = '#B71C1C';
-      dot.style.background    = '#E53935';
-      text.innerHTML          = '<b>Offline</b> · Voice recording unavailable — connect to record';
+      // Honey-amber, not red — this isn't a blocker any more, just a
+      // different mode. Recording works; transcription is deferred.
+      pill.style.background   = '#FFF8E1';
+      pill.style.borderColor  = '#F57C00';
+      pill.style.color        = '#E65100';
+      dot.style.background    = '#F57C00';
+      text.innerHTML          = '<b>Offline</b> · Voice will save locally and transcribe when online';
     } else {
       pill.style.background   = '#E8F5E9';
       pill.style.borderColor  = '#66BB6A';
@@ -4192,24 +4193,15 @@ function updateInspectConnPill() {
       text.innerHTML          = '<b>Online</b> · Voice recording available';
     }
   }
-  // Visual offline state on the rec-btn itself. We don't disable() it —
-  // letting the user tap and see the existing offline toast is fine — but
-  // the button visibly dims and shows a not-allowed cursor so the unavailable
-  // state is obvious without tapping.
+  // Voice button: NO LONGER DIMMED offline. The Phase 1b dim behaviour was
+  // appropriate when offline voice didn't work — Phase 2a reverses this.
+  // We only restore styles in case a previous Phase 1b build dimmed the
+  // button before this code ran (e.g. mid-session upgrade).
   if (recBtn) {
-    if (isOffline) {
-      recBtn.style.opacity = '0.45';
-      recBtn.style.cursor  = 'not-allowed';
-      recBtn.setAttribute('title', 'Voice unavailable offline — type your notes below');
-      recBtn.setAttribute('aria-disabled', 'true');
-    } else {
-      // Only restore if we previously dimmed it for offline. Don't clobber
-      // a busy-state opacity (set by toggleRecord/startRecording at 0.6).
-      if (recBtn.style.opacity === '0.45') recBtn.style.opacity = '';
-      recBtn.style.cursor = '';
-      recBtn.removeAttribute('title');
-      recBtn.removeAttribute('aria-disabled');
-    }
+    if (recBtn.style.opacity === '0.45') recBtn.style.opacity = '';
+    recBtn.style.cursor = '';
+    recBtn.removeAttribute('title');
+    recBtn.removeAttribute('aria-disabled');
   }
   // Update the voice-status helper text only when the user hasn't already
   // started a recording flow (i.e. status is still on the default prompt).
@@ -4217,10 +4209,12 @@ function updateInspectConnPill() {
     var current = (voiceMsg.textContent || '').trim();
     var isDefaultPrompt = current === ''
       || current.indexOf('Tap the microphone') === 0
-      || current.indexOf('Voice unavailable offline') === 0;
+      || current.indexOf('📵 Voice unavailable') === 0
+      || current.indexOf('Voice unavailable offline') === 0
+      || current.indexOf('Tap the mic') === 0;
     if (isDefaultPrompt) {
       voiceMsg.textContent = isOffline
-        ? '📵 Voice unavailable offline — type your notes below instead'
+        ? '🎙️ Tap the mic — your voice memo will save here and transcribe when online'
         : 'Tap the microphone to record your inspection';
     }
   }
@@ -6962,19 +6956,18 @@ function startRecording(){
     return;
   }
 
-  // ── FIX A: ONLINE CHECK ──
-  // Whisper transcription needs internet. If offline, explain clearly and don't pretend to record.
-  // 24 April 2026: use _realConnectivity (Worker-ping-based) because navigator.onLine
-  // is unreliable on mobile, especially with airplane mode.
-  // TODO (next build): queue audio blob in IndexedDB and transcribe on reconnect
+  // ── PHASE 2a (27 April 2026): OFFLINE-CAPABLE RECORDING ──
+  // Voice now works offline. The recording itself only needs MediaRecorder
+  // (no network required); transcription needs Whisper (network required)
+  // and is deferred to when connectivity returns. The stop handler branches:
+  // online → upload to Whisper immediately; offline → store blob in IndexedDB
+  // and queue the inspection's transcript field as "[Voice memo recorded HH:MM
+  // — will transcribe when back online]" pending background processing.
+  //
+  // Update the voice-status text now so the keeper knows what to expect.
   var _voiceOnline = navigator.onLine !== false && (typeof _realConnectivity === 'undefined' || _realConnectivity !== false);
   if (!_voiceOnline) {
-    showToast('⚠️ Voice needs internet — connect and try again, or type notes manually');
-    document.getElementById('voice-status').textContent = 'Offline — connect to internet to use voice';
-    var _rbOff = document.getElementById('rec-btn'); if (_rbOff) { _rbOff.disabled = false; _rbOff.style.opacity = ''; }
-    _recBusy = false;
-    clearTimeout(window._recBtnRecoveryTimer);
-    return;
+    document.getElementById('voice-status').textContent = '📵 Offline mode — recording will save locally and transcribe when online';
   }
   // ── FIX B: CHECK MIC API EXISTS BEFORE STARTING ──
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -10001,21 +9994,99 @@ stopRecording = function() {
     clearTimeout(window._recBtnRecoveryTimer);
   }
 
-  // ── FIX D: ONLINE CHECK BEFORE TRANSCRIPTION ──
-  // Even if recording worked, we need internet to transcribe. Check here before starting upload.
-  // TODO (next build): if offline, queue audio blob in IndexedDB and transcribe on reconnect.
-  if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
-    showToast('⚠️ Went offline during recording — audio lost. Type notes manually or retry when online.');
-    document.getElementById('voice-status').textContent = 'Offline — type notes manually';
-    try {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(function(t){ t.stop(); });
+  // ── PHASE 2a (27 April 2026): OFFLINE-CAPABLE STOP ──
+  // If we're online, fall through to the normal Whisper upload below.
+  // If offline, the MediaRecorder still produced a blob — capture it to
+  // IndexedDB and let the background processor transcribe later. Don't
+  // discard the audio; it represents real beekeeper observations.
+  var _stopOnline = navigator.onLine !== false && (typeof _realConnectivity === 'undefined' || _realConnectivity !== false);
+  if (!_stopOnline) {
+    // Queue the blob for deferred transcription
+    document.getElementById('voice-status').textContent = '💾 Saving voice memo locally…';
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      var _onstopFiredOff = false;
+      var _handleStopOffline = function() {
+        if (_onstopFiredOff) return;
+        _onstopFiredOff = true;
+        try { if (mediaRecorder && mediaRecorder.stream) mediaRecorder.stream.getTracks().forEach(function(t){t.stop();}); } catch(e) {}
+        if (!audioChunks || audioChunks.length === 0) {
+          showToast('⚠️ No audio captured — please check microphone and try again');
+          document.getElementById('voice-status').textContent = 'No audio captured — type notes manually';
+          _reenableRecBtn();
+          return;
+        }
+        var blob = new Blob(audioChunks, {type:'audio/webm'});
+        if (blob.size < 1000) {
+          showToast('⚠️ Recording too short or silent — please try again');
+          document.getElementById('voice-status').textContent = 'Recording too short — try again';
+          _reenableRecBtn();
+          return;
+        }
+        // Store the blob in IndexedDB
+        var audioId = generateAudioId();
+        var hiveName = '';
+        try {
+          var hive = (loadHives() || []).find(function(h){ return h.id === currentHiveId; });
+          if (hive) hiveName = hive.name || '';
+        } catch(e) {}
+        var metadata = {
+          hiveId: currentHiveId,
+          hiveName: hiveName,
+          inspectionId: (currentInspData && currentInspData.id) || null,
+          recordedAt: Date.now(),
+          sizeBytes: blob.size,
+          mimeType: 'audio/webm'
+        };
+        storeAudioBlob(audioId, blob, metadata).then(function() {
+          // Mark the inspection as having a pending voice memo. This is a
+          // CLIENT-ONLY field — pushInspections doesn't include it in the
+          // Supabase row, so it stays local until processed.
+          if (!currentInspData) currentInspData = {};
+          currentInspData.pendingVoiceMemoId = audioId;
+          // Placeholder transcript so the keeper sees something. Honey-amber
+          // styling via [pending] prefix that the renderer can recognise.
+          var stamp = new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+          var placeholder = '[Voice memo recorded ' + stamp + ' — will transcribe when back online]';
+          var existing = (currentInspData.transcript || '').trim();
+          var combined = existing ? (existing + '\n\n— more —\n\n' + placeholder) : placeholder;
+          currentInspData.transcript = combined;
+          showTranscript(combined);
+          document.getElementById('voice-status').textContent = '✓ Voice memo saved (' + Math.round(blob.size/1024) + ' KB) — will transcribe when online';
+          showToast('✓ Voice memo saved locally — will transcribe when you are back online');
+          try { window._inspectionDirty = true; } catch(e) {}
+          // Refresh the count cache for the Sync Status panel
+          try { refreshPendingAudioCount().then(function(){
+            if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator();
+          }); } catch(e) {}
+          _reenableRecBtn();
+        }).catch(function(err) {
+          console.error('[voice-memo] storeAudioBlob failed', err);
+          showToast('⚠️ Could not save voice memo locally (' + (err.message || 'storage error') + ') — please type notes manually');
+          document.getElementById('voice-status').textContent = 'Could not save voice memo — type notes manually';
+          _reenableRecBtn();
+        });
+      };
+      mediaRecorder.onstop = _handleStopOffline;
+      setTimeout(function() {
+        if (!_onstopFiredOff) {
+          console.warn('[rec offline] onstop didn\'t fire within 5s — forcing handler');
+          _handleStopOffline();
+        }
+      }, 5000);
+      try { mediaRecorder.stop(); }
+      catch(e) {
+        console.error('[rec offline] mediaRecorder.stop() threw:', e);
+        _handleStopOffline();
       }
-    } catch(e) {}
-    _reenableRecBtn();
+    } else {
+      console.error('stopRecording offline: mediaRecorder not ready');
+      showToast('⚠️ Recording not ready — please try again');
+      document.getElementById('voice-status').textContent = 'Recording failed — please try again';
+      _reenableRecBtn();
+    }
     return;
   }
+  // ─── End Phase 2a offline branch — fall through to online Whisper path ───
 
   document.getElementById('voice-status').textContent='Processing...';
   if(mediaRecorder && mediaRecorder.state!=='inactive'){
@@ -15708,14 +15779,15 @@ async function authSignOut() {
   // to export the log before proceeding. The keeper can still sign out —
   // we don't block — but they make the choice explicitly.
   try {
-    var summary = (typeof getSyncStatusSummary === 'function') ? getSyncStatusSummary() : {pending:0, failed:0};
-    if (summary.failed > 0 || summary.pending > 0) {
+    var summary = (typeof getSyncStatusSummary === 'function') ? getSyncStatusSummary() : {pending:0, failed:0, voiceMemos:0};
+    if (summary.failed > 0 || summary.pending > 0 || summary.voiceMemos > 0) {
       var msg = 'You have ';
       var parts = [];
       if (summary.failed > 0) parts.push(summary.failed + ' failed sync record' + (summary.failed > 1 ? 's' : ''));
       if (summary.pending > 0) parts.push(summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync');
-      msg += parts.join(' and ') + ' on this device.\n\n'
-        + 'SIGNING OUT WILL WIPE ALL OF THIS.\n\n'
+      if (summary.voiceMemos > 0) parts.push(summary.voiceMemos + ' voice memo' + (summary.voiceMemos > 1 ? 's' : '') + ' waiting to transcribe');
+      msg += parts.join(', ') + ' on this device.\n\n'
+        + 'SIGNING OUT WILL WIPE ALL OF THIS — including any un-transcribed audio.\n\n'
         + 'Tap OK to export a diagnostic log first (recommended — you can email it to support so we can investigate). '
         + 'Tap Cancel to stop and not sign out. '
         + 'You can then choose to Sign out anyway from Settings, knowing the data will be lost.';
@@ -16703,7 +16775,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:14 27 April 2026 BST · Phase 1f — capture-before-wipe (export log + sign-out guard)';
+var HIVEKEEPER_BUILD = '11:25 27 April 2026 BST · Phase 2a — offline voice recording (records when offline, transcribes when online)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20550,6 +20622,307 @@ function dismissAllFailedSyncs() {
   return n;
 }
 
+// ─── INDEXEDDB AUDIO STORE (27 April 2026 — Phase 2a) ─────────────────
+// Stores voice memo blobs locally when offline. localStorage can't hold
+// audio (5MB limit; even short recordings exceed this with multiple memos).
+// IndexedDB handles blobs natively with plenty of capacity.
+//
+// Schema: hk_audio_db v1, object store 'pendingAudio'
+//   key: audio_id (string, generated)
+//   value: { blob: Blob, metadata: { hiveId, hiveName, inspectionId, recordedAt, sizeBytes, mimeType } }
+//
+// Lifecycle: blob stored on offline-stop, deleted after successful Whisper
+// transcription. Background processor walks pending entries on online events.
+
+var HK_AUDIO_DB_NAME = 'hk_audio_db';
+var HK_AUDIO_DB_VERSION = 1;
+var HK_AUDIO_STORE = 'pendingAudio';
+
+function openHkAudioDb() {
+  return new Promise(function(resolve, reject) {
+    if (!window.indexedDB) { reject(new Error('IndexedDB not supported')); return; }
+    var req = indexedDB.open(HK_AUDIO_DB_NAME, HK_AUDIO_DB_VERSION);
+    req.onerror = function() { reject(req.error); };
+    req.onsuccess = function() { resolve(req.result); };
+    req.onupgradeneeded = function(e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains(HK_AUDIO_STORE)) {
+        db.createObjectStore(HK_AUDIO_STORE, { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+function storeAudioBlob(audioId, blob, metadata) {
+  return openHkAudioDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction([HK_AUDIO_STORE], 'readwrite');
+      var store = tx.objectStore(HK_AUDIO_STORE);
+      var entry = {
+        id: audioId,
+        blob: blob,
+        metadata: metadata || {},
+        storedAt: Date.now()
+      };
+      var req = store.put(entry);
+      req.onsuccess = function() { resolve(audioId); };
+      req.onerror = function() { reject(req.error); };
+    });
+  });
+}
+
+function getAudioEntry(audioId) {
+  return openHkAudioDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction([HK_AUDIO_STORE], 'readonly');
+      var store = tx.objectStore(HK_AUDIO_STORE);
+      var req = store.get(audioId);
+      req.onsuccess = function() { resolve(req.result || null); };
+      req.onerror = function() { reject(req.error); };
+    });
+  });
+}
+
+function deleteAudioBlob(audioId) {
+  return openHkAudioDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction([HK_AUDIO_STORE], 'readwrite');
+      var store = tx.objectStore(HK_AUDIO_STORE);
+      var req = store.delete(audioId);
+      req.onsuccess = function() { resolve(); };
+      req.onerror = function() { reject(req.error); };
+    });
+  });
+}
+
+// Returns lightweight metadata for ALL pending audio (not the blobs themselves)
+// — used by the Sync Status panel and counts. Cheap to call.
+function listPendingAudioMetadata() {
+  return openHkAudioDb().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction([HK_AUDIO_STORE], 'readonly');
+      var store = tx.objectStore(HK_AUDIO_STORE);
+      var req = store.getAll();
+      req.onsuccess = function() {
+        var arr = (req.result || []).map(function(e) {
+          return {
+            id: e.id,
+            metadata: e.metadata || {},
+            storedAt: e.storedAt,
+            sizeBytes: (e.blob && e.blob.size) || (e.metadata && e.metadata.sizeBytes) || 0
+          };
+        });
+        resolve(arr);
+      };
+      req.onerror = function() { reject(req.error); };
+    });
+  });
+}
+
+// Fast count for the Home indicator and panel summary. Cached in
+// _pendingAudioCount and refreshed by listPendingAudioMetadata callers.
+var _pendingAudioCount = 0;
+function refreshPendingAudioCount() {
+  return listPendingAudioMetadata().then(function(arr) {
+    _pendingAudioCount = arr.length;
+    return _pendingAudioCount;
+  }).catch(function() { return 0; });
+}
+function getCachedPendingAudioCount() { return _pendingAudioCount; }
+
+// Generate a unique audio id. Format: voice_<timestamp>_<random5>
+function generateAudioId() {
+  return 'voice_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+}
+
+// ─── BACKGROUND VOICE-MEMO PROCESSOR (27 April 2026 — Phase 2a) ───────
+// When online, walks all pending audio entries and transcribes each via the
+// existing Whisper Worker endpoint. On success: updates the corresponding
+// inspection's transcript, clears pendingVoiceMemoId, deletes the blob,
+// triggers a sync. On failure: leaves the entry in place for next pass.
+//
+// Triggered from:
+//   - 'online' event listener
+//   - visibilitychange when foregrounded
+//   - openSyncStatusModal (immediate visibility for the keeper)
+//   - periodic interval (every 60s when online)
+//
+// _voiceProcessorInProgress prevents concurrent runs (e.g. online event +
+// visibility change firing together).
+
+var _voiceProcessorInProgress = false;
+
+async function processQueuedVoiceMemos() {
+  if (_voiceProcessorInProgress) return { skipped: 'already-running' };
+  if (!isOnline()) return { skipped: 'offline' };
+
+  _voiceProcessorInProgress = true;
+  var processed = 0, failed = 0, lostBlobs = 0;
+  try {
+    var pending = await listPendingAudioMetadata();
+    if (!pending.length) {
+      _pendingAudioCount = 0;
+      return { processed: 0, failed: 0, total: 0 };
+    }
+
+    for (var i = 0; i < pending.length; i++) {
+      // Re-check connectivity each iteration — connection may drop mid-loop
+      if (!isOnline()) {
+        if (window._hkDiag) console.log('[voice-processor] connectivity lost mid-loop, stopping');
+        break;
+      }
+      var meta = pending[i];
+      var entry = null;
+      try {
+        entry = await getAudioEntry(meta.id);
+      } catch(e) {
+        console.warn('[voice-processor] failed to read entry', meta.id, e);
+        continue;
+      }
+      if (!entry || !entry.blob) {
+        // Entry exists but blob is missing — corrupted or already partially
+        // processed. Mark the inspection's placeholder as lost and clear ref.
+        await _markVoiceMemoLost(meta.id, 'audio not found in local store');
+        lostBlobs++;
+        try { await deleteAudioBlob(meta.id); } catch(e) {}
+        continue;
+      }
+
+      try {
+        var formData = new FormData();
+        formData.append('audio', entry.blob, 'inspection.webm');
+        var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          console.warn('[voice-processor] Whisper returned HTTP ' + res.status + ' for ' + meta.id);
+          failed++;
+          continue;
+        }
+        var data = await res.json();
+        if (data.error) {
+          console.warn('[voice-processor] Whisper error for ' + meta.id + ':', data.error);
+          failed++;
+          continue;
+        }
+        if (!data.text || !data.text.trim()) {
+          // Whisper returned empty — no speech detected. Replace placeholder
+          // with explanation rather than leaving it pending forever.
+          await _replaceVoiceMemoPlaceholder(meta.id, '[Voice memo: no speech detected]');
+          await deleteAudioBlob(meta.id);
+          processed++;
+          continue;
+        }
+        // Success — replace placeholder with transcribed text
+        await _replaceVoiceMemoPlaceholder(meta.id, data.text.trim());
+        await deleteAudioBlob(meta.id);
+        processed++;
+      } catch(e) {
+        console.warn('[voice-processor] fetch error for ' + meta.id + ':', e);
+        failed++;
+        continue;
+      }
+    }
+    return { processed: processed, failed: failed, lostBlobs: lostBlobs, total: pending.length };
+  } finally {
+    _voiceProcessorInProgress = false;
+    try { await refreshPendingAudioCount(); } catch(e) {}
+    try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
+    if (processed > 0) {
+      try { showToast('✓ ' + processed + ' voice memo' + (processed > 1 ? 's' : '') + ' transcribed'); } catch(e) {}
+    }
+  }
+}
+
+// Replace the [Voice memo recorded HH:MM — will transcribe...] placeholder
+// in the relevant inspection's transcript field with the actual text. Saves
+// the inspection, which auto-pushes to Supabase.
+async function _replaceVoiceMemoPlaceholder(audioId, replacementText) {
+  try {
+    var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+    var idx = inspections.findIndex(function(i){ return i.pendingVoiceMemoId === audioId; });
+    if (idx === -1) {
+      // Inspection no longer references this audio (deleted? edited?). Just
+      // delete the blob via the caller and move on.
+      return;
+    }
+    var insp = inspections[idx];
+    var transcript = insp.transcript || '';
+    // Find and replace the placeholder. Pattern matches our generator's output:
+    // "[Voice memo recorded HH:MM — will transcribe when back online]"
+    var placeholderRegex = /\[Voice memo recorded \d{2}:\d{2}\s+[—-]\s+will transcribe when back online\]/;
+    if (placeholderRegex.test(transcript)) {
+      transcript = transcript.replace(placeholderRegex, replacementText);
+    } else {
+      // Placeholder not found — append the replacement instead (defensive)
+      transcript = (transcript + '\n\n' + replacementText).trim();
+    }
+    insp.transcript = transcript;
+    insp.pendingVoiceMemoId = null;
+    inspections[idx] = insp;
+    localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
+    // Trigger a push so the cloud gets the new transcript
+    try { if (typeof pushInspections === 'function') await pushInspections(); } catch(e) {}
+    // If the keeper happens to be looking at this inspection right now,
+    // refresh the visible transcript.
+    if (typeof currentInspData !== 'undefined' && currentInspData && currentInspData.pendingVoiceMemoId === audioId) {
+      currentInspData.transcript = transcript;
+      currentInspData.pendingVoiceMemoId = null;
+      try { if (typeof showTranscript === 'function') showTranscript(transcript); } catch(e) {}
+    }
+  } catch(e) {
+    console.warn('[voice-processor] _replaceVoiceMemoPlaceholder failed', e);
+  }
+}
+
+// When a blob is permanently missing (corrupted, cleared), mark the
+// inspection's placeholder as lost so the keeper knows what happened.
+async function _markVoiceMemoLost(audioId, reason) {
+  try {
+    var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+    var idx = inspections.findIndex(function(i){ return i.pendingVoiceMemoId === audioId; });
+    if (idx === -1) return;
+    var insp = inspections[idx];
+    var transcript = insp.transcript || '';
+    var lostMsg = '[Voice memo lost — ' + (reason || 'audio could not be recovered') + ']';
+    var placeholderRegex = /\[Voice memo recorded \d{2}:\d{2}\s+[—-]\s+will transcribe when back online\]/;
+    transcript = placeholderRegex.test(transcript) ? transcript.replace(placeholderRegex, lostMsg) : (transcript + '\n\n' + lostMsg).trim();
+    insp.transcript = transcript;
+    insp.pendingVoiceMemoId = null;
+    inspections[idx] = insp;
+    localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
+  } catch(e) {
+    console.warn('[voice-processor] _markVoiceMemoLost failed', e);
+  }
+}
+
+// Hook the processor into the same events that drive the sync system.
+window.addEventListener('online', function() {
+  setTimeout(function(){ processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor]', e); }); }, 2000);
+});
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && isOnline()) {
+    processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor]', e); });
+  }
+});
+// Periodic poll. 60s when online — enough to feel responsive without hammering
+// the worker. The processor is a no-op when there are no pending memos.
+setInterval(function(){
+  if (isOnline()) {
+    processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor]', e); });
+  }
+}, 60 * 1000);
+// Initial pass on load — pick up any memos left over from previous session.
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    refreshPendingAudioCount();
+    if (isOnline()) {
+      processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor]', e); });
+    }
+  }, 3000);
+});
+
 // ─── EXPORT FAILURE LOG (27 April 2026 — Phase 1f) ────────────────────
 // Builds a comprehensive diagnostic JSON containing the failed-sync store,
 // the offline queue, and FK-relevant context (apiaries + hive id/name/apiary_id
@@ -20618,7 +20991,12 @@ function exportFailureLog() {
       diagnosis: diagnosis,
       // FK-relevant context for verifying whether failed FKs resolve locally
       apiariesSummary: apiariesSummary,
-      hivesSummary: hivesSummary
+      hivesSummary: hivesSummary,
+      // 27 April 2026 Phase 2a — pending voice memo metadata. Audio blobs
+      // themselves are NOT included (would make the JSON hundreds of KB).
+      // Just metadata so support can see what's waiting to transcribe.
+      pendingVoiceMemoCount: (typeof getCachedPendingAudioCount === 'function') ? getCachedPendingAudioCount() : 0,
+      pendingVoiceMemoMetadata: 'see _hkPendingVoiceMemos in IndexedDB hk_audio_db (not exported in JSON to keep file size manageable)'
     };
 
     var json = JSON.stringify(snapshot, null, 2);
@@ -20665,7 +21043,11 @@ function getSyncStatusSummary() {
   try {
     failed = loadFailedSyncs().length;
   } catch(e) {}
-  return { pending: pending, failed: failed, total: pending + failed };
+  // 27 April 2026 Phase 2a: include pending voice memos in the summary so
+  // the Home indicator and panel reflect them. Uses the cached count to
+  // avoid an async IndexedDB read on every summary call.
+  var voiceMemos = (typeof getCachedPendingAudioCount === 'function') ? getCachedPendingAudioCount() : 0;
+  return { pending: pending, failed: failed, voiceMemos: voiceMemos, total: pending + failed + voiceMemos };
 }
 
 // ─── SYNC STATUS PANEL (27 April 2026 — Phase 1c) ────────────────────
@@ -20691,7 +21073,15 @@ function _hkFormatRelativeTime(ts) {
 
 function openSyncStatusModal() {
   _syncModalState = null; // reset on open
-  renderSyncStatusModal();
+  // Refresh the voice memo count from IndexedDB before render so the panel
+  // reflects current state, then auto-trigger the processor if anything is
+  // pending and we're online.
+  refreshPendingAudioCount().then(function(){
+    renderSyncStatusModal();
+    if (_pendingAudioCount > 0 && isOnline() && !_voiceProcessorInProgress) {
+      processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor on modal open]', e); });
+    }
+  }).catch(function(){ renderSyncStatusModal(); });
   openModalEl('modal-sync-status');
 }
 
@@ -21075,6 +21465,17 @@ function renderSyncStatusModal() {
     });
   }
 
+  // 27 April 2026 Phase 2a — voice memos waiting to transcribe section.
+  // Async render: we drop a placeholder div and fill it once IndexedDB resolves.
+  // Avoids making the whole render function async (which would ripple
+  // through every caller) and keeps the rest of the modal instant.
+  if (summary.voiceMemos > 0) {
+    html += '<div id="sync-modal-voice-memos">'
+      + '<div style="font-size:11px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Voice memos waiting to transcribe (' + summary.voiceMemos + ')</div>'
+      + '<div style="font-size:11px;color:var(--text-l);padding:8px 12px;background:#FFF8E1;border:1px solid #F57C00;border-radius:var(--rs);">Loading…</div>'
+      + '</div>';
+  }
+
   // Empty state
   if (!queue.length && !failed.length && !_syncModalState) {
     html += '<div style="text-align:center;padding:24px 16px;color:var(--text-l);font-size:12px;">All your hive records are backed up. Nothing waiting in the queue.</div>';
@@ -21092,6 +21493,64 @@ function renderSyncStatusModal() {
   // when state exists, but the innerHTML doesn't carry the message text —
   // so we re-trigger the message setter here).
   if (_syncModalState) setSyncModalStatus(_syncModalState.kind, _syncModalState.message, _syncModalState.success);
+
+  // 27 April 2026 Phase 2a — async fill of voice memos section. Resolves
+  // after the modal HTML is in the DOM so the placeholder #sync-modal-voice-memos
+  // div is findable.
+  if (summary.voiceMemos > 0) {
+    listPendingAudioMetadata().then(function(memos) {
+      var container = document.getElementById('sync-modal-voice-memos');
+      if (!container) return;
+      var inner = '<div style="font-size:11px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Voice memos waiting to transcribe (' + memos.length + ')</div>';
+      memos.forEach(function(m) {
+        var meta = m.metadata || {};
+        var label = meta.hiveName || '(unknown hive)';
+        var sizeKb = Math.max(1, Math.round((m.sizeBytes || 0) / 1024));
+        var recordedAt = meta.recordedAt ? _hkFormatRelativeTime(meta.recordedAt) : '';
+        inner += '<div style="background:white;border:1.5px solid #F57C00;border-left-width:4px;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;">'
+          + '<div style="font-size:13px;font-weight:700;color:#E65100;">🎙️ ' + _hkEscapeHtml(label) + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);font-family:\'DM Mono\',monospace;margin-top:1px;">' + sizeKb + ' KB · recorded ' + _hkEscapeHtml(recordedAt) + '</div>'
+          + '<div style="font-size:11px;color:var(--text-m);margin-top:4px;line-height:1.4;">Will auto-transcribe when online. The processor runs every 60 seconds — or tap the button to trigger immediately.</div>'
+          + '</div>';
+      });
+      var processBtnDisabled = !isOnline();
+      inner += '<button onclick="syncStatusProcessVoiceMemos()"' + (processBtnDisabled ? ' disabled' : '') + ' style="width:100%;background:' + (processBtnDisabled ? '#999' : 'var(--forest)') + ';border:none;border-radius:var(--rs);padding:9px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:' + (processBtnDisabled ? 'not-allowed' : 'pointer') + ';opacity:' + (processBtnDisabled ? '0.6' : '1') + ';margin-bottom:6px;">'
+        + (processBtnDisabled ? '📵 Offline — connect to transcribe' : '🎙️ Transcribe ' + memos.length + ' voice memo' + (memos.length > 1 ? 's' : '') + ' now')
+        + '</button>';
+      container.innerHTML = inner;
+    }).catch(function(e) {
+      var container = document.getElementById('sync-modal-voice-memos');
+      if (container) container.innerHTML = '<div style="font-size:11px;color:#B71C1C;padding:8px 12px;">Could not read voice memos: ' + _hkEscapeHtml(e.message || 'unknown error') + '</div>';
+    });
+  }
+}
+
+async function syncStatusProcessVoiceMemos() {
+  if (!isOnline()) {
+    setSyncModalStatus('offline', '📵 Offline — voice memos will transcribe when connection returns');
+    return;
+  }
+  var beforeCount = await refreshPendingAudioCount();
+  setSyncModalStatus('syncing', 'Transcribing ' + beforeCount + ' voice memo' + (beforeCount > 1 ? 's' : '') + '… (this may take a moment)');
+  var result = await processQueuedVoiceMemos();
+  var msg, success;
+  if (result.processed === beforeCount && result.failed === 0) {
+    msg = '✓ All ' + result.processed + ' voice memo' + (result.processed > 1 ? 's' : '') + ' transcribed!';
+    success = true;
+  } else {
+    var parts = [];
+    if (result.processed > 0) parts.push('✓ ' + result.processed + ' transcribed');
+    if (result.failed > 0) parts.push('⚠ ' + result.failed + ' failed (will retry)');
+    if (result.lostBlobs > 0) parts.push('✗ ' + result.lostBlobs + ' lost');
+    msg = parts.length ? parts.join(' · ') : 'Nothing to do';
+    success = result.processed > 0;
+  }
+  setSyncModalStatus('result', msg, success);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 3500);
 }
 
 async function syncStatusRetryOne(failedSyncId) {
@@ -21294,6 +21753,20 @@ function updateHomeSyncIndicator() {
     el.style.fontSize = '11px';
     el.style.fontWeight = '700';
     el.textContent = '⟳ ' + summary.pending + ' waiting to sync — tap to view';
+    el.onclick = function(e) { e.stopPropagation(); openSyncStatusModal(); };
+  } else if (summary.voiceMemos > 0) {
+    // 27 April 2026 Phase 2a — voice memos waiting to transcribe
+    el.style.display = 'inline-block';
+    el.style.cursor = 'pointer';
+    el.style.color = '#FFE0B2';
+    el.style.background = 'rgba(245, 124, 0, 0.18)';
+    el.style.border = '1px solid rgba(245, 124, 0, 0.4)';
+    el.style.borderRadius = '6px';
+    el.style.padding = '4px 10px';
+    el.style.marginTop = '6px';
+    el.style.fontSize = '11px';
+    el.style.fontWeight = '700';
+    el.textContent = '🎙️ ' + summary.voiceMemos + ' voice memo' + (summary.voiceMemos > 1 ? 's' : '') + ' waiting — tap to view';
     el.onclick = function(e) { e.stopPropagation(); openSyncStatusModal(); };
   } else {
     // Everything synced — hide.
