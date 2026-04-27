@@ -6704,21 +6704,21 @@ function renderInspectHeader(){
   // Reset unsaved-work tracking for this new inspection. Also skip in edit
   // mode so the dirty-flag guard doesn't trigger spuriously on amend.
   if (!window._editingInspId) {
-    // 27 April 2026 Phase 2b — preserve "just saved" state across re-renders.
-    // saveInspection calls renderInspectHeader() at line ~8405 to refresh the
-    // header after save. Without this guard, the line below would clear
-    // _inspectionJustSaved and call _restoreSaveButtonFromTerminal — which
-    // immediately reverts the "✓ Saved 12:38" terminal state Phase 1b just
-    // set. Net result: button briefly shows saved then reverts. Reported by
-    // Chris during 11:48 BST offline-voice test.
+    // 27 April 2026 Phase 2b/2d — preserve "just saved" state across re-renders
+    // ONLY when we're still on the same hive that was saved. If the user has
+    // switched to a different hive, the saved button belongs to a now-stale
+    // inspection — restore it so the keeper sees the fresh form clearly.
     var _wasJustSaved = !!window._inspectionJustSaved;
+    var _sameHiveAsSaved = (typeof window._inspectionSavedForHiveId !== 'undefined'
+      && window._inspectionSavedForHiveId !== null
+      && window._inspectionSavedForHiveId === currentHiveId);
     window._inspectionDirty = false;
     window._inspectionJustSaved = false;
-    if (!_wasJustSaved) {
-      // Restore only on genuine fresh-inspection entry — not on the
-      // post-save re-render. The dirty-setter still handles the next
-      // user edit (any dirty=true write restores the button via setter).
+    if (!_wasJustSaved || !_sameHiveAsSaved) {
+      // Genuine fresh-inspection entry OR hive switch after save — restore.
       try { _restoreSaveButtonFromTerminal(); } catch(e) {}
+      // Clear the saved-for-hive marker now that we've moved on.
+      window._inspectionSavedForHiveId = null;
     }
   }
   // Bind dirty-tracking on transcript + notes — idempotent guard, but we
@@ -8049,10 +8049,19 @@ function extractNextInspectionNotes(text) {
   // inspection" would.
   var triggers = [
     'for the next inspection',
+    'on the next inspection',                 // 27 April 2026 Phase 2d — Chris reported "on next inspection" not matched
+    'on next inspection',
+    'at the next inspection',
+    'at next inspection',
+    'by the next inspection',
+    'by next inspection',
     'next inspection[,:]?',        // covers "next inspection," / "next inspection:"
     'next time i(?:\\\'m)? ?(?:am|back)?',  // "next time I", "next time I'm back", "next time I am"
     'next time[,:]?',
+    'next visit[,:]?',                        // 27 April 2026 Phase 2d
     'remind me to',
+    'remember to',                            // 27 April 2026 Phase 2d — common natural variant
+    'make a note to',                         // 27 April 2026 Phase 2d
     'do not forget to',
     "don't forget to",
     'must do next time',
@@ -8415,6 +8424,12 @@ function saveInspection(){
 
     // Mark the save as completed — clears unsaved-work guard.
     window._inspectionJustSaved = true;
+    // 27 April 2026 Phase 2d — capture which hive the save belongs to. The
+    // renderInspectHeader guard uses this to detect "saved for hive X, now
+    // editing hive Y" and restore the button. Without this, switching
+    // hives after save leaves the button stuck in "Saved on this device"
+    // state for an unrelated hive (reported by Chris during 12:30 BST test).
+    window._inspectionSavedForHiveId = currentHiveId;
     window._inspectionDirty = false;
 
     // Refresh the home stats so hive counts are current if the user goes home.
@@ -16793,7 +16808,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:07 27 April 2026 BST · Phase 2c — voice memo persistence + orphan recovery';
+var HIVEKEEPER_BUILD = '12:30 27 April 2026 BST · Phase 2d — save button on hive change + extra trigger phrases + accelerate orphan dead-letter';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -21980,13 +21995,30 @@ async function flushOfflineQueue() {
         console.warn('Offline queue flush error [' + item.table + ']:', error.message);
         errorsByTable[item.table] = error.message;
         item.attempts = (item.attempts || 0) + 1;
+        // 27 April 2026 Phase 2d — accelerate dead-letter for orphaned FK
+        // failures. If the error is FK-related AND the parent record doesn't
+        // exist locally either, retrying is pointless (no path to recovery).
+        // Skip the 5-attempt waiting period — go straight to dead-letter so
+        // the keeper can see and dismiss. Without this, 46 ghost-apiary
+        // hives in Chris's queue would have burned 5×46 = 230 retry cycles
+        // before showing up as failed.
+        try {
+          var constraintName = (typeof _extractFKConstraint === 'function') ? _extractFKConstraint(error.message) : null;
+          var chain = constraintName && (typeof FK_CHAINS !== 'undefined') ? FK_CHAINS[constraintName] : null;
+          if (chain && item.data) {
+            var missingParentId = item.data[chain.via];
+            var parentInfo = (typeof _resolveParent === 'function') ? _resolveParent(chain.parent, missingParentId) : null;
+            if (parentInfo && parentInfo.exists === false) {
+              if (window._hkDiag) console.log('[sync] orphaned FK detected — parent', chain.parent, missingParentId, 'missing locally — accelerating to dead-letter');
+              item.attempts = 5; // Force dead-letter this pass
+            }
+          }
+        } catch(e) { /* don't let acceleration logic break the flush */ }
         // 27 April 2026 — Phase 1c: capture to dead-letter store instead of
         // dropping silently. The keeper can see what failed and retry from
-        // the Sync Status panel. Without this, persistent failures vanish
-        // into console.error — which is what caused the 25 April inspection
-        // loss to be invisible until the data was already gone.
+        // the Sync Status panel.
         if (item.attempts >= 5) {
-          console.error('[sync] permanently failing after 5 attempts:', item.table, item.data.id, '—', error.message);
+          console.error('[sync] permanently failing after ' + item.attempts + ' attempts:', item.table, item.data.id, '—', error.message);
           try { addToFailedSyncs(item, error.message); } catch(e) { console.warn('[failed-syncs] capture error', e); }
           droppedCount++;
         } else {
