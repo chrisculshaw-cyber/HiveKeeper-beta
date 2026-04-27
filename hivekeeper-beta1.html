@@ -15698,6 +15698,46 @@ async function authMagicLink() {
 
 // ── SIGN OUT ─────────────────────────────────────
 async function authSignOut() {
+  // 27 April 2026 — Phase 1f: sign-out guard. The sign-out keysToKeep
+  // intentionally clears user data, INCLUDING hk_failed_syncs and
+  // hk_offline_queue. This means signing out wipes any record of broken
+  // syncs along with the data itself. Same failure class as the 25 April
+  // inspection-loss incident, just at the dead-letter layer.
+  //
+  // If there are pending or failed sync items, warn the keeper and offer
+  // to export the log before proceeding. The keeper can still sign out —
+  // we don't block — but they make the choice explicitly.
+  try {
+    var summary = (typeof getSyncStatusSummary === 'function') ? getSyncStatusSummary() : {pending:0, failed:0};
+    if (summary.failed > 0 || summary.pending > 0) {
+      var msg = 'You have ';
+      var parts = [];
+      if (summary.failed > 0) parts.push(summary.failed + ' failed sync record' + (summary.failed > 1 ? 's' : ''));
+      if (summary.pending > 0) parts.push(summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync');
+      msg += parts.join(' and ') + ' on this device.\n\n'
+        + 'SIGNING OUT WILL WIPE ALL OF THIS.\n\n'
+        + 'Tap OK to export a diagnostic log first (recommended — you can email it to support so we can investigate). '
+        + 'Tap Cancel to stop and not sign out. '
+        + 'You can then choose to Sign out anyway from Settings, knowing the data will be lost.';
+      var wantsExport = confirm(msg);
+      if (wantsExport) {
+        // Export the log, then offer a second confirmation before actually
+        // signing out — gives the keeper a chance to inspect what they
+        // exported before destroying the source.
+        var result = (typeof exportFailureLog === 'function') ? exportFailureLog() : { success: false };
+        if (result.success) {
+          alert('✓ Failure log saved to Downloads.\n\nFilename: hivekeeper-failure-log-...json\n\nEmail this file to support so we can investigate. Then come back to Settings → Sign out when ready to clear this device.');
+          return; // Don't proceed with sign-out — let the keeper inspect the log first
+        } else {
+          if (!confirm('Export failed: ' + (result.error || 'unknown') + '\n\nSign out anyway? The unsynced records will be wiped.')) return;
+        }
+      } else {
+        // They cancelled — don't sign out
+        return;
+      }
+    }
+  } catch(e) { console.warn('[signout guard]', e); }
+
   try {
     closeModalEl('modal-settings');
     // Sign out from Supabase first (global scope clears server session too)
@@ -16663,7 +16703,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:56 27 April 2026 BST · Phase 1e — root-cause diagnosis';
+var HIVEKEEPER_BUILD = '11:14 27 April 2026 BST · Phase 1f — capture-before-wipe (export log + sign-out guard)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20510,6 +20550,112 @@ function dismissAllFailedSyncs() {
   return n;
 }
 
+// ─── EXPORT FAILURE LOG (27 April 2026 — Phase 1f) ────────────────────
+// Builds a comprehensive diagnostic JSON containing the failed-sync store,
+// the offline queue, and FK-relevant context (apiaries + hive id/name/apiary_id
+// so the receiver can verify FK relationships). Downloads as a JSON file the
+// keeper can email to support before any destructive action (sign-out, dismiss,
+// or just for investigation).
+//
+// The full record content of each failed-sync entry IS included — this is
+// debug data, the keeper has explicitly requested it for investigation, and
+// without the full content we can't diagnose schema-drift issues.
+function exportFailureLog() {
+  try {
+    var failed = loadFailedSyncs();
+    var queue = [];
+    try { queue = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]'); } catch(e) {}
+
+    var apiaries = (typeof loadApiaries === 'function') ? loadApiaries() : [];
+    var hives = (typeof loadHives === 'function') ? loadHives() : [];
+
+    // FK-relevant subset only — we don't need the full hive data, just enough
+    // to verify whether failed-sync FKs resolve locally. Keeps the file
+    // small enough to email easily.
+    var apiariesSummary = apiaries.map(function(a){
+      return { id: a.id, name: a.name, sharedWith: a.sharedWith || null };
+    });
+    var hivesSummary = hives.map(function(h){
+      return { id: h.id, name: h.name, apiaryId: h.apiaryId, status: h.status };
+    });
+
+    // The diagnosis structure — same logic as in-app, exported for reference
+    var diagnosis = (typeof analyseFailedSyncs === 'function') ? analyseFailedSyncs() : null;
+
+    // Counts of records on this device — useful for spotting "you have X
+    // inspections locally but cloud only has Y" gaps.
+    var counts = {};
+    try {
+      counts.inspections = (JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]')).length;
+      counts.harvests = (JSON.parse(localStorage.getItem('hk_harvests_v1') || '[]')).length;
+      counts.treatments = (JSON.parse(localStorage.getItem('hk_treatments_v1') || '[]')).length;
+      counts.varroaCounts = (JSON.parse(localStorage.getItem('hk_varroa_v1') || '[]')).length;
+    } catch(e) {}
+
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    var email = '';
+    try { email = (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.email : ''; } catch(e) {}
+
+    var snapshot = {
+      // Header
+      generated: new Date().toISOString(),
+      generatedLocal: new Date().toLocaleString('en-GB'),
+      build: (typeof HIVEKEEPER_BUILD !== 'undefined') ? HIVEKEEPER_BUILD : 'unknown',
+      userAgent: navigator.userAgent,
+      url: location.href,
+      online: (typeof isOnline === 'function') ? isOnline() : navigator.onLine,
+      // Identity (for matching to Supabase)
+      userId: uid,
+      userEmail: email,
+      // Counts and structure
+      localRecordCounts: counts,
+      apiariesCount: apiaries.length,
+      hivesCount: hives.length,
+      // Sync state
+      failedSyncs: failed,
+      offlineQueue: queue,
+      // Pre-computed diagnosis so the receiver doesn't need to re-derive it
+      diagnosis: diagnosis,
+      // FK-relevant context for verifying whether failed FKs resolve locally
+      apiariesSummary: apiariesSummary,
+      hivesSummary: hivesSummary
+    };
+
+    var json = JSON.stringify(snapshot, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var stamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').substring(0, 19);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'hivekeeper-failure-log-' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+    return { success: true, byteSize: json.length, failedCount: failed.length, queueCount: queue.length };
+  } catch(e) {
+    console.error('[exportFailureLog]', e);
+    return { success: false, error: e.message };
+  }
+}
+
+function syncStatusExportLog() {
+  var result = exportFailureLog();
+  if (result.success) {
+    var sizeKb = Math.max(1, Math.round(result.byteSize / 1024));
+    setSyncModalStatus('result', '✓ Log saved to Downloads (' + sizeKb + ' KB · ' + result.failedCount + ' failed, ' + result.queueCount + ' pending). Email to support to investigate.', true);
+    setTimeout(function(){
+      _syncModalState = null;
+      renderSyncStatusModal();
+    }, 4000);
+  } else {
+    setSyncModalStatus('result', '⚠ Export failed: ' + (result.error || 'unknown error'), false);
+    setTimeout(function(){
+      _syncModalState = null;
+      renderSyncStatusModal();
+    }, 4000);
+  }
+}
+
 // Summary used by the Home indicator badge and the panel header.
 function getSyncStatusSummary() {
   var pending = 0, failed = 0;
@@ -20861,8 +21007,18 @@ function renderSyncStatusModal() {
   // Secondary action: dismiss all failed. Separate row so it doesn't compete
   // with primary actions; styled as ghost to make it feel less primary.
   if (summary.failed > 1) {
-    html += '<div style="margin-bottom:16px;">'
+    html += '<div style="margin-bottom:8px;">'
       + '<button onclick="syncStatusDismissAll()"' + (inProgress ? ' disabled' : '') + ' style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:8px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">Dismiss all ' + summary.failed + ' failed records</button>'
+      + '</div>';
+  }
+  // 27 April 2026 — Phase 1f: export failure log. Capture-not-destroy action.
+  // Visible when there's anything in the queue or dead-letter store, so the
+  // keeper can email a snapshot to support before signing out (which would
+  // wipe the dead-letter store) or before dismissing.
+  if (summary.failed > 0 || summary.pending > 0) {
+    html += '<div style="margin-bottom:16px;">'
+      + '<button onclick="syncStatusExportLog()"' + (inProgress ? ' disabled' : '') + ' style="width:100%;background:#FFF3E0;border:1px solid #F57C00;border-radius:var(--rs);padding:9px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:#E65100;cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">📥 Export failure log (for investigation)</button>'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;line-height:1.4;text-align:center;">Saves a JSON file you can email to support so we can investigate why these records aren\u2019t syncing.</div>'
       + '</div>';
   } else {
     html += '<div style="margin-bottom:6px;"></div>';
@@ -21028,11 +21184,30 @@ function syncStatusDismiss(failedSyncId) {
 function syncStatusDismissAll() {
   var n = loadFailedSyncs().length;
   if (!n) return;
-  var msg = 'Dismiss all ' + n + ' failed records?\n\n'
-    + 'This permanently removes them from the failure list. Your local copies are unaffected — they remain on this device.\n\n'
-    + 'Records will only retry if you save them again, or if you re-create the underlying data (e.g. fix an orphaned hive by reassigning it to a real apiary).\n\n'
-    + 'This cannot be undone.';
-  if (!confirm(msg)) return;
+  // 27 April 2026 — Phase 1f: offer export before mass dismiss. Same
+  // protection rationale as the sign-out guard.
+  var exportFirst = confirm(
+    'Dismiss all ' + n + ' failed records?\n\n'
+    + 'Tap OK to export the failure log FIRST (recommended — saves a JSON you can email to support so we can investigate). '
+    + 'Tap Cancel to skip the export step.'
+  );
+  if (exportFirst) {
+    var result = (typeof exportFailureLog === 'function') ? exportFailureLog() : { success: false };
+    if (result.success) {
+      // After export, ask again whether to actually dismiss — keeper has
+      // their log, can inspect it, decide.
+      if (!confirm('✓ Log saved to Downloads.\n\nNow dismiss all ' + n + ' records? This permanently removes them from the failure list. Your local copies are unaffected — they remain on this device.\n\nThis cannot be undone.')) return;
+    } else {
+      if (!confirm('Export failed: ' + (result.error || 'unknown') + '\n\nDismiss anyway?')) return;
+    }
+  } else {
+    // They didn't want to export — final confirmation before destruction
+    var msg = 'Dismiss all ' + n + ' failed records WITHOUT exporting?\n\n'
+      + 'This permanently removes them from the failure list. Your local copies are unaffected — they remain on this device.\n\n'
+      + 'Records will only retry if you save them again, or if you re-create the underlying data (e.g. fix an orphaned hive by reassigning it to a real apiary).\n\n'
+      + 'This cannot be undone.';
+    if (!confirm(msg)) return;
+  }
   dismissAllFailedSyncs();
   setSyncModalStatus('result', '✓ ' + n + ' record' + (n > 1 ? 's' : '') + ' dismissed', true);
   setTimeout(function(){
