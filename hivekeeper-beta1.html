@@ -1312,7 +1312,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 27 April 2026 BST · Phase 1b — persistent post-save confirmation. Save button now stays "✓ Saved HH:MM" (or honey "✓ Saved on this device HH:MM" offline) until the form genuinely dirties — kills the duplicate-from-rapid-resave bug AND gives lasting visual evidence of save. Voice record button visibly dims when offline (no more tap-and-find-out). Property setter on _inspectionDirty intercepts existing dirty-tracking writes to auto-restore the button when the keeper starts a new inspection.</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 10:13 27 April 2026 BST · Phase 1c — sync visibility. Failed cloud uploads now captured to a dead-letter store (hk_failed_syncs) instead of vanishing into console.error after 5 attempts. New Sync Status panel in Settings shows queue depth + failed items with hive name, content snippet, last error, and per-item Retry buttons. Home greeting shows an amber/red badge when there are pending or failed items — tap to open. pushInspections / pushHives / pushHarvests / pushTreatments / pushVarroaCounts now fall through to the offline queue on error so structural failures (schema drift, FK violation) get tracked and retried uniformly instead of just toasting.</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -2777,6 +2777,10 @@ input[type="checkbox"].hk-chk:checked::after {
 
       <!-- TOOLS — inline, as they were before the tile experiment -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Tools</div>
+      <button id="settings-sync-status-btn" onclick="closeModalEl('modal-settings');setTimeout(openSyncStatusModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span>🔄 Sync status</span>
+        <span id="settings-sync-badge" style="display:none;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.04em;"></span>
+      </button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
@@ -4345,6 +4349,9 @@ function viewHive(id){
 
 function renderDashboard(){
   updateApiaryNameDisplays();
+  // 27 April 2026 — Phase 1c: refresh the persistent sync badge on the
+  // Home greeting. Hidden when all synced; amber for pending; red for failed.
+  try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
   // Show sticky setup prompt if onboarding was never completed
   var setupBanner = document.getElementById('setup-incomplete-banner');
   var onboarded = localStorage.getItem('hk_onboarded') === '1';
@@ -16610,7 +16617,22 @@ function showSyncStatus(msg, isError) {
   el.textContent = msg;
   el.style.color = isError ? '#e53935' : 'rgba(255,255,255,.5)';
   el.style.display = 'block';
-  if (!isError) setTimeout(function(){ if(el) el.style.display = 'none'; }, 3000);
+  // Reset the persistent-badge styles so transient text isn't styled as a pill
+  el.style.background = '';
+  el.style.border = '';
+  el.style.borderRadius = '';
+  el.style.padding = '';
+  el.style.marginTop = '2px';
+  el.style.fontSize = '10px';
+  el.style.fontWeight = '';
+  el.style.cursor = '';
+  el.onclick = null;
+  if (!isError) setTimeout(function(){
+    if(el) el.style.display = 'none';
+    // 27 April 2026 — Phase 1c: after the transient message hides, restore
+    // the persistent pending/failed badge if there's anything to show.
+    try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
+  }, 3000);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -16928,6 +16950,8 @@ async function pushApiaries() {
         console.warn('RLS error pushing apiary', rows[i].id, '— skipping');
       } else {
         console.warn('Apiary push error:', error.message);
+        // 27 April 2026 — Phase 1c: enqueue this row for the dead-letter path
+        try { queueOfflineSave('apiaries', rows[i]); } catch(e) {}
       }
     }
   }
@@ -16974,6 +16998,8 @@ async function pushHives() {
     // and unhelpful. Your data is already saved locally (write-first architecture);
     // the queue will retry automatically. Keep the console log for diagnostics.
     showToast('A hive couldn\u2019t sync just now — we\u2019ll try again shortly');
+    // 27 April 2026 — Phase 1c: enqueue for the dead-letter store path
+    rows.forEach(function(r){ try { queueOfflineSave('hives', r); } catch(e) {} });
   }
 }
 
@@ -17029,7 +17055,17 @@ async function pushInspections() {
     };
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
-  if (error) { console.warn('Inspection push error:', error.message); showToast('Cloud backup will retry shortly \u2014 your inspection is safe on your phone'); }
+  if (error) {
+    console.warn('Inspection push error:', error.message);
+    showToast('Cloud backup will retry shortly \u2014 your inspection is safe on your phone');
+    // 27 April 2026 — Phase 1c: also enqueue the rows so the offline queue's
+    // attempts counter (5 strikes → dead-letter store) tracks this failure.
+    // Without this, structural failures (schema drift, FK violation) just
+    // re-fail every retry with no visibility to the keeper. Queue dedupes
+    // by (table, id) and preserves attempts so re-enqueueing each periodic
+    // sync doesn't inflate the queue.
+    rows.forEach(function(r){ try { queueOfflineSave('inspections', r); } catch(e) {} });
+  }
 }
 
 async function pushHarvests() {
@@ -17050,7 +17086,11 @@ async function pushHarvests() {
     };
   });
   var { error } = await sb.from('harvests').upsert(rows, { onConflict: 'id' });
-  if (error) console.warn('Harvest push error:', error.message);
+  if (error) {
+    console.warn('Harvest push error:', error.message);
+    // 27 April 2026 — Phase 1c
+    rows.forEach(function(r){ try { queueOfflineSave('harvests', r); } catch(e) {} });
+  }
 }
 
 async function pushTreatments() {
@@ -17071,7 +17111,11 @@ async function pushTreatments() {
     };
   });
   var { error } = await sb.from('treatments').upsert(rows, { onConflict: 'id' });
-  if (error) console.warn('Treatment push error:', error.message);
+  if (error) {
+    console.warn('Treatment push error:', error.message);
+    // 27 April 2026 — Phase 1c
+    rows.forEach(function(r){ try { queueOfflineSave('treatments', r); } catch(e) {} });
+  }
 }
 
 async function pushVarroa() {
@@ -17092,7 +17136,11 @@ async function pushVarroa() {
     };
   });
   var { error } = await sb.from('varroa_counts').upsert(rows, { onConflict: 'id' });
-  if (error) console.warn('Varroa push error:', error.message);
+  if (error) {
+    console.warn('Varroa push error:', error.message);
+    // 27 April 2026 — Phase 1c
+    rows.forEach(function(r){ try { queueOfflineSave('varroa_counts', r); } catch(e) {} });
+  }
 }
 
 async function pushSwarmCatches() {
@@ -17182,7 +17230,13 @@ async function pullFromSupabase() {
         // seedRealData() re-runs on next login and creates duplicate Meadowbrook
         // Apiary entries. This was the root cause of the "2 Meadowbrook apiaries"
         // bug discovered during the data-sync audit.
-        'hk_seeded_beta'];
+        'hk_seeded_beta',
+        // 27 April 2026 — Phase 1c: dead-letter store for permanently-failing
+        // sync items. Without this in keysToKeep, a sign-in cycle would wipe
+        // the record of what's broken, making the new Sync Status panel
+        // useless after any pull. Same bug class as the 25 April inspection
+        // loss — keysToKeep miss → silent data wipe on pull.
+        'hk_failed_syncs'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -17559,6 +17613,12 @@ async function pushAllToSupabase() {
   _syncInProgress = true;
   showSyncStatus('Syncing...');
   try {
+    // 27 April 2026 — Phase 1c: flush the offline queue first so its 5-attempt
+    // counter advances on every periodic sync. Without this, enqueued items
+    // only got retried on the 'online' event — meaning a row that's been
+    // enqueued by a failing push would NEVER hit the dead-letter store
+    // unless the user happened to toggle connectivity.
+    await flushOfflineQueue().catch(function(e){ console.warn('[periodic flush]', e); });
     await pushApiaries();
     await pushHives();
   await pushRows(loadRows()).catch(function(){});
@@ -18516,6 +18576,10 @@ function showUpgradeModal(reason) {
 // ── UPDATE PLAN BADGE IN SETTINGS ────────────────────────
 function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { loadSettingsPhone(); } catch(e) {}
   var btn = document.getElementById('sign-out-btn');
+  // 27 April 2026 — Phase 1c: refresh the Sync status badge in Settings
+  // every time the modal opens. addSignOutToSettings runs from every
+  // open-Settings onclick so this catches all entry points.
+  try { updateSyncStatusBadgeInSettings(); } catch(e) {}
   if (!btn) return;
   var name = '';
   if (typeof _currentUser !== 'undefined' && _currentUser) {
@@ -18523,6 +18587,25 @@ function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { 
     name = (meta && (meta.full_name || meta.name)) ? (meta.full_name || meta.name).split(' ')[0] : _currentUser.email;
   }
   btn.textContent = name ? 'Sign out as ' + name : 'Sign out';
+}
+
+function updateSyncStatusBadgeInSettings() {
+  var badge = document.getElementById('settings-sync-badge');
+  if (!badge) return;
+  var summary = getSyncStatusSummary();
+  if (summary.failed > 0) {
+    badge.style.display = 'inline-block';
+    badge.style.background = '#E53935';
+    badge.style.color = 'white';
+    badge.textContent = '⚠ ' + summary.failed + ' FAILED';
+  } else if (summary.pending > 0) {
+    badge.style.display = 'inline-block';
+    badge.style.background = '#F57C00';
+    badge.style.color = 'white';
+    badge.textContent = '⟳ ' + summary.pending + ' PENDING';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 function updatePlanBadge() {
@@ -20240,6 +20323,406 @@ async function syncToCloud(table, record, options) {
   }
 }
 
+// ─── DEAD-LETTER STORE FOR FAILED SYNCS (27 April 2026 — Phase 1c) ────
+// When a queue item has been retried 5 times and Supabase keeps rejecting
+// it (typically schema drift, FK violation, or invalid data), the OLD code
+// dropped it with console.error. Result: silent data loss with no user
+// surface. This was the failure-class behind the 25 April inspection-loss
+// incident.
+//
+// New behaviour: failed items are written to hk_failed_syncs with full
+// context (hive name resolved at fail-time for stable display, content
+// snippet, last error message). The Sync Status panel reads this store
+// and lets the keeper see what's broken and retry individual items.
+//
+// hk_failed_syncs IS in keysToKeep — must survive pull cycles or we lose
+// track of failures on every sign-in.
+
+function loadFailedSyncs() {
+  try { return JSON.parse(localStorage.getItem('hk_failed_syncs') || '[]'); }
+  catch(e) { console.warn('[failed-syncs] load parse error', e); return []; }
+}
+
+function saveFailedSyncs(arr) {
+  try { localStorage.setItem('hk_failed_syncs', JSON.stringify(arr)); }
+  catch(e) { console.warn('[failed-syncs] save error', e); }
+}
+
+// Build a human-friendly description of a failing record. Resolved at the
+// point of failure so the panel can still describe the record even if the
+// underlying hive is later renamed or deleted.
+function _describeFailedSyncItem(table, data) {
+  var hiveName = '', contentSnippet = '', dateLabel = '';
+  try {
+    if (data && (data.hive_id || data.hiveId)) {
+      var hid = data.hive_id || data.hiveId;
+      var hive = (loadHives() || []).find(function(h){ return h.id === hid; });
+      if (hive) hiveName = hive.name || '';
+    }
+    // Apiary name fallback if no hive (e.g. apiaries table itself)
+    if (!hiveName && data && (data.apiary_id || data.apiaryId)) {
+      var aid = data.apiary_id || data.apiaryId;
+      var ap = (loadApiaries() || []).find(function(a){ return a.id === aid; });
+      if (ap) hiveName = ap.name || '';
+    }
+    // Direct apiary row
+    if (table === 'apiaries' && data && data.name) hiveName = data.name;
+    // Direct hive row (push)
+    if (table === 'hives' && data && data.name) hiveName = data.name;
+
+    // Content snippet — tries notes, then transcript, then product (treatments),
+    // then weight (harvests), then a generic descriptor.
+    if (data) {
+      contentSnippet = (data.notes || data.transcript || data.product
+        || (data.weight_kg ? data.weight_kg + 'kg harvest' : '')
+        || (data.varroa_count ? 'Varroa: ' + data.varroa_count : '')
+        || '').toString().substring(0, 80);
+    }
+
+    // Date — most tables have an _at column
+    var dateField = (data && (data.inspected_at || data.harvested_at
+      || data.treated_at || data.counted_at || data.created_at)) || null;
+    if (dateField) {
+      var d = new Date(dateField);
+      if (!isNaN(d.getTime())) {
+        dateLabel = d.toLocaleDateString('en-GB', {day:'numeric', month:'short'})
+          + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      }
+    }
+  } catch(e) { console.warn('[failed-syncs] describe error', e); }
+  return { hiveName: hiveName, contentSnippet: contentSnippet, dateLabel: dateLabel };
+}
+
+// Add a queue item to the dead-letter store. Called from flushOfflineQueue
+// when an item hits its retry cap. Idempotent on (table, id) — if the same
+// record has already been recorded as failed, update the entry rather than
+// duplicating it.
+function addToFailedSyncs(item, errorMsg) {
+  var failed = loadFailedSyncs();
+  var existing = failed.find(function(f){
+    return f.table === item.table && f.data && item.data && f.data.id === item.data.id;
+  });
+  var ctx = _describeFailedSyncItem(item.table, item.data);
+  var entry = {
+    id: (item.data && item.data.id) || ('failed_' + Date.now()),
+    table: item.table,
+    data: item.data,
+    attempts: item.attempts || 0,
+    lastError: errorMsg || 'Unknown error',
+    failedAt: Date.now(),
+    hiveName: ctx.hiveName,
+    contentSnippet: ctx.contentSnippet,
+    dateLabel: ctx.dateLabel
+  };
+  if (existing) {
+    Object.assign(existing, entry);
+  } else {
+    failed.push(entry);
+  }
+  saveFailedSyncs(failed);
+  if (window._hkDiag) console.warn('[failed-syncs] captured:', item.table, entry.id, '—', errorMsg);
+}
+
+// Re-inject a failed item back into the offline queue and remove from the
+// dead-letter store. The queue's existing 5-attempt retry kicks in; if it
+// fails again, it'll come back to the dead-letter store.
+function retrySingleFailedSync(failedSyncEntryId) {
+  var failed = loadFailedSyncs();
+  var idx = failed.findIndex(function(f){ return f.id === failedSyncEntryId; });
+  if (idx === -1) return false;
+  var entry = failed[idx];
+  // Re-queue with attempts reset to 0 — this is a fresh user-initiated retry.
+  var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+  q.push({ table: entry.table, data: entry.data, attempts: 0, queuedAt: Date.now() });
+  localStorage.setItem('hk_offline_queue', JSON.stringify(q));
+  // Remove from dead-letter store now — the queue will re-add it if it fails again.
+  failed.splice(idx, 1);
+  saveFailedSyncs(failed);
+  if (window._hkDiag) console.log('[failed-syncs] retry queued:', entry.table, entry.id);
+  return true;
+}
+
+// Re-inject all failed items.
+function retryAllFailedSyncs() {
+  var failed = loadFailedSyncs();
+  if (!failed.length) return 0;
+  var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+  failed.forEach(function(entry){
+    q.push({ table: entry.table, data: entry.data, attempts: 0, queuedAt: Date.now() });
+  });
+  localStorage.setItem('hk_offline_queue', JSON.stringify(q));
+  saveFailedSyncs([]);
+  return failed.length;
+}
+
+// Remove a failed item without retrying — for the keeper who's decided the
+// record is unrecoverable and wants to clear it from the panel.
+function dismissFailedSync(failedSyncEntryId) {
+  var failed = loadFailedSyncs();
+  var idx = failed.findIndex(function(f){ return f.id === failedSyncEntryId; });
+  if (idx === -1) return false;
+  failed.splice(idx, 1);
+  saveFailedSyncs(failed);
+  return true;
+}
+
+// Summary used by the Home indicator badge and the panel header.
+function getSyncStatusSummary() {
+  var pending = 0, failed = 0;
+  try {
+    pending = (JSON.parse(localStorage.getItem('hk_offline_queue') || '[]')).length;
+  } catch(e) {}
+  try {
+    failed = loadFailedSyncs().length;
+  } catch(e) {}
+  return { pending: pending, failed: failed, total: pending + failed };
+}
+
+// ─── SYNC STATUS PANEL (27 April 2026 — Phase 1c) ────────────────────
+// Renders the modal contents on every open so it always reflects current
+// state. Lists pending queue items (still being retried) and dead-letter
+// items (permanently failing) with per-item retry buttons.
+
+function _hkEscapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _hkFormatRelativeTime(ts) {
+  if (!ts) return '';
+  var diff = Date.now() - ts;
+  if (diff < 60 * 1000) return 'just now';
+  if (diff < 60 * 60 * 1000) return Math.floor(diff / (60 * 1000)) + 'm ago';
+  if (diff < 24 * 60 * 60 * 1000) return Math.floor(diff / (60 * 60 * 1000)) + 'h ago';
+  return Math.floor(diff / (24 * 60 * 60 * 1000)) + 'd ago';
+}
+
+function openSyncStatusModal() {
+  renderSyncStatusModal();
+  openModalEl('modal-sync-status');
+}
+
+function renderSyncStatusModal() {
+  var sheet = document.getElementById('modal-sync-status-sheet');
+  if (!sheet) return;
+  var summary = getSyncStatusSummary();
+  var queue = [];
+  try { queue = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]'); } catch(e) {}
+  var failed = loadFailedSyncs();
+
+  var html = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+    + '<div class="modal-title">Sync status</div>'
+    + '<div onclick="closeModalEl(\'modal-sync-status\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>'
+    + '</div>';
+
+  // Summary header pill
+  if (summary.failed > 0) {
+    html += '<div style="background:#FFEBEE;border:1.5px solid #E53935;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+      + '<div style="font-size:13px;font-weight:800;color:#B71C1C;">⚠ ' + summary.failed + ' record' + (summary.failed > 1 ? 's' : '') + ' need attention</div>'
+      + '<div style="font-size:11px;color:#B71C1C;margin-top:3px;line-height:1.4;">These records repeatedly failed to reach the cloud. Tap Retry on any item to try again, or Dismiss if you don\u2019t need it preserved.</div>'
+      + '</div>';
+  } else if (summary.pending > 0) {
+    html += '<div style="background:#FFF8E1;border:1.5px solid #F57C00;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+      + '<div style="font-size:13px;font-weight:800;color:#E65100;">' + summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync</div>'
+      + '<div style="font-size:11px;color:#E65100;margin-top:3px;line-height:1.4;">These will sync automatically when the cloud is reachable. Tap Sync now to trigger an immediate retry.</div>'
+      + '</div>';
+  } else {
+    html += '<div style="background:#E8F5E9;border:1.5px solid #66BB6A;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+      + '<div style="font-size:13px;font-weight:800;color:#1B5E20;">✓ Everything synced</div>'
+      + '<div style="font-size:11px;color:#1B5E20;margin-top:3px;line-height:1.4;">Your hive records are safely backed up to the cloud.</div>'
+      + '</div>';
+  }
+
+  // Action buttons
+  html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
+  if (summary.pending > 0 || summary.failed > 0) {
+    html += '<button onclick="syncStatusManualSync()" style="flex:1;background:var(--forest);border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">🔄 Sync now</button>';
+  }
+  if (summary.failed > 0) {
+    html += '<button onclick="syncStatusRetryAll()" style="flex:1;background:#E53935;border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">Retry all failed</button>';
+  }
+  html += '</div>';
+
+  // Failed items section
+  if (failed.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#B71C1C;text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Failed (' + failed.length + ')</div>';
+    failed.forEach(function(f) {
+      var label = f.hiveName || (f.table || 'record');
+      var snippet = f.contentSnippet || '';
+      var dateLabel = f.dateLabel || '';
+      var failedAgo = _hkFormatRelativeTime(f.failedAt);
+      var err = f.lastError || '';
+      html += '<div style="background:white;border:1.5px solid #E53935;border-left-width:4px;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:700;color:#B71C1C;">' + _hkEscapeHtml(label) + '</div>'
+        + (dateLabel ? '<div style="font-size:11px;color:var(--text-l);font-family:\'DM Mono\',monospace;margin-top:1px;">' + _hkEscapeHtml(dateLabel) + ' · ' + _hkEscapeHtml(f.table || '') + '</div>' : '')
+        + (snippet ? '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.4;">' + _hkEscapeHtml(snippet) + (snippet.length >= 80 ? '…' : '') + '</div>' : '')
+        + '<div style="font-size:10px;color:#B71C1C;margin-top:4px;font-style:italic;line-height:1.4;">Error: ' + _hkEscapeHtml(err) + ' · ' + _hkEscapeHtml(failedAgo) + '</div>'
+        + '</div>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;margin-top:8px;">'
+        + '<button onclick="syncStatusRetryOne(\'' + _hkEscapeHtml(f.id) + '\')" style="flex:1;background:var(--forest);border:none;border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:white;cursor:pointer;">Retry now</button>'
+        + '<button onclick="syncStatusDismiss(\'' + _hkEscapeHtml(f.id) + '\')" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:pointer;">Dismiss</button>'
+        + '</div>'
+        + '</div>';
+    });
+  }
+
+  // Pending queue items section
+  if (queue.length) {
+    html += '<div style="font-size:11px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Pending (' + queue.length + ')</div>';
+    // Group by table for compact display — pending items aren't usually
+    // interesting individually; the keeper just wants to know the queue
+    // depth and what's stuck.
+    var byTable = {};
+    queue.forEach(function(q) {
+      var t = q.table || 'unknown';
+      if (!byTable[t]) byTable[t] = { count: 0, maxAttempts: 0 };
+      byTable[t].count++;
+      var a = q.attempts || 0;
+      if (a > byTable[t].maxAttempts) byTable[t].maxAttempts = a;
+    });
+    Object.keys(byTable).forEach(function(t) {
+      var info = byTable[t];
+      html += '<div style="background:#FFF8E1;border:1px solid #F57C00;border-radius:var(--rs);padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">'
+        + '<div>'
+        + '<div style="font-size:13px;font-weight:700;color:#E65100;">' + info.count + ' × ' + _hkEscapeHtml(t) + '</div>'
+        + (info.maxAttempts > 0 ? '<div style="font-size:10px;color:#E65100;margin-top:1px;">Tried ' + info.maxAttempts + ' time' + (info.maxAttempts > 1 ? 's' : '') + ' · 5 strikes → moves to Failed</div>' : '<div style="font-size:10px;color:#E65100;margin-top:1px;">Awaiting first sync</div>')
+        + '</div>'
+        + '</div>';
+    });
+  }
+
+  // Empty state
+  if (!queue.length && !failed.length) {
+    html += '<div style="text-align:center;padding:24px 16px;color:var(--text-l);font-size:12px;">All your hive records are backed up. Nothing waiting in the queue.</div>';
+  }
+
+  // Footer with diagnostic info — useful for support/debugging
+  var lastSync = (typeof _lastSyncAt !== 'undefined' && _lastSyncAt) ? new Date(_lastSyncAt).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) : 'Not yet';
+  html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wax);font-size:10px;color:var(--text-l);line-height:1.5;">'
+    + 'Last sync attempt: ' + _hkEscapeHtml(lastSync)
+    + '<br>Connection: ' + (isOnline() ? 'Online' : 'Offline')
+    + '</div>';
+
+  sheet.innerHTML = html;
+}
+
+function syncStatusRetryOne(failedSyncId) {
+  retrySingleFailedSync(failedSyncId);
+  // Trigger an immediate flush so the keeper sees feedback
+  if (isOnline()) {
+    flushOfflineQueue().then(function() {
+      renderSyncStatusModal();
+      try { updateHomeSyncIndicator(); } catch(e) {}
+    });
+  } else {
+    showToast('📵 Offline — will retry when connection returns');
+    renderSyncStatusModal();
+  }
+}
+
+function syncStatusRetryAll() {
+  var n = retryAllFailedSyncs();
+  if (!n) return;
+  showToast('Retrying ' + n + ' failed record' + (n > 1 ? 's' : '') + '…');
+  if (isOnline()) {
+    flushOfflineQueue().then(function() {
+      renderSyncStatusModal();
+      try { updateHomeSyncIndicator(); } catch(e) {}
+    });
+  } else {
+    renderSyncStatusModal();
+  }
+}
+
+function syncStatusDismiss(failedSyncId) {
+  if (!confirm('Dismiss this record from the failure list? It will be permanently removed from the queue. Your local copy is unaffected — but it will not be retried unless you save it again.')) return;
+  dismissFailedSync(failedSyncId);
+  renderSyncStatusModal();
+  try { updateHomeSyncIndicator(); } catch(e) {}
+}
+
+function syncStatusManualSync() {
+  if (!isOnline()) {
+    showToast('📵 Offline — will sync when connection returns');
+    return;
+  }
+  showToast('Syncing…');
+  flushOfflineQueue().then(function() {
+    // Also push any local-only data that hasn't been queued
+    if (typeof pushAllToSupabase === 'function' && !_syncInProgress) {
+      pushAllToSupabase().then(function() {
+        renderSyncStatusModal();
+        try { updateHomeSyncIndicator(); } catch(e) {}
+      }).catch(function() {
+        renderSyncStatusModal();
+      });
+    } else {
+      renderSyncStatusModal();
+      try { updateHomeSyncIndicator(); } catch(e) {}
+    }
+  });
+}
+
+// ─── HOME SYNC INDICATOR (27 April 2026 — Phase 1c) ──────────────────
+// Reuses the existing #sync-status element on the Home greeting that was
+// previously showing transient "Syncing..." messages. Now it's a persistent
+// badge — hidden when all synced, amber when items pending, red when items
+// failed. Tappable to open the Sync Status panel.
+function updateHomeSyncIndicator() {
+  var el = document.getElementById('sync-status');
+  if (!el) return;
+  var summary = getSyncStatusSummary();
+  if (summary.failed > 0) {
+    el.style.display = 'block';
+    el.style.cursor = 'pointer';
+    el.style.color = '#FFCDD2';
+    el.style.background = 'rgba(229, 57, 53, 0.25)';
+    el.style.border = '1px solid rgba(229, 57, 53, 0.5)';
+    el.style.borderRadius = '6px';
+    el.style.padding = '4px 10px';
+    el.style.marginTop = '6px';
+    el.style.fontSize = '11px';
+    el.style.fontWeight = '700';
+    el.style.display = 'inline-block';
+    el.textContent = '⚠ ' + summary.failed + ' failed sync — tap to view';
+    el.onclick = function(e) { e.stopPropagation(); openSyncStatusModal(); };
+  } else if (summary.pending > 0) {
+    el.style.display = 'inline-block';
+    el.style.cursor = 'pointer';
+    el.style.color = '#FFE0B2';
+    el.style.background = 'rgba(245, 124, 0, 0.22)';
+    el.style.border = '1px solid rgba(245, 124, 0, 0.45)';
+    el.style.borderRadius = '6px';
+    el.style.padding = '4px 10px';
+    el.style.marginTop = '6px';
+    el.style.fontSize = '11px';
+    el.style.fontWeight = '700';
+    el.textContent = '⟳ ' + summary.pending + ' waiting to sync — tap to view';
+    el.onclick = function(e) { e.stopPropagation(); openSyncStatusModal(); };
+  } else {
+    // Everything synced — hide.
+    el.style.display = 'none';
+    el.onclick = null;
+  }
+}
+
+// Refresh the Home indicator periodically and on focus/visibility change so
+// the badge stays current without requiring a full page render.
+setInterval(function(){
+  try { updateHomeSyncIndicator(); } catch(e) {}
+}, 30 * 1000);
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }
+});
+
 async function flushOfflineQueue() {
   var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
   if (!q.length || !getUserId()) return;
@@ -20281,12 +20764,14 @@ async function flushOfflineQueue() {
         console.warn('Offline queue flush error [' + item.table + ']:', error.message);
         errorsByTable[item.table] = error.message;
         item.attempts = (item.attempts || 0) + 1;
-        // If this item has failed 5+ times, it's almost certainly malformed
-        // (e.g. wrong column name, invalid FK). Drop it to prevent the queue
-        // from getting permanently stuck. The error is logged so we can see
-        // what went wrong.
+        // 27 April 2026 — Phase 1c: capture to dead-letter store instead of
+        // dropping silently. The keeper can see what failed and retry from
+        // the Sync Status panel. Without this, persistent failures vanish
+        // into console.error — which is what caused the 25 April inspection
+        // loss to be invisible until the data was already gone.
         if (item.attempts >= 5) {
-          console.error('[sync] DROPPING permanently-failed queue item after 5 attempts:', item.table, item.data.id, '—', error.message);
+          console.error('[sync] permanently failing after 5 attempts:', item.table, item.data.id, '—', error.message);
+          try { addToFailedSyncs(item, error.message); } catch(e) { console.warn('[failed-syncs] capture error', e); }
           droppedCount++;
         } else {
           remaining.push(item);
@@ -20309,8 +20794,8 @@ async function flushOfflineQueue() {
     showToast('✓ Synced ' + parts.join(', '));
   }
   if (droppedCount > 0) {
-    console.warn('[sync] Dropped ' + droppedCount + ' permanently-failing queue items — see console errors above for details');
-    showToast('⚠ ' + droppedCount + ' record(s) could not be synced (see console)');
+    console.warn('[sync] Captured ' + droppedCount + ' permanently-failing queue items to dead-letter store — see Settings → Sync status to retry');
+    showToast('⚠ ' + droppedCount + ' record(s) need attention — Settings → Sync status');
   }
   // If some errored but are still retrying, surface a helpful message
   if (remaining.length > 0) {
@@ -20320,6 +20805,9 @@ async function flushOfflineQueue() {
       showToast('⚠ ' + remaining.length + ' record(s) could not sync — will retry');
     }
   }
+  // 27 April 2026 — refresh the Home sync indicator after every flush so
+  // the badge counts reflect current pending/failed state.
+  try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
 }
 
 // Listen for connection restore — flush queue AND then run a full sync
@@ -21275,6 +21763,15 @@ function goToApiaryAlerts() {
        via openModalEl('modal-feedback'). -->
   <div class="modal-overlay" id="modal-feedback" onclick="closeModal(event,'modal-feedback')">
     <div class="modal-sheet" id="modal-feedback-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: SYNC STATUS (27 April 2026 — Phase 1c) -->
+  <!-- Shows pending offline-queue items + permanently-failing dead-letter
+       store items. Per-item retry, retry-all, dismiss. Replaces the previous
+       silent-drop-with-console.error behaviour. -->
+  <div class="modal-overlay" id="modal-sync-status" onclick="closeModal(event,'modal-sync-status')">
+    <div class="modal-sheet" id="modal-sync-status-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
     </div>
   </div>
 
