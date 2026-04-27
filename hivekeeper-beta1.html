@@ -16843,7 +16843,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:04 27 April 2026 BST · Phase 3c — annual upsell intercept (save £7.89 Pro / £39.89 Commercial)';
+var HIVEKEEPER_BUILD = '14:10 27 April 2026 BST · Phase 3c — annual upsell + stuck-button fix on Stripe cancel';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19001,6 +19001,26 @@ function setBillingPeriod(period) {
   if (comBtnEl) comBtnEl.innerHTML = period === 'monthly' ? 'Upgrade &#x2192;' : 'Upgrade &#x2192;';
 }
 
+// 27 April 2026 Phase 3c — reset all upgrade buttons to default state.
+// Called when (a) user returns from Stripe overlay via visibilitychange,
+// or (b) checkUpgradeReturn sees ?upgrade=cancelled. Without this, the
+// "Opening checkout... ⏳" loading state stays stuck because Median's
+// webview preserves the app DOM behind the Stripe overlay — there's no
+// page reload to refresh button state. Reported by Chris testing the
+// cancel-from-Stripe flow.
+function _resetUpgradeButtons() {
+  ['pro', 'commercial'].forEach(function(t) {
+    var btn = document.getElementById('btn-upgrade-' + t);
+    if (!btn) return;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    // Restore the label set by setBillingPeriod — these labels are simple
+    // and consistent so we can hardcode the default rather than tracking
+    // originalText across the navigation boundary.
+    btn.innerHTML = (t === 'pro') ? 'Upgrade to Pro \u2192' : 'Upgrade \u2192';
+  });
+}
+
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
@@ -19097,6 +19117,25 @@ async function handleUpgrade(targetTier) {
     });
     var data = await resp.json();
     if (data && data.url) {
+      // 27 April 2026 Phase 3c — arm reset triggers BEFORE navigation.
+      // Median's webview keeps the app DOM in memory behind the Stripe
+      // overlay; when user cancels, they return to a stuck "Opening
+      // checkout..." button. Two recovery paths (whichever fires first):
+      //   (a) visibilitychange — fires when document.visibilityState
+      //       returns to 'visible' after Stripe overlay is dismissed.
+      //   (b) 30s setTimeout — failsafe in case Median doesn't fire
+      //       visibility events reliably in webview.
+      var resetHandler = function() {
+        if (document.visibilityState === 'visible') {
+          _resetUpgradeButtons();
+          document.removeEventListener('visibilitychange', resetHandler);
+        }
+      };
+      document.addEventListener('visibilitychange', resetHandler);
+      setTimeout(function() {
+        _resetUpgradeButtons();
+        document.removeEventListener('visibilitychange', resetHandler);
+      }, 30000);
       window.location.href = data.url;
     } else {
       throw new Error(data.error || 'No checkout URL returned');
@@ -19161,6 +19200,9 @@ function checkUpgradeReturn() {
     setTimeout(refreshTier, 1500);
   } else if (params.get('upgrade') === 'cancelled') {
     window.history.replaceState({}, '', window.location.pathname);
+    // 27 April 2026 Phase 3c — explicit button reset on cancelled return.
+    // Belt-and-braces with the visibilitychange/timeout in handleUpgrade.
+    try { _resetUpgradeButtons(); } catch(e) {}
     showToast('Upgrade cancelled — you can upgrade any time from Settings');
   }
 }
