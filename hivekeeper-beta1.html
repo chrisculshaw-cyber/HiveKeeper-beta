@@ -16856,7 +16856,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:55 27 April 2026 BST · Phase 4b — hide spray banner on Home when empty';
+var HIVEKEEPER_BUILD = '16:03 27 April 2026 BST · Phase 4b-fix — trial banner anti-flash guard for Founders';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -22600,10 +22600,15 @@ async function checkFoundingBadge() {
     // Mark founding status as verified so trial banner can safely render
     localStorage.setItem('hk_founding_checked', '1');
     try { renderTrialBanners(); } catch(e) {}
+    // 27 April 2026 Phase 4b-fix — also re-render home top trial banner
+    // post-check. Without this, the anti-flash guard would keep it hidden
+    // forever for actual trial users.
+    try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
   } catch(e) {
     // Even on error, mark as checked so banner doesn't stay hidden forever
     localStorage.setItem('hk_founding_checked', '1');
     try { renderTrialBanners(); } catch(e) {}
+    try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
   }
 }
 
@@ -24731,6 +24736,16 @@ function renderTrialBanner() {
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   var isPaid = tier === 'pro' || tier === 'commercial';
   if (isFounder || isPaid) { banner.style.display = 'none'; return; }
+  // 27 April 2026 Phase 4b-fix — anti-flash guard, copied from
+  // renderTrialBanners (footer). Without this, Founders briefly see the
+  // trial chip before Supabase confirms their status, then watch it
+  // disappear when the sync finishes. checkFoundingBadge sets
+  // hk_founding_checked=1 once the Supabase profile check completes.
+  var foundingChecked = localStorage.getItem('hk_founding_checked') === '1';
+  if (!foundingChecked && typeof getUserId === 'function' && getUserId()) {
+    banner.style.display = 'none';
+    return;
+  }
   if (isInTrial()) {
     var dLeft = trialDaysLeft();
     banner.style.display = 'flex';
