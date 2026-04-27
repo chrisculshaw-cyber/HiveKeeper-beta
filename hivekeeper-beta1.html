@@ -1449,16 +1449,51 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
 
-    <!-- WEATHER STRIP -->
-    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);padding:12px 14px;display:flex;align-items:center;gap:12px;">
-      <div style="font-size:28px;" id="weather-icon">📡</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--text);" id="weather-main">Weather unavailable offline</div>
-        <div style="font-size:11px;color:var(--text-m);margin-top:2px;" id="weather-desc">Open with signal to refresh</div>
-        <div style="font-size:10px;color:var(--text-l);margin-top:2px;" id="weather-updated"></div>
+    <!-- WEATHER HERO (27 April 2026 Phase 4c) -->
+    <!-- Replaces the flat 2-line weather strip with a richer hero card.
+         Top row: weather icon + hero temp + condition + tappable location.
+         Bottom row: 3 stat tiles for Wind / To inspect / Pollen — the flying-day
+         pill in the middle is the killer beekeeper signal, colour-coded
+         green (good)/amber (marginal)/red (don't fly). Same data, no new APIs. -->
+    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
+      <!-- TOP ROW: icon + temp + condition + location -->
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
+        <div style="font-size:42px;line-height:1;flex-shrink:0;" id="weather-icon">📡</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+            <div id="weather-temp-big" style="font-size:28px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;line-height:1;">--°</div>
+            <div id="weather-condition" style="font-size:13px;color:var(--text-l);font-weight:600;">Loading…</div>
+          </div>
+          <div onclick="openLocationSetting()" style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;align-items:center;gap:4px;cursor:pointer;" title="Change location">
+            <span style="opacity:0.6;">📍</span>
+            <span id="weather-location-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">My Location</span>
+            <span id="weather-updated" style="margin-left:auto;font-size:10px;opacity:0.6;flex-shrink:0;"></span>
+          </div>
+        </div>
+        <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;flex-shrink:0;align-self:flex-start;">CACHED</div>
       </div>
-      <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;">CACHED</div>
-      <div onclick="openLocationSetting()" style="padding:4px;cursor:pointer;opacity:.5;font-size:14px;" title="Change location">📍</div>
+      <!-- BOTTOM ROW: 3 stat tiles -->
+      <div style="display:flex;border-top:1px solid var(--wax);background:var(--cream);">
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="weather-wind-val" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">🌬 --</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Wind</div>
+        </div>
+        <div style="flex:1.5;padding:8px 6px;text-align:center;border-left:1px solid var(--wax);border-right:1px solid var(--wax);">
+          <div id="weather-flying-pill" style="display:inline-block;background:#E8F3E0;color:#2D5016;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:800;font-family:'Syne',sans-serif;">🐝 Loading</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:4px;">To inspect</div>
+        </div>
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="weather-pollen-val" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">🌿 --</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Pollen</div>
+        </div>
+      </div>
+      <!-- Hidden legacy IDs for backwards compat with any code path that still references them -->
+      <div style="display:none;">
+        <span id="weather-main"></span>
+        <span id="weather-sub"></span>
+        <span id="weather-temp"></span>
+        <span id="weather-desc"></span>
+      </div>
     </div>
 
     <!-- SEASONAL TIP TEASER -->
@@ -9028,6 +9063,21 @@ function flyingConditions(temp, windKmh, rain) {
   return 'Marginal conditions';
 }
 
+// 27 April 2026 Phase 4c — categorise the flyingConditions string into a
+// short label + colour for the home weather hero pill. Three bands:
+// green (Excellent/Good — go inspect), amber (Marginal — your call),
+// red (Too cold / Too windy / Raining — keep the lid on).
+function _flyingConditionsCategory(flyingStr) {
+  var s = (flyingStr || '').toLowerCase();
+  if (s.indexOf('excellent') === 0) return { label: 'Excellent', emoji: '🐝', bg: '#E8F3E0', fg: '#2D5016' };
+  if (s.indexOf('good') === 0)      return { label: 'Good day',  emoji: '🐝', bg: '#E8F3E0', fg: '#2D5016' };
+  if (s.indexOf('marginal') === 0)  return { label: 'Marginal',  emoji: '⚠️', bg: '#FAEEDA', fg: '#BA7517' };
+  if (s.indexOf('too cold') === 0)  return { label: 'Too cold',  emoji: '❄️', bg: '#FBE5E5', fg: '#A32D2D' };
+  if (s.indexOf('too windy') === 0) return { label: 'Too windy', emoji: '💨', bg: '#FBE5E5', fg: '#A32D2D' };
+  if (s.indexOf('poor') === 0)      return { label: 'Raining',   emoji: '🌧', bg: '#FBE5E5', fg: '#A32D2D' };
+  return { label: '—', emoji: '🐝', bg: '#F5F1E8', fg: '#7A6A52' };
+}
+
 function pollenLevel(month) {
   const levels = {
     1:{level:'Low',emoji:'🌿'},2:{level:'Low',emoji:'🌿'},
@@ -9121,23 +9171,44 @@ function renderWeather(data) {
   const month = new Date().getMonth() + 1;
   const pollen = typeof pollenLevel === 'function' ? pollenLevel(month) : {level:'', emoji:''};
   const flying = typeof flyingConditions === 'function' ? flyingConditions(temp, wind, rain) : '';
+  const flyingCat = typeof _flyingConditionsCategory === 'function' ? _flyingConditionsCategory(flying) : { label: '—', emoji: '🐝', bg: '#F5F1E8', fg: '#7A6A52' };
   const windMph = Math.round(wind * 0.621371);
 
-  const iconEl = document.getElementById('weather-icon');
-  const mainEl = document.getElementById('weather-main');
-  const subEl  = document.getElementById('weather-sub');
+  // 27 April 2026 Phase 4c — populate new hero card tiles. Top row.
+  var iconEl = document.getElementById('weather-icon');
+  var tempBigEl = document.getElementById('weather-temp-big');
+  var condEl = document.getElementById('weather-condition');
+  var locEl = document.getElementById('weather-location-name');
+  if (iconEl) iconEl.textContent = wmo.icon;
+  if (tempBigEl) tempBigEl.textContent = temp + '°';
+  if (condEl) condEl.textContent = wmo.desc;
+  if (locEl) locEl.textContent = USER_LOCATION_NAME;
 
-  if(iconEl) iconEl.textContent = wmo.icon;
-  if(mainEl) mainEl.textContent = temp + '°C · ' + USER_LOCATION_NAME + ' · ' + windMph + 'mph wind';
-  if(subEl)  subEl.textContent  = wmo.desc + (flying ? ' · ' + flying : '') + (pollen.level ? ' · ' + pollen.emoji + ' ' + pollen.level + ' pollen' : '');
+  // Bottom row tiles
+  var windEl = document.getElementById('weather-wind-val');
+  var pollenEl = document.getElementById('weather-pollen-val');
+  var flyingPill = document.getElementById('weather-flying-pill');
+  if (windEl) windEl.textContent = '🌬 ' + windMph + 'mph';
+  if (pollenEl) pollenEl.textContent = (pollen.emoji || '🌿') + ' ' + (pollen.level || '—');
+  if (flyingPill) {
+    flyingPill.textContent = flyingCat.emoji + ' ' + flyingCat.label;
+    flyingPill.style.background = flyingCat.bg;
+    flyingPill.style.color = flyingCat.fg;
+  }
 
-  // Also update legacy IDs if they exist
+  // Legacy elements (now hidden in the DOM but still populated for any
+  // code path that reads from them — defensive)
+  var mainEl = document.getElementById('weather-main');
+  var subEl  = document.getElementById('weather-sub');
+  if (mainEl) mainEl.textContent = temp + '°C · ' + USER_LOCATION_NAME + ' · ' + windMph + 'mph wind';
+  if (subEl)  subEl.textContent  = wmo.desc + (flying ? ' · ' + flying : '') + (pollen.level ? ' · ' + pollen.emoji + ' ' + pollen.level + ' pollen' : '');
   var tempEl   = document.getElementById('weather-temp');
   var descEl   = document.getElementById('weather-desc');
   var updEl    = document.getElementById('weather-updated');
   if(tempEl) tempEl.textContent = temp + '°C · ' + USER_LOCATION_NAME + ' · ' + windMph + 'mph wind';
   if(descEl) descEl.textContent = wmo.desc + (flying ? ' · ' + flying : '');
-  // Show cache age
+
+  // Show cache age (now appears at the right of the location row)
   var cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || '{}');
   var badge = document.getElementById('weather-offline-badge');
   if (cached && cached.ts) {
@@ -16856,7 +16927,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:03 27 April 2026 BST · Phase 4b-fix — trial banner anti-flash guard for Founders';
+var HIVEKEEPER_BUILD = '16:08 27 April 2026 BST · Phase 4c — weather hero card with Wind/Inspect/Pollen tiles';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
