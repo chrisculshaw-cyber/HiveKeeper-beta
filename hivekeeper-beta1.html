@@ -15822,35 +15822,46 @@ async function authSignOut() {
   // If there are pending or failed sync items, warn the keeper and offer
   // to export the log before proceeding. The keeper can still sign out —
   // we don't block — but they make the choice explicitly.
+  // 27 April 2026 Phase 1f sign-out guard, redesigned in Phase 2f.
+  // The 1f flow had a fatal UX gap: confirm("export first?") with OK = export+stay,
+  // Cancel = stay. No path actually proceeded to sign-out, locking the user out
+  // of sign-out entirely when records were stuck. Reported by Chris with 118
+  // stuck records he couldn't escape.
+  //
+  // 2f flow:
+  //   Step 1 — "You have N records that won't survive sign-out. Continue?"
+  //     OK    → proceed to step 2
+  //     Cancel → stay signed in (return)
+  //   Step 2 — "Export the failure log first?"
+  //     OK    → export → sign out
+  //     Cancel → sign out without exporting
   try {
     var summary = (typeof getSyncStatusSummary === 'function') ? getSyncStatusSummary() : {pending:0, failed:0, voiceMemos:0};
     if (summary.failed > 0 || summary.pending > 0 || summary.voiceMemos > 0) {
-      var msg = 'You have ';
       var parts = [];
       if (summary.failed > 0) parts.push(summary.failed + ' failed sync record' + (summary.failed > 1 ? 's' : ''));
       if (summary.pending > 0) parts.push(summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync');
       if (summary.voiceMemos > 0) parts.push(summary.voiceMemos + ' voice memo' + (summary.voiceMemos > 1 ? 's' : '') + ' waiting to transcribe');
-      msg += parts.join(', ') + ' on this device.\n\n'
+      // Step 1 — confirm intent to sign out (acknowledge data loss)
+      var step1Msg = 'You have ' + parts.join(', ') + ' on this device.\n\n'
         + 'SIGNING OUT WILL WIPE ALL OF THIS — including any un-transcribed audio.\n\n'
-        + 'Tap OK to export a diagnostic log first (recommended — you can email it to support so we can investigate). '
-        + 'Tap Cancel to stop and not sign out. '
-        + 'You can then choose to Sign out anyway from Settings, knowing the data will be lost.';
-      var wantsExport = confirm(msg);
+        + 'Tap OK to continue signing out. Tap Cancel to stay signed in.';
+      if (!confirm(step1Msg)) return;
+      // Step 2 — optional export before the wipe
+      var step2Msg = 'Export a diagnostic log first?\n\n'
+        + 'OK = export then sign out (recommended — you can email it to support)\n'
+        + 'Cancel = sign out without exporting';
+      var wantsExport = confirm(step2Msg);
       if (wantsExport) {
-        // Export the log, then offer a second confirmation before actually
-        // signing out — gives the keeper a chance to inspect what they
-        // exported before destroying the source.
         var result = (typeof exportFailureLog === 'function') ? exportFailureLog() : { success: false };
         if (result.success) {
-          alert('✓ Failure log saved to Downloads.\n\nFilename: hivekeeper-failure-log-...json\n\nEmail this file to support so we can investigate. Then come back to Settings → Sign out when ready to clear this device.');
-          return; // Don't proceed with sign-out — let the keeper inspect the log first
+          alert('✓ Failure log saved to Downloads.\n\nSigning out now — local data will be cleared.');
         } else {
-          if (!confirm('Export failed: ' + (result.error || 'unknown') + '\n\nSign out anyway? The unsynced records will be wiped.')) return;
+          // Export failed but user wanted it. Last chance to bail.
+          if (!confirm('Export failed: ' + (result.error || 'unknown error') + '\n\nSign out anyway? Unsynced records will be wiped.')) return;
         }
-      } else {
-        // They cancelled — don't sign out
-        return;
       }
+      // Fall through to the actual sign-out below.
     }
   } catch(e) { console.warn('[signout guard]', e); }
 
@@ -16819,7 +16830,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:31 27 April 2026 BST · Phase 2e — hive-change save button + voice-memo re-extraction + backfill';
+var HIVEKEEPER_BUILD = '12:35 27 April 2026 BST · Phase 2f — sign-out path fixed + bulk clear-everything button';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -21728,6 +21739,19 @@ function renderSyncStatusModal() {
     html += '<div style="text-align:center;padding:24px 16px;color:var(--text-l);font-size:12px;">All your hive records are backed up. Nothing waiting in the queue.</div>';
   }
 
+  // 27 April 2026 Phase 2f — DANGER ZONE: bulk clear-everything button.
+  // Renders when there's anything in either store. Distinct red styling so
+  // it's not casually tapped. The handler chains two confirms (acknowledge,
+  // export-or-not) so destructive intent is explicit.
+  if (failed.length > 0 || queue.length > 0) {
+    var clearTotal = failed.length + queue.length;
+    html += '<div style="margin-top:20px;padding:12px;background:#FFEBEE;border:1.5px solid #E53935;border-radius:var(--rs);">'
+      + '<div style="font-size:10px;font-weight:800;color:#B71C1C;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">⚠ Danger zone</div>'
+      + '<div style="font-size:11px;color:#B71C1C;margin-bottom:10px;line-height:1.4;">Wipes all ' + clearTotal + ' sync queue + failure entries in one go. Local hive data, inspections, photos etc. are unaffected. Anything not yet synced to cloud will not be retried.</div>'
+      + '<button onclick="syncStatusClearEverything()"' + (inProgress ? ' disabled' : '') + ' style="width:100%;background:#E53935;border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';letter-spacing:.02em;">🗑 Clear all ' + clearTotal + ' sync issues</button>'
+      + '</div>';
+  }
+
   // Footer with diagnostic info — useful for support/debugging
   var lastSync = (typeof _lastSyncAt !== 'undefined' && _lastSyncAt) ? new Date(_lastSyncAt).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}) : 'Not yet';
   html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wax);font-size:10px;color:var(--text-l);line-height:1.5;">'
@@ -21921,6 +21945,55 @@ function syncStatusDismissAll() {
     renderSyncStatusModal();
     try { updateHomeSyncIndicator(); } catch(e) {}
   }, 2200);
+}
+
+// 27 April 2026 Phase 2f — bulk wipe of EVERYTHING in the sync layer.
+// Combines failed-sync dismissal + offline queue clearing into one button.
+// Chris asked for this after accumulating 118 stuck records that couldn't
+// be cleared individually without dozens of taps. Strong confirm chain:
+// step 1 acknowledges the wipe, step 2 optionally exports a log first.
+function syncStatusClearEverything() {
+  var summary = getSyncStatusSummary();
+  var failedCount = summary.failed;
+  var pendingCount = summary.pending;
+  var total = failedCount + pendingCount;
+  if (total === 0) return;
+
+  var parts = [];
+  if (failedCount > 0) parts.push(failedCount + ' failed');
+  if (pendingCount > 0) parts.push(pendingCount + ' pending');
+  // Step 1 — confirm wipe
+  var step1Msg = 'CLEAR ALL ' + total + ' sync issues?\n\n'
+    + parts.join(' + ') + ' = ' + total + ' total\n\n'
+    + 'This permanently removes everything from the sync queue and failure list. Your local hive data, inspections, etc. are UNAFFECTED — they stay on this device.\n\n'
+    + 'But anything that hasn\'t synced to the cloud will not be retried. If those records were valuable, export the failure log first.\n\n'
+    + 'This cannot be undone. Continue?';
+  if (!confirm(step1Msg)) return;
+
+  // Step 2 — optional export
+  var step2Msg = 'Export a failure log first?\n\n'
+    + 'OK = export then clear (recommended — saves the diagnostic data for investigation)\n'
+    + 'Cancel = clear without exporting';
+  var wantsExport = confirm(step2Msg);
+  if (wantsExport) {
+    var result = (typeof exportFailureLog === 'function') ? exportFailureLog() : { success: false };
+    if (result.success) {
+      alert('✓ Log saved to Downloads.\n\nClearing all ' + total + ' sync issues now.');
+    } else {
+      if (!confirm('Export failed: ' + (result.error || 'unknown') + '\n\nClear anyway?')) return;
+    }
+  }
+
+  // Wipe both stores
+  try { saveFailedSyncs([]); } catch(e) { console.warn('[clear-all] failed-syncs', e); }
+  try { localStorage.setItem('hk_offline_queue', JSON.stringify([])); } catch(e) { console.warn('[clear-all] queue', e); }
+
+  setSyncModalStatus('result', '✓ All ' + total + ' sync issue' + (total > 1 ? 's' : '') + ' cleared', true);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 2500);
 }
 
 async function syncStatusManualSync() {
