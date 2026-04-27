@@ -16663,7 +16663,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:43 27 April 2026 BST · Phase 1d — in-modal sync feedback + error explanations';
+var HIVEKEEPER_BUILD = '10:56 27 April 2026 BST · Phase 1e — root-cause diagnosis';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20621,6 +20621,181 @@ function _explainSyncError(error, table) {
   return null;
 }
 
+// ─── ROOT-CAUSE DIAGNOSIS (27 April 2026 — Phase 1e) ─────────────────
+// When 54 records are stuck and most fail with the same FK constraint,
+// the keeper doesn't need to read 54 individual error messages — they
+// need to know "all 54 ultimately depend on apiary X being missing".
+//
+// FK_CHAINS maps Postgres constraint names to (child_table, parent_table,
+// parent_id_column). When we see a failed record with a constraint
+// violation, we know which parent ID to extract from the row data.
+
+var FK_CHAINS = {
+  'hives_apiary_id_fkey':            { child: 'hives',         parent: 'apiaries', via: 'apiary_id' },
+  'inspections_hive_id_fkey':        { child: 'inspections',   parent: 'hives',    via: 'hive_id' },
+  'inspections_apiary_id_fkey':      { child: 'inspections',   parent: 'apiaries', via: 'apiary_id' },
+  'harvests_hive_id_fkey':           { child: 'harvests',      parent: 'hives',    via: 'hive_id' },
+  'treatments_hive_id_fkey':         { child: 'treatments',    parent: 'hives',    via: 'hive_id' },
+  'varroa_counts_hive_id_fkey':      { child: 'varroa_counts', parent: 'hives',    via: 'hive_id' },
+  'sprays_apiary_id_fkey':           { child: 'sprays',        parent: 'apiaries', via: 'apiary_id' },
+  'landmarks_apiary_id_fkey':        { child: 'landmarks',     parent: 'apiaries', via: 'apiary_id' },
+  'rows_apiary_id_fkey':             { child: 'rows',          parent: 'apiaries', via: 'apiary_id' },
+  'hive_movements_hive_id_fkey':     { child: 'hive_movements',parent: 'hives',    via: 'hive_id' },
+  'hive_movements_from_apiary_id_fkey': { child: 'hive_movements', parent: 'apiaries', via: 'from_apiary_id' },
+  'hive_movements_to_apiary_id_fkey':   { child: 'hive_movements', parent: 'apiaries', via: 'to_apiary_id' },
+  'swarm_catches_apiary_id_fkey':    { child: 'swarm_catches', parent: 'apiaries', via: 'apiary_id' }
+};
+
+function _extractFKConstraint(errMsg) {
+  if (!errMsg) return null;
+  // Postgres FK violation messages contain `foreign key constraint "name"`
+  var m = String(errMsg).match(/foreign key constraint "([^"]+)"/);
+  return m ? m[1] : null;
+}
+
+// Resolves a parent_id to a human-friendly label by checking the local
+// store for the parent. Returns { exists, label } where label is the
+// best name we can show. exists=true means the parent is present locally
+// (so the failure is recoverable by pushing the parent); exists=false
+// means it's genuinely missing both sides (orphan).
+function _resolveParent(parentTable, parentId) {
+  if (!parentId) return { exists: false, label: '(no id)' };
+  try {
+    if (parentTable === 'apiaries') {
+      var ap = (loadApiaries() || []).find(function(a){ return a.id === parentId; });
+      if (ap) return { exists: true, label: ap.name || parentId };
+    }
+    if (parentTable === 'hives') {
+      var h = (loadHives() || []).find(function(hh){ return hh.id === parentId; });
+      if (h) {
+        // Also include the apiary name for context
+        var ap2 = h.apiaryId ? (loadApiaries() || []).find(function(a){ return a.id === h.apiaryId; }) : null;
+        return {
+          exists: true,
+          label: (h.name || parentId) + (ap2 ? ' (in ' + ap2.name + ')' : ''),
+          // For hives, also surface the apiary so the analysis can chain
+          ancestorTable: 'apiaries',
+          ancestorId: h.apiaryId || null,
+          ancestorExists: !!ap2
+        };
+      }
+    }
+  } catch(e) {}
+  return { exists: false, label: '(missing — id ' + parentId.toString().substring(0, 12) + '…)' };
+}
+
+function analyseFailedSyncs() {
+  var failed = loadFailedSyncs();
+  if (!failed.length) return { totalCount: 0, byTable: {}, fkGroups: [], otherErrors: [] };
+
+  var byTable = {};
+  var fkGroups = {};   // key: "constraint::missingId" → { constraint, chain, missingId, parentInfo, count, sampleEntries }
+  var otherErrors = []; // failed entries where we can't classify the FK
+
+  failed.forEach(function(entry) {
+    var t = entry.table || 'unknown';
+    byTable[t] = (byTable[t] || 0) + 1;
+
+    var constraint = _extractFKConstraint(entry.lastError);
+    var chain = constraint ? FK_CHAINS[constraint] : null;
+    if (constraint && chain && entry.data) {
+      var missingId = entry.data[chain.via];
+      var key = constraint + '::' + (missingId || 'unknown');
+      if (!fkGroups[key]) {
+        var parentInfo = _resolveParent(chain.parent, missingId);
+        fkGroups[key] = {
+          constraint: constraint,
+          chain: chain,
+          missingId: missingId,
+          parentInfo: parentInfo,
+          count: 0,
+          sampleEntries: []
+        };
+      }
+      fkGroups[key].count++;
+      if (fkGroups[key].sampleEntries.length < 3) {
+        fkGroups[key].sampleEntries.push(entry);
+      }
+    } else {
+      // Not an FK error we can classify — keep for the "other" section
+      otherErrors.push(entry);
+    }
+  });
+
+  // Sort fkGroups by count desc so the biggest cause shows first
+  var groupArr = Object.keys(fkGroups).map(function(k){ return fkGroups[k]; });
+  groupArr.sort(function(a,b){ return b.count - a.count; });
+
+  return {
+    totalCount: failed.length,
+    byTable: byTable,
+    fkGroups: groupArr,
+    otherErrors: otherErrors
+  };
+}
+
+function _renderDiagnosisHtml() {
+  var report = analyseFailedSyncs();
+  if (report.totalCount === 0) return '';
+
+  // Header
+  var html = '<div style="background:#FFF3E0;border:1.5px solid #F57C00;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">'
+    + '<div style="font-size:13px;font-weight:800;color:#E65100;">🔍 Root cause analysis</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:#E65100;line-height:1.5;margin-bottom:10px;">' + report.totalCount + ' failed record' + (report.totalCount > 1 ? 's' : '') + ' broken down by what they\u2019re waiting on:</div>';
+
+  // Breakdown by table
+  if (Object.keys(report.byTable).length) {
+    html += '<div style="font-size:10px;color:var(--text-l);margin-bottom:8px;">By table: ';
+    var tParts = [];
+    Object.keys(report.byTable).forEach(function(t) {
+      tParts.push('<strong>' + report.byTable[t] + '</strong> ' + _hkEscapeHtml(t));
+    });
+    html += tParts.join(' · ') + '</div>';
+  }
+
+  // FK groups — the actionable insight
+  if (report.fkGroups.length) {
+    report.fkGroups.forEach(function(g) {
+      var pi = g.parentInfo;
+      var verdictColor, verdictLabel, verdictAdvice;
+      if (pi.exists) {
+        verdictColor = '#2E7D32';
+        verdictLabel = '✓ Present locally';
+        verdictAdvice = 'Tap "Sync now" — pushing this parent should let all ' + g.count + ' dependent record' + (g.count > 1 ? 's' : '') + ' sync.';
+        // Chain check for hives → apiaries
+        if (pi.ancestorTable === 'apiaries' && !pi.ancestorExists) {
+          verdictColor = '#E65100';
+          verdictLabel = '⚠ Hive present, but its apiary is missing';
+          verdictAdvice = 'The hive itself exists locally, but its apiary has been deleted on this device. Pushing won\u2019t help — these records are orphaned. Dismiss them (your local copies stay), or re-create the apiary.';
+        }
+      } else {
+        verdictColor = '#B71C1C';
+        verdictLabel = '✗ Missing locally too';
+        verdictAdvice = 'This parent record is gone from both devices. The dependent records are orphaned. Either re-create the parent record (advanced), or dismiss these — your local copies remain readable on this device, just not backed up.';
+      }
+      html += '<div style="background:white;border:1px solid #F57C00;border-left-width:4px;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;">'
+        + '<div style="font-size:13px;font-weight:700;color:#E65100;">' + g.count + ' × ' + _hkEscapeHtml(g.chain.child) + ' waiting on ' + _hkEscapeHtml(g.chain.parent.replace(/s$/, '')) + ': <span style="color:var(--text);">' + _hkEscapeHtml(pi.label) + '</span></div>'
+        + '<div style="font-size:11px;color:' + verdictColor + ';margin-top:4px;font-weight:700;">' + verdictLabel + '</div>'
+        + '<div style="font-size:11px;color:var(--text-m);margin-top:4px;line-height:1.5;">' + _hkEscapeHtml(verdictAdvice) + '</div>'
+        + '<div style="font-size:9px;color:var(--text-l);margin-top:4px;font-family:\'DM Mono\',monospace;">Constraint: ' + _hkEscapeHtml(g.constraint) + (g.missingId ? ' · ID: ' + _hkEscapeHtml(String(g.missingId).substring(0, 18)) + '…' : '') + '</div>'
+        + '</div>';
+    });
+  }
+
+  // Non-FK errors
+  if (report.otherErrors.length) {
+    html += '<div style="background:white;border:1px solid #999;border-radius:var(--rs);padding:8px 12px;margin-bottom:6px;">'
+      + '<div style="font-size:12px;font-weight:700;color:var(--text);">' + report.otherErrors.length + ' record' + (report.otherErrors.length > 1 ? 's' : '') + ' with other errors</div>'
+      + '<div style="font-size:11px;color:var(--text-l);margin-top:3px;line-height:1.4;">Not foreign-key violations — see individual errors below.</div>'
+      + '</div>';
+  }
+
+  html += '</div>'; // close the orange-background diagnosis container
+  return html;
+}
+
 function renderSyncStatusModal() {
   var sheet = document.getElementById('modal-sync-status-sheet');
   if (!sheet) return;
@@ -20663,6 +20838,14 @@ function renderSyncStatusModal() {
         + '<div style="font-size:11px;color:#1B5E20;margin-top:3px;line-height:1.4;">Your hive records are safely backed up to the cloud.</div>'
         + '</div>';
     }
+  }
+
+  // 27 April 2026 — Phase 1e: root-cause diagnosis. Auto-rendered when
+  // failed.length > 0. Walks the FK chain to identify which parent records
+  // are missing and whether they exist locally. Empty string when no
+  // failures so it doesn't clutter the synced view.
+  if (!_syncModalState && summary.failed > 0) {
+    html += _renderDiagnosisHtml();
   }
 
   // Action buttons
