@@ -1492,7 +1492,13 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
 
     <!-- CROP SPRAYING (deep-links to Environment) -->
-    <div class="env-banner" id="spray-banner">
+    <!-- 27 April 2026 Phase 4b — banner hidden by default. Shows automatically
+         via renderSprayStatus when there are actual sprays to report (info.level
+         !== 'clear'). Was previously always visible with "NONE / No sprays
+         reported nearby" which felt like dead weight on Home. The Environment
+         screen still has the Crop spraying reports section for users who want
+         to log + browse manually. -->
+    <div class="env-banner" id="spray-banner" style="display:none;">
       <div class="env-header" id="spray-header-el" onclick="goToEnvironmentSprays()">
         <div class="env-header-icon">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -4671,11 +4677,18 @@ function getSprayStatusSummary() {
 }
 
 function renderSprayStatus() {
+  var banner = document.getElementById('spray-banner');
   var header = document.getElementById('spray-header-el');
   var pill = document.getElementById('spray-header-pill');
   var sub = document.getElementById('spray-header-sub');
   if (!header || !pill || !sub) return;
   var info = getSprayStatusSummary();
+  // 27 April 2026 Phase 4b — show the Home banner only when there's actual
+  // content. info.level === 'clear' means no nearby sprays in the lookback
+  // window — banner stays hidden, no dead weight on Home. Environment screen
+  // still has the Crop spraying reports section for users who want to log
+  // sprays manually.
+  if (banner) banner.style.display = (info.level === 'clear') ? 'none' : 'block';
   header.classList.remove('severity-watch','severity-alert','severity-critical');
   pill.classList.remove('env-pill-clear','env-pill-watch','env-pill-alert','env-pill-critical');
   if (info.level === 'critical') { header.classList.add('severity-critical'); pill.classList.add('env-pill-critical'); }
@@ -16843,7 +16856,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:51 27 April 2026 BST · Phase 3c-iosfix — annual upsell uses custom modal (iOS WKWebView confirm() hang)';
+var HIVEKEEPER_BUILD = '15:55 27 April 2026 BST · Phase 4b — hide spray banner on Home when empty';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
