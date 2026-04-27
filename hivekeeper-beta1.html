@@ -15540,12 +15540,17 @@ async function initAuth() {
 
 async function onAuthSuccess() {
   localStorage.setItem('hk_has_signed_in', '1');
-  // Force trial start to 17 April 2026 for all existing users
+  // 27 April 2026 Phase 3a — trial starts on first sign-in.
+  // Previously: hardcoded 17 April 2026 floor (beta-cohort workaround so all
+  // existing testers shared the same trial timing). For launch this would
+  // break — new users signing up after 17 April would inherit an already-
+  // stale trial. New rule: if hk_trial_start missing, set to NOW; if
+  // present, leave alone. Net effect for existing testers: their saved
+  // 17 April 2026 value persists, no behaviour change. New users post-
+  // launch: get a fresh 14 days from this exact moment.
   var _trialKey = 'hk_trial_start';
-  var _trialFloor = new Date('2026-04-17T00:00:00.000Z').getTime();
-  var _existingTrial = localStorage.getItem(_trialKey);
-  if (!_existingTrial || new Date(_existingTrial).getTime() < _trialFloor) {
-    localStorage.setItem(_trialKey, new Date('2026-04-17T00:00:00.000Z').toISOString());
+  if (!localStorage.getItem(_trialKey)) {
+    localStorage.setItem(_trialKey, new Date().toISOString());
   }
   hideAuthScreen();
   applySettings();
@@ -16830,7 +16835,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:52 27 April 2026 BST · Phase 2g — break the resurrection loop (dismissed records stay dismissed)';
+var HIVEKEEPER_BUILD = '13:34 27 April 2026 BST · Phase 3a — paywall reconciliation (matrix, trial start, labels)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -18761,12 +18766,18 @@ function marketBannerClick() {
 // Tier is stored on profiles.tier: null = beta (unlimited), 'free', 'pro', 'commercial'
 var _userTier = null; // loaded from Supabase on auth
 
+// 27 April 2026 Phase 3a — Pro updated to effectively unlimited per the
+// launch matrix Chris and I agreed. Old values (5/50) were beta-era. Free
+// aiPhoto bumped 1→3 so users get a real taste of the AI vision feature
+// (1/month was so tight it was effectively unusable). Voice/AI msgs on
+// Pro/Commercial intentionally high — cost protection for chat is handled
+// separately by PAID_AI_CHAT_LIMITS at line ~24402.
 var TIER_LIMITS = {
-  free:       { apiaries: 1, hives: 3, sharing: 'view', photos: 3, voice: 3, aiMsgs: 5, aiPhoto: 1, history: 5 },
-  trial:      { apiaries: 99, hives: 999, sharing: 'inspect', photos: 999, voice: 999, aiMsgs: 999, aiPhoto: 999, history: 999 },
-  pro:        { apiaries: 5, hives: 50, sharing: 'inspect', photos: 10, voice: 999, aiMsgs: 999, aiPhoto: 999, history: 999 },
-  commercial: { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999, voice: 999, aiMsgs: 999, aiPhoto: 999, history: 999 },
-  beta:       { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999, voice: 999, aiMsgs: 999, aiPhoto: 999, history: 999 }
+  free:       { apiaries: 1,   hives: 3,    sharing: 'view',    photos: 3,    voice: 3,    aiMsgs: 5,    aiPhoto: 3,    history: 5 },
+  trial:      { apiaries: 99,  hives: 999,  sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
+  pro:        { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
+  commercial: { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
+  beta:       { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 }
 };
 
 function getUserTier() {
@@ -18855,7 +18866,8 @@ function updatePlanBadge() {
     beta: { name: 'Beta (unlimited)', limits: 'All features unlocked' },
     free: { name: 'Free', limits: '1 apiary · 3 hives' },
     trial: { name: 'Pro (on us)', limits: 'Full Pro features during your 14 days' },
-    pro: { name: 'Pro', limits: '5 apiaries · 50 hives' },
+    // 27 April 2026 Phase 3a — Pro is unlimited per launch matrix
+    pro: { name: 'Pro', limits: 'Unlimited apiaries & hives · all features' },
     commercial: { name: 'Commercial', limits: 'Unlimited · ad-free · priority support' }
   };
   // Founders always display as Pro
@@ -18901,7 +18913,8 @@ function openPricingModal(highlightTier) {
   // - welcome_first: shown the very first time a trial user signs in.
   //                  Slightly warmer opening than welcome_back.
   var reasonMessages = {
-    hive: "You've reached the 3 hive limit on the Free plan. Upgrade to Pro for 50 hives.",
+    // 27 April 2026 Phase 3a — Pro is now unlimited (was 50 hives in earlier copy)
+    hive: "You've reached the 3-hive limit on the Free plan. Upgrade to Pro for unlimited hives.",
     apiary: "Multiple apiaries require a Pro or Commercial plan.",
     share: "Apiary sharing requires a Pro or Commercial plan.",
     photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline.",
@@ -24377,9 +24390,17 @@ function canUsePremiumFeature(feature) {
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   if (tier === 'pro' || tier === 'commercial') return true;
   if (isInTrial()) {
+    // 27 April 2026 Phase 3a — only show the trial toast once per session
+    // per day-of-trial. Previously fired on every premium-feature call,
+    // causing 20+ toasts per hour during heavy use. Persistent visual
+    // (countdown chip in header) ships in Phase 3b for ongoing visibility.
     var days = trialDaysLeft();
     if (days <= 5) {
-      showToast('Pro on us: ' + days + ' day' + (days !== 1 ? 's' : '') + ' left — tap to keep Pro');
+      var sessionKey = '_hkTrialToastShown_' + days;
+      if (!window[sessionKey]) {
+        window[sessionKey] = true;
+        showToast('Pro on us: ' + days + ' day' + (days !== 1 ? 's' : '') + ' left — tap to keep Pro');
+      }
     }
     return true;
   }
@@ -24392,7 +24413,10 @@ function canUsePremiumFeature(feature) {
 var FREE_LIMITS = {
   voice:    { count: 3,  per: 'month', label: 'voice inspections' },
   ai_chat:  { count: 5,  per: 'day',   label: 'AI messages' },
-  ai_frame: { count: 1,  per: 'month', label: 'AI frame analyses' }
+  // 27 April 2026 Phase 3a — bumped from 1 to 3 to match TIER_LIMITS.aiPhoto.
+  // 1/month was effectively unusable as a feature taste. 3/month gives Free
+  // users genuine experience of AI photo analysis, costs ~$20/mo at 1k users.
+  ai_frame: { count: 3,  per: 'month', label: 'AI frame analyses' }
 };
 
 // Pro/Commercial daily caps for AI chat (added 23 April 2026).
