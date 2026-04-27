@@ -1312,7 +1312,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 27 April 2026 BST · Phase 1 — offline-first inspection save + state machine. Save button gives immediate "Saving…" feedback on tap. Confirmation fires the moment local save commits, not after photo upload. Offline-aware: when offline, message says "Saved on this device — voice and notes will sync when online" with a honey-amber button. When online: green "Saved" with "Voice and notes saved" toast. Entry guard prevents the duplicate-records-from-rapid-tapping pattern reported by Davey and Kevin.</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 27 April 2026 BST · Phase 1b — persistent post-save confirmation. Save button now stays "✓ Saved HH:MM" (or honey "✓ Saved on this device HH:MM" offline) until the form genuinely dirties — kills the duplicate-from-rapid-resave bug AND gives lasting visual evidence of save. Voice record button visibly dims when offline (no more tap-and-find-out). Property setter on _inspectionDirty intercepts existing dirty-tracking writes to auto-restore the button when the keeper starts a new inspection.</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -4151,20 +4151,60 @@ function updateInspectConnPill() {
   var pill = document.getElementById('inspect-conn-pill');
   var dot  = document.getElementById('inspect-conn-dot');
   var text = document.getElementById('inspect-conn-text');
-  if (!pill || !dot || !text) return;
-  var isOffline = typeof navigator.onLine === 'boolean' && !navigator.onLine;
-  if (isOffline) {
-    pill.style.background   = '#FFEBEE';
-    pill.style.borderColor  = '#E53935';
-    pill.style.color        = '#B71C1C';
-    dot.style.background    = '#E53935';
-    text.innerHTML          = '<b>Offline</b> · Voice recording unavailable — connect to record';
-  } else {
-    pill.style.background   = '#E8F5E9';
-    pill.style.borderColor  = '#66BB6A';
-    pill.style.color        = '#1B5E20';
-    dot.style.background    = '#43A047';
-    text.innerHTML          = '<b>Online</b> · Voice recording available';
+  // 27 April 2026 v2 — also drive the visual state of the voice record
+  // button itself, so the keeper sees the offline state BEFORE tapping.
+  // Previously they tapped, got a toast saying "voice needs internet", then
+  // had to figure out what to do next.
+  var recBtn   = document.getElementById('rec-btn');
+  var voiceMsg = document.getElementById('voice-status');
+  var isOffline = (navigator.onLine === false)
+               || (typeof _realConnectivity !== 'undefined' && _realConnectivity === false);
+  if (pill && dot && text) {
+    if (isOffline) {
+      pill.style.background   = '#FFEBEE';
+      pill.style.borderColor  = '#E53935';
+      pill.style.color        = '#B71C1C';
+      dot.style.background    = '#E53935';
+      text.innerHTML          = '<b>Offline</b> · Voice recording unavailable — connect to record';
+    } else {
+      pill.style.background   = '#E8F5E9';
+      pill.style.borderColor  = '#66BB6A';
+      pill.style.color        = '#1B5E20';
+      dot.style.background    = '#43A047';
+      text.innerHTML          = '<b>Online</b> · Voice recording available';
+    }
+  }
+  // Visual offline state on the rec-btn itself. We don't disable() it —
+  // letting the user tap and see the existing offline toast is fine — but
+  // the button visibly dims and shows a not-allowed cursor so the unavailable
+  // state is obvious without tapping.
+  if (recBtn) {
+    if (isOffline) {
+      recBtn.style.opacity = '0.45';
+      recBtn.style.cursor  = 'not-allowed';
+      recBtn.setAttribute('title', 'Voice unavailable offline — type your notes below');
+      recBtn.setAttribute('aria-disabled', 'true');
+    } else {
+      // Only restore if we previously dimmed it for offline. Don't clobber
+      // a busy-state opacity (set by toggleRecord/startRecording at 0.6).
+      if (recBtn.style.opacity === '0.45') recBtn.style.opacity = '';
+      recBtn.style.cursor = '';
+      recBtn.removeAttribute('title');
+      recBtn.removeAttribute('aria-disabled');
+    }
+  }
+  // Update the voice-status helper text only when the user hasn't already
+  // started a recording flow (i.e. status is still on the default prompt).
+  if (voiceMsg) {
+    var current = (voiceMsg.textContent || '').trim();
+    var isDefaultPrompt = current === ''
+      || current.indexOf('Tap the microphone') === 0
+      || current.indexOf('Voice unavailable offline') === 0;
+    if (isDefaultPrompt) {
+      voiceMsg.textContent = isOffline
+        ? '📵 Voice unavailable offline — type your notes below instead'
+        : 'Tap the microphone to record your inspection';
+    }
   }
 }
 // React to connectivity changes live
@@ -6655,6 +6695,10 @@ function renderInspectHeader(){
   if (!window._editingInspId) {
     window._inspectionDirty = false;
     window._inspectionJustSaved = false;
+    // 27 April 2026 v2 — restore the Save button if it's still showing the
+    // post-save terminal state from a previous inspection. The dirty-setter
+    // covers the common in-screen case; this covers nav-away-and-back.
+    try { _restoreSaveButtonFromTerminal(); } catch(e) {}
   }
   // Bind dirty-tracking on transcript + notes — idempotent guard, but we
   // rebind on every entry to defend against edge cases where the listener
@@ -7885,6 +7929,59 @@ function resetInspectStatusButtons() {
 // elements too, and can't be defeated by listener-detachment edge cases that
 // have been observed in field testing (typing in Notes was not marking dirty
 // via the direct addEventListener on the textarea element).
+// ─── SAVE BUTTON TERMINAL-STATE RESTORATION (27 April 2026 v2) ───────
+// After a successful save, the Save button stays in "✓ Saved HH:MM" state
+// (disabled) until the form genuinely dirties. This prevents the duplicate
+// inspection bug (rapid resave on a cleared form was creating duplicates
+// because the contenteditable transcript element wasn't being wiped) and
+// gives the keeper lasting visual confirmation of the save.
+//
+// Restoration is triggered from two paths: this property setter (for
+// in-screen dirtying via typing/voice/buttons) and renderInspectHeader's
+// non-edit path (for navigation away and back).
+function _restoreSaveButtonFromTerminal() {
+  var btn = document.getElementById('save-inspection-btn');
+  if (!btn || !btn._inTerminalSavedState) return;
+  var orig = btn._origSavedState || { html: 'Save inspection &#x2713;', bg: '', color: '', disabled: false };
+  btn.innerHTML = orig.html;
+  btn.style.background = orig.bg;
+  btn.style.color = orig.color;
+  btn.disabled = !!orig.disabled;
+  btn.style.opacity = '';
+  btn._inTerminalSavedState = false;
+  delete btn._origSavedState;
+  if (window._hkDiag) console.log('[save-btn] restored from terminal state');
+}
+
+// Property setter on window._inspectionDirty — intercepts every direct write
+// from existing dirty-tracking code (transcript/notes input, status button
+// taps, voice transcript completion). On false→true transition, restores
+// the Save button if it's currently in terminal "Saved" state.
+//
+// Resilient to existing code that does `window._inspectionDirty = true` —
+// no refactor of those call sites required.
+(function installInspectionDirtySetter() {
+  try {
+    var _dirty = !!window._inspectionDirty;
+    Object.defineProperty(window, '_inspectionDirty', {
+      get: function() { return _dirty; },
+      set: function(v) {
+        var wasFalse = (_dirty === false);
+        _dirty = !!v;
+        if (_dirty && wasFalse) {
+          try { _restoreSaveButtonFromTerminal(); } catch(e) {}
+        }
+      },
+      configurable: true
+    });
+  } catch(e) {
+    // If defineProperty fails for any reason, fall back to the old direct-
+    // assignment behaviour. The duplicate-prevention then relies solely on
+    // the entry guard (Phase 1) — degraded but not broken.
+    console.warn('[saveInspection] dirty setter install failed', e);
+  }
+})();
+
 (function wireInspDirty() {
   function markIfInspect(src) {
     if (typeof currentScreen === 'undefined' || currentScreen !== 's-inspect') return;
@@ -8244,29 +8341,43 @@ function saveInspection(){
     showToast(toastMsg);
     if (window._hkDiag) console.log('[save] LOCAL SAVE COMMITTED · online=', online, '· photos=', photoCount);
 
-    // Flip the Save button to its terminal "saved" state. Replaces the
-    // "Saving…" spinner that's been visible since the user tapped.
+    // Flip the Save button to its terminal "saved" state and KEEP IT THERE.
+    // 27 April 2026 v2: previously the button auto-reverted to "Save inspection"
+    // after 2.5s — but the cleared form has stale state on the contenteditable
+    // transcript element which renderInspectHeader doesn't wipe, so a second
+    // tap created a duplicate inspection with the same content. Holding the
+    // button in disabled "Saved" state until the form genuinely dirties
+    // prevents the duplicate AND gives the keeper lasting visual confirmation
+    // that their inspection saved.
+    //
+    // Restoration is handled in two places:
+    //   1. The property setter on window._inspectionDirty — fires when the
+    //      user types, records voice, taps a status button, etc.
+    //   2. renderInspectHeader's non-edit reset path — fires when the user
+    //      navigates away and back, or switches hives.
     try {
       var _saveBtn = document.getElementById('save-inspection-btn');
       if (_saveBtn) {
-        _saveBtn.innerHTML = btnHtml;
+        // Add a timestamp to the button so the keeper knows exactly when
+        // their last save was committed.
+        var _now = new Date();
+        var _hh = String(_now.getHours()).padStart(2, '0');
+        var _mm = String(_now.getMinutes()).padStart(2, '0');
+        var _stampedHtml = btnHtml + ' · ' + _hh + ':' + _mm;
+        _saveBtn.innerHTML = _stampedHtml;
         _saveBtn.style.background = btnBg;
         _saveBtn.style.color = btnColor;
         _saveBtn.disabled = true;
         _saveBtn.style.opacity = '';
-        // Restore the button to its normal state after 2.5s so the user can
-        // start a fresh inspection. The lock is already released below, so
-        // re-enabling here doesn't risk a duplicate save during this window
-        // (button is disabled while terminal state is shown).
-        setTimeout(function(){
-          var origHtml  = _btnOrigState ? _btnOrigState.html  : 'Save inspection &#x2713;';
-          var origBg    = _btnOrigState ? _btnOrigState.bg    : '';
-          var origColor = _btnOrigState ? _btnOrigState.color : '';
-          _saveBtn.innerHTML = origHtml;
-          _saveBtn.style.background = origBg;
-          _saveBtn.style.color = origColor;
-          _saveBtn.disabled = false;
-        }, 2500);
+        // Stash original state on the button itself so the restore helper
+        // can put it back without needing closure access.
+        _saveBtn._inTerminalSavedState = true;
+        _saveBtn._origSavedState = _btnOrigState ? {
+          html:     _btnOrigState.html,
+          bg:       _btnOrigState.bg,
+          color:    _btnOrigState.color,
+          disabled: _btnOrigState.disabled
+        } : { html: 'Save inspection &#x2713;', bg: '', color: '', disabled: false };
       }
     } catch(e) { console.warn('save-btn confirm error', e); }
 
@@ -20008,6 +20119,11 @@ function setOfflineBanner(show) {
   if (el) el.style.display = show ? 'block' : 'none';
   var elLegacy = document.getElementById('offline-indicator');
   if (elLegacy) elLegacy.style.display = show ? 'block' : 'none';
+  // 27 April 2026 v2 — also refresh the inspect connection pill + voice
+  // button visual state so they track real connectivity (driven by Worker
+  // ping every 15s), not just navigator.onLine which is unreliable on
+  // mobile especially under airplane mode.
+  try { if (typeof updateInspectConnPill === 'function') updateInspectConnPill(); } catch(e) {}
 }
 
 async function checkRealConnectivity() {
