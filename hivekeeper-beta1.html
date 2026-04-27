@@ -16835,7 +16835,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13:34 27 April 2026 BST · Phase 3a — paywall reconciliation (matrix, trial start, labels)';
+var HIVEKEEPER_BUILD = '13:43 27 April 2026 BST · Phase 3a-fix — upgrade buttons work in app (Founder bypass + Stripe in Median)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -18993,15 +18993,12 @@ function setBillingPeriod(period) {
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
-  // Founding Beekeepers never pay
+  // 27 April 2026 Phase 3a-fix — Founder bypass uses alert() so the message
+  // is unmissable. Was a transient toast that disappeared in 2.5s and Chris
+  // (a Founder testing the upgrade flow) interpreted as "buttons don't work".
+  // Proper celebratory Founder modal will land in Phase 3b.
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
-    showToast('You are a Founding Beekeeper — HiveKeeper Pro is yours free, forever! 🐝');
-    return;
-  }
-
-  // Native app (iOS/Android) — route to IAP instead
-  if (window.median || /Median/i.test(navigator.userAgent)) {
-    showToast('Use the App Store or Play Store to manage your subscription');
+    alert('🐝 You\'re a Founding Beekeeper!\n\nHiveKeeper Pro is yours forever — no payment needed. Settings → Plan shows your status.\n\nThank you for being here from the start.');
     return;
   }
 
@@ -19011,8 +19008,22 @@ async function handleUpgrade(targetTier) {
     return;
   }
 
+  // 27 April 2026 Phase 3a-fix — Median (native app wrapper) used to early-
+  // return here with "Use the App Store or Play Store" toast. But Apple IAP
+  // and Google Play Billing aren't built yet (Phase 3d). Blocking Stripe
+  // meant upgrade was IMPOSSIBLE in the app. For beta we let Stripe
+  // checkout proceed in the webview — works fine. For production App
+  // Store / Play Store releases (Phase 3d) this branch will route to
+  // native billing per platform rules. Marker comment so we don't forget.
+  // FIXME(phase-3d): when IAP/Play Billing ship, route Median users to
+  // native billing instead of Stripe.
+
   var priceId = STRIPE_PRICES[targetTier] && STRIPE_PRICES[targetTier][_billingPeriod];
-  if (!priceId) { showToast('Something went wrong — please try again'); return; }
+  if (!priceId) {
+    showToast('Plan not configured — contact support@gethivekeeper.com');
+    console.error('[upgrade] No price ID for', targetTier, _billingPeriod, 'in', STRIPE_PRICES);
+    return;
+  }
 
   // Show loading state on button
   var btnId = 'btn-upgrade-' + targetTier;
@@ -19048,10 +19059,10 @@ async function handleUpgrade(targetTier) {
 
 async function openCustomerPortal() {
   if (!_currentUser) { showToast('Please sign in first'); return; }
-  if (window.median || /Median/i.test(navigator.userAgent)) {
-    showToast('Manage your subscription via the App Store or Play Store');
-    return;
-  }
+  // 27 April 2026 Phase 3a-fix — let Stripe billing portal proceed in
+  // Median webview during beta. Same rationale as handleUpgrade: native
+  // billing portals (App Store subscriptions, Play Store subscriptions)
+  // ship in Phase 3d. FIXME(phase-3d): route to native billing portal.
   showToast('Opening billing portal...');
   try {
     var resp = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/create-portal-session', {
