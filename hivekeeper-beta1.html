@@ -564,6 +564,25 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 @media (prefers-reduced-motion: reduce) {
   .ah-banner-flash { animation: none; border-width: 3px; }
 }
+
+/* Inline spinner for Save buttons — used during in-flight saves so the
+   user gets immediate visual feedback that their tap registered.
+   27 April 2026 — Pattern 1 (save acknowledgement) fix. */
+@keyframes hk-spin { to { transform: rotate(360deg); } }
+.hk-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: hk-spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hk-spinner { animation: none; border-top-color: currentColor; opacity: 0.6; }
+}
 .ah-section-head { font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: .08em; margin: 14px 0 8px; }
 .ah-sighting { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; gap: 12px; align-items: center; }
 .ah-sighting:last-child { border-bottom: none; }
@@ -1293,7 +1312,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 18:34 24 April 2026 BST · User-friendly sync error toasts. Raw Postgres error text replaced with reassuring language (your data is already saved locally; the queue retries automatically). Protective for weekend Founder inspections.</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 27 April 2026 BST · Phase 1 — offline-first inspection save + state machine. Save button gives immediate "Saving…" feedback on tap. Confirmation fires the moment local save commits, not after photo upload. Offline-aware: when offline, message says "Saved on this device — voice and notes will sync when online" with a honey-amber button. When online: green "Saved" with "Voice and notes saved" toast. Entry guard prevents the duplicate-records-from-rapid-tapping pattern reported by Davey and Kevin.</div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -7949,6 +7968,55 @@ function extractNextInspectionNotes(text) {
 }
 
 function saveInspection(){
+  // ─── ENTRY GUARD (27 April 2026 — Pattern 1 trust foundation fix) ───
+  // Without this, when feedback was only shown at the END of the save (after
+  // photo uploads completed), users with poor signal pressed Save again to
+  // be sure — creating duplicate inspections (Davey 2 records, swarms 2-5).
+  // Mirror of _saveNewHiveInProgress lock at saveNewHive(), but released on
+  // terminal state (success or failure) rather than a fixed timer, because
+  // photo uploads can take seconds.
+  if (window._saveInspectionInProgress) {
+    console.warn('[saveInspection] ignoring duplicate call — already in progress');
+    return;
+  }
+  window._saveInspectionInProgress = true;
+
+  // Capture the Save button's original state and immediately flip it to
+  // "Saving…" with a spinner. The user has tapped — give them feedback NOW,
+  // not after the local save and photo uploads complete.
+  var _btnAtStart = document.getElementById('save-inspection-btn');
+  var _btnOrigState = null;
+  if (_btnAtStart) {
+    _btnOrigState = {
+      html: _btnAtStart.innerHTML,
+      bg: _btnAtStart.style.background,
+      color: _btnAtStart.style.color,
+      disabled: _btnAtStart.disabled
+    };
+    _btnAtStart.innerHTML = '<span class="hk-spinner"></span>Saving…';
+    _btnAtStart.disabled = true;
+    _btnAtStart.style.opacity = '0.85';
+  }
+
+  // Always called exactly once per saveInspection call. Releases the entry
+  // guard. On failure, restores the original button so the user can retry.
+  // On success, the button is left in its terminal "Saved" state by the
+  // _showInspectionSaved closure (defined further down) and resets itself
+  // after a 2.5s display.
+  function _releaseSaveLock(success) {
+    window._saveInspectionInProgress = false;
+    if (success) return;
+    try {
+      if (_btnAtStart && _btnOrigState) {
+        _btnAtStart.innerHTML = _btnOrigState.html;
+        _btnAtStart.style.background = _btnOrigState.bg;
+        _btnAtStart.style.color = _btnOrigState.color;
+        _btnAtStart.disabled = !!_btnOrigState.disabled;
+        _btnAtStart.style.opacity = '';
+      }
+    } catch(e) { console.warn('[saveInspection] button restore failed', e); }
+  }
+
   _hkDiagLog('[DIAG save] saveInspection CALLED · _editingInspId=', window._editingInspId, '· _inspectionDirty=', window._inspectionDirty);
   try {
   if (window._hkDiag) console.log('[save] entry · currentHiveId=', currentHiveId);
@@ -7966,15 +8034,18 @@ function saveInspection(){
     if (window._hkDiag) console.log('[save] still no hive selected · hives loaded=', hives.length);
     if (!hives.length) {
       showToast('Please add a hive in your Apiary first');
+      _releaseSaveLock(false);
       return;
     }
     showInspectionHivePicker();
+    _releaseSaveLock(false);
     return;
   }
   const hive=loadHives().find(h=>h.id===currentHiveId);
   if(!hive) {
     if (window._hkDiag) console.log('[save] ABORT — currentHiveId', currentHiveId, 'does not match any loaded hive');
     showToast('⚠️ Save failed — hive not found (try re-selecting)');
+    _releaseSaveLock(false);
     return;
   }
   _hkDiagLog('[DIAG save] proceeding · hive=', hive.name, '· editingInspId=', window._editingInspId, '· _isEdit (computed below)...');
@@ -8135,6 +8206,95 @@ function saveInspection(){
     saveHives(hives);
   }
   // Toast handled by _finaliseAndNavigate
+  // ─── IMMEDIATE LOCAL-SAVE CONFIRMATION (27 April 2026 — Pattern 1 fix) ───
+  // The voice transcript and typed notes are now committed to localStorage
+  // (line 8179 above) and the hive fields are updated. Show the user the
+  // confirmation NOW — don't wait for photo uploads to complete. On poor
+  // signal that wait could be tens of seconds, during which Davey/Kevin
+  // would press Save again and create duplicates.
+  //
+  // The message is offline-aware: when online, we say "saved"; when offline,
+  // we say "saved on this device — will sync when you reconnect" so the
+  // beekeeper understands their record IS safe even though it hasn't yet
+  // reached the cloud. Both cases explicitly name the voice and notes as
+  // saved so there's no ambiguity about what's been committed.
+  function _showInspectionSaved(hiveObj, photoCount, online) {
+    // Compose offline-aware messaging. The explicit ask from the founder:
+    // beekeepers must understand when offline AND see a clear confirmation
+    // that the recording and notes have saved.
+    var hiveName = (hiveObj && hiveObj.name) ? hiveObj.name : 'Hive';
+    var photoSuffix = '';
+    if (photoCount > 0) {
+      photoSuffix = online
+        ? ' · ' + photoCount + ' photo' + (photoCount > 1 ? 's' : '') + ' uploading'
+        : ' · ' + photoCount + ' photo' + (photoCount > 1 ? 's' : '') + ' will upload when online';
+    }
+    var toastMsg, btnHtml, btnBg, btnColor;
+    if (online) {
+      toastMsg = '✓ Voice and notes saved — ' + hiveName + photoSuffix;
+      btnHtml  = '&#x2713; Saved';
+      btnBg    = '#1F5128';   // forest green = synced/cloud-safe
+      btnColor = '#E8F5E9';
+    } else {
+      toastMsg = '📵 Saved on this device — voice and notes will sync when online' + photoSuffix;
+      btnHtml  = '&#x2713; Saved on this device';
+      btnBg    = '#B8761A';   // honey amber = local-only, not alarming
+      btnColor = '#FFFFFF';
+    }
+    showToast(toastMsg);
+    if (window._hkDiag) console.log('[save] LOCAL SAVE COMMITTED · online=', online, '· photos=', photoCount);
+
+    // Flip the Save button to its terminal "saved" state. Replaces the
+    // "Saving…" spinner that's been visible since the user tapped.
+    try {
+      var _saveBtn = document.getElementById('save-inspection-btn');
+      if (_saveBtn) {
+        _saveBtn.innerHTML = btnHtml;
+        _saveBtn.style.background = btnBg;
+        _saveBtn.style.color = btnColor;
+        _saveBtn.disabled = true;
+        _saveBtn.style.opacity = '';
+        // Restore the button to its normal state after 2.5s so the user can
+        // start a fresh inspection. The lock is already released below, so
+        // re-enabling here doesn't risk a duplicate save during this window
+        // (button is disabled while terminal state is shown).
+        setTimeout(function(){
+          var origHtml  = _btnOrigState ? _btnOrigState.html  : 'Save inspection &#x2713;';
+          var origBg    = _btnOrigState ? _btnOrigState.bg    : '';
+          var origColor = _btnOrigState ? _btnOrigState.color : '';
+          _saveBtn.innerHTML = origHtml;
+          _saveBtn.style.background = origBg;
+          _saveBtn.style.color = origColor;
+          _saveBtn.disabled = false;
+        }, 2500);
+      }
+    } catch(e) { console.warn('save-btn confirm error', e); }
+
+    // Mark the save as completed — clears unsaved-work guard.
+    window._inspectionJustSaved = true;
+    window._inspectionDirty = false;
+
+    // Refresh the home stats so hive counts are current if the user goes home.
+    try { renderDashboard(); } catch(e) {}
+
+    // Reset the inspection form for a fresh inspection. Delay 400ms so the
+    // toast is visible before the form clears.
+    setTimeout(function(){
+      try {
+        if (typeof renderInspectHeader === 'function') renderInspectHeader();
+      } catch(e) { console.warn('Post-save reset error:', e); }
+    }, 400);
+
+    // Release the entry guard — terminal state reached. Photo uploads
+    // continue in the background but a fresh save is now permitted.
+    _releaseSaveLock(true);
+  }
+
+  // Capture photo count for the confirmation message — this needs to happen
+  // before _photosAtSave is built below (which mutates the photo objects).
+  var _photoCountAtSave = (currentInspData.photos || []).length;
+  _showInspectionSaved(hive, _photoCountAtSave, isOnline());
+
   // Wait for all photo uploads to complete before navigating
   // Collect all upload promises and await them before saving URLs
   var _photosAtSave = (currentInspData.photos || []).slice();
@@ -8171,6 +8331,12 @@ function saveInspection(){
   var _uploadPromises = _resolveUrlPromises;
 
   function _saveUrlsAndNavigate(resolvedUrls) {
+    // BACKGROUND PHOTO ATTACHMENT (27 April 2026 — Pattern 1 fix):
+    // The user-visible save confirmation was already shown by
+    // _showInspectionSaved when the local save committed, so this function
+    // is now quiet by default. Its only job: attach uploaded photo URLs to
+    // the saved inspection record and (online) post a small follow-up
+    // toast so the user knows the photos reached the cloud.
     var uploadedUrls = (resolvedUrls || _photosAtSave.map(function(p){ return p.url; })).filter(Boolean);
     var photoLabels = _photosAtSave.map(function(p){ return p.label || ''; });
     if (uploadedUrls.length) {
@@ -8182,60 +8348,21 @@ function saveInspection(){
         saveInspections(allInsp);
         pushInspections().catch(function(){});
       }
-    }
-    var photoMsg = uploadedUrls.length ? ' · ' + uploadedUrls.length + ' photo' + (uploadedUrls.length > 1 ? 's' : '') + ' ☁️' : '';
-    // Stay on inspection screen — tester feedback Apr 21. Previously navigated
-    // to Hive Detail, which broke field workflow (user often wants to add a
-    // photo or tweak notes immediately after save).
-    if (window._hkDiag) console.log('[save] SUCCESS · toasting · uploadedUrls=', uploadedUrls.length);
-    showToast('✓ Inspection saved — ' + hive.name + photoMsg);
-    // Visible confirmation on the Save button itself — toasts alone are too
-    // easy to miss on a phone in the field (sun glare, short duration).
-    // Button flips to "Inspection saved ✓" in a darker green for 2 seconds,
-    // then resets to its normal state. Gives the beekeeper unambiguous
-    // feedback exactly where their finger just was.
-    try {
-      var _saveBtn = document.getElementById('save-inspection-btn');
-      if (_saveBtn) {
-        var _origText = _saveBtn.innerHTML;
-        var _origBg = _saveBtn.style.background;
-        var _origColor = _saveBtn.style.color;
-        _saveBtn.innerHTML = '&#x2713; Inspection saved';
-        _saveBtn.style.background = '#1F5128';
-        _saveBtn.style.color = '#E8F5E9';
-        _saveBtn.disabled = true;
-        setTimeout(function(){
-          _saveBtn.innerHTML = _origText || 'Save inspection &#x2713;';
-          _saveBtn.style.background = _origBg;
-          _saveBtn.style.color = _origColor;
-          _saveBtn.disabled = false;
-        }, 2000);
+      // Quiet follow-up toast — only when online AND photos actually
+      // uploaded. Skip if offline so we don't override the offline messaging
+      // (the photos will upload via the queue when connectivity returns).
+      if (isOnline()) {
+        showToast('☁️ ' + uploadedUrls.length + ' photo' + (uploadedUrls.length > 1 ? 's' : '') + ' uploaded');
       }
-    } catch(e) { console.warn('save-btn confirm error', e); }
-    // Mark the save as completed — clears unsaved-work guard, lets the
-    // beekeeper continue or navigate away cleanly.
-    window._inspectionJustSaved = true;
-    window._inspectionDirty = false;
-    // Update home-screen stats immediately so hive counts reflect this save
-    // if the user navigates home next. renderDashboard is cheap.
-    try { renderDashboard(); } catch(e) {}
-    // Reset the inspection form so user can start a fresh inspection
-    // (or re-record additional notes for the same hive) without navigating.
-    // Delay 400ms so the toast is visible before the form visibly clears.
-    setTimeout(function(){
-      try {
-        // Re-render inspect header to reset all state (transcript, notes, chips, status buttons)
-        if (typeof renderInspectHeader === 'function') renderInspectHeader();
-      } catch(e) { console.warn('Post-save reset error:', e); }
-    }, 400);
+    }
+    if (window._hkDiag) console.log('[save] photo attachment complete · uploadedUrls=', uploadedUrls.length);
   }
 
   if (_uploadPromises.length > 0) {
-    showToast('⏫ Uploading photos…');
     Promise.all(_uploadPromises).then(function(resolvedUrls){
       _saveUrlsAndNavigate(resolvedUrls);
     }).catch(function(){
-      _saveUrlsAndNavigate(); // navigate even if some fail; falls back to p.url
+      _saveUrlsAndNavigate(); // photos still attached via fallback p.url
     });
   } else {
     _saveUrlsAndNavigate();
@@ -8244,7 +8371,8 @@ function saveInspection(){
   // Delayed viewHive removed Apr 21 — tester wants to stay on inspection
   } catch(e) {
     console.error('saveInspection error:', e);
-    showToast('Error saving — ' + e.message);
+    showToast('⚠️ Error saving — ' + e.message);
+    _releaseSaveLock(false);
   }
 }
 
