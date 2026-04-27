@@ -16830,7 +16830,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:35 27 April 2026 BST · Phase 2f — sign-out path fixed + bulk clear-everything button';
+var HIVEKEEPER_BUILD = '12:52 27 April 2026 BST · Phase 2g — break the resurrection loop (dismissed records stay dismissed)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -17464,7 +17464,12 @@ async function pullFromSupabase() {
         // the record of what's broken, making the new Sync Status panel
         // useless after any pull. Same bug class as the 25 April inspection
         // loss — keysToKeep miss → silent data wipe on pull.
-        'hk_failed_syncs'];
+        'hk_failed_syncs',
+        // 27 April 2026 — Phase 2g: dismissed-record set. (table, id) pairs
+        // the keeper has given up on. Push functions and queue check this
+        // to skip resurrection. Without persistence, the resurrection loop
+        // returns after every pull cycle.
+        'hk_dismissed_sync_keys'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -20504,6 +20509,15 @@ window.addEventListener('focus', checkRealConnectivity);
 
 function queueOfflineSave(table, data) {
   try {
+    // 27 April 2026 Phase 2g — short-circuit if dismissed. Push functions
+    // call this on error; without the check, a dismissed record gets
+    // re-enqueued, fails again on next flush, gets re-dead-lettered (also
+    // skipped now), but the queue keeps growing on each save. The skip-on-
+    // enqueue prevents the queue from growing.
+    if (data && data.id && typeof isDismissedSync === 'function' && isDismissedSync(table, data.id)) {
+      if (window._hkDiag) console.log('[queueOfflineSave] skip dismissed:', table, data.id);
+      return;
+    }
     var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
     // Dedupe: if the same table+id is already queued, replace the entry
     // (most recent local write is authoritative — avoid pushing stale
@@ -20631,6 +20645,16 @@ function _describeFailedSyncItem(table, data) {
 // record has already been recorded as failed, update the entry rather than
 // duplicating it.
 function addToFailedSyncs(item, errorMsg) {
+  // 27 April 2026 Phase 2g — short-circuit if the keeper has explicitly
+  // dismissed this (table, id). Without this check, dismissed records
+  // resurrect every sync cycle: dead-letter → user dismisses → push retries
+  // → fails → re-enters dead-letter → user dismisses again → loop.
+  try {
+    if (item && item.table && item.data && item.data.id && isDismissedSync(item.table, item.data.id)) {
+      if (window._hkDiag) console.log('[failed-syncs] skip dismissed:', item.table, item.data.id);
+      return;
+    }
+  } catch(e) {}
   var failed = loadFailedSyncs();
   var existing = failed.find(function(f){
     return f.table === item.table && f.data && item.data && f.data.id === item.data.id;
@@ -20694,6 +20718,14 @@ function dismissFailedSync(failedSyncEntryId) {
   var failed = loadFailedSyncs();
   var idx = failed.findIndex(function(f){ return f.id === failedSyncEntryId; });
   if (idx === -1) return false;
+  // 27 April 2026 Phase 2g — capture the (table, id) into the permanent
+  // dismissed set so the next push doesn't resurrect it.
+  try {
+    var entry = failed[idx];
+    if (entry && entry.table && entry.data && entry.data.id) {
+      addToDismissedSync(entry.table, entry.data.id);
+    }
+  } catch(e) {}
   failed.splice(idx, 1);
   saveFailedSyncs(failed);
   return true;
@@ -20705,8 +20737,73 @@ function dismissFailedSync(failedSyncEntryId) {
 function dismissAllFailedSyncs() {
   var failed = loadFailedSyncs();
   var n = failed.length;
+  // 27 April 2026 Phase 2g — also add to dismissed set so they don't
+  // resurrect on the next sync cycle.
+  try {
+    failed.forEach(function(f) {
+      if (f.table && f.data && f.data.id) addToDismissedSync(f.table, f.data.id);
+    });
+  } catch(e) { console.warn('[dismiss-all] add to dismissed-set', e); }
   saveFailedSyncs([]);
   return n;
+}
+
+// ─── DISMISSED SYNC KEYS (27 April 2026 — Phase 2g) ──────────────────
+// Tracks (table, id) pairs the keeper has explicitly given up on. Stored
+// as JSON array of "table:id" strings. Push functions and queue capture
+// check this set to short-circuit the resurrection loop where the same
+// row keeps getting re-enqueued every sync cycle, dead-lettered, dismissed,
+// and resurrected from local data on the next push.
+//
+// MUST be in keysToKeep — without persistence this defeats the purpose.
+
+function loadDismissedSyncKeys() {
+  try { return JSON.parse(localStorage.getItem('hk_dismissed_sync_keys') || '[]'); }
+  catch(e) { console.warn('[dismissed-keys] load parse', e); return []; }
+}
+
+function saveDismissedSyncKeys(arr) {
+  try { localStorage.setItem('hk_dismissed_sync_keys', JSON.stringify(arr)); }
+  catch(e) { console.warn('[dismissed-keys] save', e); }
+}
+
+function _dismissKey(table, id) { return (table || '') + ':' + (id || ''); }
+
+function addToDismissedSync(table, id) {
+  if (!table || !id) return;
+  var keys = loadDismissedSyncKeys();
+  var k = _dismissKey(table, id);
+  if (keys.indexOf(k) === -1) {
+    keys.push(k);
+    // Cap the list so it doesn't grow unbounded over years of use. 5000
+    // entries is plenty for any individual keeper. FIFO eviction.
+    if (keys.length > 5000) keys = keys.slice(keys.length - 5000);
+    saveDismissedSyncKeys(keys);
+  }
+}
+
+function isDismissedSync(table, id) {
+  if (!table || !id) return false;
+  var keys = loadDismissedSyncKeys();
+  return keys.indexOf(_dismissKey(table, id)) !== -1;
+}
+
+// Bulk-add a list of (table, id) pairs. Used by Clear-everything and
+// Dismiss-all so we batch the localStorage write.
+function addManyToDismissedSync(pairs) {
+  if (!pairs || !pairs.length) return;
+  var keys = loadDismissedSyncKeys();
+  var existing = {};
+  keys.forEach(function(k) { existing[k] = true; });
+  pairs.forEach(function(p) {
+    var k = _dismissKey(p.table, p.id);
+    if (!existing[k]) {
+      keys.push(k);
+      existing[k] = true;
+    }
+  });
+  if (keys.length > 5000) keys = keys.slice(keys.length - 5000);
+  saveDismissedSyncKeys(keys);
 }
 
 // ─── INDEXEDDB AUDIO STORE (27 April 2026 — Phase 2a) ─────────────────
@@ -21985,6 +22082,20 @@ function syncStatusClearEverything() {
   }
 
   // Wipe both stores
+  // 27 April 2026 Phase 2g — capture (table, id) of everything we're
+  // wiping into the dismissed set so resurrection is prevented.
+  try {
+    var pairs = [];
+    var allFailed = loadFailedSyncs();
+    allFailed.forEach(function(f) {
+      if (f.table && f.data && f.data.id) pairs.push({ table: f.table, id: f.data.id });
+    });
+    var allQueue = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+    allQueue.forEach(function(q) {
+      if (q.table && q.data && q.data.id) pairs.push({ table: q.table, id: q.data.id });
+    });
+    addManyToDismissedSync(pairs);
+  } catch(e) { console.warn('[clear-all] capture dismissed', e); }
   try { saveFailedSyncs([]); } catch(e) { console.warn('[clear-all] failed-syncs', e); }
   try { localStorage.setItem('hk_offline_queue', JSON.stringify([])); } catch(e) { console.warn('[clear-all] queue', e); }
 
