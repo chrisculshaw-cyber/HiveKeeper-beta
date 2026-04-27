@@ -16843,7 +16843,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13:54 27 April 2026 BST · Phase 3b — trial chip wired, founder badge in header, founder modal, manage-sub in app';
+var HIVEKEEPER_BUILD = '14:04 27 April 2026 BST · Phase 3c — annual upsell intercept (save £7.89 Pro / £39.89 Commercial)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19040,6 +19040,40 @@ async function handleUpgrade(targetTier) {
     showToast('Plan not configured — contact support@gethivekeeper.com');
     console.error('[upgrade] No price ID for', targetTier, _billingPeriod, 'in', STRIPE_PRICES);
     return;
+  }
+
+  // 27 April 2026 Phase 3c — annual upsell intercept. When user taps
+  // Upgrade with monthly selected, ask if they'd like to save by switching
+  // to annual. Annual savings: Pro £7.89/yr, Commercial £39.89/yr — real
+  // money worth highlighting. Skips the prompt if user already chose
+  // yearly via the toggle (no need to convince them again). Native confirm
+  // is consistent with other guards in this app (sign-out, dismiss-all).
+  if (_billingPeriod === 'monthly' && (targetTier === 'pro' || targetTier === 'commercial')) {
+    var savings, monthlyPrice, yearlyPrice;
+    if (targetTier === 'pro') {
+      savings = '£7.89';   monthlyPrice = '£3.99/month';   yearlyPrice = '£39.99/year';
+    } else {
+      savings = '£39.89';  monthlyPrice = '£19.99/month';  yearlyPrice = '£199.99/year';
+    }
+    var msg = '💡 Save ' + savings + ' with annual billing\n\n'
+      + 'Annual: ' + yearlyPrice + ' — saves ' + savings + ' vs paying monthly\n'
+      + 'Monthly: ' + monthlyPrice + '\n\n'
+      + 'OK = switch to annual and save\n'
+      + 'Cancel = continue with monthly';
+    var wantsAnnual = confirm(msg);
+    if (wantsAnnual) {
+      _billingPeriod = 'yearly';
+      // Refresh the toggle UI so if the user returns from a cancelled
+      // checkout, the pricing modal shows yearly as selected.
+      if (typeof setBillingPeriod === 'function') setBillingPeriod('yearly');
+      // Re-fetch the price ID for the new period
+      priceId = STRIPE_PRICES[targetTier] && STRIPE_PRICES[targetTier][_billingPeriod];
+      if (!priceId) {
+        showToast('Plan not configured — contact support@gethivekeeper.com');
+        return;
+      }
+    }
+    // If !wantsAnnual: stay with monthly, priceId already set above
   }
 
   // Show loading state on button
