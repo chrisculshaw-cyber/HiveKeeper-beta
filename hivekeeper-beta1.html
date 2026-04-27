@@ -1316,15 +1316,16 @@ input[type="checkbox"].hk-chk:checked::after {
     <span id="auth-build-stamp-text">11:48 27 April 2026 BST · Phase 2b</span>
   </div>
 
-  <!-- BETA STATUS INFO BLOCK (24 April 2026)
-       Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
-       Styled to match the auth overlay (muted white-on-forest-green, compact).
-       Not dismissible for now — can add dismiss later once launched. -->
+  <!-- LAUNCH STATUS INFO BLOCK (27 April 2026 — Phase 4d-fix)
+       Updated from beta-coming-soon to live-on-App-Store after iOS launch.
+       Android still pending native build, so home screen install is the
+       interim path for Android users. Honest about ongoing polish rather
+       than performing "fully launched". -->
   <div id="auth-beta-info" style="width:100%;max-width:340px;margin-bottom:24px;padding:14px 16px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-family:'Syne',sans-serif;font-size:12px;line-height:1.55;">
-    <div style="font-weight:800;color:var(--honey);letter-spacing:.1em;text-transform:uppercase;font-size:10px;margin-bottom:6px;">Currently in beta</div>
-    <div style="margin-bottom:6px;">HiveKeeper is being used daily by real beekeepers managing real hives — but expect the odd rough edge while we polish for launch.</div>
-    <div style="margin-bottom:6px;">Native iOS and Android apps arriving <strong style="color:white;">May 2026</strong>. For now, add this page to your home screen for a native-like experience.</div>
-    <div style="color:rgba(255,255,255,.6);">Spot something broken? Email <a href="mailto:privacy@gethivekeeper.com" style="color:var(--honey);text-decoration:none;border-bottom:1px dotted rgba(228,163,58,.5);">privacy@gethivekeeper.com</a></div>
+    <div style="font-weight:800;color:var(--honey);letter-spacing:.1em;text-transform:uppercase;font-size:10px;margin-bottom:6px;">Now on the App Store</div>
+    <div style="margin-bottom:6px;">HiveKeeper is being used daily by real UK beekeepers — and now live for iPhone via the App Store.</div>
+    <div style="margin-bottom:6px;"><strong style="color:white;">iPhone:</strong> search "HiveKeeper" on the App Store. <strong style="color:white;">Android:</strong> a native app is on the way — for now, add this page to your home screen for a native-like experience.</div>
+    <div style="color:rgba(255,255,255,.6);">Still polishing — spot something broken? Email <a href="mailto:privacy@gethivekeeper.com" style="color:var(--honey);text-decoration:none;border-bottom:1px dotted rgba(228,163,58,.5);">privacy@gethivekeeper.com</a></div>
   </div>
 
   <!-- Tabs -->
@@ -1526,7 +1527,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <!-- ASIAN HORNET WATCH (27 April 2026 Phase 4d — dashboard format) -->
     <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);overflow:hidden;border:1px solid var(--wax);box-shadow:var(--shadow);">
-      <div class="ah-header" onclick="toggleAHPanel()" style="padding:14px 16px;cursor:pointer;">
+      <div class="ah-header" onclick="toggleAHPanel()" style="padding:14px 16px;cursor:pointer;background:transparent;">
         <div style="display:flex;align-items:center;gap:14px;">
           <div class="ah-header-icon" style="font-size:42px;line-height:1;flex-shrink:0;">🐝</div>
           <div style="flex:1;min-width:0;">
@@ -16983,7 +16984,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:19 27 April 2026 BST · Phase 4d — dashboard format for AH Watch + This month card';
+var HIVEKEEPER_BUILD = '16:27 27 April 2026 BST · Phase 4d-fix — AH header readability + auth screen App Store update';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
