@@ -8266,7 +8266,19 @@ function saveInspection(){
     // Timestamp when nextInspectionNotes was marked done (null = still open).
     // Allows the Hive Detail chip to render a "Mark done" button, and the
     // v2 Pending Tasks report to filter out completed items.
-    nextInspectionNotesDoneAt: _isEdit ? (_existingInsp.nextInspectionNotesDoneAt || null) : null
+    nextInspectionNotesDoneAt: _isEdit ? (_existingInsp.nextInspectionNotesDoneAt || null) : null,
+    // 27 April 2026 Phase 2c — preserve pending voice memo reference.
+    // Set by the offline recording handler in stopRecording when the audio
+    // blob is stored to IndexedDB. The background processor walks
+    // localStorage looking for inspections with this field set, so it MUST
+    // be persisted on save (Phase 2a was setting it on currentInspData but
+    // saveInspection's explicit field list silently dropped it). On edit:
+    // preserve the existing record's value rather than re-reading from
+    // currentInspData, which may have been cleared by the processor between
+    // edit-open and edit-save.
+    pendingVoiceMemoId: _isEdit
+      ? (_existingInsp.pendingVoiceMemoId || null)
+      : (currentInspData.pendingVoiceMemoId || null)
   };
   let s=0;
   if(insp.queenSeen) s+=20; else s+=5;
@@ -16781,7 +16793,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:48 27 April 2026 BST · Phase 2b — auth overflow fix, save button regression, demo data filter, default apiary uniqueness';
+var HIVEKEEPER_BUILD = '12:07 27 April 2026 BST · Phase 2c — voice memo persistence + orphan recovery';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20790,11 +20802,83 @@ function generateAudioId() {
 
 var _voiceProcessorInProgress = false;
 
+// 27 April 2026 Phase 2c — ONE-SHOT RECOVERY for Phase 2a orphans.
+// Phase 2a had a bug where the inspection's pendingVoiceMemoId field
+// wasn't persisted on save (saveInspection's explicit field list dropped
+// it). Result: audio blob in IndexedDB, placeholder text in
+// inspection.notes, no link between them. This sweep re-links them by
+// matching hive_id + recording time. Runs at the start of every processor
+// pass so we recover incrementally rather than risking one big sweep.
+async function _recoverOrphanedVoiceMemos() {
+  try {
+    var pending = await listPendingAudioMetadata();
+    if (!pending.length) return { linked: 0 };
+
+    var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+    var placeholderRegex = /\[Voice memo recorded (\d{2}:\d{2})\s+[—-]\s+will transcribe when back online\]/;
+
+    // Find inspections that have the placeholder text but no pendingVoiceMemoId.
+    var orphanInspections = [];
+    inspections.forEach(function(insp, idx) {
+      if (insp.pendingVoiceMemoId) return; // already linked
+      var notes = insp.notes || '';
+      var transcript = insp.transcript || '';
+      var match = placeholderRegex.exec(notes) || placeholderRegex.exec(transcript);
+      if (match) {
+        orphanInspections.push({ insp: insp, idx: idx, placeholderTime: match[1], hiveId: insp.hiveId });
+      }
+    });
+    if (!orphanInspections.length) return { linked: 0 };
+
+    // Build candidate map: HH:MM time → array of pending audio entries
+    var pendingByTime = {};
+    pending.forEach(function(p) {
+      var ts = (p.metadata && p.metadata.recordedAt) || p.storedAt;
+      if (!ts) return;
+      var d = new Date(ts);
+      var hhmm = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+      if (!pendingByTime[hhmm]) pendingByTime[hhmm] = [];
+      pendingByTime[hhmm].push(p);
+    });
+
+    var linked = 0;
+    var alreadyClaimed = {}; // audioId → true, prevents two orphans claiming same blob
+    orphanInspections.forEach(function(orphan) {
+      var candidates = pendingByTime[orphan.placeholderTime] || [];
+      // Prefer an exact hive_id match if available
+      var match = candidates.find(function(c) {
+        return !alreadyClaimed[c.id] && c.metadata && c.metadata.hiveId === orphan.hiveId;
+      });
+      // Fallback: any unclaimed candidate at the same time (e.g. metadata.hiveId may have been missing)
+      if (!match) {
+        match = candidates.find(function(c) { return !alreadyClaimed[c.id]; });
+      }
+      if (match) {
+        inspections[orphan.idx].pendingVoiceMemoId = match.id;
+        alreadyClaimed[match.id] = true;
+        linked++;
+        if (window._hkDiag) console.log('[voice-recovery] linked', match.id, '↔ inspection', orphan.insp.id, 'at', orphan.placeholderTime);
+      }
+    });
+
+    if (linked > 0) {
+      localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
+      if (window._hkDiag) console.log('[voice-recovery] linked ' + linked + ' orphan voice memos');
+    }
+    return { linked: linked };
+  } catch(e) {
+    console.warn('[voice-recovery] sweep failed', e);
+    return { linked: 0, error: e.message };
+  }
+}
+
 async function processQueuedVoiceMemos() {
   if (_voiceProcessorInProgress) return { skipped: 'already-running' };
   if (!isOnline()) return { skipped: 'offline' };
 
   _voiceProcessorInProgress = true;
+  // Recovery sweep first — links any Phase 2a orphans before processing.
+  try { await _recoverOrphanedVoiceMemos(); } catch(e) { console.warn('[voice-recovery]', e); }
   var processed = 0, failed = 0, lostBlobs = 0;
   try {
     var pending = await listPendingAudioMetadata();
@@ -20874,8 +20958,15 @@ async function processQueuedVoiceMemos() {
 }
 
 // Replace the [Voice memo recorded HH:MM — will transcribe...] placeholder
-// in the relevant inspection's transcript field with the actual text. Saves
+// in the relevant inspection's notes field with the actual text. Saves
 // the inspection, which auto-pushes to Supabase.
+//
+// 27 April 2026 Phase 2c: operates on `notes` field, not `transcript`.
+// The 23 April architectural change merged transcript into notes ("one
+// source of truth") — transcript is empty after save. Phase 2a's processor
+// was searching transcript for the placeholder and finding nothing, leaving
+// the placeholder text permanent and the audio blob orphaned. We now
+// search notes (and fall back to transcript defensively).
 async function _replaceVoiceMemoPlaceholder(audioId, replacementText) {
   try {
     var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
@@ -20886,28 +20977,45 @@ async function _replaceVoiceMemoPlaceholder(audioId, replacementText) {
       return;
     }
     var insp = inspections[idx];
-    var transcript = insp.transcript || '';
-    // Find and replace the placeholder. Pattern matches our generator's output:
+    // Pattern matches our generator's output:
     // "[Voice memo recorded HH:MM — will transcribe when back online]"
     var placeholderRegex = /\[Voice memo recorded \d{2}:\d{2}\s+[—-]\s+will transcribe when back online\]/;
-    if (placeholderRegex.test(transcript)) {
-      transcript = transcript.replace(placeholderRegex, replacementText);
-    } else {
-      // Placeholder not found — append the replacement instead (defensive)
-      transcript = (transcript + '\n\n' + replacementText).trim();
+    var notes = insp.notes || '';
+    var transcript = insp.transcript || '';
+    var replaced = false;
+    if (placeholderRegex.test(notes)) {
+      insp.notes = notes.replace(placeholderRegex, replacementText);
+      replaced = true;
+    } else if (placeholderRegex.test(transcript)) {
+      // Defensive: in case any record was written with transcript populated.
+      insp.transcript = transcript.replace(placeholderRegex, replacementText);
+      replaced = true;
     }
-    insp.transcript = transcript;
+    if (!replaced) {
+      // Placeholder not found in either field — append the replacement to
+      // notes so the transcribed text isn't lost. This is a defensive path
+      // for records that drifted somehow.
+      insp.notes = (notes + '\n\n' + replacementText).trim();
+    }
     insp.pendingVoiceMemoId = null;
     inspections[idx] = insp;
     localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
-    // Trigger a push so the cloud gets the new transcript
+    // Trigger a push so the cloud gets the new notes
     try { if (typeof pushInspections === 'function') await pushInspections(); } catch(e) {}
     // If the keeper happens to be looking at this inspection right now,
-    // refresh the visible transcript.
+    // refresh the visible notes / transcript field. The transcript-text
+    // element is the visible read-only contenteditable for the AI transcript
+    // (Phase 2c displays the placeholder there too).
     if (typeof currentInspData !== 'undefined' && currentInspData && currentInspData.pendingVoiceMemoId === audioId) {
-      currentInspData.transcript = transcript;
+      currentInspData.notes = insp.notes;
       currentInspData.pendingVoiceMemoId = null;
-      try { if (typeof showTranscript === 'function') showTranscript(transcript); } catch(e) {}
+      try {
+        // Update the visible transcript-text display if it shows the placeholder
+        var tEl = document.getElementById('transcript-text');
+        if (tEl && placeholderRegex.test(tEl.textContent || '')) {
+          if (typeof showTranscript === 'function') showTranscript(insp.notes);
+        }
+      } catch(e) {}
     }
   } catch(e) {
     console.warn('[voice-processor] _replaceVoiceMemoPlaceholder failed', e);
@@ -20922,11 +21030,18 @@ async function _markVoiceMemoLost(audioId, reason) {
     var idx = inspections.findIndex(function(i){ return i.pendingVoiceMemoId === audioId; });
     if (idx === -1) return;
     var insp = inspections[idx];
-    var transcript = insp.transcript || '';
     var lostMsg = '[Voice memo lost — ' + (reason || 'audio could not be recovered') + ']';
     var placeholderRegex = /\[Voice memo recorded \d{2}:\d{2}\s+[—-]\s+will transcribe when back online\]/;
-    transcript = placeholderRegex.test(transcript) ? transcript.replace(placeholderRegex, lostMsg) : (transcript + '\n\n' + lostMsg).trim();
-    insp.transcript = transcript;
+    // 27 April 2026 Phase 2c: operate on notes field (transcript is empty post-save)
+    var notes = insp.notes || '';
+    var transcript = insp.transcript || '';
+    if (placeholderRegex.test(notes)) {
+      insp.notes = notes.replace(placeholderRegex, lostMsg);
+    } else if (placeholderRegex.test(transcript)) {
+      insp.transcript = transcript.replace(placeholderRegex, lostMsg);
+    } else {
+      insp.notes = (notes + '\n\n' + lostMsg).trim();
+    }
     insp.pendingVoiceMemoId = null;
     inspections[idx] = insp;
     localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
