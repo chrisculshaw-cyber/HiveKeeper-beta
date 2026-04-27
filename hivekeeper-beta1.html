@@ -2862,6 +2862,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <span id="settings-sync-badge" style="display:none;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.04em;"></span>
       </button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openManageApiaries()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🏡 Manage apiaries</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;">🔍 Bee inspector contacts</button>
@@ -3066,6 +3067,16 @@ input[type="checkbox"].hk-chk:checked::after {
   <!-- MODAL: APIARY SWITCHER -->
   <div class="modal-overlay" id="modal-apiary-switcher" onclick="closeModal(event,'modal-apiary-switcher')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">
+    </div>
+  </div>
+
+  <!-- MODAL: MANAGE APIARIES (27 April 2026 Phase 4e) -->
+  <!-- Houses rename, set location, delete, add — all the actions that were
+       crowding the Switch modal where testers were tap-mistaking them.
+       Opened from Settings → Tools → 🏡 Manage apiaries. Populated by
+       openManageApiaries() which renders innerHTML at runtime. -->
+  <div class="modal-overlay" id="modal-apiary-manage" onclick="closeModal(event,'modal-apiary-manage')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
     </div>
   </div>
 
@@ -14422,6 +14433,11 @@ saveHives = function(hives) {
   _origSaveHives(others.concat(hives));
 };
 
+// 27 April 2026 Phase 4e — track which apiary list modal initiated an
+// action so post-action reopens (currently just deleteApiary) go back to
+// the correct modal. Set in openApiarySwitcher and openManageApiaries.
+var _apiaryListSource = 'switcher';
+
 function openApiarySwitcher() {
   // Close the Inspect hive dropdown if it's open — otherwise it sits under the modal
   // still showing the PREVIOUS apiary's hives, which is confusing when switching.
@@ -14434,7 +14450,13 @@ function openApiarySwitcher() {
   var current = getCurrentApiary();
   var sheet = document.querySelector('#modal-apiary-switcher .modal-sheet');
   if (!sheet) return;
+  _apiaryListSource = 'switcher';
 
+  // 27 April 2026 Phase 4e — switcher rows no longer include rename/location/
+  // delete buttons. Beta testers were hitting them by mistake when trying to
+  // tap-to-switch. Those actions moved to the new Manage apiaries modal in
+  // Settings → Tools. The default-star toggle stays — it's about switching
+  // behaviour (which apiary opens by default), so it belongs here.
   var listHtml = apiaries.map(function(a) {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
@@ -14449,20 +14471,58 @@ function openApiarySwitcher() {
         + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
       + '</div>'
-      + '<div onclick="event.stopPropagation();renameApiary(\'' + a.id + '\')" style="font-size:11px;color:var(--honey);font-weight:700;padding:4px 8px;">Rename</div>'
-      + '<div data-apiary-id="' + a.id + '" onclick="event.stopPropagation();setApiaryLocation(this.dataset.apiaryId)" style="font-size:11px;color:var(--forest);font-weight:700;padding:4px 8px;border-radius:8px;background:var(--cream);cursor:pointer;">📍 Location</div>'
-      + (apiaries.length > 1 ? '<div data-del-id="' + a.id + '" onclick="event.stopPropagation();event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="font-size:11px;color:var(--red,#e53935);font-weight:700;padding:4px 8px;border-radius:8px;background:#fdecea;cursor:pointer;">Delete</div>' : '')
+      + (isCurrent ? '<div style="font-size:18px;color:var(--forest);font-weight:800;padding:4px 8px;">✓</div>' : '<div style="font-size:14px;color:var(--text-l);padding:4px 8px;">›</div>')
       + '</div>';
   }).join('');
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
-    + '<div class="modal-title">Your apiaries</div>'
+    + '<div class="modal-title">Switch apiary</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
-    + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
-    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-apiary-switcher');
+}
+
+// 27 April 2026 Phase 4e — Manage apiaries modal. Lives in Settings → Tools.
+// All the destructive/edit actions (rename, location, delete) live here so
+// they're not crowding the Switch modal. Reuses existing renameApiary,
+// setApiaryLocation, handleDeleteApiary, addNewApiary functions — purely a
+// UI re-arrangement.
+function openManageApiaries() {
+  var apiaries = loadApiaries();
+  var sheet = document.querySelector('#modal-apiary-manage .modal-sheet');
+  if (!sheet) return;
+  _apiaryListSource = 'manage';
+
+  var listHtml = apiaries.map(function(a) {
+    var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
+    var active = hives.filter(function(h){ return h.status === 'active'; }).length;
+    var isDefault = a.isDefault === true;
+    return '<div style="display:flex;flex-direction:column;gap:8px;padding:14px 20px;border-bottom:1px solid var(--wax);background:var(--white);">'
+      + '<div style="display:flex;align-items:center;gap:12px;">'
+        + '<div style="font-size:28px;">🏡</div>'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
+        + '</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+        + '<button onclick="renameApiary(\'' + a.id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--honey);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--honey);cursor:pointer;">✏️ Rename</button>'
+        + '<button data-apiary-id="' + a.id + '" onclick="setApiaryLocation(this.dataset.apiaryId)" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--forest);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--forest);cursor:pointer;">📍 Location</button>'
+        + (apiaries.length > 1 ? '<button data-del-id="' + a.id + '" onclick="event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--red,#e53935);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--red,#e53935);cursor:pointer;">🗑 Delete</button>' : '')
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div class="modal-title">Manage apiaries</div>'
+    + '<div style="font-size:11px;color:var(--text-l);margin-bottom:8px;line-height:1.4;">Rename, set location, delete, or add new apiaries. To switch between apiaries, tap the apiary name in the header.</div>'
+    + '<div style="margin:0 -20px;">' + listHtml + '</div>'
+    + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-manage\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
+
+  openModalEl('modal-apiary-manage');
 }
 
 function addNewApiary() {
@@ -16984,7 +17044,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:27 27 April 2026 BST · Phase 4d-fix — AH header readability + auth screen App Store update';
+var HIVEKEEPER_BUILD = '17:09 27 April 2026 BST · Phase 4e — split Switch/Manage apiaries (per beta tester mistap feedback)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19511,8 +19571,15 @@ async function deleteApiary(id) {
   // Switch to first remaining apiary
   switchApiary(remaining[0].id);
   showToast(apiary.name + ' deleted');
+  // 27 April 2026 Phase 4e — reopen whichever apiary list modal initiated
+  // the delete action, not always the switcher. Closes both first to avoid
+  // any visual stacking glitches.
   closeModalEl('modal-apiary-switcher');
-  setTimeout(function(){ openApiarySwitcher(); }, 300);
+  closeModalEl('modal-apiary-manage');
+  setTimeout(function(){
+    if (_apiaryListSource === 'manage') openManageApiaries();
+    else openApiarySwitcher();
+  }, 300);
 }
 
 // ── ADMIN IMPERSONATION ───────────────────────────────────
