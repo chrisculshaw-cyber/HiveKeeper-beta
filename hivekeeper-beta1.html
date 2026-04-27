@@ -1496,29 +1496,65 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
 
-    <!-- SEASONAL TIP TEASER -->
-    <div class="nectar-strip" id="dash-tip-teaser" onclick="goTo('s-calendar')" style="margin:10px 20px 0;background:var(--forest);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
-      <div style="font-size:22px;" id="dash-tip-icon">🌻</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.04em;">THIS MONTH IN THE APIARY</div>
-        <div style="font-size:13px;font-weight:700;color:white;margin-top:2px;" id="dash-tip-text">Loading seasonal tip...</div>
+    <!-- THIS MONTH IN THE APIARY (27 April 2026 Phase 4d — dashboard format) -->
+    <div id="dash-tip-teaser" onclick="goTo('s-calendar')" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;">
+      <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
+        <div style="font-size:42px;line-height:1;flex-shrink:0;" id="dash-tip-icon">🌻</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+            <div id="dash-tip-month" style="font-size:18px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;line-height:1;">This month</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-l);margin-top:4px;line-height:1.4;" id="dash-tip-text">Loading seasonal tip...</div>
+        </div>
+        <div style="opacity:0.4;font-size:16px;flex-shrink:0;">›</div>
       </div>
-      <div style="color:rgba(255,255,255,.4);font-size:16px;">›</div>
+      <div style="display:flex;border-top:1px solid var(--wax);background:var(--cream);">
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="dash-tips-count" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">—</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Tips</div>
+        </div>
+        <div style="flex:1;padding:10px 6px;text-align:center;border-left:1px solid var(--wax);border-right:1px solid var(--wax);">
+          <div id="dash-tips-urgent" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">—</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Urgent</div>
+        </div>
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="dash-tips-link" style="font-size:11px;font-weight:800;color:var(--honey);font-family:'Syne',sans-serif;letter-spacing:0.04em;">View all →</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Calendar</div>
+        </div>
+      </div>
     </div>
 
-    <!-- ASIAN HORNET WATCH -->
-    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;border-radius:var(--rs);overflow:hidden;border:1px solid rgba(184,50,40,.3);box-shadow:var(--shadow);">
-      <div class="ah-header" onclick="toggleAHPanel()">
-        <div class="ah-header-icon">🐝</div>
-        <div class="ah-header-text">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <div class="ah-header-title">Asian Hornet Watch</div>
-            <span id="ah-header-pill" class="ah-header-pill ah-pill-clear">LOW</span>
+    <!-- ASIAN HORNET WATCH (27 April 2026 Phase 4d — dashboard format) -->
+    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);overflow:hidden;border:1px solid var(--wax);box-shadow:var(--shadow);">
+      <div class="ah-header" onclick="toggleAHPanel()" style="padding:14px 16px;cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="ah-header-icon" style="font-size:42px;line-height:1;flex-shrink:0;">🐝</div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div class="ah-header-title" style="font-size:18px;font-weight:800;font-family:'Syne',sans-serif;color:var(--text);">Asian Hornet Watch</div>
+              <span id="ah-header-pill" class="ah-header-pill ah-pill-clear">LOW</span>
+            </div>
+            <div class="ah-header-sub" id="ah-header-sub" style="font-size:11px;color:var(--text-l);margin-top:4px;line-height:1.4;">Loading nearest sightings...</div>
           </div>
-          <div class="ah-header-sub" id="ah-header-sub">Loading nearest sightings...</div>
+          <div class="ah-header-toggle" id="ah-toggle-arrow" style="opacity:0.5;font-size:14px;flex-shrink:0;">&#9660;</div>
         </div>
-        <div class="ah-header-toggle" id="ah-toggle-arrow">&#9660;</div>
       </div>
+      <!-- TILE ROW — same pattern as weather hero -->
+      <div onclick="toggleAHPanel()" style="display:flex;border-top:1px solid var(--wax);background:var(--cream);cursor:pointer;">
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="ah-tile-nearest" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">— mi</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Nearest</div>
+        </div>
+        <div style="flex:1;padding:10px 6px;text-align:center;border-left:1px solid var(--wax);border-right:1px solid var(--wax);">
+          <div id="ah-tile-recent" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">—</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Last 2yr</div>
+        </div>
+        <div style="flex:1;padding:10px 6px;text-align:center;">
+          <div id="ah-tile-total" style="font-size:14px;font-weight:800;color:var(--text);font-family:'Syne',sans-serif;">—</div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Sightings</div>
+        </div>
+      </div>
+      <!-- Expandable detail body — render code populates this unchanged -->
       <div class="ah-body" id="ah-body" style="display:none;">
         <div id="ah-content">
           <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
@@ -12427,6 +12463,14 @@ function renderAsianHornetWatch(lat, lng) {
   var nearestNest = nests[0] || null;
   var nearestNestMiles = nearestNest ? Math.round(nearestNest.distKm * 0.621371) : null;
 
+  // 27 April 2026 Phase 4d — populate the new dashboard tile row.
+  var tileNearest = document.getElementById('ah-tile-nearest');
+  var tileRecent  = document.getElementById('ah-tile-recent');
+  var tileTotal   = document.getElementById('ah-tile-total');
+  if (tileNearest) tileNearest.textContent = nearestMiles + ' mi';
+  if (tileRecent)  tileRecent.textContent  = (nearestRecentMiles !== null ? nearestRecentMiles + ' mi' : '—');
+  if (tileTotal)   tileTotal.textContent   = String(withDist.length);
+
   // Determine alert level
   // Priority: any RECENT sighting within 20mi → critical + flash
   // Then: recent nest within 50mi → elevated
@@ -12919,6 +12963,18 @@ function updateDashTipTeaser() {
   var iconEl = document.getElementById('dash-tip-icon');
   if (titleEl) titleEl.textContent = top.title;
   if (iconEl) iconEl.textContent = top.icon || '🌻';
+
+  // 27 April 2026 Phase 4d — populate dashboard tile row.
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var monthEl = document.getElementById('dash-tip-month');
+  var countEl = document.getElementById('dash-tips-count');
+  var urgentEl = document.getElementById('dash-tips-urgent');
+  if (monthEl) monthEl.textContent = monthNames[month - 1];
+  if (countEl) countEl.textContent = String(tips.length);
+  if (urgentEl) {
+    var urgentCount = tips.filter(function(t){ return t.urgency === 'red' || t.urgency === 'amber'; }).length;
+    urgentEl.textContent = String(urgentCount);
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -16927,7 +16983,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:08 27 April 2026 BST · Phase 4c — weather hero card with Wind/Inspect/Pollen tiles';
+var HIVEKEEPER_BUILD = '16:19 27 April 2026 BST · Phase 4d — dashboard format for AH Watch + This month card';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
