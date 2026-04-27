@@ -16843,7 +16843,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:16 27 April 2026 BST · Phase 4a — header decluttering (smaller circles, shorter pill, Hidden toggle relocated)';
+var HIVEKEEPER_BUILD = '14:51 27 April 2026 BST · Phase 3c-iosfix — annual upsell uses custom modal (iOS WKWebView confirm() hang)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19021,6 +19021,63 @@ function _resetUpgradeButtons() {
   });
 }
 
+// 27 April 2026 Phase 3c-iosfix — custom modal upsell, replaces native
+// confirm(). Native confirm() hangs JS execution in iOS WKWebView (Median
+// wrapper) — Chris's wife's iPhone got stuck on both OK and Cancel. Custom
+// modal is the reliable cross-platform pattern. Returns a Promise that
+// resolves with 'yearly' or 'monthly' based on user choice; tap-outside
+// or close defaults to 'monthly' (safe non-action).
+function _promptAnnualUpsell(targetTier) {
+  return new Promise(function(resolve) {
+    var savings, monthlyPrice, yearlyPrice;
+    if (targetTier === 'pro') {
+      savings = '\u00a37.89';
+      monthlyPrice = '\u00a33.99/month';
+      yearlyPrice = '\u00a339.99/year (saves \u00a37.89)';
+    } else {
+      savings = '\u00a339.89';
+      monthlyPrice = '\u00a319.99/month';
+      yearlyPrice = '\u00a3199.99/year (saves \u00a339.89)';
+    }
+    var savingsEl = document.getElementById('annual-upsell-savings');
+    var yearlyEl = document.getElementById('annual-upsell-yearly-price');
+    var monthlyEl = document.getElementById('annual-upsell-monthly-price');
+    var yearlyBtn = document.getElementById('annual-upsell-yearly-btn');
+    var monthlyBtn = document.getElementById('annual-upsell-monthly-btn');
+    var modal = document.getElementById('modal-annual-upsell');
+    if (!modal || !yearlyBtn || !monthlyBtn) {
+      // Defensive fallback if HTML missing — proceed with monthly silently
+      console.warn('[upsell] modal not found — defaulting to monthly');
+      resolve('monthly');
+      return;
+    }
+    if (savingsEl) savingsEl.innerHTML = 'Save <strong>' + savings + '/year</strong> by switching to annual billing.';
+    if (yearlyEl) yearlyEl.textContent = yearlyPrice;
+    if (monthlyEl) monthlyEl.textContent = monthlyPrice;
+    yearlyBtn.textContent = 'Switch to annual & save ' + savings;
+
+    var resolved = false;
+    function done(choice) {
+      if (resolved) return;
+      resolved = true;
+      yearlyBtn.onclick = null;
+      monthlyBtn.onclick = null;
+      modal.removeEventListener('click', overlayHandler);
+      try { closeModalEl('modal-annual-upsell'); } catch(e) {}
+      // Slight delay so the close animation finishes before the next
+      // step (Stripe redirect) happens — feels less jarring on iOS.
+      setTimeout(function() { resolve(choice); }, 150);
+    }
+    yearlyBtn.onclick = function() { done('yearly'); };
+    monthlyBtn.onclick = function() { done('monthly'); };
+    var overlayHandler = function(e) {
+      if (e.target === modal) done('monthly');
+    };
+    modal.addEventListener('click', overlayHandler);
+    openModalEl('modal-annual-upsell');
+  });
+}
+
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
@@ -19066,22 +19123,14 @@ async function handleUpgrade(targetTier) {
   // Upgrade with monthly selected, ask if they'd like to save by switching
   // to annual. Annual savings: Pro £7.89/yr, Commercial £39.89/yr — real
   // money worth highlighting. Skips the prompt if user already chose
-  // yearly via the toggle (no need to convince them again). Native confirm
-  // is consistent with other guards in this app (sign-out, dismiss-all).
+  // yearly via the toggle (no need to convince them again).
+  // 27 April 2026 Phase 3c-iosfix — uses custom modal (_promptAnnualUpsell)
+  // instead of native confirm(). iOS WKWebView (Median wrapper) hangs JS
+  // execution after confirm() dismisses on iPhone — Chris's wife's iPhone
+  // got stuck. Custom modal works reliably on both platforms.
   if (_billingPeriod === 'monthly' && (targetTier === 'pro' || targetTier === 'commercial')) {
-    var savings, monthlyPrice, yearlyPrice;
-    if (targetTier === 'pro') {
-      savings = '£7.89';   monthlyPrice = '£3.99/month';   yearlyPrice = '£39.99/year';
-    } else {
-      savings = '£39.89';  monthlyPrice = '£19.99/month';  yearlyPrice = '£199.99/year';
-    }
-    var msg = '💡 Save ' + savings + ' with annual billing\n\n'
-      + 'Annual: ' + yearlyPrice + ' — saves ' + savings + ' vs paying monthly\n'
-      + 'Monthly: ' + monthlyPrice + '\n\n'
-      + 'OK = switch to annual and save\n'
-      + 'Cancel = continue with monthly';
-    var wantsAnnual = confirm(msg);
-    if (wantsAnnual) {
+    var choice = await _promptAnnualUpsell(targetTier);
+    if (choice === 'yearly') {
       _billingPeriod = 'yearly';
       // Refresh the toggle UI so if the user returns from a cancelled
       // checkout, the pricing modal shows yearly as selected.
@@ -19093,7 +19142,8 @@ async function handleUpgrade(targetTier) {
         return;
       }
     }
-    // If !wantsAnnual: stay with monthly, priceId already set above
+    // If choice === 'monthly' (or anything else): stay with monthly,
+    // priceId already set above.
   }
 
   // Show loading state on button
@@ -23506,6 +23556,37 @@ function goToApiaryAlerts() {
         <div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Loading...</div>
       </div>
       <button onclick="closeModalEl('modal-admin-dashboard')" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL: ANNUAL UPSELL (27 April 2026 Phase 3c-iosfix) -->
+  <!-- Replaces native confirm() dialog which hangs JavaScript execution
+       in iOS WKWebView (Median wrapper). Reported by Chris testing on his
+       wife's iPhone — both OK and Cancel got stuck. Native dialogs are
+       unreliable on iOS webviews; custom modal is the standard fix. -->
+  <div class="modal-overlay" id="modal-annual-upsell" onclick="closeModal(event,'modal-annual-upsell')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="text-align:center;padding:8px 0 16px;">
+        <div style="font-size:36px;margin-bottom:6px;">💡</div>
+        <div style="font-size:20px;font-weight:800;color:var(--forest);font-family:'Syne',sans-serif;">Save with annual billing</div>
+      </div>
+      <div id="annual-upsell-savings" style="font-size:13px;color:var(--text);text-align:center;margin-bottom:16px;line-height:1.5;"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <div style="border:2px solid #2D5016;border-radius:var(--rs);padding:14px;background:#E8F3E0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-weight:800;color:#2D5016;font-size:13px;">Annual</div>
+            <div style="background:#2D5016;color:white;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800;letter-spacing:.04em;">RECOMMENDED</div>
+          </div>
+          <div id="annual-upsell-yearly-price" style="font-size:18px;font-weight:800;color:#2D5016;"></div>
+        </div>
+        <div style="border:1px solid var(--wax);border-radius:var(--rs);padding:14px;">
+          <div style="font-weight:800;color:var(--text);font-size:13px;margin-bottom:4px;">Monthly</div>
+          <div id="annual-upsell-monthly-price" style="font-size:14px;color:var(--text-l);"></div>
+        </div>
+      </div>
+      <button id="annual-upsell-yearly-btn" style="width:100%;background:#2D5016;border:none;border-radius:var(--rs);padding:13px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;margin-bottom:8px;">Switch to annual &amp; save</button>
+      <button id="annual-upsell-monthly-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Continue with monthly</button>
     </div>
   </div>
 
