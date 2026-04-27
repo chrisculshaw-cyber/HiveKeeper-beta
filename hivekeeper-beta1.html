@@ -1312,12 +1312,8 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div id="auth-build-stamp" style="font-size:11px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 12px;margin-bottom:20px;line-height:1.4;font-family:'DM Mono',monospace;">
-    <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:rgba(255,255,255,.5);display:block;margin-bottom:3px;">BUILD</span>
-    <span id="auth-build-stamp-text">Last updated 10:13 27 April 2026 BST · Phase 1c — sync visibility</span>
-  </div>
-  <div style="font-size:10px;color:rgba(255,255,255,.35);margin-bottom:28px;line-height:1.5;">
-    Failed cloud uploads now captured to a dead-letter store (hk_failed_syncs) instead of vanishing into console.error after 5 attempts. New Sync Status panel in Settings shows queue depth + failed items with hive name, content snippet, last error, and per-item Retry buttons. Home greeting shows an amber/red badge when there are pending or failed items — tap to open. pushInspections / pushHives / pushHarvests / pushTreatments / pushVarroaCounts now fall through to the offline queue on error so structural failures (schema drift, FK violation) get tracked and retried uniformly instead of just toasting.
+  <div id="auth-build-stamp" style="font-size:10px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.4;font-family:'DM Mono',monospace;text-align:center;">
+    <span id="auth-build-stamp-text">11:48 27 April 2026 BST · Phase 2b</span>
   </div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
@@ -6708,12 +6704,22 @@ function renderInspectHeader(){
   // Reset unsaved-work tracking for this new inspection. Also skip in edit
   // mode so the dirty-flag guard doesn't trigger spuriously on amend.
   if (!window._editingInspId) {
+    // 27 April 2026 Phase 2b — preserve "just saved" state across re-renders.
+    // saveInspection calls renderInspectHeader() at line ~8405 to refresh the
+    // header after save. Without this guard, the line below would clear
+    // _inspectionJustSaved and call _restoreSaveButtonFromTerminal — which
+    // immediately reverts the "✓ Saved 12:38" terminal state Phase 1b just
+    // set. Net result: button briefly shows saved then reverts. Reported by
+    // Chris during 11:48 BST offline-voice test.
+    var _wasJustSaved = !!window._inspectionJustSaved;
     window._inspectionDirty = false;
     window._inspectionJustSaved = false;
-    // 27 April 2026 v2 — restore the Save button if it's still showing the
-    // post-save terminal state from a previous inspection. The dirty-setter
-    // covers the common in-screen case; this covers nav-away-and-back.
-    try { _restoreSaveButtonFromTerminal(); } catch(e) {}
+    if (!_wasJustSaved) {
+      // Restore only on genuine fresh-inspection entry — not on the
+      // post-save re-render. The dirty-setter still handles the next
+      // user edit (any dirty=true write restores the button via setter).
+      try { _restoreSaveButtonFromTerminal(); } catch(e) {}
+    }
   }
   // Bind dirty-tracking on transcript + notes — idempotent guard, but we
   // rebind on every entry to defend against edge cases where the listener
@@ -16775,14 +16781,14 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:25 27 April 2026 BST · Phase 2a — offline voice recording (records when offline, transcribes when online)';
+var HIVEKEEPER_BUILD = '11:48 27 April 2026 BST · Phase 2b — auth overflow fix, save button regression, demo data filter, default apiary uniqueness';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
 document.addEventListener('DOMContentLoaded', function() {
   try {
     var stampText = document.getElementById('auth-build-stamp-text');
-    if (stampText) stampText.textContent = 'Last updated ' + HIVEKEEPER_BUILD;
+    if (stampText) stampText.textContent = HIVEKEEPER_BUILD;
   } catch(e) {}
 });
 
@@ -17063,6 +17069,23 @@ async function pushApiaries() {
     return a.id && !a.id.toString().startsWith('demo-') && !a.sharedWith;
   });
   if (!apiaries.length) return;
+  // 27 April 2026 Phase 2b — enforce only one is_default=true. Supabase has
+  // a unique constraint (apiaries_one_default_per_user); local data can
+  // drift to multiple defaults if the user marks a new one without clearing
+  // the old. Pick the first marked-default apiary as canonical; demote
+  // others to false for the push. We don't write back to localStorage —
+  // that's a separate concern; this just keeps the push valid.
+  var seenDefault = false;
+  apiaries = apiaries.map(function(a) {
+    if (a.isDefault === true && !seenDefault) {
+      seenDefault = true;
+      return a;
+    } else if (a.isDefault === true) {
+      // Clone & demote — don't mutate the localStorage object directly
+      return Object.assign({}, a, { isDefault: false });
+    }
+    return a;
+  });
   var sb = getSupabase();
   var rows = apiaries.map(function(a) {
     return {
@@ -17159,6 +17182,12 @@ async function pushInspections() {
   var uid = getUserId(); if (!uid) return;
   var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
   if (!inspections.length) return;
+  // 27 April 2026 Phase 2b — never push demo data. Demo inspection IDs like
+  // 'demo-0101' aren't valid UUIDs and Supabase rejects them with a syntax
+  // error, polluting the failed-sync queue. Demo data exists for new-user
+  // onboarding only — it stays local.
+  inspections = inspections.filter(function(i){ return i.id && !i.id.toString().startsWith('demo-'); });
+  if (!inspections.length) return;
   var sharedHiveIds = getSharedHiveIds();
   inspections = inspections.filter(function(i){ return sharedHiveIds.indexOf(i.hiveId) === -1; });
   if (!inspections.length) return;
@@ -17213,6 +17242,9 @@ async function pushHarvests() {
   var uid = getUserId(); if (!uid) return;
   var harvests = JSON.parse(localStorage.getItem('hk_harvest_v1') || '[]');
   if (!harvests.length) return;
+  // 27 April 2026 Phase 2b — never push demo data (demo IDs aren't valid UUIDs)
+  harvests = harvests.filter(function(h){ return h.id && !h.id.toString().startsWith('demo-'); });
+  if (!harvests.length) return;
   var sharedHiveIds = getSharedHiveIds();
   harvests = harvests.filter(function(h){ return sharedHiveIds.indexOf(h.hiveId) === -1; });
   if (!harvests.length) return;
@@ -17238,6 +17270,9 @@ async function pushTreatments() {
   var uid = getUserId(); if (!uid) return;
   var treatments = JSON.parse(localStorage.getItem('hk_treatment_v1') || '[]');
   if (!treatments.length) return;
+  // 27 April 2026 Phase 2b — never push demo data
+  treatments = treatments.filter(function(t){ return t.id && !t.id.toString().startsWith('demo-'); });
+  if (!treatments.length) return;
   var sharedHiveIds = getSharedHiveIds();
   treatments = treatments.filter(function(t){ return sharedHiveIds.indexOf(t.hiveId) === -1; });
   if (!treatments.length) return;
@@ -17262,6 +17297,9 @@ async function pushTreatments() {
 async function pushVarroa() {
   var uid = getUserId(); if (!uid) return;
   var varroa = JSON.parse(localStorage.getItem('hk_varroa_v1') || '[]');
+  if (!varroa.length) return;
+  // 27 April 2026 Phase 2b — never push demo data
+  varroa = varroa.filter(function(v){ return v.id && !v.id.toString().startsWith('demo-'); });
   if (!varroa.length) return;
   var sharedHiveIds = getSharedHiveIds();
   varroa = varroa.filter(function(v){ return sharedHiveIds.indexOf(v.hiveId) === -1; });
