@@ -1312,7 +1312,13 @@ input[type="checkbox"].hk-chk:checked::after {
   <div style="font-size:48px;margin-bottom:8px;">🐝</div>
   <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:white;margin-bottom:4px;">HiveKeeper&#x2122;</div>
   <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:4px;">HiveKeeper&#x2122; &mdash; Your apiary, always with you</div>
-  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:28px;">Last updated 10:13 27 April 2026 BST · Phase 1c — sync visibility. Failed cloud uploads now captured to a dead-letter store (hk_failed_syncs) instead of vanishing into console.error after 5 attempts. New Sync Status panel in Settings shows queue depth + failed items with hive name, content snippet, last error, and per-item Retry buttons. Home greeting shows an amber/red badge when there are pending or failed items — tap to open. pushInspections / pushHives / pushHarvests / pushTreatments / pushVarroaCounts now fall through to the offline queue on error so structural failures (schema drift, FK violation) get tracked and retried uniformly instead of just toasting.</div>
+  <div id="auth-build-stamp" style="font-size:11px;color:rgba(255,255,255,.85);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:8px 12px;margin-bottom:20px;line-height:1.4;font-family:'DM Mono',monospace;">
+    <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:rgba(255,255,255,.5);display:block;margin-bottom:3px;">BUILD</span>
+    <span id="auth-build-stamp-text">Last updated 10:13 27 April 2026 BST · Phase 1c — sync visibility</span>
+  </div>
+  <div style="font-size:10px;color:rgba(255,255,255,.35);margin-bottom:28px;line-height:1.5;">
+    Failed cloud uploads now captured to a dead-letter store (hk_failed_syncs) instead of vanishing into console.error after 5 attempts. New Sync Status panel in Settings shows queue depth + failed items with hive name, content snippet, last error, and per-item Retry buttons. Home greeting shows an amber/red badge when there are pending or failed items — tap to open. pushInspections / pushHives / pushHarvests / pushTreatments / pushVarroaCounts now fall through to the offline queue on error so structural failures (schema drift, FK violation) get tracked and retried uniformly instead of just toasting.
+  </div>
 
   <!-- BETA STATUS INFO BLOCK (24 April 2026)
        Context for first-time visitors: this is a beta, native apps coming, how to give feedback.
@@ -2799,6 +2805,14 @@ input[type="checkbox"].hk-chk:checked::after {
       <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+
+      <!-- BUILD VERSION CHIP (27 April 2026 — Phase 1c) — populated by
+           updateBuildVersionInSettings() so the auth-screen stamp is the
+           single source of truth. -->
+      <div id="settings-build-version" style="margin-top:12px;padding:8px 10px;background:var(--cream);border:1px solid var(--wax);border-radius:8px;font-size:10px;color:var(--text-l);line-height:1.4;font-family:'DM Mono',monospace;text-align:center;">
+        <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--text-l);opacity:0.7;">BUILD</span>
+        <span id="settings-build-version-text" style="display:block;margin-top:2px;color:var(--text-m);"></span>
+      </div>
     </div>
   </div>
 
@@ -16645,6 +16659,21 @@ function showSyncStatus(msg, isError) {
 
 var POLICY_VERSION = '2.0';
 
+// ─── BUILD VERSION (27 April 2026 — Phase 1c) ─────────────────────────
+// Single source of truth for the build version string. Update this on every
+// release. Both the auth-screen stamp and the Settings build chip read it.
+// Format: "HH:MM DD Month YYYY · Phase X — short description"
+var HIVEKEEPER_BUILD = '10:43 27 April 2026 BST · Phase 1d — in-modal sync feedback + error explanations';
+
+// Sync the auth-screen stamp from the constant on load so the constant is
+// the authoritative source even if the stamp HTML drifts.
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    var stampText = document.getElementById('auth-build-stamp-text');
+    if (stampText) stampText.textContent = 'Last updated ' + HIVEKEEPER_BUILD;
+  } catch(e) {}
+});
+
 async function checkPolicyConsent() {
   if (!_currentUser) return;
   // Trust localStorage first — if user has accepted the current policy version locally,
@@ -18580,6 +18609,11 @@ function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { 
   // every time the modal opens. addSignOutToSettings runs from every
   // open-Settings onclick so this catches all entry points.
   try { updateSyncStatusBadgeInSettings(); } catch(e) {}
+  // Populate the build version chip from the canonical constant
+  try {
+    var ver = document.getElementById('settings-build-version-text');
+    if (ver && typeof HIVEKEEPER_BUILD !== 'undefined') ver.textContent = HIVEKEEPER_BUILD;
+  } catch(e) {}
   if (!btn) return;
   var name = '';
   if (typeof _currentUser !== 'undefined' && _currentUser) {
@@ -20466,6 +20500,16 @@ function dismissFailedSync(failedSyncEntryId) {
   return true;
 }
 
+// Bulk dismiss all failed items — for the keeper who's been carrying around
+// dozens of stuck records (e.g. orphaned hives from a deleted apiary) and
+// wants to clear the slate. Aggressively guarded — confirms the count.
+function dismissAllFailedSyncs() {
+  var failed = loadFailedSyncs();
+  var n = failed.length;
+  saveFailedSyncs([]);
+  return n;
+}
+
 // Summary used by the Home indicator badge and the panel header.
 function getSyncStatusSummary() {
   var pending = 0, failed = 0;
@@ -20500,8 +20544,81 @@ function _hkFormatRelativeTime(ts) {
 }
 
 function openSyncStatusModal() {
+  _syncModalState = null; // reset on open
   renderSyncStatusModal();
   openModalEl('modal-sync-status');
+}
+
+// In-modal status banner state. Drives the top banner the user sees while
+// a sync/retry operation is in progress, and the result message after it
+// completes. Replaces the previous behaviour where feedback was toasted to
+// the home screen (invisible behind the open modal).
+var _syncModalState = null;
+
+function setSyncModalStatus(kind, message, success) {
+  _syncModalState = kind ? { kind: kind, message: message, success: !!success } : null;
+  // Don't full-rerender here — just update the banner so we don't lose any
+  // in-flight per-item state. The handlers below trigger a full re-render
+  // when the operation completes.
+  var bannerEl = document.getElementById('sync-modal-status-banner');
+  if (!bannerEl) {
+    // No banner yet — full render will create one.
+    renderSyncStatusModal();
+    return;
+  }
+  if (!_syncModalState) {
+    bannerEl.style.display = 'none';
+    return;
+  }
+  var bg, color, border, html;
+  if (kind === 'syncing') {
+    bg = '#FFF8E1'; color = '#E65100'; border = '#F57C00';
+    html = '<span class="hk-spinner" style="border-color:#E65100;border-top-color:transparent;"></span>' + _hkEscapeHtml(message);
+  } else if (kind === 'offline') {
+    bg = '#FFEBEE'; color = '#B71C1C'; border = '#E53935';
+    html = _hkEscapeHtml(message);
+  } else if (kind === 'result' && success) {
+    bg = '#E8F5E9'; color = '#1B5E20'; border = '#66BB6A';
+    html = _hkEscapeHtml(message);
+  } else if (kind === 'result' && !success) {
+    bg = '#FFF8E1'; color = '#E65100'; border = '#F57C00';
+    html = _hkEscapeHtml(message);
+  }
+  bannerEl.style.background = bg;
+  bannerEl.style.color = color;
+  bannerEl.style.borderColor = border;
+  bannerEl.innerHTML = html;
+  bannerEl.style.display = 'flex';
+}
+
+// Plain-English explanations for common Postgres errors so the keeper knows
+// what's going on without needing a database background. These appear under
+// the technical error message on each failed-sync card.
+function _explainSyncError(error, table) {
+  if (!error) return null;
+  var e = String(error).toLowerCase();
+  if (e.indexOf('hives_apiary_id_fkey') !== -1) {
+    return 'This hive references an apiary that does not exist in the cloud. The apiary may have been deleted from this device, or has not yet finished syncing. Try "Sync now" first — it will push apiaries before hives. If the apiary has been deleted, the hive is orphaned: dismiss this record or reassign the hive to a real apiary.';
+  }
+  if (e.indexOf('inspections_hive_id_fkey') !== -1) {
+    return 'This inspection references a hive that does not exist in the cloud. The hive may have been deleted, or has not yet finished syncing. Try "Sync now" — it will push hives before inspections.';
+  }
+  if (e.indexOf('foreign key constraint') !== -1) {
+    return 'This record references something (e.g. a hive or apiary) that does not exist on the cloud yet. The parent record must sync first. "Sync now" pushes parents before children — try that.';
+  }
+  if (e.indexOf('column') !== -1 && e.indexOf('does not exist') !== -1) {
+    return 'The cloud database is missing a column this record uses. This usually means the cloud schema is older than the app — you may need to refresh the app or this is a cloud-side migration that has not run.';
+  }
+  if (e.indexOf('duplicate key') !== -1 || e.indexOf('23505') !== -1) {
+    return 'A record with this ID already exists on the cloud. The system normally handles this with upsert — if it persists, try Retry. The local copy is safe.';
+  }
+  if (e.indexOf('row-level security') !== -1 || e.indexOf('rls') !== -1 || e.indexOf('42501') !== -1) {
+    return 'You do not have permission to write this record to the cloud. This usually means it belongs to a shared apiary owned by someone else, or you are signed in as a different user than when it was created.';
+  }
+  if (e.indexOf('null value') !== -1 && e.indexOf('not-null') !== -1) {
+    return 'A required field is missing from this record. This is usually a data shape mismatch — you may need to edit the record and fill in the missing value.';
+  }
+  return null;
 }
 
 function renderSyncStatusModal() {
@@ -20518,33 +20635,55 @@ function renderSyncStatusModal() {
     + '<div onclick="closeModalEl(\'modal-sync-status\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>'
     + '</div>';
 
-  // Summary header pill
-  if (summary.failed > 0) {
-    html += '<div style="background:#FFEBEE;border:1.5px solid #E53935;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
-      + '<div style="font-size:13px;font-weight:800;color:#B71C1C;">⚠ ' + summary.failed + ' record' + (summary.failed > 1 ? 's' : '') + ' need attention</div>'
-      + '<div style="font-size:11px;color:#B71C1C;margin-top:3px;line-height:1.4;">These records repeatedly failed to reach the cloud. Tap Retry on any item to try again, or Dismiss if you don\u2019t need it preserved.</div>'
-      + '</div>';
-  } else if (summary.pending > 0) {
-    html += '<div style="background:#FFF8E1;border:1.5px solid #F57C00;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
-      + '<div style="font-size:13px;font-weight:800;color:#E65100;">' + summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync</div>'
-      + '<div style="font-size:11px;color:#E65100;margin-top:3px;line-height:1.4;">These will sync automatically when the cloud is reachable. Tap Sync now to trigger an immediate retry.</div>'
-      + '</div>';
-  } else {
-    html += '<div style="background:#E8F5E9;border:1.5px solid #66BB6A;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
-      + '<div style="font-size:13px;font-weight:800;color:#1B5E20;">✓ Everything synced</div>'
-      + '<div style="font-size:11px;color:#1B5E20;margin-top:3px;line-height:1.4;">Your hive records are safely backed up to the cloud.</div>'
-      + '</div>';
+  // In-modal status banner — used during sync operations and to show results.
+  // Hidden by default; setSyncModalStatus() toggles visibility. Always present
+  // in the DOM so setSyncModalStatus can update without re-rendering.
+  var bannerStyle = 'display:none;align-items:center;gap:10px;border:1.5px solid;border-radius:var(--rs);padding:11px 14px;margin-bottom:12px;font-size:13px;font-weight:700;line-height:1.4;';
+  if (_syncModalState) {
+    bannerStyle = bannerStyle.replace('display:none', 'display:flex');
+  }
+  html += '<div id="sync-modal-status-banner" style="' + bannerStyle + '"></div>';
+
+  // Summary header pill — only show when banner is hidden, otherwise the
+  // banner takes priority for the keeper's attention.
+  if (!_syncModalState) {
+    if (summary.failed > 0) {
+      html += '<div style="background:#FFEBEE;border:1.5px solid #E53935;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+        + '<div style="font-size:13px;font-weight:800;color:#B71C1C;">⚠ ' + summary.failed + ' record' + (summary.failed > 1 ? 's' : '') + ' need attention</div>'
+        + '<div style="font-size:11px;color:#B71C1C;margin-top:3px;line-height:1.4;">These records repeatedly failed to reach the cloud. Tap Retry on any item to try again, or Dismiss if you don\u2019t need it preserved.</div>'
+        + '</div>';
+    } else if (summary.pending > 0) {
+      html += '<div style="background:#FFF8E1;border:1.5px solid #F57C00;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+        + '<div style="font-size:13px;font-weight:800;color:#E65100;">' + summary.pending + ' record' + (summary.pending > 1 ? 's' : '') + ' waiting to sync</div>'
+        + '<div style="font-size:11px;color:#E65100;margin-top:3px;line-height:1.4;">These will sync automatically when the cloud is reachable. Tap Sync now to trigger an immediate retry.</div>'
+        + '</div>';
+    } else {
+      html += '<div style="background:#E8F5E9;border:1.5px solid #66BB6A;border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+        + '<div style="font-size:13px;font-weight:800;color:#1B5E20;">✓ Everything synced</div>'
+        + '<div style="font-size:11px;color:#1B5E20;margin-top:3px;line-height:1.4;">Your hive records are safely backed up to the cloud.</div>'
+        + '</div>';
+    }
   }
 
   // Action buttons
-  html += '<div style="display:flex;gap:8px;margin-bottom:16px;">';
+  var inProgress = _syncModalState && _syncModalState.kind === 'syncing';
+  html += '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">';
   if (summary.pending > 0 || summary.failed > 0) {
-    html += '<button onclick="syncStatusManualSync()" style="flex:1;background:var(--forest);border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">🔄 Sync now</button>';
+    html += '<button onclick="syncStatusManualSync()"' + (inProgress ? ' disabled' : '') + ' style="flex:1;min-width:120px;background:' + (inProgress ? '#999' : 'var(--forest)') + ';border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">🔄 Sync now</button>';
   }
   if (summary.failed > 0) {
-    html += '<button onclick="syncStatusRetryAll()" style="flex:1;background:#E53935;border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">Retry all failed</button>';
+    html += '<button onclick="syncStatusRetryAll()"' + (inProgress ? ' disabled' : '') + ' style="flex:1;min-width:120px;background:' + (inProgress ? '#999' : '#E53935') + ';border:none;border-radius:var(--rs);padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">Retry all failed</button>';
   }
   html += '</div>';
+  // Secondary action: dismiss all failed. Separate row so it doesn't compete
+  // with primary actions; styled as ghost to make it feel less primary.
+  if (summary.failed > 1) {
+    html += '<div style="margin-bottom:16px;">'
+      + '<button onclick="syncStatusDismissAll()"' + (inProgress ? ' disabled' : '') + ' style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:8px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">Dismiss all ' + summary.failed + ' failed records</button>'
+      + '</div>';
+  } else {
+    html += '<div style="margin-bottom:6px;"></div>';
+  }
 
   // Failed items section
   if (failed.length) {
@@ -20555,18 +20694,21 @@ function renderSyncStatusModal() {
       var dateLabel = f.dateLabel || '';
       var failedAgo = _hkFormatRelativeTime(f.failedAt);
       var err = f.lastError || '';
+      var explanation = _explainSyncError(err, f.table);
       html += '<div style="background:white;border:1.5px solid #E53935;border-left-width:4px;border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
         + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:13px;font-weight:700;color:#B71C1C;">' + _hkEscapeHtml(label) + '</div>'
         + (dateLabel ? '<div style="font-size:11px;color:var(--text-l);font-family:\'DM Mono\',monospace;margin-top:1px;">' + _hkEscapeHtml(dateLabel) + ' · ' + _hkEscapeHtml(f.table || '') + '</div>' : '')
         + (snippet ? '<div style="font-size:12px;color:var(--text);margin-top:4px;line-height:1.4;">' + _hkEscapeHtml(snippet) + (snippet.length >= 80 ? '…' : '') + '</div>' : '')
-        + '<div style="font-size:10px;color:#B71C1C;margin-top:4px;font-style:italic;line-height:1.4;">Error: ' + _hkEscapeHtml(err) + ' · ' + _hkEscapeHtml(failedAgo) + '</div>'
+        + '<div style="font-size:10px;color:#B71C1C;margin-top:6px;font-family:\'DM Mono\',monospace;line-height:1.4;word-break:break-word;background:#FFEBEE;padding:6px 8px;border-radius:6px;">' + _hkEscapeHtml(err) + '</div>'
+        + (explanation ? '<div style="font-size:11px;color:var(--text-m);margin-top:6px;line-height:1.5;padding:7px 9px;background:#FFF8E1;border-left:3px solid #F57C00;border-radius:4px;">💡 ' + _hkEscapeHtml(explanation) + '</div>' : '')
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;font-style:italic;">Failed ' + _hkEscapeHtml(failedAgo) + '</div>'
         + '</div>'
         + '</div>'
         + '<div style="display:flex;gap:6px;margin-top:8px;">'
-        + '<button onclick="syncStatusRetryOne(\'' + _hkEscapeHtml(f.id) + '\')" style="flex:1;background:var(--forest);border:none;border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:white;cursor:pointer;">Retry now</button>'
-        + '<button onclick="syncStatusDismiss(\'' + _hkEscapeHtml(f.id) + '\')" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:pointer;">Dismiss</button>'
+        + '<button onclick="syncStatusRetryOne(\'' + _hkEscapeHtml(f.id) + '\')"' + (inProgress ? ' disabled' : '') + ' style="flex:1;background:' + (inProgress ? '#999' : 'var(--forest)') + ';border:none;border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:white;cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">Retry now</button>'
+        + '<button onclick="syncStatusDismiss(\'' + _hkEscapeHtml(f.id) + '\')"' + (inProgress ? ' disabled' : '') + ' style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:8px;padding:7px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--text-l);cursor:' + (inProgress ? 'wait' : 'pointer') + ';opacity:' + (inProgress ? '0.6' : '1') + ';">Dismiss</button>'
         + '</div>'
         + '</div>';
     });
@@ -20575,9 +20717,6 @@ function renderSyncStatusModal() {
   // Pending queue items section
   if (queue.length) {
     html += '<div style="font-size:11px;font-weight:800;color:#E65100;text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Pending (' + queue.length + ')</div>';
-    // Group by table for compact display — pending items aren't usually
-    // interesting individually; the keeper just wants to know the queue
-    // depth and what's stuck.
     var byTable = {};
     queue.forEach(function(q) {
       var t = q.table || 'unknown';
@@ -20598,7 +20737,7 @@ function renderSyncStatusModal() {
   }
 
   // Empty state
-  if (!queue.length && !failed.length) {
+  if (!queue.length && !failed.length && !_syncModalState) {
     html += '<div style="text-align:center;padding:24px 16px;color:var(--text-l);font-size:12px;">All your hive records are backed up. Nothing waiting in the queue.</div>';
   }
 
@@ -20610,63 +20749,156 @@ function renderSyncStatusModal() {
     + '</div>';
 
   sheet.innerHTML = html;
+  // Re-apply banner state if any (the inline render above set display:flex
+  // when state exists, but the innerHTML doesn't carry the message text —
+  // so we re-trigger the message setter here).
+  if (_syncModalState) setSyncModalStatus(_syncModalState.kind, _syncModalState.message, _syncModalState.success);
 }
 
-function syncStatusRetryOne(failedSyncId) {
-  retrySingleFailedSync(failedSyncId);
-  // Trigger an immediate flush so the keeper sees feedback
-  if (isOnline()) {
-    flushOfflineQueue().then(function() {
-      renderSyncStatusModal();
-      try { updateHomeSyncIndicator(); } catch(e) {}
-    });
-  } else {
-    showToast('📵 Offline — will retry when connection returns');
-    renderSyncStatusModal();
+async function syncStatusRetryOne(failedSyncId) {
+  // Find the entry first so we can show what's being retried
+  var failed = loadFailedSyncs();
+  var entry = failed.find(function(f){ return f.id === failedSyncId; });
+  var label = entry ? (entry.hiveName || entry.table || 'record') : 'record';
+
+  if (!isOnline()) {
+    setSyncModalStatus('offline', '📵 Offline — connect to the internet then try Retry again');
+    return;
   }
+  setSyncModalStatus('syncing', 'Retrying ' + label + '…');
+  retrySingleFailedSync(failedSyncId);
+
+  try {
+    await flushOfflineQueue();
+  } catch(e) { console.warn('[retryOne]', e); }
+
+  // Did it work? Check if entry is back in failed list (still failing) or
+  // gone (synced).
+  var failedAfter = loadFailedSyncs();
+  var stillFailing = failedAfter.find(function(f){ return f.id === failedSyncId; });
+  // Note: same id might come back with same id (we recreate the entry on
+  // re-failure if it's the same data.id), so we need to compare carefully.
+  // For now just check whether failed count went down.
+  var success = failed.length > failedAfter.length;
+  if (success) {
+    setSyncModalStatus('result', '✓ ' + label + ' synced successfully', true);
+  } else {
+    setSyncModalStatus('result', '⚠ ' + label + ' is still failing — see updated error below', false);
+  }
+
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 2800);
 }
 
-function syncStatusRetryAll() {
+async function syncStatusRetryAll() {
   var n = retryAllFailedSyncs();
   if (!n) return;
-  showToast('Retrying ' + n + ' failed record' + (n > 1 ? 's' : '') + '…');
-  if (isOnline()) {
-    flushOfflineQueue().then(function() {
-      renderSyncStatusModal();
-      try { updateHomeSyncIndicator(); } catch(e) {}
-    });
-  } else {
-    renderSyncStatusModal();
+
+  if (!isOnline()) {
+    setSyncModalStatus('offline', '📵 Offline — ' + n + ' record' + (n > 1 ? 's' : '') + ' queued. Connect to retry.');
+    setTimeout(function(){ _syncModalState = null; renderSyncStatusModal(); }, 2800);
+    return;
   }
+
+  setSyncModalStatus('syncing', 'Retrying ' + n + ' failed record' + (n > 1 ? 's' : '') + '…');
+
+  try {
+    await flushOfflineQueue();
+  } catch(e) { console.warn('[retryAll]', e); }
+
+  var after = getSyncStatusSummary();
+  var nowSynced = n - after.failed;
+  var msg, success;
+  if (after.failed === 0 && after.pending === 0) {
+    msg = '✓ All ' + n + ' record' + (n > 1 ? 's' : '') + ' synced!';
+    success = true;
+  } else {
+    var parts = [];
+    if (nowSynced > 0) parts.push('✓ ' + nowSynced + ' synced');
+    if (after.failed > 0) parts.push('⚠ ' + after.failed + ' still failing');
+    if (after.pending > 0) parts.push('⏳ ' + after.pending + ' pending');
+    msg = parts.join(' · ');
+    success = nowSynced > 0;
+  }
+  setSyncModalStatus('result', msg, success);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 3500);
 }
 
 function syncStatusDismiss(failedSyncId) {
   if (!confirm('Dismiss this record from the failure list? It will be permanently removed from the queue. Your local copy is unaffected — but it will not be retried unless you save it again.')) return;
   dismissFailedSync(failedSyncId);
-  renderSyncStatusModal();
-  try { updateHomeSyncIndicator(); } catch(e) {}
+  setSyncModalStatus('result', '✓ Record dismissed', true);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 1800);
 }
 
-function syncStatusManualSync() {
+function syncStatusDismissAll() {
+  var n = loadFailedSyncs().length;
+  if (!n) return;
+  var msg = 'Dismiss all ' + n + ' failed records?\n\n'
+    + 'This permanently removes them from the failure list. Your local copies are unaffected — they remain on this device.\n\n'
+    + 'Records will only retry if you save them again, or if you re-create the underlying data (e.g. fix an orphaned hive by reassigning it to a real apiary).\n\n'
+    + 'This cannot be undone.';
+  if (!confirm(msg)) return;
+  dismissAllFailedSyncs();
+  setSyncModalStatus('result', '✓ ' + n + ' record' + (n > 1 ? 's' : '') + ' dismissed', true);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 2200);
+}
+
+async function syncStatusManualSync() {
   if (!isOnline()) {
-    showToast('📵 Offline — will sync when connection returns');
+    setSyncModalStatus('offline', '📵 Offline — your records will sync when the connection returns');
+    setTimeout(function(){ _syncModalState = null; renderSyncStatusModal(); }, 2800);
     return;
   }
-  showToast('Syncing…');
-  flushOfflineQueue().then(function() {
-    // Also push any local-only data that hasn't been queued
+
+  var before = getSyncStatusSummary();
+
+  setSyncModalStatus('syncing', 'Syncing your records to the cloud…');
+
+  try {
+    await flushOfflineQueue();
     if (typeof pushAllToSupabase === 'function' && !_syncInProgress) {
-      pushAllToSupabase().then(function() {
-        renderSyncStatusModal();
-        try { updateHomeSyncIndicator(); } catch(e) {}
-      }).catch(function() {
-        renderSyncStatusModal();
-      });
-    } else {
-      renderSyncStatusModal();
-      try { updateHomeSyncIndicator(); } catch(e) {}
+      await pushAllToSupabase();
     }
-  });
+  } catch(e) { console.warn('[syncNow]', e); }
+
+  var after = getSyncStatusSummary();
+  var newlySynced = (before.pending + before.failed) - (after.pending + after.failed);
+  var msg, success;
+  if (after.failed === 0 && after.pending === 0) {
+    msg = newlySynced > 0
+      ? '✓ All ' + newlySynced + ' record' + (newlySynced > 1 ? 's' : '') + ' synced!'
+      : '✓ Everything is up to date';
+    success = true;
+  } else {
+    var parts = [];
+    if (newlySynced > 0) parts.push('✓ ' + newlySynced + ' synced');
+    if (after.failed > 0) parts.push('⚠ ' + after.failed + ' still failing');
+    if (after.pending > 0) parts.push('⏳ ' + after.pending + ' pending');
+    msg = parts.join(' · ');
+    success = newlySynced > 0;
+  }
+  setSyncModalStatus('result', msg, success);
+  setTimeout(function(){
+    _syncModalState = null;
+    renderSyncStatusModal();
+    try { updateHomeSyncIndicator(); } catch(e) {}
+  }, 3500);
 }
 
 // ─── HOME SYNC INDICATOR (27 April 2026 — Phase 1c) ──────────────────
