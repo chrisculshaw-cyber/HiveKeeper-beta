@@ -2844,7 +2844,7 @@ input[type="checkbox"].hk-chk:checked::after {
         </button>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
         <button onclick="closeModalEl('modal-settings');setTimeout(openPreferencesModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
           <span style="font-size:24px;">⚙️</span>
           <span>Preferences</span>
@@ -2855,6 +2855,15 @@ input[type="checkbox"].hk-chk:checked::after {
         </button>
       </div>
 
+      <!-- 5TH TILE: Apiary settings (27 April 2026 Phase 4f) — full-width
+           single row beneath the 2x2 grid. Houses the Manage apiaries flow
+           that was previously in Tools as a button. Horizontal icon-label
+           layout (instead of stacked) for better visual balance at full width. -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(openManageApiaries,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:22px;">🏡</span>
+        <span>Apiary settings</span>
+      </button>
+
       <!-- TOOLS — inline, as they were before the tile experiment -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Tools</div>
       <button id="settings-sync-status-btn" onclick="closeModalEl('modal-settings');setTimeout(openSyncStatusModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
@@ -2862,7 +2871,6 @@ input[type="checkbox"].hk-chk:checked::after {
         <span id="settings-sync-badge" style="display:none;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.04em;"></span>
       </button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openManageApiaries()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">🏡 Manage apiaries</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;">🔍 Bee inspector contacts</button>
@@ -17044,7 +17052,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:09 27 April 2026 BST · Phase 4e — split Switch/Manage apiaries (per beta tester mistap feedback)';
+var HIVEKEEPER_BUILD = '17:19 27 April 2026 BST · Phase 4f — Apiary settings tile under the Settings 2x2 grid';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
