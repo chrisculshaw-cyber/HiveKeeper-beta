@@ -4356,6 +4356,14 @@ function renderDashboard(){
   // 27 April 2026 — Phase 1c: refresh the persistent sync badge on the
   // Home greeting. Hidden when all synced; amber for pending; red for failed.
   try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
+  // 27 April 2026 Phase 3b — wire the trial-status banner (top of home) and
+  // founder/pro/commercial header badges. Both functions fully implemented
+  // already but were dead code: renderTrialBanner had no call sites at all,
+  // and renderFoundingBadge only fired when Settings opened. Now fires on
+  // every dashboard render so the trial countdown chip and founder pill
+  // are visible from app-open without needing to navigate anywhere.
+  try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
+  try { if (typeof renderFoundingBadge === 'function') renderFoundingBadge(); } catch(e) {}
   // Show sticky setup prompt if onboarding was never completed
   var setupBanner = document.getElementById('setup-incomplete-banner');
   var onboarded = localStorage.getItem('hk_onboarded') === '1';
@@ -16835,7 +16843,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13:43 27 April 2026 BST · Phase 3a-fix — upgrade buttons work in app (Founder bypass + Stripe in Median)';
+var HIVEKEEPER_BUILD = '13:54 27 April 2026 BST · Phase 3b — trial chip wired, founder badge in header, founder modal, manage-sub in app';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -18892,12 +18900,15 @@ function updatePlanBadge() {
   var fbSection = document.getElementById('founding-badge-section');
   if (fbSection) fbSection.style.display = isFoundingBeekeeper() ? 'block' : 'none';
 
-  // Show manage subscription button only for paid users (not founders, not native app)
+  // 27 April 2026 Phase 3b — drop isNative restriction. Median app users
+  // CAN manage their subscription via Stripe billing portal in webview
+  // during beta. Same rationale as handleUpgrade fix earlier today.
+  // FIXME(phase-3d): when IAP/Play Billing ship, route to native
+  // subscription management UI for those users instead of Stripe portal.
   var manageBtn = document.getElementById('manage-sub-btn');
   if (manageBtn) {
     var isPaid = tier === 'pro' || tier === 'commercial';
-    var isNative = window.median || /Median/i.test(navigator.userAgent);
-    manageBtn.style.display = (isPaid && !isNative && !isFoundingBeekeeper()) ? 'block' : 'none';
+    manageBtn.style.display = (isPaid && !isFoundingBeekeeper()) ? 'block' : 'none';
   }
 
   // Re-render header badges too
@@ -18993,12 +19004,18 @@ function setBillingPeriod(period) {
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
-  // 27 April 2026 Phase 3a-fix — Founder bypass uses alert() so the message
-  // is unmissable. Was a transient toast that disappeared in 2.5s and Chris
-  // (a Founder testing the upgrade flow) interpreted as "buttons don't work".
-  // Proper celebratory Founder modal will land in Phase 3b.
+  // 27 April 2026 Phase 3b — replaces the temporary alert() with the
+  // proper Founder celebration modal (modal-founder). Discoverable,
+  // on-brand, surfaces the voucher reward mechanism (the actual Founder
+  // perk per project memory). Falls back to alert() if modal element
+  // or openModalEl is missing — defensive belt-and-braces.
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
-    alert('🐝 You\'re a Founding Beekeeper!\n\nHiveKeeper Pro is yours forever — no payment needed. Settings → Plan shows your status.\n\nThank you for being here from the start.');
+    var founderModal = document.getElementById('modal-founder');
+    if (founderModal && typeof openModalEl === 'function') {
+      openModalEl('modal-founder');
+    } else {
+      alert('🐝 You\'re a Founding Beekeeper!\n\nHiveKeeper Pro is yours forever — no payment needed.');
+    }
     return;
   }
 
@@ -23413,6 +23430,33 @@ function goToApiaryAlerts() {
         <div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Loading...</div>
       </div>
       <button onclick="closeModalEl('modal-admin-dashboard')" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL: FOUNDING BEEKEEPER (27 April 2026 Phase 3b) -->
+  <!-- Replaces the alert() in handleUpgrade for Founders. Discoverable
+       celebration moment that explains Founder status, lifetime Pro, and
+       the voucher mechanic via referrals. -->
+  <div class="modal-overlay" id="modal-founder" onclick="closeModal(event,'modal-founder')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="background:linear-gradient(135deg,#FAEEDA 0%,#F4D9A8 100%);border-radius:var(--rs);padding:24px 20px;margin:-4px -4px 14px;text-align:center;border:2px solid #BA7517;">
+        <div style="font-size:48px;margin-bottom:8px;">🐝</div>
+        <div style="font-size:11px;font-weight:800;color:#854F0B;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">You are a</div>
+        <div style="font-size:22px;font-weight:800;color:#412402;font-family:'Syne',sans-serif;line-height:1.15;">Founding Beekeeper</div>
+        <div style="font-size:12px;color:#633806;margin-top:8px;font-style:italic;">Lifetime Pro &middot; on us, forever</div>
+      </div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:14px;">
+        Thank you for being here from the start. Every premium feature is yours forever &mdash; no payment, no renewal, no &ldquo;founders' rate that goes up next year.&rdquo;
+      </div>
+      <div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:800;color:#854F0B;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">🎁 Founding Beekeeper rewards</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.55;">
+          Refer beekeepers who become paying subscribers, and you earn <strong>beekeeping vouchers at year-end</strong> &mdash; redeemable at participating UK suppliers. The more keepers you bring with you, the more your hives benefit.
+        </div>
+      </div>
+      <button onclick="closeModalEl('modal-founder');setTimeout(openReferralModal,200);" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:13px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;margin-bottom:10px;">🐝 Refer a beekeeper &rarr;</button>
+      <button onclick="closeModalEl('modal-founder')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
     </div>
   </div>
 
