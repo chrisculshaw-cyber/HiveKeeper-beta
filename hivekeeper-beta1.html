@@ -10402,6 +10402,17 @@ function changeInspectHive(hiveId){
   }
   currentHiveId=hiveId;
   currentInspData={};
+  // 27 April 2026 Phase 2e — switching to a different hive is a fresh
+  // inspection context. Restore the save button directly here, since
+  // changeInspectHive doesn't call renderInspectHeader (where Phase 2d's
+  // hive-comparison guard lives). Reported by Chris during 12:30 BST test —
+  // save button stayed in "Saved on this device" state after hive change.
+  try {
+    window._inspectionDirty = false;
+    window._inspectionJustSaved = false;
+    window._inspectionSavedForHiveId = null;
+    if (typeof _restoreSaveButtonFromTerminal === 'function') _restoreSaveButtonFromTerminal();
+  } catch(e) { console.warn('[changeInspectHive] save-btn reset', e); }
   var _panel=document.getElementById('inspect-history-panel'); if(_panel) _panel.style.display='none';
   var _notesEl=document.getElementById('inspect-last-notes'); if(_notesEl) _notesEl.style.maxHeight='0';
   var _expBtn=document.getElementById('inspect-last-expand-btn'); if(_expBtn) _expBtn.textContent='▼ Show notes';
@@ -16808,7 +16819,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:30 27 April 2026 BST · Phase 2d — save button on hive change + extra trigger phrases + accelerate orphan dead-letter';
+var HIVEKEEPER_BUILD = '12:31 27 April 2026 BST · Phase 2e — hive-change save button + voice-memo re-extraction + backfill';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -21013,6 +21024,26 @@ async function _replaceVoiceMemoPlaceholder(audioId, replacementText) {
       insp.notes = (notes + '\n\n' + replacementText).trim();
     }
     insp.pendingVoiceMemoId = null;
+    // 27 April 2026 Phase 2e — re-run next-inspection extraction on the new
+    // notes content. At save time, extraction ran against the placeholder
+    // text ("[Voice memo recorded HH:MM — will transcribe...]") which has
+    // no trigger phrases, so insp.nextInspectionNotes was empty. Now that
+    // the actual transcribed words are in the notes, those words may
+    // contain phrases like "on next inspection check brood" that need
+    // extracting. Premium gate preserved.
+    try {
+      if (typeof extractNextInspectionNotes === 'function'
+          && typeof canUsePremiumFeature === 'function'
+          && canUsePremiumFeature('next_inspection_notes')) {
+        var newExtract = extractNextInspectionNotes(insp.notes || '');
+        if (newExtract && newExtract.trim()) {
+          insp.nextInspectionNotes = newExtract;
+          // Reset doneAt since we have new follow-ups — keeper hasn't
+          // had a chance to acknowledge these yet.
+          insp.nextInspectionNotesDoneAt = null;
+        }
+      }
+    } catch(e) { console.warn('[voice-processor] re-extract error', e); }
     inspections[idx] = insp;
     localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
     // Trigger a push so the cloud gets the new notes
@@ -21089,6 +21120,54 @@ document.addEventListener('DOMContentLoaded', function() {
       processQueuedVoiceMemos().catch(function(e){ console.warn('[voice-processor]', e); });
     }
   }, 3000);
+});
+
+// 27 April 2026 Phase 2e — ONE-SHOT BACKFILL of next-inspection extraction.
+// Existing inspections may have been saved when:
+//   (a) extraction ran on a voice-memo placeholder before transcription, or
+//   (b) the trigger list didn't include phrases like "on next inspection"
+// In either case nextInspectionNotes is empty even though the inspection
+// notes contain trigger phrases. Re-extract once per device so existing
+// follow-ups become visible. Only touches records with empty
+// nextInspectionNotes AND no doneAt (won't undo acknowledged follow-ups
+// or overwrite existing extraction).
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    try {
+      if (localStorage.getItem('hk_phase2e_reextract_done') === '1') return;
+      if (typeof extractNextInspectionNotes !== 'function') return;
+      if (typeof canUsePremiumFeature !== 'function' || !canUsePremiumFeature('next_inspection_notes')) {
+        // Not a premium tier — mark done so we don't keep checking
+        localStorage.setItem('hk_phase2e_reextract_done', '1');
+        return;
+      }
+      var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+      var changed = 0;
+      for (var i = 0; i < inspections.length; i++) {
+        var insp = inspections[i];
+        if (!insp || insp.nextInspectionNotes || insp.nextInspectionNotesDoneAt) continue;
+        var notes = insp.notes || '';
+        if (!notes.trim()) continue;
+        var extracted = extractNextInspectionNotes(notes);
+        if (extracted && extracted.trim()) {
+          insp.nextInspectionNotes = extracted;
+          inspections[i] = insp;
+          changed++;
+        }
+      }
+      if (changed > 0) {
+        localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
+        if (window._hkDiag) console.log('[Phase 2e backfill] re-extracted ' + changed + ' inspections');
+        // Push the backfilled records to cloud
+        if (typeof pushInspections === 'function' && isOnline()) {
+          pushInspections().catch(function(e){ console.warn('[Phase 2e backfill push]', e); });
+        }
+      }
+      localStorage.setItem('hk_phase2e_reextract_done', '1');
+    } catch(e) {
+      console.warn('[Phase 2e backfill] failed', e);
+    }
+  }, 4000);
 });
 
 // ─── EXPORT FAILURE LOG (27 April 2026 — Phase 1f) ────────────────────
