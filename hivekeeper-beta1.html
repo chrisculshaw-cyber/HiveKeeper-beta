@@ -13228,6 +13228,21 @@ function applySettings() {
     document.body.classList.remove('large-text');
     document.documentElement.classList.remove('large-text');
   }
+  // 28 April 2026 Phase 4l — Imperial toggle visual state. Was managed
+  // ad-hoc inside toggleImperial(); centralised here so opening the
+  // Preferences modal picks up the correct state from localStorage.
+  var tim = document.getElementById('toggle-imperial');
+  if (tim) {
+    var isImperial = (typeof USE_IMPERIAL !== 'undefined') ? USE_IMPERIAL : (localStorage.getItem('hk_imperial') === '1');
+    tim.classList.toggle('on', isImperial);
+  }
+  // 28 April 2026 Phase 4l — ColourBlind toggle visual state + body class.
+  // Same pattern: was only set inside toggleColourBlind, never restored
+  // on modal reopen.
+  var tcb = document.getElementById('toggle-cb');
+  var cbOn = localStorage.getItem('hk_colour_blind') === '1';
+  if (tcb) tcb.classList.toggle('on', cbOn);
+  document.body.classList.toggle('colour-blind', cbOn);
   // Push notifications — only show toggle if running in Median wrapper
   var pushRow = document.getElementById('push-notif-row');
   var pushToggle = document.getElementById('toggle-push');
@@ -13254,6 +13269,8 @@ function togglePushNotifications() {
     showToast('Push notifications disabled');
   }
   applySettings();
+  // 28 April 2026 Phase 4l — sync preference cross-device like every other toggle.
+  if (typeof saveSettingsToCloud === 'function') saveSettingsToCloud().catch(function(){});
 }
 
 function toggle24h() {
@@ -15248,24 +15265,12 @@ function openPreferencesModal() {
 
   openModalEl('modal-preferences');
 
-  // Restore toggle states after modal opens (these toggles set visual state based on localStorage)
-  try { if (typeof restore24hToggle === 'function') restore24hToggle(); } catch(e) {}
-  try { if (typeof restoreLargeTextToggle === 'function') restoreLargeTextToggle(); } catch(e) {}
-  try { if (typeof restoreColourBlindToggle === 'function') restoreColourBlindToggle(); } catch(e) {}
-  try { if (typeof restorePushNotifToggle === 'function') restorePushNotifToggle(); } catch(e) {}
-  // Fallback: apply the 'active' class based on localStorage keys directly
-  try {
-    var t24 = document.getElementById('toggle-24h');
-    if (t24 && localStorage.getItem('hk_24h') === '1') t24.classList.add('active');
-    var tlg = document.getElementById('toggle-large');
-    if (tlg && localStorage.getItem('hk_large_text') === '1') tlg.classList.add('active');
-    var tcb = document.getElementById('toggle-cb');
-    if (tcb && localStorage.getItem('hk_colour_blind') === '1') tcb.classList.add('active');
-    var tps = document.getElementById('toggle-push');
-    if (tps && localStorage.getItem('hk_push_notif') === '1') tps.classList.add('active');
-    var tim = document.getElementById('toggle-imperial');
-    if (tim && localStorage.getItem('hk_imperial') === '1') { tim.classList.add('active'); tim.classList.add('on'); }
-  } catch(e) {}
+  // 28 April 2026 Phase 4l — apply all settings on open. Was using ad-hoc
+  // restore code that added the wrong CSS class (.active vs .on), so
+  // toggles appeared OFF on reopen even when localStorage had them ON.
+  // Also fixes push-notif-row visibility (was waiting for applySettings
+  // to run from elsewhere; now runs immediately on modal open).
+  try { applySettings(); } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -17099,7 +17104,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '09:46 28 April 2026 BST · Phase 4k — auth screen cleanup pass (tighter header, system font inputs, first-visit-only launch info, single footer)';
+var HIVEKEEPER_BUILD = '09:51 28 April 2026 BST · Phase 4l — preferences toggles fix (.active vs .on class mismatch + push row visibility on open)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
