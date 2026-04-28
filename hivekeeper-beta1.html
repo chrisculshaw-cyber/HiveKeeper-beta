@@ -1981,6 +1981,18 @@ input[type="checkbox"].hk-chk:checked::after {
           <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Sightings</div>
         </div>
       </div>
+      <!-- IDENTIFY A HORNET — Phase 4ad entry point. Always visible.
+           Uses AI photo analysis to confirm if a suspect insect is an
+           Asian Hornet. Confirmed positives flow into the existing
+           Hornet Report submission with the photo auto-attached. -->
+      <div onclick="event.stopPropagation();openHornetIdentifier()" style="border-top:1px solid var(--wax);padding:11px 14px;background:linear-gradient(90deg,#FFF6E1,#FBEFD0);cursor:pointer;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:18px;line-height:1;flex-shrink:0;">📷</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--text);line-height:1.2;">Identify a hornet</div>
+          <div style="font-size:10.5px;color:var(--text-l);margin-top:2px;line-height:1.4;">Snap a photo — AI confirms the species before reporting</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--honey);flex-shrink:0;">Identify &rarr;</div>
+      </div>
       <!-- Expandable detail body — render code populates this unchanged -->
       <div class="ah-body" id="ah-body" style="display:none;">
         <div id="ah-content">
@@ -2868,6 +2880,46 @@ input[type="checkbox"].hk-chk:checked::after {
         Your previously submitted sightings. All reports have been forwarded to Defra/NBU. Tap "View map" to see the exact location.
       </div>
       <div id="my-reports-list"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: HORNET ID — Phase 4ad. AI-driven species identification.
+       Two-stage UI in one modal: photo capture → AI analyse → verdict
+       display with verdict-specific actions. Confirmed positives flow
+       directly into the existing Hornet Report modal with the photo
+       pre-attached. -->
+  <div class="modal-overlay" id="modal-hornet-id" onclick="closeModal(event,'modal-hornet-id')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="modal-title">📷 Identify a hornet</div>
+        <div onclick="closeModalEl('modal-hornet-id')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+
+      <!-- Honest framing: AI assists, doesn't replace expert ID -->
+      <div style="background:#FFF8E7;border-left:4px solid var(--honey);padding:10px 12px;border-radius:8px;font-size:12px;color:#5D4037;margin-bottom:16px;line-height:1.5;">
+        <strong>How this works:</strong> take or upload a photo of the suspect insect. HiveKeeper AI compares it against known features of Asian Hornets (Vespa velutina) and other UK species. <strong>If unsure, always report anyway</strong> &mdash; AI confirmation is a guide, not a substitute for expert verification.
+      </div>
+
+      <!-- STAGE 1: Photo capture -->
+      <div id="hid-stage-capture">
+        <label for="hid-photo" id="hid-photo-label" style="display:block;width:100%;padding:32px 14px;background:var(--cream);border:2px dashed var(--honey);border-radius:var(--rs);text-align:center;cursor:pointer;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--bark);box-sizing:border-box;margin-bottom:12px;">
+          📷 Take photo or choose from library
+        </label>
+        <input type="file" id="hid-photo" accept="image/*" capture="environment" onchange="onHornetIdPhotoSelected(event)" style="display:none;">
+        <div id="hid-photo-preview" style="display:none;margin-bottom:14px;text-align:center;"></div>
+        <button id="hid-analyse-btn" onclick="analyseHornetPhoto()" disabled style="width:100%;background:linear-gradient(135deg,#C62828,#8B0000);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;opacity:0.5;letter-spacing:.02em;box-shadow:0 2px 6px rgba(198,40,40,.35);">🔍 Analyse photo</button>
+        <div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:8px;line-height:1.5;">Best results: clear photo, insect roughly centred, daylight if possible. Multiple angles helpful for difficult IDs.</div>
+      </div>
+
+      <!-- STAGE 2: Result (hidden until analysis returns) -->
+      <div id="hid-stage-result" style="display:none;">
+        <div id="hid-result-card"></div>
+        <div id="hid-result-actions" style="margin-top:14px;"></div>
+        <button onclick="resetHornetIdentifier()" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:10px;">📷 Try another photo</button>
+      </div>
+
+      <button onclick="closeModalEl('modal-hornet-id')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:10px;">Close</button>
     </div>
   </div>
 
@@ -12741,6 +12793,283 @@ function initAsianHornetWatch() {
 var _hornetPhotoBase64 = null;
 var _hornetPhotoMime = null;
 
+/* ════════════════════════════════════════════════════════════════
+   HORNET IDENTIFIER (Phase 4ad, 28 April 2026)
+   ----------------------------------------------------------------
+   AI-driven species identification. Reuses the existing
+   Cloudflare Worker (flat-bird-f269.chris-culshaw.workers.dev)
+   that already handles type:'frame_analysis'. Adds a new type:
+   'hornet_id'.
+
+   WORKER CONTRACT (the worker prompt must implement this):
+     POST  https://flat-bird-f269.chris-culshaw.workers.dev
+     Body: { type: 'hornet_id', image: <base64>, mimeType: 'image/jpeg' }
+     Returns:
+       {
+         verdict: 'confirmed' | 'unlikely' | 'unsure',
+         species: 'Asian Hornet' | 'European Hornet' | 'Common Wasp'
+                  | 'Honey Bee' | 'Bumblebee' | 'Other' | 'Unknown',
+         confidence: 0-100,
+         diagnostic: 'short string explaining the diagnostic features
+                      visible in the photo (e.g. "yellow legs, dark
+                      thorax, single orange band — consistent with
+                      Vespa velutina")',
+         reportRecommendation: 'report' | 'no_report'
+       }
+
+   PROMPT DESIGN NOTES (for the worker side, not implemented here):
+   - Bias HARD toward 'unsure' over 'unlikely'. False negative on a
+     real Asian hornet is catastrophic; false positive on a wasp is
+     mild user annoyance.
+   - When verdict is 'unsure', reportRecommendation should be 'report'.
+   - Always populate diagnostic with educational text — what features
+     led to the verdict — so the user learns regardless of outcome.
+   - Resist over-confidence. UK has Asian Hornets, European Hornets,
+     wasps and various bees that look superficially similar. Confidence
+     >85 should require multiple strong diagnostic features.
+   - Use the photo's image quality as a confidence input. Blurry, dark
+     or distant photos default to 'unsure'.
+
+   Until the worker prompt is updated server-side, this client falls
+   back to a graceful "AI temporarily unavailable" message that
+   directs the user straight to the manual report flow with the
+   photo attached. No data loss; just a manual path.
+   ════════════════════════════════════════════════════════════════ */
+
+// In-modal state. Reset by openHornetIdentifier() and resetHornetIdentifier().
+var _hornetIdPhotoBase64 = null;
+var _hornetIdPhotoMime = null;
+var _hornetIdPhotoDataUrl = null;
+var _hornetIdLastVerdict = null;
+
+function openHornetIdentifier() {
+  resetHornetIdentifier();
+  if (typeof openModalEl === 'function') openModalEl('modal-hornet-id');
+}
+
+function resetHornetIdentifier() {
+  _hornetIdPhotoBase64 = null;
+  _hornetIdPhotoMime = null;
+  _hornetIdPhotoDataUrl = null;
+  _hornetIdLastVerdict = null;
+  var stageCapture = document.getElementById('hid-stage-capture');
+  var stageResult = document.getElementById('hid-stage-result');
+  if (stageCapture) stageCapture.style.display = '';
+  if (stageResult) stageResult.style.display = 'none';
+  var label = document.getElementById('hid-photo-label');
+  if (label) label.innerHTML = '📷 Take photo or choose from library';
+  var preview = document.getElementById('hid-photo-preview');
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  var fileInput = document.getElementById('hid-photo');
+  if (fileInput) fileInput.value = '';
+  var btn = document.getElementById('hid-analyse-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = '🔍 Analyse photo'; }
+}
+
+function onHornetIdPhotoSelected(event) {
+  var file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showToast('Please choose an image file');
+    return;
+  }
+  // Resize/compress before base64 — full-res phone photos are too large
+  // for the API and slow on poor signal. Target ~1024px max edge,
+  // JPEG quality 0.85. Same approach as the existing report form.
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxEdge = 1024;
+      var w = img.width, h = img.height;
+      if (w > maxEdge || h > maxEdge) {
+        var scale = maxEdge / Math.max(w, h);
+        w = Math.round(w * scale); h = Math.round(h * scale);
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      var dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      _hornetIdPhotoDataUrl = dataUrl;
+      _hornetIdPhotoBase64 = dataUrl.split(',')[1];
+      _hornetIdPhotoMime = 'image/jpeg';
+      // Show preview
+      var preview = document.getElementById('hid-photo-preview');
+      if (preview) {
+        preview.innerHTML = '<img src="' + dataUrl + '" style="max-width:100%;max-height:240px;border-radius:var(--rs);box-shadow:var(--shadow);">';
+        preview.style.display = 'block';
+      }
+      var label = document.getElementById('hid-photo-label');
+      if (label) label.innerHTML = '🔄 Choose a different photo';
+      var btn = document.getElementById('hid-analyse-btn');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyseHornetPhoto() {
+  if (!_hornetIdPhotoBase64) { showToast('Please add a photo first'); return; }
+  var btn = document.getElementById('hid-analyse-btn');
+  if (btn) { btn.textContent = '⏳ Analysing…'; btn.disabled = true; btn.style.opacity = '0.7'; }
+
+  try {
+    var res = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'hornet_id',
+        image: _hornetIdPhotoBase64,
+        mimeType: _hornetIdPhotoMime
+      })
+    });
+    if (!res.ok) throw new Error('Worker returned ' + res.status);
+    var data = await res.json();
+
+    // Validate the response shape. If the worker hasn't been updated
+    // server-side yet, it might return a frame_analysis-shaped response
+    // — handle gracefully by falling through to the manual report path.
+    if (!data || !data.verdict) {
+      throw new Error('Worker response missing verdict — server prompt not yet updated for hornet_id');
+    }
+
+    _hornetIdLastVerdict = data;
+    renderHornetIdResult(data);
+  } catch(e) {
+    console.warn('Hornet ID error:', e);
+    // Graceful fallback: AI not available. Direct user to manual report.
+    renderHornetIdFallback(e.message || 'Analysis temporarily unavailable');
+  } finally {
+    if (btn) { btn.textContent = '🔍 Analyse photo'; btn.disabled = false; btn.style.opacity = '1'; }
+  }
+}
+
+function renderHornetIdResult(data) {
+  var stageCapture = document.getElementById('hid-stage-capture');
+  var stageResult = document.getElementById('hid-stage-result');
+  var resultCard = document.getElementById('hid-result-card');
+  var resultActions = document.getElementById('hid-result-actions');
+  if (!stageCapture || !stageResult || !resultCard || !resultActions) return;
+
+  stageCapture.style.display = 'none';
+  stageResult.style.display = '';
+
+  // Verdict-specific styling and copy
+  var verdictUI = {
+    'confirmed': {
+      bg: 'linear-gradient(135deg,#FBE5E5,#FDD8D8)',
+      border: '#C62828',
+      icon: '🚨',
+      headline: 'Confirmed: Asian Hornet',
+      tone: '#8B0000',
+      action: 'report'
+    },
+    'unsure': {
+      bg: 'linear-gradient(135deg,#FFF8E7,#FBEFD0)',
+      border: 'var(--honey)',
+      icon: '⚠️',
+      headline: 'Unsure — when in doubt, report it',
+      tone: '#8A5A0F',
+      action: 'report_anyway'
+    },
+    'unlikely': {
+      bg: 'linear-gradient(135deg,#E8F3E0,#D7EBC8)',
+      border: '#2D5016',
+      icon: '✓',
+      headline: 'Likely not an Asian Hornet',
+      tone: '#2D5016',
+      action: 'optional_report'
+    }
+  };
+  var ui = verdictUI[data.verdict] || verdictUI['unsure'];
+  var species = data.species || 'Unknown';
+  var confidence = (typeof data.confidence === 'number') ? Math.round(data.confidence) : null;
+  var diagnostic = data.diagnostic || '';
+
+  resultCard.innerHTML =
+    '<div style="background:' + ui.bg + ';border-left:4px solid ' + ui.border + ';border-radius:var(--rs);padding:14px 16px;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+        '<div style="font-size:28px;line-height:1;flex-shrink:0;">' + ui.icon + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:800;color:' + ui.tone + ';line-height:1.2;">' + ui.headline + '</div>' +
+          (data.verdict !== 'confirmed' ? '<div style="font-size:11px;color:' + ui.tone + ';opacity:0.85;margin-top:2px;">Best match: ' + species + (confidence !== null ? ' · ' + confidence + '% confidence' : '') + '</div>' : (confidence !== null ? '<div style="font-size:11px;color:' + ui.tone + ';opacity:0.85;margin-top:2px;">Confidence: ' + confidence + '%</div>' : '')) +
+        '</div>' +
+      '</div>' +
+      (diagnostic ? '<div style="font-size:12px;color:' + ui.tone + ';line-height:1.5;background:rgba(255,255,255,0.5);padding:10px 12px;border-radius:8px;margin-top:10px;"><strong>What I noticed:</strong> ' + escapeHtml(diagnostic) + '</div>' : '') +
+    '</div>';
+
+  // Verdict-specific action buttons
+  var actions = '';
+  if (ui.action === 'report') {
+    actions =
+      '<button onclick="reportFromIdentifier(true)" class="ah-report-btn" style="margin-bottom:10px;">📨 Submit report with this photo</button>' +
+      '<div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">The photo will be attached to your report and sent to the UK invasive species team.</div>';
+  } else if (ui.action === 'report_anyway') {
+    actions =
+      '<button onclick="reportFromIdentifier(true)" class="ah-report-btn" style="margin-bottom:10px;">📨 Report anyway with this photo</button>' +
+      '<div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">When the AI is unsure, reporting is the safer choice. Better one extra report than a missed Asian Hornet.</div>';
+  } else { // optional_report
+    actions =
+      '<button onclick="reportFromIdentifier(true)" style="width:100%;background:transparent;border:1.5px solid var(--honey);color:var(--honey);border-radius:var(--rs);padding:11px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;">📨 Report anyway (just to be sure)</button>' +
+      '<div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">If you have any doubt, reporting costs nothing and helps the national surveillance programme.</div>';
+  }
+  resultActions.innerHTML = actions;
+}
+
+function renderHornetIdFallback(reason) {
+  var stageCapture = document.getElementById('hid-stage-capture');
+  var stageResult = document.getElementById('hid-stage-result');
+  var resultCard = document.getElementById('hid-result-card');
+  var resultActions = document.getElementById('hid-result-actions');
+  if (!stageCapture || !stageResult || !resultCard || !resultActions) return;
+  stageCapture.style.display = 'none';
+  stageResult.style.display = '';
+  resultCard.innerHTML =
+    '<div style="background:#FFF8E7;border-left:4px solid var(--honey);border-radius:var(--rs);padding:14px 16px;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">' +
+        '<div style="font-size:24px;line-height:1;flex-shrink:0;">📡</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:var(--text);line-height:1.2;">AI identification unavailable</div>' +
+          '<div style="font-size:11px;color:var(--text-l);margin-top:2px;line-height:1.4;">You can still report the sighting — your photo will be reviewed by the UK invasive species team.</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  resultActions.innerHTML =
+    '<button onclick="reportFromIdentifier(true)" class="ah-report-btn" style="margin-bottom:10px;">📨 Report this sighting</button>' +
+    '<div style="font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">Manual reporting works the same way — your photo, location and notes go to the same team.</div>';
+}
+
+// Hand off to the existing Hornet Report form with the photo pre-attached.
+// Sets the global photo state used by submitHornetReport(), then opens
+// the report modal. Closes this modal so the user sees the report form
+// fresh.
+function reportFromIdentifier(includePhoto) {
+  if (!_hornetIdPhotoBase64) { showToast('No photo to report'); return; }
+  // Pre-fill the existing report form's photo state. These globals are
+  // the ones submitHornetReport() reads from.
+  if (includePhoto) {
+    _hornetPhotoBase64 = _hornetIdPhotoBase64;
+    _hornetPhotoMime = _hornetIdPhotoMime || 'image/jpeg';
+    // Update the existing report form's preview if the modal opens
+    setTimeout(function() {
+      var preview = document.getElementById('hr-photo-preview');
+      if (preview) {
+        preview.innerHTML = '<img src="' + _hornetIdPhotoDataUrl + '" style="max-width:100%;max-height:200px;border-radius:var(--rs);">';
+        preview.style.display = 'block';
+      }
+      var label = document.getElementById('hr-photo-label');
+      if (label) label.textContent = '📷 Photo attached from identifier ✓';
+    }, 100);
+  }
+  closeModalEl('modal-hornet-id');
+  // Open the report form. openHornetReportForm() handles its own setup.
+  setTimeout(function() {
+    if (typeof openHornetReportForm === 'function') openHornetReportForm();
+  }, 200);
+}
+
+
 function openHornetReportForm() {
   // Pre-fill form with sensible defaults
   var now = new Date();
@@ -17681,7 +18010,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:34 28 April 2026 BST · Phase 4ac — weather icon now reflects time of day (☀️ during day, 🌙 at night) using is_day from open-meteo';
+var HIVEKEEPER_BUILD = '21:53 28 April 2026 BST · Phase 4ad — Asian Hornet AI identifier UI scaffolding (modal, capture, analyse, verdict UI, report handoff with photo)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
