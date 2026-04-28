@@ -78,7 +78,7 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
     pointer-events:none;
   }
   #app-container::after{
-    content:'Native iOS & Android apps arriving May 2026 · gethivekeeper.com';
+    content:'Now on the App Store · gethivekeeper.com';
     position:fixed;
     bottom:24px;
     left:50%;
@@ -1346,10 +1346,10 @@ input[type="checkbox"].hk-chk:checked::after {
 <div id="auth-overlay" style="display:flex;visibility:visible;pointer-events:all;z-index:9999;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg, #3a5e2e 0%, var(--forest) 30%, #1a2f10 80%, #0a1607 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;">
 
   <!-- Honeycomb texture backdrop — subtle, atmospheric -->
-  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.06;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.10;z-index:0;" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <pattern id="hk-honeycomb" patternUnits="userSpaceOnUse" width="56" height="64">
-        <path d="M28,2 L52,18 L52,46 L28,62 L4,46 L4,18 Z" fill="none" stroke="rgba(228,163,58,0.85)" stroke-width="1"/>
+        <path d="M28,2 L52,18 L52,46 L28,62 L4,46 L4,18 Z" fill="none" stroke="rgba(228,163,58,1)" stroke-width="1"/>
       </pattern>
     </defs>
     <rect width="100%" height="100%" fill="url(#hk-honeycomb)"/>
@@ -1364,8 +1364,8 @@ input[type="checkbox"].hk-chk:checked::after {
     <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
     <div class="hk-auth-logomark" style="position:relative;font-size:58px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(228,163,58,0.4));">🐝</div>
     <div style="position:relative;font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;">HiveKeeper<span style="font-size:18px;vertical-align:super;opacity:0.55;font-weight:400;">™</span></div>
-    <div style="position:relative;font-size:13px;color:rgba(255,255,255,.7);margin-top:10px;font-style:italic;letter-spacing:.01em;">Your apiary, always with you</div>
-    <div style="position:relative;font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.05em;text-transform:uppercase;">Built at a 24-hive apiary in Northamptonshire</div>
+    <div style="position:relative;font-size:16px;color:rgba(255,255,255,.78);margin-top:12px;font-style:italic;letter-spacing:.01em;line-height:1.4;">Your apiary, always with you</div>
+    <div style="position:relative;font-size:10px;color:rgba(255,255,255,.42);margin-top:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.5;max-width:320px;margin-left:auto;margin-right:auto;">Built at a 24-hive apiary in Northamptonshire<br>with our founding beekeepers</div>
   </div>
 
   <!-- Build stamp (subtle, dynamically updated by JS on load) -->
@@ -1386,8 +1386,8 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <!-- Tabs -->
     <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12);">
-      <button id="auth-tab-signin" onclick="switchAuthTab('signin')" style="flex:1;background:transparent;border:none;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid var(--honey);">Sign in</button>
-      <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;background:transparent;border:none;color:rgba(255,255,255,.55);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid transparent;">Create account</button>
+      <button id="auth-tab-signin" onclick="switchAuthTab('signin')" style="flex:1;background:transparent;border:none;color:white;font-size:14px;font-weight:700;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid var(--honey);letter-spacing:.01em;">Sign in</button>
+      <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;background:transparent;border:none;color:rgba(255,255,255,.55);font-size:14px;font-weight:500;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.01em;">Create account</button>
     </div>
 
     <!-- Sign in form -->
@@ -1407,7 +1407,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <input type="checkbox" id="auth-remember" checked style="display:none;">
       </div>
 
-      <button id="signin-btn" onclick="handleSignIn()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;letter-spacing:.02em;">Sign in</button>
+      <button id="signin-btn" onclick="handleSignIn()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;color:white;cursor:pointer;letter-spacing:.04em;">Sign in</button>
     </div>
 
     <!-- Sign up form -->
@@ -1426,7 +1426,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <input id="signup-password-confirm" type="password" placeholder="Confirm password" autocomplete="new-password" oninput="validatePasswordMatch()" onkeydown="if(event.key==='Enter')handleSignUp()" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:6px;box-sizing:border-box;">
       <div id="signup-password-match" style="font-size:11px;min-height:16px;margin-bottom:14px;padding:0 2px;"></div>
-      <button id="signup-btn" onclick="handleSignUp()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;letter-spacing:.02em;">Create account</button>
+      <button id="signup-btn" onclick="handleSignUp()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;color:white;cursor:pointer;letter-spacing:.04em;">Create account</button>
     </div>
   </div>
 
@@ -17152,7 +17152,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '09:57 28 April 2026 BST · Phase 4m — auth screen hero pass (honeycomb backdrop, glass form panel, honey glow, float animation)';
+var HIVEKEEPER_BUILD = '10:07 28 April 2026 BST · Phase 4n — auth screen tweaks (drop Syne from tabs/buttons, bigger strapline, founding beekeepers credit, stronger honeycomb)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
