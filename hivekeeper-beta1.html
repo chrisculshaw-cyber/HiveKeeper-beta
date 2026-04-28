@@ -9702,6 +9702,34 @@ function flyingConditions(temp, windKmh, rain) {
   return 'Marginal conditions';
 }
 
+// 28 April 2026 — Phase 4af: helper for consumers that should follow the
+// currently-selected apiary's location (weather, AH Watch nearby calc).
+// Falls back to the user's home location if no active apiary location is set.
+// Consumers needing the user's actual home (e.g. AH report fallback) should
+// read hk_user_* directly, not via this helper.
+function getActiveOrUserLocation() {
+  var aLat = parseFloat(localStorage.getItem('hk_active_lat'));
+  var aLng = parseFloat(localStorage.getItem('hk_active_lng'));
+  if (!isNaN(aLat) && !isNaN(aLng)) {
+    return {
+      lat: aLat, lng: aLng,
+      name: localStorage.getItem('hk_active_location_name') || '',
+      source: 'apiary'
+    };
+  }
+  var uLat = parseFloat(localStorage.getItem('hk_user_lat'));
+  var uLng = parseFloat(localStorage.getItem('hk_user_lng'));
+  if (!isNaN(uLat) && !isNaN(uLng)) {
+    return {
+      lat: uLat, lng: uLng,
+      name: localStorage.getItem('hk_user_location_name') || '',
+      source: 'home'
+    };
+  }
+  // Final fallback — UK Midlands centre
+  return { lat: 52.4397, lng: -0.5432, name: 'UK', source: 'default' };
+}
+
 // 27 April 2026 Phase 4c — categorise the flyingConditions string into a
 // short label + colour for the home weather hero pill. Three bands:
 // green (Excellent/Good — go inspect), amber (Marginal — your call),
@@ -9730,9 +9758,13 @@ function pollenLevel(month) {
 }
 
 async function fetchWeather() {
-  if (typeof USER_LAT === 'undefined') { window.USER_LAT = parseFloat(localStorage.getItem('hk_user_lat') || 52.4397); }
-  if (typeof USER_LNG === 'undefined') { window.USER_LNG = parseFloat(localStorage.getItem('hk_user_lng') || -0.5432); }
-  if (typeof USER_LOCATION_NAME === 'undefined') { window.USER_LOCATION_NAME = localStorage.getItem('hk_user_location_name') || 'My Location'; }
+  // 28 April 2026 — Phase 4af: prefer active apiary location, fall back to home.
+  // Replaces direct read of hk_user_lat which would now be wrong if user
+  // has an active apiary view set.
+  var loc = getActiveOrUserLocation();
+  window.USER_LAT = loc.lat;
+  window.USER_LNG = loc.lng;
+  window.USER_LOCATION_NAME = loc.name || 'My Location';
   try {
     const cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY));
     if (cached && Date.now() - cached.ts < WEATHER_CACHE_MINS * 60000) {
@@ -9808,10 +9840,13 @@ function getCurrentWeatherSnapshot() {
 }
 
 function renderWeather(data) {
-  // Guard: USER_LOCATION_NAME may not exist in cached page versions
-  if (typeof USER_LOCATION_NAME === 'undefined') { window.USER_LOCATION_NAME = localStorage.getItem('hk_user_location_name') || 'My Location'; }
-  if (typeof USER_LAT === 'undefined') { window.USER_LAT = parseFloat(localStorage.getItem('hk_user_lat') || 52.4397); }
-  if (typeof USER_LNG === 'undefined') { window.USER_LNG = parseFloat(localStorage.getItem('hk_user_lng') || -0.5432); }
+  // 28 April 2026 — Phase 4af: prefer active apiary location, fall back to home.
+  if (typeof USER_LOCATION_NAME === 'undefined' || typeof USER_LAT === 'undefined' || typeof USER_LNG === 'undefined') {
+    var loc = getActiveOrUserLocation();
+    window.USER_LAT = loc.lat;
+    window.USER_LNG = loc.lng;
+    window.USER_LOCATION_NAME = loc.name || 'My Location';
+  }
   const c = data.current;
   const temp = Math.round(c.temperature_2m);
   const wind = Math.round(c.windspeed_10m);
@@ -10248,7 +10283,9 @@ function renderCalendarForecast() {
   var container = document.getElementById('forecast-rows');
   if (!container) return;
   var WMO = {0:'&#9728;',1:'&#127780;',2:'&#9925;',3:'&#9729;',45:'&#127787;',51:'&#127754;',53:'&#127754;',55:'&#127783;',61:'&#127783;',63:'&#127783;',65:'&#127783;',71:'&#127784;',73:'&#127784;',80:'&#127754;',95:'&#9928;'};
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + (parseFloat(localStorage.getItem('hk_user_lat')) || 52.4397) + '&longitude=' + (parseFloat(localStorage.getItem('hk_user_lng')) || -0.5432) + '&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe%2FLondon&forecast_days=5')
+  // 28 April 2026 — Phase 4af: 5-day forecast follows active apiary location
+  var _fcLoc = (typeof getActiveOrUserLocation === 'function') ? getActiveOrUserLocation() : { lat: parseFloat(localStorage.getItem('hk_user_lat')) || 52.4397, lng: parseFloat(localStorage.getItem('hk_user_lng')) || -0.5432 };
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + _fcLoc.lat + '&longitude=' + _fcLoc.lng + '&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe%2FLondon&forecast_days=5')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var fd = data.daily;
@@ -12781,10 +12818,11 @@ function haversineKm(lat1,lng1,lat2,lng2){
 }
 
 function initAsianHornetWatch() {
-  // Use user's stored GPS location, fall back to UK centre if not set
-  var lat = parseFloat(localStorage.getItem('hk_user_lat')) || 52.48;
-  var lng = parseFloat(localStorage.getItem('hk_user_lng')) || -1.89;
-  renderAsianHornetWatch(lat, lng);
+  // 28 April 2026 — Phase 4af: follow active apiary, fall back to home.
+  // The AHW card on the home screen should show sightings nearby YOUR APIARY,
+  // since that's the bee-yard you're protecting.
+  var loc = getActiveOrUserLocation();
+  renderAsianHornetWatch(loc.lat, loc.lng);
   // Kick off a live-data fetch in the background — replaces hardcoded data when ready
   try { fetchAsianHornetLive(); } catch(e) {}
 }
@@ -13168,7 +13206,20 @@ function useMyCurrentLocation() {
     }
     if (btn) { btn.textContent = '📍 Location captured ✓'; btn.disabled = false; }
   }, function(err) {
-    if (btn) { btn.textContent = '📍 Location failed — please enter manually'; btn.disabled = false; }
+    // 28 April 2026 — Phase 4af: better error feedback. See applyApiaryLocation
+    // notes for the err.code meanings.
+    console.error('AH report GPS failed:', { code: err.code, message: err.message });
+    var label;
+    if (err.code === 1) {
+      label = '🚫 Location denied — check Settings → HiveKeeper';
+    } else if (err.code === 2) {
+      label = '📍 GPS unavailable — please enter location manually';
+    } else if (err.code === 3) {
+      label = '⏱️ GPS too slow — please enter manually';
+    } else {
+      label = '📍 Location failed — please enter manually';
+    }
+    if (btn) { btn.textContent = label; btn.disabled = false; }
   }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
 }
 
@@ -16584,8 +16635,22 @@ function triggerSOS() {
         sendSOSMessages(contact, buildMessage(lat, lng, true));
       },
       function(err) {
-        console.warn('SOS GPS error:', err.code, err.message);
-        showToast('\u26A0\uFE0F GPS unavailable \u2014 using apiary location (message will say so)');
+        // 28 April 2026 — Phase 4af: clearer error feedback. err.code values:
+        // 1 = PERMISSION_DENIED (user blocked, or app doesn't have permission)
+        // 2 = POSITION_UNAVAILABLE (no GPS signal, OR webview can't access it)
+        // 3 = TIMEOUT (GPS too slow to get a fix in 15s)
+        console.error('SOS GPS failed:', { code: err.code, message: err.message, type: ['', 'PERMISSION_DENIED', 'POSITION_UNAVAILABLE', 'TIMEOUT'][err.code] || 'UNKNOWN' });
+        var hint;
+        if (err.code === 1) {
+          hint = '⚠️ Location permission denied — check Settings → HiveKeeper → Location';
+        } else if (err.code === 2) {
+          hint = '⚠️ GPS unavailable — using apiary location. Try outside with clear sky, or check Settings → HiveKeeper → Location';
+        } else if (err.code === 3) {
+          hint = '⚠️ GPS too slow (15s) — using apiary location. Try outside with clear sky';
+        } else {
+          hint = '⚠️ GPS error — using apiary location';
+        }
+        showToast(hint);
         sendWithGeocoding();
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -18010,7 +18075,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:03 28 April 2026 BST · Phase 4ae — file inputs allow library AND camera (was camera-only)';
+var HIVEKEEPER_BUILD = '22:20 28 April 2026 BST · Phase 4af — separate active apiary location from user home location (fixes AH report fallback), better GPS error diagnostics';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19069,7 +19134,14 @@ async function pullFromSupabase() {
         // Pre-pull push attempt is best-effort; on failure (poor signal
         // mid-sync, auth race) the data is silently wiped. Belt-and-braces
         // protection: keep these locally regardless of push success.
-        'hk_inspections_v2', 'hk_swarm_catches'];
+        'hk_inspections_v2', 'hk_swarm_catches',
+        // 28 April 2026 — Phase 4af: active apiary location keys. Set by
+        // applyApiaryLocation when an apiary is selected; consumed by
+        // weather, AH Watch nearby, and 5-day forecast. Distinct from
+        // hk_user_* which now correctly remains the user's manually-set
+        // home location. Wiping on pull would break apiary-location-aware
+        // behaviour every login.
+        'hk_active_lat', 'hk_active_lng', 'hk_active_location_name'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -21869,12 +21941,17 @@ function saveApiaryLocation(apiaryId, lat, lng, locationName) {
 function applyApiaryLocation(apiary) {
   if (!apiary) return;
   if (apiary.lat && apiary.lng) {
+    // 28 April 2026 — Phase 4af: write to hk_active_* (currently-selected
+    // apiary's view location) NOT hk_user_* (the user's home/manual location).
+    // Phase 4ab incorrectly conflated these, which broke any consumer that
+    // expected hk_user_lat to mean "where the user is" — most importantly
+    // the AH report fallback when geolocation fails.
     window.USER_LAT = apiary.lat;
     window.USER_LNG = apiary.lng;
     window.USER_LOCATION_NAME = apiary.location || apiary.name;
-    localStorage.setItem('hk_user_lat', apiary.lat);
-    localStorage.setItem('hk_user_lng', apiary.lng);
-    localStorage.setItem('hk_user_location_name', apiary.location || apiary.name);
+    localStorage.setItem('hk_active_lat', apiary.lat);
+    localStorage.setItem('hk_active_lng', apiary.lng);
+    localStorage.setItem('hk_active_location_name', apiary.location || apiary.name);
     localStorage.removeItem('hk_weather_v1');
     fetchWeather();
     if (typeof initAsianHornetWatch === 'function') initAsianHornetWatch();
