@@ -6881,7 +6881,7 @@ function saveHiveEditor() {
 
   saveHives(hives);
   closeHiveEditor();
-  if (typeof showToast === 'function') showToast('Hive updated ✓');
+  if (typeof showToast === 'function') showToast('💾 Hive saved ✓ — changes stored locally and will sync');
   // Re-render dependent screens
   try { if (typeof renderHiveDetail === 'function') renderHiveDetail(); } catch(e) {}
   try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
@@ -14960,6 +14960,17 @@ function initCurrentApiary() {
     currentApiaryId = current ? current.id : apiaries[0].id;
     localStorage.setItem(CURRENT_APIARY_KEY, currentApiaryId);
   }
+  // 28 April 2026 — Phase 4ab: apply apiary location on init.
+  // switchApiary() correctly calls applyApiaryLocation, but the initial
+  // resolution of currentApiaryId here did not — leaving USER_LAT/_LNG
+  // pointing at the user's last manually-set location. Symptom: weather
+  // and AH Watch show data for the wrong apiary on app open.
+  try {
+    if (typeof applyApiaryLocation === 'function') {
+      var initApiary = getCurrentApiary();
+      if (initApiary && initApiary.lat && initApiary.lng) applyApiaryLocation(initApiary);
+    }
+  } catch(e) { console.warn('init applyApiaryLocation failed:', e); }
 }
 
 // Override loadHives to filter by current apiary
@@ -17292,7 +17303,23 @@ function saveSwarmCatch() {
   
   swarms.push(catch_);
   localStorage.setItem('hk_swarm_catches', JSON.stringify(swarms));
-  
+
+  // 28 April 2026 — Phase 4ab: queue swarm row for offline-aware sync.
+  // Was relying on the periodic pushSwarmCatches() full-sync path which
+  // doesn't fire during quick offline-online cycles. Queueing here means
+  // the row enters the FK-ordered flush queue immediately, same pattern
+  // as saveInspections.
+  try {
+    if (typeof getUserId === 'function' && getUserId() && typeof queueOfflineSave === 'function') {
+      queueOfflineSave('swarm_catches', {
+        id: catch_.id, user_id: getUserId(), hive_id: hiveId,
+        date: catch_.date, location: catch_.location || null,
+        frames: catch_.frames || null, queen_seen: !!catch_.queenSeen,
+        source: catch_.source || null, notes: catch_.notes || null
+      });
+    }
+  } catch(e) { console.warn('saveSwarmCatch queue failed:', e); }
+
   // Log as an inspection note too
   var inspections = loadInspections();
   inspections.push({
@@ -17624,7 +17651,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:09 28 April 2026 BST · Phase 4aa — searchable in-app manual (18 sections, full-body search), welcome banner manual CTA';
+var HIVEKEEPER_BUILD = '21:27 28 April 2026 BST · Phase 4ab — CRITICAL data-loss fix (hk_inspections_v2 + hk_swarm_catches added to keysToKeep), swarm offline queue, weather follows apiary on init, stronger hive-save toast';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -18674,7 +18701,16 @@ async function pullFromSupabase() {
         'hk_dismissed_launch_info',
         // 28 April 2026 — Phase 4s: welcome banner dismissal flag. Once
         // dismissed, the home-screen welcome banner stays hidden permanently.
-        'hk_seen_welcome'];
+        'hk_seen_welcome',
+        // 28 April 2026 — Phase 4ab: CRITICAL data-loss class fix.
+        // hk_inspections_v2 was claimed protected in v32 spec but was
+        // actually missing — same bug class as 25 April inspection-loss
+        // incident. hk_swarm_catches caused Chris's swarm record to
+        // disappear after the 28 April swarm #4 pickup with poor signal.
+        // Pre-pull push attempt is best-effort; on failure (poor signal
+        // mid-sync, auth race) the data is silently wiped. Belt-and-braces
+        // protection: keep these locally regardless of push success.
+        'hk_inspections_v2', 'hk_swarm_catches'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
