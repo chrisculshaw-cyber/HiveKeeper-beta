@@ -1320,32 +1320,40 @@ body.colour-blind .rec-btn.recording { animation: recpulse-cb-orange 1s infinite
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: rgba(228,163,58,0.15);
-  border: 1px solid rgba(228,163,58,0.4);
+  background: rgba(228,163,58,0.30);
+  border: 1.5px solid rgba(228,163,58,0.7);
   color: var(--honey);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   cursor: pointer;
   vertical-align: middle;
-  margin-left: 6px;
-  transition: background .15s, transform .1s;
+  margin-left: 8px;
+  transition: background .15s, transform .1s, box-shadow .15s;
   user-select: none;
   flex-shrink: 0;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
-.help-icon:hover { background: rgba(228,163,58,0.28); }
+.help-icon:hover {
+  background: rgba(228,163,58,0.45);
+  box-shadow: 0 2px 6px rgba(228,163,58,0.35);
+}
 .help-icon:active { transform: scale(0.92); }
 /* Variant for use on dark backgrounds (e.g. AH Watch green header) */
 .help-icon.help-icon-light {
-  background: rgba(255,255,255,0.18);
-  border-color: rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.30);
+  border-color: rgba(255,255,255,0.65);
   color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
 }
-.help-icon.help-icon-light:hover { background: rgba(255,255,255,0.28); }
+.help-icon.help-icon-light:hover {
+  background: rgba(255,255,255,0.45);
+  box-shadow: 0 2px 6px rgba(255,255,255,0.3);
+}
 
 /* Welcome banner — first-run only on home screen */
 .hk-welcome-banner {
@@ -2116,7 +2124,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
         <button id="apiary-export-btn" onclick="exportApiaryMap()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">+<br>Hive</button>
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:linear-gradient(135deg,#E4A33A,#C8810A);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 4px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;box-shadow:0 2px 6px rgba(228,163,58,0.4);"><span style="font-size:18px;display:block;line-height:1;margin-bottom:2px;">+</span>Add Hive</button>
         <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F441;&#xFE0F;<br>Show hidden</button>
       </div>
   </div>
@@ -17601,7 +17609,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:45 28 April 2026 BST · Phase 4w — sub mgmt clarity, 8 more ? icons (Apiary/Inspect/Hive Detail), custom honey bee SVG on auth screen';
+var HIVEKEEPER_BUILD = '17:58 28 April 2026 BST · Phase 4x — help icons more prominent (22px, stronger contrast), Add Hive button promoted to honey gradient primary action';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
