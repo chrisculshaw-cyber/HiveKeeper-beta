@@ -17052,7 +17052,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:19 27 April 2026 BST · Phase 4f — Apiary settings tile under the Settings 2x2 grid';
+var HIVEKEEPER_BUILD = '08:52 28 April 2026 BST · Phase 4h — TIER_LIMITS reverted to original advertised model + Founder unlimited tier';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -18989,16 +18989,23 @@ var _userTier = null; // loaded from Supabase on auth
 // (1/month was so tight it was effectively unusable). Voice/AI msgs on
 // Pro/Commercial intentionally high — cost protection for chat is handled
 // separately by PAID_AI_CHAT_LIMITS at line ~24402.
+// 28 April 2026 — TIER_LIMITS reverted to original advertised model (per
+// pricing screenshot circulated to Founder cohort). Pro caps create proper
+// upgrade pressure to Commercial; without them Pro→Commercial had no value
+// gap. Founders mapped to a separate 'founder' tier so they remain unlimited
+// (lifetime Pro+ as thanks for early advocacy) while Pro tier behaves
+// honestly. AI daily caps remain in PAID_AI_CHAT_LIMITS.
 var TIER_LIMITS = {
   free:       { apiaries: 1,   hives: 3,    sharing: 'view',    photos: 3,    voice: 3,    aiMsgs: 5,    aiPhoto: 3,    history: 5 },
   trial:      { apiaries: 99,  hives: 999,  sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
-  pro:        { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
+  pro:        { apiaries: 5,   hives: 50,   sharing: 'inspect', photos: 10,   voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
   commercial: { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
+  founder:    { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 },
   beta:       { apiaries: 999, hives: 9999, sharing: 'inspect', photos: 999,  voice: 999,  aiMsgs: 999,  aiPhoto: 999,  history: 999 }
 };
 
 function getUserTier() {
-  if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return 'pro';
+  if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return 'founder';
   var stored = localStorage.getItem('hk_tier') || _userTier || '';
   if (stored === 'pro' || stored === 'commercial') return stored;
   if (typeof isInTrial === 'function' && isInTrial()) return 'trial';
@@ -19079,18 +19086,20 @@ function updatePlanBadge() {
   var limitsEl = document.getElementById('settings-plan-limits');
   if (!nameEl) return;
   var tier = getUserTier();
+  // 28 April 2026 — labels reverted to original advertised model. Pro shows
+  // honest caps (5 apiaries · 50 hives · 10 photos/hive · 100 AI/day) so
+  // upgrade-to-Commercial pressure is real for keepers scaling beyond.
+  // Founders get their own label with unlimited treatment as thanks for
+  // early advocacy; isFoundingBeekeeper() now maps to a dedicated 'founder'
+  // tier upstream rather than masquerading as 'pro'.
   var labels = {
     beta: { name: 'Beta (unlimited)', limits: 'All features unlocked' },
     free: { name: 'Free', limits: '1 apiary · 3 hives' },
     trial: { name: 'Pro (on us)', limits: 'Full Pro features during your 14 days' },
-    // 27 April 2026 Phase 3a — Pro is unlimited per launch matrix
-    pro: { name: 'Pro', limits: 'Unlimited apiaries & hives · all features' },
-    commercial: { name: 'Commercial', limits: 'Unlimited · ad-free · priority support' }
+    pro: { name: 'Pro', limits: '5 apiaries · 50 hives · 10 photos/hive · 100 AI/day' },
+    commercial: { name: 'Commercial', limits: 'Unlimited · 500 AI/day · ad-free · priority support' },
+    founder: { name: '🏅 Founding Beekeeper', limits: 'Lifetime Pro+ · unlimited everything' }
   };
-  // Founders always display as Pro
-  if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
-    tier = 'pro';
-  }
   var label = labels[tier] || labels.free;
   nameEl.textContent = label.name;
   if (limitsEl) limitsEl.textContent = label.limits;
@@ -19100,8 +19109,9 @@ function updatePlanBadge() {
     var el = document.getElementById('plan-badge-' + t);
     if (el) el.style.display = 'none';
   });
-  // Map trial to pro badge since they have Pro features
-  var activeBadgeKey = tier === 'trial' ? 'pro' : tier;
+  // Map trial AND founder to pro badge for visual purposes (existing badge
+  // elements are free/pro/commercial/beta — no dedicated founder badge yet).
+  var activeBadgeKey = (tier === 'trial' || tier === 'founder') ? 'pro' : tier;
   var activeBadge = document.getElementById('plan-badge-' + activeBadgeKey);
   if (activeBadge) activeBadge.style.display = 'flex';
 
@@ -23715,8 +23725,8 @@ function goToApiaryAlerts() {
             <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">Frame photos</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">3 total</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">10/hive</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">Unlimited</td></tr>
             <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">History</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">Last 5</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">Full</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">Full</td></tr>
             <tr style="background:var(--cream);"><td colspan="4" style="padding:5px 8px;font-size:9px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.05em;">AI &amp; analysis</td></tr>
-            <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">HiveKeeper AI</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">5/day</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">Unlimited</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">Unlimited</td></tr>
-            <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">AI frame analysis</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">1/mo</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">Unlimited</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">Unlimited</td></tr>
+            <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">HiveKeeper AI</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">5/day</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">100/day</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">500/day</td></tr>
+            <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">AI frame analysis</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">3/mo</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;font-weight:700;">Unlimited</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;font-weight:700;">Unlimited</td></tr>
             <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">Health trends</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">&#x2014;</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;">&#x2714;</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;">&#x2714;</td></tr>
             <tr style="background:var(--cream);"><td colspan="4" style="padding:5px 8px;font-size:9px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.05em;">Reports &amp; data</td></tr>
             <tr><td style="padding:7px 8px;border-bottom:1px solid var(--wax);color:var(--text);">Reports &amp; CSV</td><td style="text-align:center;border-bottom:1px solid var(--wax);color:var(--text-l);">&#x2014;</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F0F6FF;color:#185FA5;">&#x2714;</td><td style="text-align:center;border-bottom:1px solid var(--wax);background:#F2F9EA;color:#3B6D11;">&#x2714;</td></tr>
