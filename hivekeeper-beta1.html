@@ -1305,88 +1305,136 @@ input[type="checkbox"].hk-chk:checked::after {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/openlocationcode/1.0.4/openlocationcode.min.js"></script>
 </head>
 <body>
-<!-- AUTH OVERLAY (28 April 2026 Phase 4k — cleanup pass)
-     Restructured for cleaner hierarchy: tight header cluster → tabs → form
-     fields → action button → footer. Launch info block now first-visit-only
-     (dismissible). Form inputs use system font for legibility (Syne kept on
-     buttons + tabs as brand voice). Removed the duplicate copyright lines
-     and the trust statement that were sandwiching the Sign in button. -->
-<div id="auth-overlay" style="display:flex;visibility:visible;pointer-events:all;z-index:9999;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--forest) 0%,#0f1f0f 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;">
+<!-- AUTH OVERLAY (28 April 2026 Phase 4m — hero pass)
+     Visual upgrade over 4k cleanup: honeycomb backdrop, honey glow behind
+     logo, glassmorphism form panel, richer gradient with warm top, float
+     animation on logo, staggered fade-in. Form structure and behaviour
+     unchanged from 4k — only the surrounding visual treatment changes.
+     The intent is "confident, warm, deliberately considered" rather than
+     "flat tech utility". -->
+<style>
+  @keyframes hk-auth-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  @keyframes hk-auth-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hk-auth-fadein { animation: hk-auth-fade-in .6s ease-out both; }
+  .hk-auth-fadein-1 { animation: hk-auth-fade-in .6s ease-out .1s both; }
+  .hk-auth-fadein-2 { animation: hk-auth-fade-in .6s ease-out .25s both; }
+  .hk-auth-fadein-3 { animation: hk-auth-fade-in .6s ease-out .4s both; }
+  .hk-auth-logomark { animation: hk-auth-float 5s ease-in-out infinite; }
+  .hk-auth-glass {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .hk-auth-honey-btn {
+    background: linear-gradient(180deg, #EDB052 0%, #C8810A 100%);
+    box-shadow: 0 4px 14px rgba(228, 163, 58, 0.35), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition: transform .12s ease-out, box-shadow .12s ease-out;
+  }
+  .hk-auth-honey-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(228, 163, 58, 0.3);
+  }
+</style>
+<div id="auth-overlay" style="display:flex;visibility:visible;pointer-events:all;z-index:9999;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg, #3a5e2e 0%, var(--forest) 30%, #1a2f10 80%, #0a1607 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;">
 
-  <!-- Header cluster (tight) -->
-  <div style="text-align:center;margin-bottom:6px;">
-    <div style="font-size:42px;line-height:1;margin-bottom:6px;">🐝</div>
-    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:800;color:white;line-height:1.1;">HiveKeeper&#x2122;</div>
-    <div style="font-size:11px;color:rgba(255,255,255,.55);margin-top:6px;letter-spacing:.02em;">Your apiary, always with you</div>
+  <!-- Honeycomb texture backdrop — subtle, atmospheric -->
+  <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:0.06;z-index:0;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="hk-honeycomb" patternUnits="userSpaceOnUse" width="56" height="64">
+        <path d="M28,2 L52,18 L52,46 L28,62 L4,46 L4,18 Z" fill="none" stroke="rgba(228,163,58,0.85)" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#hk-honeycomb)"/>
+  </svg>
+
+  <!-- Soft warm halo at top of screen -->
+  <div style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center, rgba(228,163,58,0.12) 0%, transparent 60%);pointer-events:none;z-index:0;"></div>
+
+  <!-- Logo cluster with honey glow -->
+  <div class="hk-auth-fadein" style="position:relative;text-align:center;margin-bottom:8px;z-index:1;">
+    <!-- Soft honey glow behind logo -->
+    <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
+    <div class="hk-auth-logomark" style="position:relative;font-size:58px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(228,163,58,0.4));">🐝</div>
+    <div style="position:relative;font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;">HiveKeeper<span style="font-size:18px;vertical-align:super;opacity:0.55;font-weight:400;">™</span></div>
+    <div style="position:relative;font-size:13px;color:rgba(255,255,255,.7);margin-top:10px;font-style:italic;letter-spacing:.01em;">Your apiary, always with you</div>
+    <div style="position:relative;font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;letter-spacing:.05em;text-transform:uppercase;">Built at a 24-hive apiary in Northamptonshire</div>
   </div>
 
   <!-- Build stamp (subtle, dynamically updated by JS on load) -->
-  <div id="auth-build-stamp" style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:18px;font-family:monospace;letter-spacing:.02em;">
+  <div id="auth-build-stamp" class="hk-auth-fadein-1" style="position:relative;font-size:9px;color:rgba(255,255,255,.28);margin-top:14px;margin-bottom:18px;font-family:monospace;letter-spacing:.02em;z-index:1;">
     <span id="auth-build-stamp-text"></span>
   </div>
 
   <!-- LAUNCH INFO BLOCK — first-visit-only.
-       Shown only when no prior sign-in detected AND not previously dismissed.
-       Dismiss button sets hk_dismissed_launch_info=1. Hidden by default;
-       initAuthLaunchInfo() in head script flips visible if applicable. -->
-  <div id="auth-beta-info" style="display:none;width:100%;max-width:340px;margin-bottom:20px;padding:12px 14px 14px 14px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-size:12px;line-height:1.55;position:relative;">
+       Shown only when no prior sign-in detected AND not previously dismissed. -->
+  <div id="auth-beta-info" class="hk-auth-fadein-2" style="display:none;width:100%;max-width:360px;margin-bottom:18px;padding:12px 14px 14px 14px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-size:12px;line-height:1.55;position:relative;z-index:1;">
     <div onclick="dismissAuthLaunchInfo()" style="position:absolute;top:6px;right:8px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);font-size:16px;line-height:1;" title="Dismiss">×</div>
     <div style="font-weight:800;color:var(--honey);letter-spacing:.08em;text-transform:uppercase;font-size:10px;margin-bottom:6px;">Now on the App Store</div>
     <div><strong style="color:white;">iPhone:</strong> search "HiveKeeper" on the App Store. <strong style="color:white;">Android:</strong> coming soon — for now, add this page to your home screen for a native-like experience.</div>
   </div>
 
-  <!-- Tabs -->
-  <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.15);width:100%;max-width:340px;">
-    <button id="auth-tab-signin" onclick="switchAuthTab('signin')" style="flex:1;background:transparent;border:none;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;padding:10px;cursor:pointer;border-bottom:2px solid var(--honey);">Sign in</button>
-    <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;background:transparent;border:none;color:rgba(255,255,255,.6);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;padding:10px;cursor:pointer;border-bottom:2px solid transparent;">Create account</button>
-  </div>
+  <!-- Glass form panel -->
+  <div class="hk-auth-glass hk-auth-fadein-2" style="position:relative;width:100%;max-width:360px;border-radius:18px;padding:22px 22px 22px 22px;box-sizing:border-box;z-index:1;">
 
-  <!-- Sign in form -->
-  <div id="auth-signin" style="width:100%;max-width:340px;">
-    <input id="signin-email" type="email" placeholder="Email address" autocomplete="email" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')handleSignIn()">
-    <input id="signin-password" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:14px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')handleSignIn()">
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12);">
+      <button id="auth-tab-signin" onclick="switchAuthTab('signin')" style="flex:1;background:transparent;border:none;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid var(--honey);">Sign in</button>
+      <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="flex:1;background:transparent;border:none;color:rgba(255,255,255,.55);font-family:'Syne',sans-serif;font-size:14px;font-weight:500;padding:8px 4px 12px;cursor:pointer;border-bottom:2px solid transparent;">Create account</button>
+    </div>
 
-    <!-- Remember + Forgot on one compact row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-      <div onclick="toggleRemember()" id="auth-remember-row" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <div id="auth-remember-box" style="width:18px;height:18px;border:2px solid var(--honey);border-radius:4px;background:var(--honey);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <span id="auth-remember-tick" style="color:white;font-size:12px;font-weight:900;line-height:1;">✓</span>
+    <!-- Sign in form -->
+    <div id="auth-signin">
+      <input id="signin-email" type="email" placeholder="Email address" autocomplete="email" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')handleSignIn()">
+      <input id="signin-password" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:14px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')handleSignIn()">
+
+      <!-- Remember + Forgot row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div onclick="toggleRemember()" id="auth-remember-row" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <div id="auth-remember-box" style="width:18px;height:18px;border:2px solid var(--honey);border-radius:4px;background:var(--honey);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <span id="auth-remember-tick" style="color:white;font-size:12px;font-weight:900;line-height:1;">✓</span>
+          </div>
+          <label style="font-size:12px;color:rgba(255,255,255,.85);cursor:pointer;font-weight:600;">Keep me signed in</label>
         </div>
-        <label style="font-size:12px;color:rgba(255,255,255,.85);cursor:pointer;font-weight:600;">Keep me signed in</label>
+        <a onclick="handleForgotPassword()" style="font-size:12px;color:var(--honey);cursor:pointer;font-weight:600;">Forgot password?</a>
+        <input type="checkbox" id="auth-remember" checked style="display:none;">
       </div>
-      <a onclick="handleForgotPassword()" style="font-size:12px;color:var(--honey);cursor:pointer;font-weight:600;">Forgot password?</a>
-      <input type="checkbox" id="auth-remember" checked style="display:none;">
+
+      <button id="signin-btn" onclick="handleSignIn()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;letter-spacing:.02em;">Sign in</button>
     </div>
 
-    <!-- Sign in button immediately below form -->
-    <button id="signin-btn" onclick="handleSignIn()" style="width:100%;padding:15px;background:var(--honey);border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;">Sign in</button>
-  </div>
-
-  <!-- Sign up form -->
-  <div id="auth-signup" style="display:none;width:100%;max-width:340px;">
-    <input id="signup-name" type="text" placeholder="Your name" autocomplete="name" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
-    <input id="signup-email" type="email" placeholder="Email address" autocomplete="email" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
-    <input id="signup-password" type="password" placeholder="Password" autocomplete="new-password" oninput="validatePasswordStrength();validatePasswordMatch();" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:8px;box-sizing:border-box;">
-    <!-- Password strength indicator -->
-    <div style="margin-bottom:10px;">
-      <div style="display:flex;gap:4px;margin-bottom:4px;">
-        <div id="pw-bar-1" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
-        <div id="pw-bar-2" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
-        <div id="pw-bar-3" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
-        <div id="pw-bar-4" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
+    <!-- Sign up form -->
+    <div id="auth-signup" style="display:none;">
+      <input id="signup-name" type="text" placeholder="Your name" autocomplete="name" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
+      <input id="signup-email" type="email" placeholder="Email address" autocomplete="email" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:10px;box-sizing:border-box;">
+      <input id="signup-password" type="password" placeholder="Password" autocomplete="new-password" oninput="validatePasswordStrength();validatePasswordMatch();" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:8px;box-sizing:border-box;">
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;gap:4px;margin-bottom:4px;">
+          <div id="pw-bar-1" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
+          <div id="pw-bar-2" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
+          <div id="pw-bar-3" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
+          <div id="pw-bar-4" style="height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;"></div>
+        </div>
+        <div id="pw-strength-label" style="font-size:11px;color:rgba(255,255,255,.4);padding:0 2px;">Min. 8 characters including at least 1 number</div>
       </div>
-      <div id="pw-strength-label" style="font-size:11px;color:rgba(255,255,255,.4);padding:0 2px;">Min. 8 characters including at least 1 number</div>
+      <input id="signup-password-confirm" type="password" placeholder="Confirm password" autocomplete="new-password" oninput="validatePasswordMatch()" onkeydown="if(event.key==='Enter')handleSignUp()" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:6px;box-sizing:border-box;">
+      <div id="signup-password-match" style="font-size:11px;min-height:16px;margin-bottom:14px;padding:0 2px;"></div>
+      <button id="signup-btn" onclick="handleSignUp()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;letter-spacing:.02em;">Create account</button>
     </div>
-    <input id="signup-password-confirm" type="password" placeholder="Confirm password" autocomplete="new-password" oninput="validatePasswordMatch()" onkeydown="if(event.key==='Enter')handleSignUp()" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.2);border-radius:var(--rs);background:rgba(255,255,255,.08);color:white;font-size:15px;margin-bottom:6px;box-sizing:border-box;">
-    <div id="signup-password-match" style="font-size:11px;min-height:16px;margin-bottom:14px;padding:0 2px;"></div>
-    <button id="signup-btn" onclick="handleSignUp()" style="width:100%;padding:15px;background:var(--honey);border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;">Create account</button>
   </div>
 
   <!-- Error / status message -->
-  <div id="auth-error" style="margin-top:14px;font-size:13px;font-weight:700;color:white;text-align:center;max-width:340px;line-height:1.5;background:rgba(183,28,28,.5);border-radius:10px;padding:10px 14px;display:none;border:1px solid rgba(255,100,100,.4);"></div>
+  <div id="auth-error" style="margin-top:14px;font-size:13px;font-weight:700;color:white;text-align:center;max-width:360px;line-height:1.5;background:rgba(183,28,28,.5);border-radius:10px;padding:10px 14px;display:none;border:1px solid rgba(255,100,100,.4);position:relative;z-index:1;"></div>
 
   <!-- Single shared footer -->
-  <div style="margin-top:28px;text-align:center;font-size:11px;color:rgba(255,255,255,.45);line-height:1.6;">
+  <div class="hk-auth-fadein-3" style="position:relative;margin-top:24px;text-align:center;font-size:11px;color:rgba(255,255,255,.45);line-height:1.6;z-index:1;">
     <div>&copy; 2026 Culshaw Consulting Ltd &middot; gethivekeeper.com</div>
     <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:3px;">Your data is encrypted and never shared.</div>
   </div>
@@ -17104,7 +17152,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '09:51 28 April 2026 BST · Phase 4l — preferences toggles fix (.active vs .on class mismatch + push row visibility on open)';
+var HIVEKEEPER_BUILD = '09:57 28 April 2026 BST · Phase 4m — auth screen hero pass (honeycomb backdrop, glass form panel, honey glow, float animation)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
