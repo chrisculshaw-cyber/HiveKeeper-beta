@@ -14537,6 +14537,12 @@ function addNewApiary() {
   if (!canAddApiary()) { showUpgradeModal('apiary'); return; }
   var name = prompt('Name this apiary (e.g. Home Apiary, Wood Farm, Top Field):', '');
   if (!name || !name.trim()) return;
+  // 28 April 2026 Phase 4j — capture source modal so we can reopen it after
+  // the (async) location input flow. Both apiary list modals close so they
+  // don't sit visually underneath the location prompt.
+  var src = (typeof _apiaryListSource !== 'undefined') ? _apiaryListSource : 'manage';
+  closeModalEl('modal-apiary-switcher');
+  closeModalEl('modal-apiary-manage');
   var newId = uid();
   var newApiary = { id: newId, name: name.trim(), location: '', lat: null, lng: null, createdAt: Date.now() };
   var apiaries = loadApiaries();
@@ -14544,6 +14550,12 @@ function addNewApiary() {
   saveApiaries(apiaries);
   switchApiary(newId);
   showToast('Created ' + name.trim());
+  function _reopenSourceModal() {
+    setTimeout(function(){
+      if (src === 'manage') openManageApiaries();
+      else openApiarySwitcher();
+    }, 200);
+  }
   // Ask for location using in-app modal
   showLocationInput('Location for ' + name.trim(), '', function(query) {
     var coords = parseLatLng(query);
@@ -14555,6 +14567,7 @@ function addNewApiary() {
     } else if (query) {
       geocodeApiaryLocation(newId, query);
     }
+    _reopenSourceModal();
   });
 }
 
@@ -14570,7 +14583,16 @@ function renameApiary(id) {
     updateApiaryNameDisplays();
     renderDashboard();
   }
-  openApiarySwitcher(); // refresh list
+  // 28 April 2026 Phase 4j — reopen whichever apiary list modal initiated
+  // the rename, not always the switcher. Same fix pattern as deleteApiary
+  // got yesterday. Without this, calling Rename from Manage would close
+  // both and reopen Switch, which is jarring.
+  closeModalEl('modal-apiary-switcher');
+  closeModalEl('modal-apiary-manage');
+  setTimeout(function(){
+    if (typeof _apiaryListSource !== 'undefined' && _apiaryListSource === 'manage') openManageApiaries();
+    else openApiarySwitcher();
+  }, 200);
   showToast('Renamed to ' + newName.trim());
 }
 
@@ -14855,21 +14877,39 @@ function saveAccount() {
   // Save SOS contact (reuse existing shape so triggerSOS still works unchanged)
   saveSOSContact({ name: sosName, number: sosSms, whatsapp: sosWa, myName: name });
 
-  // Sync to Supabase profiles (best-effort — don't block on failure)
+  // 28 April 2026 Phase 4j — was best-effort fire-and-forget, lost on offline
+  // saves. Now caches the update payload locally if Supabase write fails or
+  // we're offline, and the existing on-reconnect path retries it. Profiles
+  // is a single-row-per-user table so last-write-wins is fine.
+  var payload = {
+    name: name || null,
+    display_name: name || null,
+    phone: phone || null,
+    address: address || null,
+    sos_contact_name: sosName || null,
+    sos_sms: sosSms || null,
+    sos_whatsapp: sosWa || null
+  };
+  function _stashProfileUpdate() {
+    try { localStorage.setItem('hk_pending_profile_update', JSON.stringify(payload)); } catch(e) {}
+  }
   if (typeof getUserId === 'function' && getUserId() && typeof getSupabase === 'function') {
-    try {
-      var sb = getSupabase();
-      sb.from('profiles').update({
-        display_name: name || null,
-        phone: phone || null,
-        address: address || null,
-        sos_contact_name: sosName || null,
-        sos_sms: sosSms || null,
-        sos_whatsapp: sosWa || null
-      }).eq('id', getUserId()).then(function(resp){
-        if (resp && resp.error) console.warn('Profile sync failed:', resp.error.message);
-      });
-    } catch(e) { console.warn('Profile sync threw:', e); }
+    if (typeof isOnline === 'function' && !isOnline()) {
+      _stashProfileUpdate();
+    } else {
+      try {
+        var sb = getSupabase();
+        sb.from('profiles').update(payload).eq('id', getUserId()).then(function(resp){
+          if (resp && resp.error) {
+            console.warn('Profile sync failed:', resp.error.message);
+            _stashProfileUpdate();
+          } else {
+            // Successful — clear any prior stashed update
+            try { localStorage.removeItem('hk_pending_profile_update'); } catch(e) {}
+          }
+        });
+      } catch(e) { console.warn('Profile sync threw:', e); _stashProfileUpdate(); }
+    }
   }
 
   closeToSettings('modal-account');
@@ -17052,7 +17092,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '08:56 28 April 2026 BST · Phase 4i — dashboard cards drop Syne for cleaner system font';
+var HIVEKEEPER_BUILD = '09:34 28 April 2026 BST · Phase 4j — five save-handler bugs fixed (Promise-not-awaited, partial settings sync, offline Account, apiary modal reopens)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -17691,7 +17731,13 @@ async function pullFromSupabase() {
         // the keeper has given up on. Push functions and queue check this
         // to skip resurrection. Without persistence, the resurrection loop
         // returns after every pull cycle.
-        'hk_dismissed_sync_keys'];
+        'hk_dismissed_sync_keys',
+        // 28 April 2026 — Phase 4j: pending profile update payload from
+        // saveAccount() when offline. Single-row last-write-wins payload
+        // for the profiles table; flushed by flushOfflineQueue on reconnect.
+        // Without this, an offline Account save would be wiped on the next
+        // pull and silently lost. Same bug class as 25 April inspection loss.
+        'hk_pending_profile_update'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -18302,8 +18348,20 @@ setInterval(function() {
 async function saveSettingsToCloud() {
   if (!getUserId()) return;
   var sb = getSupabase();
+  // 28 April 2026 Phase 4j — was only persisting use24h + useLargeText.
+  // Imperial, ColourBlind, PushNotif preferences were silently dropped, so
+  // the user's choices reverted to defaults on a fresh device. Now persists
+  // every toggle. Reading from globals + localStorage as a belt-and-braces
+  // (globals can be undefined briefly during init).
+  var settings = {
+    use24h: (typeof USE_24H !== 'undefined') ? USE_24H : (localStorage.getItem('hk_24h') === '1'),
+    useLargeText: (typeof USE_LARGE_TEXT !== 'undefined') ? USE_LARGE_TEXT : (localStorage.getItem('hk_large_text') === '1'),
+    useImperial: (typeof USE_IMPERIAL !== 'undefined') ? USE_IMPERIAL : (localStorage.getItem('hk_imperial') === '1'),
+    colourBlind: localStorage.getItem('hk_colour_blind') === '1',
+    pushEnabled: localStorage.getItem('hk_push_enabled') === '1'
+  };
   await sb.from('profiles').update({
-    settings: JSON.stringify({ use24h: USE_24H, useLargeText: USE_LARGE_TEXT })
+    settings: JSON.stringify(settings)
   }).eq('id', getUserId());
 }
 
@@ -18319,8 +18377,21 @@ async function loadSettingsFromCloud() {
     if (data.settings) {
       try {
         var s = JSON.parse(data.settings);
+        // 28 April 2026 Phase 4j — apply all toggles, not just use24h/useLargeText.
+        // Tolerates missing keys (older profiles won't have imperial/colourBlind/push).
         if (s.use24h !== undefined) { USE_24H = s.use24h; localStorage.setItem('hk_24h', USE_24H ? '1' : '0'); }
         if (s.useLargeText !== undefined) { USE_LARGE_TEXT = s.useLargeText; localStorage.setItem('hk_large_text', USE_LARGE_TEXT ? '1' : '0'); }
+        if (s.useImperial !== undefined) {
+          if (typeof USE_IMPERIAL !== 'undefined') USE_IMPERIAL = s.useImperial;
+          localStorage.setItem('hk_imperial', s.useImperial ? '1' : '0');
+        }
+        if (s.colourBlind !== undefined) {
+          localStorage.setItem('hk_colour_blind', s.colourBlind ? '1' : '0');
+          try { document.body.classList.toggle('colour-blind', s.colourBlind); } catch(e) {}
+        }
+        if (s.pushEnabled !== undefined) {
+          localStorage.setItem('hk_push_enabled', s.pushEnabled ? '1' : '0');
+        }
         applySettings();
       } catch(e) {}
     }
@@ -20483,8 +20554,19 @@ function setApiaryLocation(apiaryId) {
   var apiary = apiaries.find(function(a){ return a.id === apiaryId; });
   if (!apiary) return;
   var current = apiary.location || '';
+  // 28 April 2026 Phase 4j — close whichever apiary list modal launched the
+  // location action, then reopen it after location is set. Was hardcoded
+  // to switcher; now respects _apiaryListSource set by the modal openers.
+  var src = (typeof _apiaryListSource !== 'undefined') ? _apiaryListSource : 'switcher';
   closeModalEl('modal-apiary-switcher');
+  closeModalEl('modal-apiary-manage');
   showLocationInput('Location for ' + apiary.name, current, function(query) {
+    function _reopenSourceModal() {
+      setTimeout(function(){
+        if (src === 'manage') openManageApiaries();
+        else openApiarySwitcher();
+      }, 200);
+    }
     var coords = parseLatLng(query);
     if (coords) {
       var aps = loadApiaries();
@@ -20493,9 +20575,11 @@ function setApiaryLocation(apiaryId) {
       showToast('Location set ✓');
       localStorage.removeItem('hk_weather_v1');
       fetchWeather();
+      _reopenSourceModal();
     } else {
       showToast('Looking up location...');
       geocodeApiaryLocation(apiaryId, query);
+      _reopenSourceModal();
     }
   });
 }
@@ -20508,6 +20592,9 @@ function toggleColourBlind() {
   document.body.classList.toggle('colour-blind', on);
   document.getElementById('toggle-cb').classList.toggle('on', on);
   renderMap();
+  // 28 April 2026 Phase 4j — persist to cloud so preference survives across
+  // devices. Was the only toggle silently not syncing.
+  if (typeof saveSettingsToCloud === 'function') saveSettingsToCloud().catch(function(){});
 }
 function applyColourBlindMode() {
   if (isColourBlindMode()) document.body.classList.add('colour-blind');
@@ -22611,6 +22698,24 @@ document.addEventListener('visibilitychange', function() {
 });
 
 async function flushOfflineQueue() {
+  // 28 April 2026 Phase 4j — flush any pending profile update first.
+  // saveAccount stashes its payload here when offline. Single-row table,
+  // last-write-wins. Lives outside the main queue because there are no
+  // FK constraints from profiles to other tables.
+  try {
+    var pendingProfile = localStorage.getItem('hk_pending_profile_update');
+    if (pendingProfile && getUserId() && typeof getSupabase === 'function') {
+      var profilePayload = JSON.parse(pendingProfile);
+      var sb0 = getSupabase();
+      var resp0 = await sb0.from('profiles').update(profilePayload).eq('id', getUserId());
+      if (resp0 && !resp0.error) {
+        localStorage.removeItem('hk_pending_profile_update');
+      } else if (resp0 && resp0.error) {
+        console.warn('Pending profile flush failed:', resp0.error.message);
+      }
+    }
+  } catch(e) { console.warn('Pending profile flush threw:', e); }
+
   var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
   if (!q.length || !getUserId()) return;
 
@@ -24735,8 +24840,19 @@ function saveDisplayName() {
   if (!input || !input.value.trim()) { showToast('Please enter your name'); return; }
   var name = input.value.trim();
   localStorage.setItem('hk_display_name', name);
+  // 28 April 2026 Phase 4j — Supabase JS client requires .then()/await/await
+  // tail to actually execute the request. Without it, the Promise was created
+  // but never fired and updates silently never reached the cloud profiles
+  // table. Visible symptom: name change reverts on next sign-in or new
+  // device. Fix: chain .then() so the request actually runs.
   var uid = getUserId();
-  if (uid) { try { getSupabase().from('profiles').update({name:name}).eq('id',uid); } catch(e) { console.warn('Profile save:', e); } }
+  if (uid) {
+    try {
+      getSupabase().from('profiles').update({name: name}).eq('id', uid).then(function(resp){
+        if (resp && resp.error) console.warn('Profile name save:', resp.error.message);
+      });
+    } catch(e) { console.warn('Profile name save threw:', e); }
+  }
   input.style.borderColor = '#2E7D32';
   input.style.background = '#f0fff0';
   var btn = document.getElementById('settings-name-save-btn');
@@ -24763,10 +24879,14 @@ function saveProfilePhone() {
     return;
   }
   localStorage.setItem('hk_user_phone', raw);
+  // 28 April 2026 Phase 4j — same .then() fix as saveDisplayName above.
   var uid = getUserId();
   if (uid) {
-    try { getSupabase().from('profiles').update({phone: raw}).eq('id', uid); }
-    catch(e) { console.warn('Profile phone save:', e); }
+    try {
+      getSupabase().from('profiles').update({phone: raw}).eq('id', uid).then(function(resp){
+        if (resp && resp.error) console.warn('Profile phone save:', resp.error.message);
+      });
+    } catch(e) { console.warn('Profile phone save threw:', e); }
   }
   input.style.borderColor = '#2E7D32';
   input.style.background = '#f0fff0';
