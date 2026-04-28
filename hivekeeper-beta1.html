@@ -1419,6 +1419,55 @@ body.colour-blind .rec-btn.recording { animation: recpulse-cb-orange 1s infinite
 }
 .hk-welcome-banner .hk-welcome-cta:hover { background: var(--honey-l); }
 
+/* ════════════════════════════════════════════════════════════════
+   At The Apiary prompt (Phase 4t) — small inline CTA on Inspect
+   and Hive Detail screens. Surfaces the WhatsApp "At The Apiary"
+   channel where users actually need it: mid-inspection in the field.
+   WhatsApp green accent so it reads as a chat-tied thing, but soft
+   enough not to compete with primary action buttons.
+   ════════════════════════════════════════════════════════════════ */
+.hk-apiary-chat-prompt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 20px;
+  padding: 10px 14px;
+  background: rgba(37, 211, 102, 0.08);
+  border: 1px solid rgba(37, 211, 102, 0.30);
+  border-left: 3px solid #25D366;
+  border-radius: var(--rs);
+  cursor: pointer;
+  transition: background .15s, transform .08s;
+  text-decoration: none;
+  color: inherit;
+}
+.hk-apiary-chat-prompt:hover { background: rgba(37, 211, 102, 0.14); }
+.hk-apiary-chat-prompt:active { transform: scale(0.99); }
+.hk-apiary-chat-prompt .hk-apiary-chat-icon {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.hk-apiary-chat-prompt .hk-apiary-chat-body { flex: 1; min-width: 0; }
+.hk-apiary-chat-prompt .hk-apiary-chat-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1A6B3D;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.hk-apiary-chat-prompt .hk-apiary-chat-sub {
+  font-size: 11px;
+  color: var(--text-l);
+  line-height: 1.35;
+}
+.hk-apiary-chat-prompt .hk-apiary-chat-arrow {
+  font-size: 14px;
+  color: #1A6B3D;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .map-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
@@ -1718,16 +1767,28 @@ input[type="checkbox"].hk-chk:checked::after {
       <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">Set up →</button>
     </div>
 
-    <!-- WELCOME BANNER — first-run only (Phase 4s).
+    <!-- WELCOME BANNER — first-run only (Phase 4s, expanded 4t).
+         Two purposes: introduces ? icons AND prompts to join the
+         WhatsApp community at the natural signup-to-engagement moment.
          Visibility controlled by maybeShowWelcomeBanner() which checks
          hk_seen_welcome. Once dismissed, never shown again on this device. -->
-    <div id="home-welcome-banner" class="hk-welcome-banner" style="display:none;">
-      <div class="hk-welcome-icon">🐝</div>
-      <div class="hk-welcome-body">
-        <div class="hk-welcome-title">Welcome to HiveKeeper</div>
-        <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Tap the <strong>?</strong> button at the top of this screen for the full app overview.</div>
+    <div id="home-welcome-banner" class="hk-welcome-banner" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div class="hk-welcome-icon">🐝</div>
+        <div class="hk-welcome-body">
+          <div class="hk-welcome-title">Welcome to HiveKeeper</div>
+          <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Tap the <strong>?</strong> button at the top of this screen for the full app overview.</div>
+        </div>
+        <button class="hk-welcome-dismiss" onclick="dismissWelcomeBanner()" aria-label="Dismiss">&times;</button>
       </div>
-      <button class="hk-welcome-dismiss" onclick="dismissWelcomeBanner()" aria-label="Dismiss">&times;</button>
+      <div style="margin:12px 0 4px;border-top:1px dashed rgba(228,163,58,0.35);padding-top:12px;display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:22px;line-height:1;flex-shrink:0;margin-top:2px;">💬</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:#1A6B3D;margin-bottom:3px;">Join the HiveKeeper community</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.45;opacity:0.85;">A friendly WhatsApp group with channels for live in-the-field questions, feature requests, and general beekeeping chat &mdash; plus founder updates from Chris.</div>
+          <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="margin-top:8px;background:#25D366;color:white;border:none;border-radius:14px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Join community →</button>
+        </div>
+      </div>
     </div>
 
     <!-- WINTER LOSS BANNER -->
@@ -2158,6 +2219,20 @@ input[type="checkbox"].hk-chk:checked::after {
       <button class="rec-btn" id="rec-btn" onclick="toggleRecord()">&#x1F3A4;</button>
       <div class="rec-time" id="rec-time">00:00</div>
     </div>
+    <!-- AT THE APIARY chat prompt (28 April 2026 Phase 4t).
+         Right place for it: mid-inspection users may have field questions
+         that need a quick answer from another beekeeper. Direct deep-link
+         to the dedicated WhatsApp channel. Was previously buried in the
+         Environment tab header (wrong place — users in the field are not
+         browsing forage data). -->
+    <a class="hk-apiary-chat-prompt" href="https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH" target="_blank" rel="noopener" title="Ask the At The Apiary group on WhatsApp">
+      <div class="hk-apiary-chat-icon">💬</div>
+      <div class="hk-apiary-chat-body">
+        <div class="hk-apiary-chat-title">Got a question? Ask <em>At The Apiary</em></div>
+        <div class="hk-apiary-chat-sub">Live WhatsApp chat with other beekeepers — for in-the-field questions</div>
+      </div>
+      <div class="hk-apiary-chat-arrow">&rarr;</div>
+    </a>
     <div class="transcript-box" id="transcript-box" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;"><div class="transcript-label">&#x2736; AI Transcript</div><div style="font-size:11px;color:rgba(255,255,255,.75);background:rgba(255,255,255,.22);border-radius:20px;padding:2px 10px;font-weight:700;">&#x270F; Editable &mdash; tap to edit</div></div>
       <div class="transcript-text" id="transcript-text" contenteditable="true" spellcheck="true" style="outline:none;min-height:40px;border:1px dashed rgba(255,255,255,.3);border-radius:8px;padding:8px;margin-top:4px;" placeholder="Transcript will appear here..."></div>
@@ -2320,6 +2395,19 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div id="hive-photo-timeline" style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 12px;"></div>
     </div>
+
+    <!-- AT THE APIARY chat prompt — Hive Detail (Phase 4t).
+         Placed after the data so it's discoverable without competing
+         with primary inspection content. Right place because: users
+         reviewing a hive may have a question about what they're seeing. -->
+    <a class="hk-apiary-chat-prompt" href="https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH" target="_blank" rel="noopener" title="Ask the At The Apiary group on WhatsApp">
+      <div class="hk-apiary-chat-icon">💬</div>
+      <div class="hk-apiary-chat-body">
+        <div class="hk-apiary-chat-title">Need a second opinion? Ask <em>At The Apiary</em></div>
+        <div class="hk-apiary-chat-sub">Live WhatsApp chat with other beekeepers</div>
+      </div>
+      <div class="hk-apiary-chat-arrow">&rarr;</div>
+    </a>
     <!-- HIVE COVER PHOTO — dedicated section at the bottom of the page -->
     <div id="hive-cover-banner-section" style="padding:0 20px;margin-top:16px;">
       <div class="section-head"><div class="section-title">🖼 Hive image</div></div>
@@ -3168,7 +3256,33 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- SUPPORT — inline, as they were before -->
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Support</div>
       <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Contact HiveKeeper</button>
-      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;">💬 WhatsApp community</button>
+      <!-- COMMUNITY (28 April 2026 Phase 4t) — was a single ambiguous
+           "WhatsApp community" button. Now a proper community section
+           showing the parent community as primary CTA plus three direct
+           channel links for users who want to opt into a specific topic. -->
+      <div style="border:1px solid var(--wax);border-radius:var(--rs);padding:10px;margin-bottom:16px;background:var(--cream);">
+        <div style="font-size:11px;font-weight:700;color:#1A6B3D;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span style="font-size:14px;">💬</span> WHATSAPP COMMUNITY
+        </div>
+        <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:#25D366;border:none;border-radius:var(--rs);padding:10px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🍯</span>
+          <span style="flex:1;">Join HiveKeeper community<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.92);margin-top:2px;">Announcements + locked Founders channel</div></span>
+          <span style="font-size:14px;">→</span>
+        </button>
+        <div style="font-size:10px;color:var(--text-l);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;">Open channels</div>
+        <button onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" style="width:100%;background:transparent;border:1px solid rgba(37,211,102,.4);border-radius:var(--rs);padding:8px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#1A6B3D;cursor:pointer;margin-bottom:6px;text-align:left;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:14px;">🌳</span>
+          <span style="flex:1;">At The Apiary<div style="font-size:9px;font-weight:400;color:var(--text-l);margin-top:1px;">Live in-the-field questions</div></span>
+        </button>
+        <button onclick="window.open('https://chat.whatsapp.com/JBYBMaUBXn5Gj2hwUWaDFW','_blank')" style="width:100%;background:transparent;border:1px solid rgba(37,211,102,.4);border-radius:var(--rs);padding:8px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#1A6B3D;cursor:pointer;margin-bottom:6px;text-align:left;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:14px;">💡</span>
+          <span style="flex:1;">Feature requests<div style="font-size:9px;font-weight:400;color:var(--text-l);margin-top:1px;">Ideas, suggestions, what to build next</div></span>
+        </button>
+        <button onclick="window.open('https://chat.whatsapp.com/K4fJx3wnW73D1p7VnIo9am','_blank')" style="width:100%;background:transparent;border:1px solid rgba(37,211,102,.4);border-radius:var(--rs);padding:8px 12px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#1A6B3D;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:14px;">🐝</span>
+          <span style="flex:1;">General<div style="font-size:9px;font-weight:400;color:var(--text-l);margin-top:1px;">Everything else, hive talk</div></span>
+        </button>
+      </div>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">❓ Help &amp; guide</button>
 
       <!-- DIAGNOSTIC LOG — export for troubleshooting (23 April 2026) -->
@@ -3243,7 +3357,6 @@ input[type="checkbox"].hk-chk:checked::after {
         <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Environment</div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-        <div onclick="window.open('https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH','_blank')" title="Community chat" style="width:42px;height:42px;background:rgba(99,153,34,.55);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="WhatsApp community chat">💬</div>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
@@ -15630,9 +15743,9 @@ function openSupportModal() {
       + '<span style="font-size:20px;">\u2709\uFE0F</span>'
       + '<span style="flex:1;">Contact HiveKeeper<div style="font-size:10px;font-weight:400;opacity:.9;margin-top:2px;">Direct line to the team — every message read</div></span>'
     + '</button>'
-    + '<button onclick="window.open(\'https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8\',\'_blank\')" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
+    + '<button onclick="window.open(\'https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8\',\'_blank\')" style="width:100%;background:#25D366;border:none;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDCAC</span>'
-      + '<span style="flex:1;">WhatsApp community<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">Chat with other HiveKeeper beekeepers</div></span>'
+      + '<span style="flex:1;">Join HiveKeeper community<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.92);margin-top:2px;">WhatsApp \u2014 announcements + open channels for questions and ideas</div></span>'
     + '</button>'
     + '<button onclick="closeModalEl(\'modal-support\');setTimeout(function(){openModalEl(\'modal-help\')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\u2753</span>'
@@ -17409,7 +17522,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:14 28 April 2026 BST · Phase 4s — help system (5 ? icons + topic modal) + first-run welcome banner';
+var HIVEKEEPER_BUILD = '14:34 28 April 2026 BST · Phase 4t — community signposting (At The Apiary on Inspect/Hive Detail, full community block in Settings, welcome banner CTA, Environment chat icon removed)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
