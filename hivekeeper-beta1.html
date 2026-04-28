@@ -1879,7 +1879,8 @@ input[type="checkbox"].hk-chk:checked::after {
          Bottom row: 3 stat tiles for Wind / To inspect / Pollen — the flying-day
          pill in the middle is the killer beekeeper signal, colour-coded
          green (good)/amber (marginal)/red (don't fly). Same data, no new APIs. -->
-    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
+    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;position:relative;">
+      <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('flying-day')" title="What's a flying day?">?</span>
       <!-- TOP ROW: icon + temp + condition + location -->
       <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
         <div style="font-size:42px;line-height:1;flex-shrink:0;" id="weather-icon">📡</div>
@@ -1904,7 +1905,7 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
         <div style="flex:1.5;padding:8px 6px;text-align:center;border-left:1px solid var(--wax);border-right:1px solid var(--wax);">
           <div id="weather-flying-pill" style="display:inline-block;background:#E8F3E0;color:#2D5016;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:700;">🐝 Loading</div>
-          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:4px;">To inspect<span class="help-icon" onclick="event.stopPropagation();showHelp('flying-day')" title="What's a flying day?">?</span></div>
+          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:4px;">To inspect</div>
         </div>
         <div style="flex:1;padding:10px 6px;text-align:center;">
           <div id="weather-pollen-val" style="font-size:14px;font-weight:700;color:var(--text);">🌿 --</div>
@@ -1949,7 +1950,8 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
 
     <!-- ASIAN HORNET WATCH (27 April 2026 Phase 4d — dashboard format) -->
-    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);overflow:hidden;border:1px solid var(--wax);box-shadow:var(--shadow);">
+    <div class="ah-banner" id="ah-banner" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);overflow:hidden;border:1px solid var(--wax);box-shadow:var(--shadow);position:relative;">
+      <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('ah-risk')" title="What do the risk levels mean?">?</span>
       <div class="ah-header" onclick="toggleAHPanel()" style="padding:14px 16px;cursor:pointer;background:transparent;">
         <div style="display:flex;align-items:center;gap:14px;">
           <div class="ah-header-icon" style="font-size:42px;line-height:1;flex-shrink:0;">🐝</div>
@@ -1957,11 +1959,10 @@ input[type="checkbox"].hk-chk:checked::after {
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <div class="ah-header-title" style="font-size:18px;font-weight:700;color:var(--text);">Asian Hornet Watch</div>
               <span id="ah-header-pill" class="ah-header-pill ah-pill-clear">LOW</span>
-              <span class="help-icon" onclick="event.stopPropagation();showHelp('ah-risk')" title="What do the risk levels mean?">?</span>
             </div>
             <div class="ah-header-sub" id="ah-header-sub" style="font-size:11px;color:var(--text-l);margin-top:4px;line-height:1.4;">Loading nearest sightings...</div>
           </div>
-          <div class="ah-header-toggle" id="ah-toggle-arrow" style="opacity:0.5;font-size:14px;flex-shrink:0;">&#9660;</div>
+          <div class="ah-header-toggle" id="ah-toggle-arrow" style="opacity:0.5;font-size:14px;flex-shrink:0;margin-top:18px;">&#9660;</div>
         </div>
       </div>
       <!-- TILE ROW — same pattern as weather hero -->
@@ -17636,7 +17637,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:05 28 April 2026 BST · Phase 4y — help icons moved to top-right convention (modals next to close X, cards top-right corner)';
+var HIVEKEEPER_BUILD = '18:18 28 April 2026 BST · Phase 4z — home screen ? icons moved to top-right corner of weather + AH Watch cards';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
