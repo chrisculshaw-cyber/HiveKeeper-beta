@@ -1831,7 +1831,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
           <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-          <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+          <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
         </div>
       </div>
       <!-- STATS GRID -->
@@ -1859,7 +1859,8 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="hk-welcome-icon">🐝</div>
       <div class="hk-welcome-body">
         <div class="hk-welcome-title">Welcome to HiveKeeper</div>
-        <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Tap the <strong>?</strong> button at the top of this screen for the full app overview.</div>
+        <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Open the searchable HiveKeeper manual below.</div>
+        <button onclick="openManual()" style="margin-top:10px;background:transparent;border:1.5px solid var(--honey);color:var(--honey);border-radius:14px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;">📖 Open manual</button>
       </div>
       <button class="hk-welcome-dismiss" onclick="dismissWelcomeBanner()" aria-label="Dismiss">&times;</button>
     </div>
@@ -2132,7 +2133,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('apiary-markers')" title="What do the map markers mean?" style="margin-left:0;">?</span>
         <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
         <div id="edit-mode-banner" style="display:none;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-size:11px;color:white;text-align:center;margin-bottom:6px;">Drag hives to reposition · Tap Done when finished</div>
@@ -2228,7 +2229,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
     <div style="margin-top:8px;position:relative;" id="inspect-hive-select-wrap-outer">
@@ -2459,7 +2460,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
           <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
     <div style="margin-top:6px;display:flex;gap:6px;align-items:center;">
@@ -2528,7 +2529,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
   </div>
@@ -2626,7 +2627,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
@@ -2996,40 +2997,26 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 
   <div class="modal-overlay" id="modal-help" onclick="closeModal(event,'modal-help')">
-    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;padding-bottom:0;">
       <div class="modal-handle"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div class="modal-title">🐝 HiveKeeper guide</div>
-      <div onclick="closeModalEl('modal-help')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
-    </div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Getting started</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Apiary</b> on the side rail to add your first hive. Give it a name, set its type (National, Langstroth, WBC etc), status, and number of brood boxes and supers. Drag hives to arrange them on your apiary map.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Recording an inspection</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>Inspect</b> on the side rail. Select your hive, then tap the 🎤 microphone and speak naturally — "queen seen on frame four, six frames of brood, stores adequate, no swarm cells". The AI extracts queen status, brood frames, stores, swarm risk, temper and health score automatically. You can also fill in the form manually.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Home screen</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Shows your apiary summary (active hives, lost colonies, unclear status), priority alerts, live weather for your apiary location, seasonal tip, Asian Hornet Watch, and your active hives scroll. Tap the apiary name to switch between multiple apiaries.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hive detail</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap any hive in the Apiary screen to open its detail page. Tabs show: inspection timeline, brood nest chart, frame tracker, varroa counts, harvests, and treatments. Tap any inspection to edit it. Queen heritage tracks breeding lineage.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Alerts</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The alert engine automatically flags: swarm risk, overdue inspections, low stores, queen issues, varroa levels, Asian hornet risk periods, and seasonal actions. Alerts appear on the home screen ranked by severity.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Varroa monitoring</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Log natural mite drop counts and wash counts in the Varroa tab on any hive. Treatment-free beekeepers can use the visual assessment option — mite levels on bees, uncapping behaviour, and exoskeleton damage indicators.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hiding hives</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap <b>👁 Hide</b> on any hive to remove it from the active view without deleting it — useful for equipment being cleaned or colonies on loan. Hidden hives don't count toward your hive limit. Tap <b>👁 Show hidden</b> in the Apiary screen to reveal and unhide them.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Multiple apiaries</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Tap the apiary name on the home screen to add a second location. Each apiary has its own hives, map layout and inspection history. Switch between them with a single tap.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">QR &amp; NFC labels</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Open any hive and tap the QR code icon to generate a scannable label. Attach it to your hive — scanning it opens straight to that hive's inspection screen.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Calendar</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The calendar tab shows inspection history, a 5-day weather forecast, and seasonal tips for the current month — swarm prevention, feeding, treatment windows, and harvest timing.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">SOS emergency</div><div style="font-size:13px;color:var(--text);line-height:1.6;">The red <b>SOS</b> button sends a pre-written SMS with your GPS location to a saved emergency contact. Set your contact first in ⚙️ Settings → Set emergency contact.</div></div>
-
-      <div style="margin-bottom:14px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Marketplace</div><div style="font-size:13px;color:var(--text);line-height:1.6;">Browse and list bees, equipment and honey for sale. Listings marked HiveKeeper Verified include live hive health data from the seller's inspection records.</div></div>
-
-      <div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Exporting data</div><div style="font-size:13px;color:var(--text);line-height:1.6;">In ⚙️ Settings: <b>Export all data to CSV</b> downloads everything. <b>Export to BeeBase/NBU format</b> produces the exact column structure needed for Regional Bee Inspector compliance reporting.</div></div>
-
-      <button onclick="closeModalEl('modal-help')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Got it</button>
+      <!-- Title row + close X (top-right convention) -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0;">
+        <div class="modal-title">📖 HiveKeeper manual</div>
+        <div onclick="closeModalEl('modal-help')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <!-- Search bar (Phase 4aa). Filters sections live as user types.
+           Stays at top while content scrolls. -->
+      <div style="position:relative;margin-bottom:12px;flex-shrink:0;">
+        <input type="search" id="manual-search" placeholder="Search the manual…" oninput="renderManual(this.value)"
+          style="width:100%;padding:12px 14px 12px 38px;border:1.5px solid var(--wax);border-radius:var(--rs);background:white;font-size:14px;color:var(--text);box-sizing:border-box;font-family:inherit;-webkit-appearance:none;">
+        <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-l);pointer-events:none;">🔍</div>
+      </div>
+      <!-- Manual section list — rendered by renderManual() at modal open time -->
+      <div id="manual-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px;"></div>
+      <!-- Footer note (small print) -->
+      <div style="font-size:10px;color:var(--text-l);text-align:center;padding:10px 0 6px;flex-shrink:0;line-height:1.5;">
+        Tap any section to expand · Need help in a specific moment? Look for the <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(228,163,58,0.30);border:1px solid rgba(228,163,58,0.7);color:var(--honey);font-size:9px;font-weight:800;vertical-align:middle;">?</span> icons throughout the app.
+      </div>
     </div>
   </div>
 
@@ -3395,7 +3382,7 @@ input[type="checkbox"].hk-chk:checked::after {
           <span style="flex:1;">General<div style="font-size:9px;font-weight:400;color:var(--text-l);margin-top:1px;">Everything else, hive talk</div></span>
         </button>
       </div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-help')},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">❓ Help &amp; guide</button>
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openManual()},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">📖 Help &amp; manual</button>
 
       <!-- DIAGNOSTIC LOG — export for troubleshooting (23 April 2026) -->
       <button onclick="downloadHkLog()" id="hk-log-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">📋 Download diagnostic log</button>
@@ -3427,7 +3414,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
   </div>
@@ -3470,7 +3457,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-        <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
   </div>
@@ -17637,7 +17624,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:18 28 April 2026 BST · Phase 4z — home screen ? icons moved to top-right corner of weather + AH Watch cards';
+var HIVEKEEPER_BUILD = '21:09 28 April 2026 BST · Phase 4aa — searchable in-app manual (18 sections, full-body search), welcome banner manual CTA';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -17740,6 +17727,291 @@ function showHelp(topicId) {
   if (titleEl) titleEl.textContent = topic.title;
   if (bodyEl) bodyEl.textContent = topic.body;
   if (typeof openModalEl === 'function') openModalEl('modal-help-topic');
+}
+
+/* ════════════════════════════════════════════════════════════════
+   In-app manual (Phase 4aa) — searchable user guide
+   ----------------------------------------------------------------
+   Mirrors hivekeeper-user-manual-v5-4.docx (canonical for sharing).
+   IMPORTANT: when the live app changes materially, BOTH this
+   constant AND the .docx file must be updated. See backlog item
+   "Searchable user manual" for the longer-term plan.
+   18 top-level sections, full-body search, ranked by title match.
+   ════════════════════════════════════════════════════════════════ */
+var HK_MANUAL = [
+  {
+    id: 'getting-started',
+    title: '1. Getting Started',
+    body:
+      'HiveKeeper works on iPhone, Android (production review pending), and any modern browser on tablet or desktop.\n\n' +
+      'Install: search "HiveKeeper" on the Apple App Store on iPhone (live now). On Android, the production review is pending — until then use the web version at gethivekeeper.com/hivekeeper-beta1.html. Save to home screen for native-like access.\n\n' +
+      'Creating an account: open the app, tap Create account, enter your name, email and password (8+ characters with at least one number), tick the four consent boxes (Privacy, Security, Terms, age 18+), check your inbox for the verification link, return and sign in.\n\n' +
+      'Free trial: when you sign in for the first time, your 14-day free trial starts automatically with full Pro access — enough for two full inspection cycles. A countdown chip appears on the home screen, shifting from green (8+ days) to amber (4–7) to red (1–3). After 14 days, some features become restricted on the Free plan, but your hive data is always safe.\n\n' +
+      'Welcome banner & ? icons: on first home-screen visit, a welcome banner introduces two help mechanisms — small ? icons next to features that aren\'t immediately obvious (tap to learn more), and the ? button in the top-right of every screen header (this manual).'
+  },
+  {
+    id: 'home-screen',
+    title: '2. Home Screen',
+    body:
+      'Your daily dashboard. From top to bottom:\n\n' +
+      '• Stats grid — Active hives / Unclear / Lost / Empty Boxes. Tap any tile to jump to the relevant view.\n' +
+      '• Trial countdown chip — only during your 14-day trial. Hidden for Pro/Commercial/Founder.\n' +
+      '• Weather hero card — large icon + temperature + location, with three stat tiles below: Wind speed, Flying day status (colour-coded green/amber/red), Pollen level. The ? icon top-right explains what makes a "flying day" (temp ≥15°C, wind <12mph, no rain).\n' +
+      '• Asian Hornet Watch — risk pill (LOW/WATCH/ELEVATED/CRITICAL) with three tiles. The ? top-right of the card explains each risk level. Expands on tap.\n' +
+      '• This month in the apiary — seasonal tip card, current month label, headline tip, tile counts.\n' +
+      '• Apiary Health card + Top colony — quick at-a-glance score and your strongest current colony.\n' +
+      '• Crop spraying — only appears when there\'s an active spray nearby. Otherwise hidden.\n' +
+      '• Active hives — horizontal scroll of hive cards.\n' +
+      '• Reports — Session report, Next inspection, All reports.\n' +
+      '• Join HiveKeeper community card (deep forest, persistent on every visit).\n' +
+      '• Offline banner — appears at top when you\'re offline; changes save locally and sync automatically when you reconnect.'
+  },
+  {
+    id: 'apiaries',
+    title: '3. Switching and Managing Apiaries',
+    body:
+      'Two distinct flows, intentionally separated to prevent mistaps.\n\n' +
+      'Switch apiary (header): tap the apiary name pill in the top header. Tap any apiary in the list to switch. Tap the star to set or unset as default. Tap "Share this apiary" to share with another beekeeper.\n\n' +
+      'Manage apiaries (Settings): for rename, location, delete or add new — go to Settings → Apiary settings (full-width tile under the 2x2 grid). Each row shows visible action buttons: ✏️ Rename, 📍 Location, 🗑 Delete (only available with more than one apiary), + Add new apiary.'
+  },
+  {
+    id: 'apiary-map',
+    title: '4. Apiary Map',
+    body:
+      'Satellite aerial view with hive markers at their real GPS positions.\n\n' +
+      'Map markers (the ? top-right of the Apiary header explains):\n' +
+      '🟢 Green — active, healthy colony\n' +
+      '🟡 Amber — needs attention (overdue inspection, low stores, concern)\n' +
+      '🔴 Red — critical (lost colony, swarm risk, urgent issue)\n' +
+      '⚪ Grey — empty / unused stand\n\n' +
+      'With Colour Blind mode on (Settings → Preferences), reds throughout the app become orange so they\'re distinct from greens.\n\n' +
+      'Setting up the map: tap Apiary Settings in the action grid. Map unlocks. Type postcode and tap 🔍 to find your apiary, or tap 📍 to use phone GPS. Tap 🐝 Place hives here, then tap the spot. Drag hives to position. Rotate with ↺ ↻ in 15° steps. Tap Done.\n\n' +
+      'Adding hives: the Add Hive button (honey gradient, prominent) opens the Add new hive modal. The ? icon explains supported types: National, Commercial, WBC, Smith, Langstroth, Dadant.\n\n' +
+      'Filtering: row tabs above the hive list filter by row. The ? at the right of the tabs explains filter and sort options (status, recently inspected vs overdue, sort by name/health).'
+  },
+  {
+    id: 'inspections',
+    title: '5. Recording an Inspection',
+    body:
+      'Voice inspection (recommended): tap Inspect in the bottom navigation. The ? icon next to the hive selector explains how to choose a hive. Select your hive, tap the orange microphone (the ? top-right of the green voice card explains how voice works and offline limits). Speak naturally — "queen seen on frame 4, good laying pattern, 8 frames of brood, stores adequate, no swarm cells, calm colony". Tap again to stop. HiveKeeper extracts the data automatically. Review and tap Save.\n\n' +
+      'Free plan: 3 voice inspections per month. Pro and Commercial: unlimited.\n\n' +
+      'Got a question mid-inspection? Tap "Got a question? Ask At The Apiary" below the voice recorder — opens the WhatsApp channel for live help from other beekeepers.\n\n' +
+      'Manual inspection: select your hive, fill in queen, brood, stores, temper, swarm risk, varroa. Use the Frame composition counter (with ? help icon) to log brood/stores/foundation/empty totals. Tap Save.\n\n' +
+      'Treatments: from any hive\'s detail screen, tap Treatment. The Log treatment modal includes a ? icon explaining when to use each common UK treatment — Apivar, oxalic acid, formic acid (MAQS), Apiguard.\n\n' +
+      'Frame photos and AI analysis: take photos during inspection. Pro and Commercial users can tap "🤖 Analyse frames with AI" to get composition estimates. The ? icon top-right of the analysis row explains what the AI checks (capped brood, open brood, honey, pollen, empty cells).\n\n' +
+      'Next-inspection notes: HiveKeeper extracts forward-looking actions from your voice notes ("check for queen cells next week"). Shown as a pending badge on the hive until your next inspection. Edit or tick off individual notes from the hive detail screen.'
+  },
+  {
+    id: 'hive-detail',
+    title: '6. Hive Detail',
+    body:
+      'Health score (0–100) with trend. The ? at the top-right of the Inspection History section explains the composite score (queen status, brood pattern, varroa, stores, behaviour). Bands:\n• 80–100 strong colony, on track\n• 60–79 generally good, watch one or two areas\n• 40–59 needs attention, plan an action\n• 0–39 at risk, intervention needed\n\n' +
+      'Queen status, box configuration (brood boxes + supers as chips). Last inspection summary and full history timeline.\n\n' +
+      'Above the timeline: "Reviewing a record? Ask At The Apiary" — direct link to live WhatsApp help.\n\n' +
+      'Quick actions: Inspect, Varroa count, Treatment, Harvest, QR code.\n\n' +
+      'Frame photos: tap the camera icon. Free: 3 total per hive. Pro: 10 per hive. Commercial: unlimited.\n\n' +
+      'Hive cover photo (with ? help icon): a representative photo of the hive itself, useful for identification on site, sharing with the community, insurance/theft records, and visual year-on-year comparison. Different from frame photos which go in inspection records.\n\n' +
+      'Hive status (with ? help icon): Active / Lost / Empty / Unclear. Drives map colours, summary counts on home, and which hives appear in inspection due lists. Status updates automatically when your inspection notes describe a state change ("no bees, plenty of stores" → flips to Lost).'
+  },
+  {
+    id: 'ai',
+    title: '7. HiveKeeper AI',
+    body:
+      'HiveKeeper AI knows your real hive data and inspection history.\n\n' +
+      'Example questions: Why did I lose so many colonies this winter? Which hives are at swarm risk right now? Should I split Dave now? How do I redistribute stores from the dead hives? What treatment should I use for varroa in April?\n\n' +
+      'Upload a photo of a brood frame and ask AI to analyse the brood pattern, spot queen cells, or identify disease indicators.\n\n' +
+      'Limits — Free plan: 5 AI messages per day, 3 frame analyses total. Pro: 100 chat per day (warning at 50) + unlimited frame analysis. Commercial: 500 chat per day + unlimited frame analysis. Founder: unlimited everything.\n\n' +
+      'HiveKeeper AI provides guidance, not professional advice. Always apply your own judgement and consult a qualified professional for decisions that materially affect colony welfare or compliance with UK law.'
+  },
+  {
+    id: 'calendar',
+    title: '8. Calendar',
+    body:
+      'Monthly view showing inspection history. Dark green = inspected. Light green = inspection window. Gold dot = inspection recorded. Seasonal tips for the current month shown below the grid.\n\n' +
+      'Pro and Commercial users can sync their inspection calendar to Apple Calendar, Google Calendar, or Outlook (Settings → Subscribe to calendar).'
+  },
+  {
+    id: 'environment',
+    title: '9. Environment',
+    body:
+      'Shows the nectar flow and seasonal focus for your area — which plants are in flower, when the next main flow is expected, what to watch for in your colonies.\n\n' +
+      'Includes a UK Nectar calendar (16 sources × 12 months) and a Crop spraying reports section where you can manually log spray events you observe nearby.\n\n' +
+      'If you spot what may be an Asian hornet, tap Report a sighting from the Asian Hornet Watch card on Home. Your report is sent on your behalf to the UK Centre for Ecology & Hydrology for the national invasive species monitoring programme.'
+  },
+  {
+    id: 'marketplace',
+    title: '10. Marketplace',
+    body:
+      'Browse nucs, queens, equipment, and honey listed by other UK beekeepers. Pro and Commercial users can list items for sale.'
+  },
+  {
+    id: 'community',
+    title: '11. HiveKeeper Community on WhatsApp',
+    body:
+      'HiveKeeper has a friendly WhatsApp community. The dedicated card at the bottom of the home screen (deep forest, persistent on every visit) leads to the parent group; from there you can opt into specific channels.\n\n' +
+      'Parent community group: Includes Announcements (founder updates from Chris) and a locked Founders channel for Founding Beekeepers. The home-screen Join community CTA opens this.\n\n' +
+      'Open channels (joined separately):\n' +
+      '🌳 At The Apiary — live in-the-field questions. Direct links surface on the Inspect screen and Hive Detail (above the inspection history).\n' +
+      '💡 Feature requests — ideas, suggestions, what to build next.\n' +
+      '🐝 General — everything else, hive talk.\n\n' +
+      'All four community links are available together in Settings → WhatsApp Community section.'
+  },
+  {
+    id: 'sos',
+    title: '12. SOS Emergency Alert',
+    body:
+      'Set up your emergency contact in Settings → Your details before you need it.\n\n' +
+      'To use: tap SOS in the bottom navigation, confirm the alert. HiveKeeper sends your GPS location and a Google Maps link to your contact via SMS and WhatsApp simultaneously.'
+  },
+  {
+    id: 'offline',
+    title: '13. Offline Use',
+    body:
+      'HiveKeeper is designed to work at the apiary even when you have no signal.\n\n' +
+      '• An orange banner appears at the top when you\'re offline.\n' +
+      '• Record inspections, add hives, take photos, log harvests or treatments — everything saves locally.\n' +
+      '• When you reconnect, your changes sync automatically. No action needed.\n' +
+      '• Voice inspections require an active connection to transcribe — type your notes instead while offline.\n' +
+      '• Hive deletes also queue offline and apply when you reconnect.\n\n' +
+      'You can safely go to an apiary with no signal, do a full inspection cycle, and come back knowing your data will land in the cloud the moment your phone reconnects.'
+  },
+  {
+    id: 'settings',
+    title: '14. Settings',
+    body:
+      'Tap the ⚙ gear icon in any screen header to open Settings.\n\n' +
+      'Tile grid (top of Settings): Your details / Reports / Preferences / Data + the full-width Apiary settings tile underneath.\n\n' +
+      'Tools: 🔄 Sync status / 🐝 Refer a beekeeper / 👥 Share this apiary / 📅 Subscribe to calendar (Pro+) / 🔍 Bee inspector contacts.\n\n' +
+      'Plan and subscription: the current plan badge (Free / Trial / Pro / Commercial / Founder) appears at the top. Tap "View plans →" for the pricing matrix. Pro and Commercial subscribers see a "Manage or cancel subscription →" button — cancel, downgrade, update payment, or view invoices anytime, no questions asked.\n\n' +
+      'Preferences:\n' +
+      '• 24-hour clock — toggle between 24h and 12h formats.\n' +
+      '• Larger text — bumps font sizes across the app.\n' +
+      '• Imperial units — switches °C/kg/km/h to °F/lb/mph (currently partial).\n' +
+      '• Colour blind mode — replaces red/green with blue/orange palette across map markers, hive status dots, alert banners, AH risk levels, recording button. Useful for red/green colour-blindness which affects ~8% of men.'
+  },
+  {
+    id: 'plans',
+    title: '15. Subscription Plans',
+    body:
+      'Everyone starts with a 14-day free trial giving full Pro access.\n\n' +
+      'After the trial:\n' +
+      '• Free: 1 apiary, 3 hives, 3 photos total, 5 AI chat per day + 3 frame analyses, 3 voice per month.\n' +
+      '• Pro £3.99/mo: 5 apiaries, 50 hives, 10 photos per hive, 100 AI chat per day + unlimited frame, unlimited voice.\n' +
+      '• Commercial £19.99/mo: unlimited apiaries/hives/photos, 500 AI chat per day + unlimited frame, unlimited voice.\n' +
+      '• Founder: unlimited everything (more than Commercial). Lifetime free.\n\n' +
+      'Annual billing saves £7.89/year on Pro (£39.99/yr) and £39.89/year on Commercial (£199.99/yr).\n\n' +
+      'Billed via Stripe through gethivekeeper.com. Prices include UK VAT. Cancel any time via Settings → Manage or cancel subscription.'
+  },
+  {
+    id: 'founder',
+    title: '16. Founding Beekeeper Programme',
+    body:
+      'Founding Beekeepers receive permanent Pro+ access at no cost — currently the most generous tier in the app, more capable than Commercial. The 🏅 Founder badge appears on the Home screen and in Settings. Tapping any Upgrade button as a Founder opens a celebration modal — you don\'t pay for a subscription you already have.\n\n' +
+      'Founders accrue voucher rewards via referrals. Every paying subscriber you refer through your invite link earns you credit toward beekeeping vouchers redeemable with UK suppliers (Thorne\'s, National Bee Supplies, Maisemore). The mechanism is built into Settings → Refer a beekeeper.\n\n' +
+      'Founder status is tied to your account and is non-transferable.'
+  },
+  {
+    id: 'legal',
+    title: '17. Legal',
+    body:
+      'By using HiveKeeper you agree to the policies linked from signup and the website footer:\n' +
+      '• Privacy Policy — gethivekeeper.com/privacy-policy.html\n' +
+      '• Security Policy — gethivekeeper.com/security-policy.html\n' +
+      '• Terms of Service — gethivekeeper.com/terms-of-service.html\n\n' +
+      'HiveKeeper is intended for users aged 18 or over.\n\n' +
+      'You can delete your account and all associated data at any time via gethivekeeper.com/delete-account.'
+  },
+  {
+    id: 'support',
+    title: '18. Support and Contact',
+    body:
+      'General: hello@gethivekeeper.com\n' +
+      'Privacy and data protection: privacy@gethivekeeper.com\n' +
+      'Support: support@gethivekeeper.com\n' +
+      'Website: gethivekeeper.com\n\n' +
+      'Built at a real 24-hive apiary in Brigstock, Northamptonshire, alongside our dedicated founding beekeepers.'
+  }
+];
+
+// Escapes user query for safe inclusion in HTML attributes & inside <mark>
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+  });
+}
+function _highlight(text, query) {
+  if (!query) return _escapeHtml(text);
+  var safe = _escapeHtml(text);
+  var qSafe = _escapeHtml(query);
+  // case-insensitive replace, escape regex specials
+  var re = new RegExp(qSafe.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  return safe.replace(re, function(m) { return '<mark style="background:rgba(228,163,58,0.35);color:inherit;padding:0 1px;border-radius:2px;">' + m + '</mark>'; });
+}
+
+// Renders the manual list inside #manual-list, optionally filtered by query.
+// Title-match scoring: sections with the query in title rank above body matches.
+function renderManual(query) {
+  var listEl = document.getElementById('manual-list');
+  if (!listEl) return;
+  var q = (query || '').trim().toLowerCase();
+  var sections = HK_MANUAL.slice();
+
+  if (q) {
+    var ranked = [];
+    sections.forEach(function(s) {
+      var titleHit = s.title.toLowerCase().indexOf(q) !== -1;
+      var bodyHit = s.body.toLowerCase().indexOf(q) !== -1;
+      if (titleHit || bodyHit) {
+        ranked.push({ s: s, score: titleHit ? 2 : 1 });
+      }
+    });
+    ranked.sort(function(a, b) { return b.score - a.score; });
+    sections = ranked.map(function(r) { return r.s; });
+  }
+
+  if (sections.length === 0) {
+    listEl.innerHTML =
+      '<div style="padding:32px 16px;text-align:center;color:var(--text-l);font-size:13px;line-height:1.6;">' +
+        '<div style="font-size:32px;margin-bottom:8px;opacity:0.5;">🔍</div>' +
+        'No matches for "<strong style="color:var(--text);">' + _escapeHtml(query) + '</strong>".<br>Try a different word, or clear the search to see all sections.' +
+      '</div>';
+    return;
+  }
+
+  listEl.innerHTML = sections.map(function(s) {
+    // Auto-expand if there's an active query (so user sees the matched content)
+    var open = !!q;
+    return (
+      '<div class="hk-manual-section" data-id="' + s.id + '" style="border:1px solid var(--wax);border-radius:var(--rs);margin-bottom:8px;background:white;overflow:hidden;">' +
+        '<div onclick="toggleManualSection(\'' + s.id + '\')" style="padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;">' +
+          '<div style="flex:1;font-family:Syne,sans-serif;font-size:13.5px;font-weight:700;color:var(--text);line-height:1.3;">' + _highlight(s.title, query) + '</div>' +
+          '<div class="hk-manual-chev" style="color:var(--text-l);font-size:12px;flex-shrink:0;transition:transform .15s;' + (open ? 'transform:rotate(180deg);' : '') + '">▼</div>' +
+        '</div>' +
+        '<div class="hk-manual-body" style="' + (open ? '' : 'display:none;') + 'padding:0 14px 14px;font-size:13px;color:var(--text);line-height:1.65;white-space:pre-line;border-top:1px solid var(--wax);padding-top:12px;">' +
+          _highlight(s.body, query) +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function toggleManualSection(id) {
+  var card = document.querySelector('.hk-manual-section[data-id="' + id + '"]');
+  if (!card) return;
+  var body = card.querySelector('.hk-manual-body');
+  var chev = card.querySelector('.hk-manual-chev');
+  if (!body || !chev) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
+function openManual() {
+  // Reset search and render fresh on every open
+  var input = document.getElementById('manual-search');
+  if (input) input.value = '';
+  renderManual('');
+  if (typeof openModalEl === 'function') openModalEl('modal-help');
 }
 
 /* ════════════════════════════════════════════════════════════════
