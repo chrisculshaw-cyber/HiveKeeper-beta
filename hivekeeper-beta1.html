@@ -1354,6 +1354,22 @@ body.colour-blind .rec-btn.recording { animation: recpulse-cb-orange 1s infinite
   background: rgba(255,255,255,0.45);
   box-shadow: 0 2px 6px rgba(255,255,255,0.3);
 }
+/* Corner-positioned variant — absolute top-right of the parent.
+   Parent must have position:relative (or :absolute/:fixed). Used to
+   match iOS/Android settings convention where help lives in the
+   corner of each box, not inline next to a label. */
+.help-icon.help-icon-corner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  margin-left: 0;
+  z-index: 2;
+}
+/* Modal variant — sits LEFT of the close X (which is also top-right) */
+.help-icon.help-icon-modal {
+  margin-left: 0;
+  margin-right: 8px;
+}
 
 /* Welcome banner — first-run only on home screen */
 .hk-welcome-banner {
@@ -2108,10 +2124,11 @@ input[type="checkbox"].hk-chk:checked::after {
       <div>
         <div class="dash-greeting" id="s-apiary-greeting">Good morning,</div>
         <div id="s-apiary-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
-        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="apiary-screen-title-hdr">My Apiary <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('apiary-markers')" title="What do the map markers mean?">?</span></div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="apiary-screen-title-hdr">My Apiary</div>
         <div id="apiary-sub" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('apiary-markers')" title="What do the map markers mean?" style="margin-left:0;">?</span>
         <button onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
         <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
         <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
@@ -2213,11 +2230,9 @@ input[type="checkbox"].hk-chk:checked::after {
         <div onclick="openModalEl('modal-help')" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
       </div>
     </div>
-    <div style="margin-top:8px;" id="inspect-hive-select-wrap-outer">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;">Inspecting</div>
-        <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('hive-selector')" title="How to choose a hive to inspect">?</span>
-      </div>
+    <div style="margin-top:8px;position:relative;" id="inspect-hive-select-wrap-outer">
+      <span class="help-icon help-icon-light help-icon-corner" onclick="event.stopPropagation();showHelp('hive-selector')" title="How to choose a hive to inspect" style="top:-2px;right:0;">?</span>
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;padding-right:30px;">Inspecting</div>
       <div id="inspect-hive-select-wrap">
         <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:12px 14px;cursor:pointer;">
           <span id="inspect-hive-selected-name" style="color:white;font-size:14px;font-weight:600;font-family:Syne,sans-serif;">Select a hive...</span>
@@ -2289,7 +2304,8 @@ input[type="checkbox"].hk-chk:checked::after {
       <span id="inspect-wake-indicator" onclick="openWakeLockIntro()" style="display:none;font-size:10px;color:#6B6050;white-space:nowrap;cursor:pointer;" title="Screen stays awake while on this screen — tap for info">🔆 Stay awake ⓘ</span>
     </div>
     <div class="voice-recorder">
-      <div class="voice-status" id="voice-status">Tap the microphone to record your inspection<span class="help-icon" onclick="showHelp('voice-inspect')" title="How does voice inspection work?">?</span></div>
+      <span class="help-icon help-icon-light help-icon-corner" onclick="showHelp('voice-inspect')" title="How does voice inspection work?">?</span>
+      <div class="voice-status" id="voice-status">Tap the microphone to record your inspection</div>
       <div class="waveform">
         <div class="w-bar"></div><div class="w-bar"></div><div class="w-bar"></div>
         <div class="w-bar"></div><div class="w-bar"></div><div class="w-bar"></div>
@@ -2394,8 +2410,9 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="photo-strip" id="photo-strip">
       <div class="photo-add" onclick="addPhoto()">&#x1F4F7;</div>
     </div>
-    <div id="analyse-btn-wrap" style="display:none;padding:8px 20px 0;">
-      <div style="font-size:11px;color:var(--text-l);text-align:center;margin-bottom:6px;">&#x2601;&#xFE0F; Photos saved to cloud &#x2014; AI analysis is optional<span class="help-icon" onclick="showHelp('frame-comp')" title="What does the AI check?">?</span></div>
+    <div id="analyse-btn-wrap" style="display:none;padding:8px 20px 0;position:relative;">
+      <span class="help-icon help-icon-corner" onclick="showHelp('frame-comp')" title="What does the AI check?" style="top:0;right:20px;">?</span>
+      <div style="font-size:11px;color:var(--text-l);text-align:center;margin-bottom:6px;padding:0 24px;">&#x2601;&#xFE0F; Photos saved to cloud &#x2014; AI analysis is optional</div>
       <button id="analyse-all-btn" onclick="analyseAllFrames()" style="width:100%;background:#C8730A;border:none;border-radius:var(--rs);padding:12px;font-size:13px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;">&#x1F916; Analyse frames with AI (optional)</button>
       <div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:4px;">Checks brood, queen cells, stores, disease and varroa</div>
     </div>
@@ -2404,8 +2421,9 @@ input[type="checkbox"].hk-chk:checked::after {
       Saved in BeeBase-compatible format. Ready to export for compliance reporting.
     </div>
     <div style="margin:0 20px;">
-      <div class="frame-tracker">
-        <div class="frame-tracker-title">&#x1F5BC; Frame composition <span class="help-icon" onclick="event.stopPropagation();showHelp('frame-counter')" title="How does the frame counter work?">?</span></div>
+      <div class="frame-tracker" style="position:relative;">
+        <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('frame-counter')" title="How does the frame counter work?">?</span>
+        <div class="frame-tracker-title">&#x1F5BC; Frame composition</div>
         <div class="frame-tracker-grid">
           <div class="frame-cell brood" id="fc-brood"><div class="frame-cell-label">Brood</div><div class="frame-cell-val" id="fc-brood-val">0</div><div class="frame-cell-btns"><div class="frame-cell-btn" onclick="adjFrame('brood',-1)">&#8722;</div><div class="frame-cell-btn" onclick="adjFrame('brood',1)">+</div></div></div>
           <div class="frame-cell stores" id="fc-stores"><div class="frame-cell-label">Stores</div><div class="frame-cell-val" id="fc-stores-val">0</div><div class="frame-cell-btns"><div class="frame-cell-btn" onclick="adjFrame('stores',-1)">&#8722;</div><div class="frame-cell-btn" onclick="adjFrame('stores',1)">+</div></div></div>
@@ -2465,7 +2483,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <div id="hive-detail-content" style="margin-top:12px;"></div>
     </div>
     <div style="padding:0 20px;margin-top:12px;">
-      <div class="section-head"><div class="section-title">Inspection history</div></div>
+      <div class="section-head"><div class="section-title">Inspection history</div><span class="help-icon" onclick="event.stopPropagation();showHelp('health-score')" title="What does the Health Score mean?">?</span></div>
       <!-- AT THE APIARY chat prompt — Hive Detail Inspection Records (Phase 4v).
            Moved here from after-photos. The right moment is when reviewing
            past records and a question arises ("does this look right?",
@@ -2491,7 +2509,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <!-- HIVE COVER PHOTO — dedicated section at the bottom of the page -->
     <div id="hive-cover-banner-section" style="padding:0 20px;margin-top:16px;">
-      <div class="section-head"><div class="section-title">🖼 Hive image <span class="help-icon" onclick="event.stopPropagation();showHelp('cover-photo')" title="What's the cover photo for?">?</span></div></div>
+      <div class="section-head"><div class="section-title">🖼 Hive image</div><span class="help-icon" onclick="event.stopPropagation();showHelp('cover-photo')" title="What's the cover photo for?">?</span></div>
       <div id="hive-cover-banner" style="margin-top:8px;"></div>
     </div>
     <div style="height:20px;"></div>
@@ -2543,8 +2561,11 @@ input[type="checkbox"].hk-chk:checked::after {
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div class="modal-title" style="margin:0;">Add new hive <span class="help-icon" onclick="event.stopPropagation();showHelp('add-hive')" title="What hive types are supported?">?</span></div>
-      <div onclick="closeModalEl('modal-add-hive')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;">&#x2715;</div>
+      <div class="modal-title" style="margin:0;">Add new hive</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span class="help-icon" onclick="event.stopPropagation();showHelp('add-hive')" title="What hive types are supported?">?</span>
+        <div onclick="closeModalEl('modal-add-hive')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;">&#x2715;</div>
+      </div>
     </div>
     <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
     <div class="form-group"><label>Row</label><select id="new-hive-row"><option value="">No row</option></select></div>
@@ -3096,8 +3117,11 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div class="modal-title">Log treatment <span class="help-icon" onclick="event.stopPropagation();showHelp('treatments')" title="When to use each treatment?">?</span></div>
-      <div onclick="closeModalEl('modal-add-treatment')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      <div class="modal-title">Log treatment</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span class="help-icon" onclick="event.stopPropagation();showHelp('treatments')" title="When to use each treatment?">?</span>
+        <div onclick="closeModalEl('modal-add-treatment')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
     </div>
       <div class="form-group"><label>Product</label>
         <select id="treatment-product">
@@ -3142,8 +3166,11 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div class="modal-title" id="hive-status-modal-title">Change hive status <span class="help-icon" onclick="event.stopPropagation();showHelp('hive-status')" title="What does each status mean?">?</span></div>
-      <div onclick="closeModalEl('modal-hive-status')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      <div class="modal-title" id="hive-status-modal-title">Change hive status</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span class="help-icon" onclick="event.stopPropagation();showHelp('hive-status')" title="What does each status mean?">?</span>
+        <div onclick="closeModalEl('modal-hive-status')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
     </div>
       <p style="font-size:12px;color:var(--text-l);margin-bottom:16px;line-height:1.5;" id="hive-status-modal-sub">Select the current status of this hive.</p>
 
@@ -10052,7 +10079,7 @@ function openInspectionSummary(dateKey, inspections, isMarch31) {
 
     const chipsHtml = chips.map(c => '<div class="insp-chip ' + c.cls + '">' + c.label + '</div>').join('');
     const notesText = insp.transcript || insp.notes || 'No notes recorded.';
-    const healthBar = score ? '<div class="insp-health-row"><div class="insp-health-label">Health<span class="help-icon" onclick="event.stopPropagation();showHelp(\'health-score\')" title="What does the Health Score mean?">?</span></div><div class="insp-health-bar"><div class="insp-health-fill" style="width:' + score + '%"></div></div><div class="insp-health-score">' + score + '%</div></div>' : '';
+    const healthBar = score ? '<div class="insp-health-row"><div class="insp-health-label">Health</div><div class="insp-health-bar"><div class="insp-health-fill" style="width:' + score + '%"></div></div><div class="insp-health-score">' + score + '%</div></div>' : '';
 
     return '<div class="insp-card">' +
       '<div class="insp-card-header">' +
@@ -10106,7 +10133,7 @@ function buildMarch31Cards() {
   return realNotes.map(h => {
     const headerBg = statusColors[h.status] || 'var(--forest)';
     const statusBadge = '<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(255,255,255,.15);color:white;">' + statusLabels[h.status] + '</span>';
-    const healthBar = h.health > 0 ? '<div class="insp-health-row"><div class="insp-health-label">Health<span class="help-icon" onclick="event.stopPropagation();showHelp(\'health-score\')" title="What does the Health Score mean?">?</span></div><div class="insp-health-bar"><div class="insp-health-fill" style="width:' + h.health + '%"></div></div><div class="insp-health-score">' + h.health + '%</div></div>' : '';
+    const healthBar = h.health > 0 ? '<div class="insp-health-row"><div class="insp-health-label">Health</div><div class="insp-health-bar"><div class="insp-health-fill" style="width:' + h.health + '%"></div></div><div class="insp-health-score">' + h.health + '%</div></div>' : '';
 
     return '<div class="insp-card">' +
       '<div class="insp-card-header" style="background:' + headerBg + ';">' +
@@ -17609,7 +17636,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:58 28 April 2026 BST · Phase 4x — help icons more prominent (22px, stronger contrast), Add Hive button promoted to honey gradient primary action';
+var HIVEKEEPER_BUILD = '18:05 28 April 2026 BST · Phase 4y — help icons moved to top-right convention (modals next to close X, cards top-right corner)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
