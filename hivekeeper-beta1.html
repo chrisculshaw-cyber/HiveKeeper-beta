@@ -1767,28 +1767,19 @@ input[type="checkbox"].hk-chk:checked::after {
       <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--honey);border:none;border-radius:20px;padding:8px 14px;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">Set up →</button>
     </div>
 
-    <!-- WELCOME BANNER — first-run only (Phase 4s, expanded 4t).
-         Two purposes: introduces ? icons AND prompts to join the
-         WhatsApp community at the natural signup-to-engagement moment.
+    <!-- WELCOME BANNER — first-run only (Phase 4s).
+         Single purpose: introduce the ? icons. Community CTA moved to
+         a dedicated persistent card at the bottom of home screen so it's
+         visible on every visit, not just first run.
          Visibility controlled by maybeShowWelcomeBanner() which checks
          hk_seen_welcome. Once dismissed, never shown again on this device. -->
-    <div id="home-welcome-banner" class="hk-welcome-banner" style="display:none;flex-direction:column;align-items:stretch;gap:0;">
-      <div style="display:flex;gap:12px;align-items:flex-start;">
-        <div class="hk-welcome-icon">🐝</div>
-        <div class="hk-welcome-body">
-          <div class="hk-welcome-title">Welcome to HiveKeeper</div>
-          <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Tap the <strong>?</strong> button at the top of this screen for the full app overview.</div>
-        </div>
-        <button class="hk-welcome-dismiss" onclick="dismissWelcomeBanner()" aria-label="Dismiss">&times;</button>
+    <div id="home-welcome-banner" class="hk-welcome-banner" style="display:none;">
+      <div class="hk-welcome-icon">🐝</div>
+      <div class="hk-welcome-body">
+        <div class="hk-welcome-title">Welcome to HiveKeeper</div>
+        <div class="hk-welcome-text">Look for the small <strong>?</strong> icons next to features &mdash; tap any of them to learn more about what they mean. Need a deeper guide? Tap the <strong>?</strong> button at the top of this screen for the full app overview.</div>
       </div>
-      <div style="margin:12px 0 4px;border-top:1px dashed rgba(228,163,58,0.35);padding-top:12px;display:flex;gap:12px;align-items:flex-start;">
-        <div style="font-size:22px;line-height:1;flex-shrink:0;margin-top:2px;">💬</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:#1A6B3D;margin-bottom:3px;">Join the HiveKeeper community</div>
-          <div style="font-size:12px;color:var(--text);line-height:1.45;opacity:0.85;">A friendly WhatsApp group with channels for live in-the-field questions, feature requests, and general beekeeping chat &mdash; plus founder updates from Chris.</div>
-          <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="margin-top:8px;background:#25D366;color:white;border:none;border-radius:14px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Join community →</button>
-        </div>
-      </div>
+      <button class="hk-welcome-dismiss" onclick="dismissWelcomeBanner()" aria-label="Dismiss">&times;</button>
     </div>
 
     <!-- WINTER LOSS BANNER -->
@@ -2012,6 +2003,24 @@ input[type="checkbox"].hk-chk:checked::after {
         <div class="hive-mini-name">All reports</div>
         <div class="hive-mini-meta">Every report available to you</div>
       </div>
+    </div>
+
+    <!-- COMMUNITY CARD — bottom of home (Phase 4v).
+         Persistent invitation visible on every visit. Deep forest green
+         to integrate with HiveKeeper brand palette rather than read as
+         a foreign WhatsApp element. Sits at the bottom so it's the last
+         thing users see when they finish reviewing their dashboard —
+         a natural moment to consider community engagement. -->
+    <div style="margin:24px 16px 0;padding:18px 18px 16px;background:linear-gradient(135deg, #2D5016 0%, #1F380F 100%);border-radius:var(--rs);box-shadow:0 4px 14px rgba(45,80,22,0.25);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(228,163,58,0.20);border:1.5px solid rgba(228,163,58,0.45);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:white;line-height:1.15;">Join the HiveKeeper community</div>
+          <div style="font-size:10px;color:var(--honey);letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-top:2px;">WhatsApp · Free</div>
+        </div>
+      </div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,0.82);line-height:1.5;margin-bottom:14px;">A friendly group with channels for in-the-field questions, feature requests, and general beekeeping chat &mdash; plus founder updates from Chris.</div>
+      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:11px;font-size:13px;font-weight:700;color:white;cursor:pointer;letter-spacing:.02em;box-shadow:0 2px 8px rgba(228,163,58,0.3);">Join community &rarr;</button>
     </div>
     <div style="height:20px;"></div>
   </div>
@@ -2386,6 +2395,19 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
     <div style="padding:0 20px;margin-top:12px;">
       <div class="section-head"><div class="section-title">Inspection history</div></div>
+      <!-- AT THE APIARY chat prompt — Hive Detail Inspection Records (Phase 4v).
+           Moved here from after-photos. The right moment is when reviewing
+           past records and a question arises ("does this look right?",
+           "should I treat?"). Sits directly above the timeline of
+           inspection cards so it's seen at the right moment. -->
+      <a class="hk-apiary-chat-prompt" href="https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH" target="_blank" rel="noopener" title="Ask the At The Apiary group on WhatsApp">
+        <div class="hk-apiary-chat-icon">💬</div>
+        <div class="hk-apiary-chat-body">
+          <div class="hk-apiary-chat-title">Reviewing a record? Ask <em>At The Apiary</em></div>
+          <div class="hk-apiary-chat-sub">Live WhatsApp chat with other beekeepers</div>
+        </div>
+        <div class="hk-apiary-chat-arrow">&rarr;</div>
+      </a>
       <div id="hive-timeline"></div>
     </div>
     <div id="hive-photo-timeline-section" style="padding:0 20px;margin-top:4px;display:none;">
@@ -2396,18 +2418,6 @@ input[type="checkbox"].hk-chk:checked::after {
       <div id="hive-photo-timeline" style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 12px;"></div>
     </div>
 
-    <!-- AT THE APIARY chat prompt — Hive Detail (Phase 4t).
-         Placed after the data so it's discoverable without competing
-         with primary inspection content. Right place because: users
-         reviewing a hive may have a question about what they're seeing. -->
-    <a class="hk-apiary-chat-prompt" href="https://chat.whatsapp.com/JU8677lAsG5HpMNfMuuqKH" target="_blank" rel="noopener" title="Ask the At The Apiary group on WhatsApp">
-      <div class="hk-apiary-chat-icon">💬</div>
-      <div class="hk-apiary-chat-body">
-        <div class="hk-apiary-chat-title">Need a second opinion? Ask <em>At The Apiary</em></div>
-        <div class="hk-apiary-chat-sub">Live WhatsApp chat with other beekeepers</div>
-      </div>
-      <div class="hk-apiary-chat-arrow">&rarr;</div>
-    </a>
     <!-- HIVE COVER PHOTO — dedicated section at the bottom of the page -->
     <div id="hive-cover-banner-section" style="padding:0 20px;margin-top:16px;">
       <div class="section-head"><div class="section-title">🖼 Hive image</div></div>
@@ -17525,7 +17535,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:54 28 April 2026 BST · Phase 4u — push notifications toggle hidden until backend ships (integrity fix)';
+var HIVEKEEPER_BUILD = '17:31 28 April 2026 BST · Phase 4v — community card at home bottom (deep forest), At The Apiary moved to Inspection Records, welcome banner pared back';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
