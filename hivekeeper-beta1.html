@@ -1633,7 +1633,65 @@ input[type="checkbox"].hk-chk:checked::after {
   <div class="hk-auth-fadein" style="position:relative;text-align:center;margin-bottom:8px;z-index:1;">
     <!-- Soft honey glow behind logo -->
     <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
-    <div class="hk-auth-logomark" style="position:relative;font-size:58px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(228,163,58,0.4));">🐝</div>
+    <div class="hk-auth-logomark" style="position:relative;width:80px;height:80px;margin:0 auto 8px;filter:drop-shadow(0 4px 12px rgba(228,163,58,0.45));">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
+        <defs>
+          <radialGradient id="hk-bee-body-grad" cx="40%" cy="35%">
+            <stop offset="0%" stop-color="#FFD874"/>
+            <stop offset="60%" stop-color="#E4A33A"/>
+            <stop offset="100%" stop-color="#A06D18"/>
+          </radialGradient>
+          <linearGradient id="hk-bee-wing-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0.55)"/>
+          </linearGradient>
+        </defs>
+        <!-- Wings (translucent, swept back — honey bee, not bumble) -->
+        <ellipse cx="22" cy="32" rx="16" ry="8" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(-22 22 32)"/>
+        <ellipse cx="58" cy="32" rx="16" ry="8" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(22 58 32)"/>
+        <ellipse cx="26" cy="40" rx="11" ry="5" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(-12 26 40)"/>
+        <ellipse cx="54" cy="40" rx="11" ry="5" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(12 54 40)"/>
+        <!-- Brown legs -->
+        <g stroke="#5C3010" stroke-width="1.6" fill="none" stroke-linecap="round">
+          <path d="M34,38 Q24,40 20,46"/>
+          <path d="M34,44 Q23,46 19,54"/>
+          <path d="M34,50 Q24,54 21,62"/>
+          <path d="M46,38 Q56,40 60,46"/>
+          <path d="M46,44 Q57,46 61,54"/>
+          <path d="M46,50 Q56,54 59,62"/>
+        </g>
+        <!-- Abdomen — honey-amber body, pointed (NOT fuzzy round bumblebee shape) -->
+        <ellipse cx="40" cy="52" rx="10" ry="16" fill="url(#hk-bee-body-grad)"/>
+        <!-- Three subtle abdominal bands (defining honey bee) -->
+        <path d="M30,46 Q40,43 50,46 L50,49 Q40,46 30,49 Z" fill="#5C3010" opacity="0.78"/>
+        <path d="M30,53 Q40,50 50,53 L50,56 Q40,53 30,56 Z" fill="#5C3010" opacity="0.78"/>
+        <path d="M31,60 Q40,57 49,60 L49,63 Q40,60 31,63 Z" fill="#5C3010" opacity="0.78"/>
+        <!-- Pointed abdomen tip -->
+        <path d="M37,66 Q40,72 43,66 Z" fill="#A06D18"/>
+        <!-- Thorax — slightly fuzzy texture but golden, not black -->
+        <ellipse cx="40" cy="36" rx="9" ry="9" fill="#C8810A"/>
+        <!-- Subtle fuzz hatching on thorax -->
+        <g stroke="#7A4818" stroke-width="0.5" opacity="0.6">
+          <line x1="34" y1="30" x2="36" y2="34"/>
+          <line x1="38" y1="29" x2="40" y2="33"/>
+          <line x1="42" y1="29" x2="44" y2="33"/>
+          <line x1="46" y1="30" x2="44" y2="34"/>
+          <line x1="33" y1="36" x2="35" y2="40"/>
+          <line x1="47" y1="36" x2="45" y2="40"/>
+        </g>
+        <!-- Head -->
+        <circle cx="40" cy="22" r="7" fill="#3D2410"/>
+        <!-- Compound eyes (large, distinctive bee feature) -->
+        <ellipse cx="36" cy="22" rx="2" ry="3" fill="#1A0E04"/>
+        <ellipse cx="44" cy="22" rx="2" ry="3" fill="#1A0E04"/>
+        <!-- Eye highlights -->
+        <ellipse cx="35.5" cy="20.5" rx="0.6" ry="0.9" fill="rgba(255,255,255,0.6)"/>
+        <ellipse cx="43.5" cy="20.5" rx="0.6" ry="0.9" fill="rgba(255,255,255,0.6)"/>
+        <!-- Antennae -->
+        <path d="M37,15 Q33,9 31,11" stroke="#3D2410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        <path d="M43,15 Q47,9 49,11" stroke="#3D2410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
     <div style="position:relative;font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;">HiveKeeper<span style="font-size:18px;vertical-align:super;opacity:0.55;font-weight:400;">™</span></div>
     <div style="position:relative;font-size:16px;color:rgba(255,255,255,.78);margin-top:12px;font-style:italic;letter-spacing:.01em;line-height:1.4;">Your apiary, always with you</div>
     <div style="position:relative;font-size:10px;color:rgba(255,255,255,.42);margin-top:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.5;max-width:340px;margin-left:auto;margin-right:auto;">Built at a 24-hive apiary in Northamptonshire<br>alongside our dedicated founding beekeepers</div>
@@ -2042,7 +2100,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <div>
         <div class="dash-greeting" id="s-apiary-greeting">Good morning,</div>
         <div id="s-apiary-badge" style="display:none;margin-top:3px;"><span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span></div>
-        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="apiary-screen-title-hdr">My Apiary</div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;" id="apiary-screen-title-hdr">My Apiary <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('apiary-markers')" title="What do the map markers mean?">?</span></div>
         <div id="apiary-sub" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:2px;"></div>
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
@@ -2116,6 +2174,7 @@ input[type="checkbox"].hk-chk:checked::after {
     <!-- Row filter tabs — between canvas and hive list -->
     <div style="display:flex;align-items:center;border-bottom:1px solid var(--wax);background:white;">
       <div class="row-tabs" id="row-tabs" style="flex:1;overflow-x:auto;display:flex;padding:0 4px;"></div>
+      <div style="padding:0 8px;flex-shrink:0;"><span class="help-icon" onclick="event.stopPropagation();showHelp('hive-filters')" title="Filter & sort the hive list">?</span></div>
     </div>
     <!-- Stack strip — mini hive stack diagrams for the selected row (or all rows) -->
     <div id="apiary-stack-strip" style="background:var(--cream);border-bottom:1px solid var(--wax);padding:10px 16px;overflow-x:auto;display:none;"></div>
@@ -2147,6 +2206,10 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
     <div style="margin-top:8px;" id="inspect-hive-select-wrap-outer">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase;">Inspecting</div>
+        <span class="help-icon help-icon-light" onclick="event.stopPropagation();showHelp('hive-selector')" title="How to choose a hive to inspect">?</span>
+      </div>
       <div id="inspect-hive-select-wrap">
         <div id="inspect-hive-selected" onclick="toggleHiveList()" style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:var(--rs);padding:12px 14px;cursor:pointer;">
           <span id="inspect-hive-selected-name" style="color:white;font-size:14px;font-weight:600;font-family:Syne,sans-serif;">Select a hive...</span>
@@ -2334,7 +2397,7 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
     <div style="margin:0 20px;">
       <div class="frame-tracker">
-        <div class="frame-tracker-title">&#x1F5BC; Frame composition</div>
+        <div class="frame-tracker-title">&#x1F5BC; Frame composition <span class="help-icon" onclick="event.stopPropagation();showHelp('frame-counter')" title="How does the frame counter work?">?</span></div>
         <div class="frame-tracker-grid">
           <div class="frame-cell brood" id="fc-brood"><div class="frame-cell-label">Brood</div><div class="frame-cell-val" id="fc-brood-val">0</div><div class="frame-cell-btns"><div class="frame-cell-btn" onclick="adjFrame('brood',-1)">&#8722;</div><div class="frame-cell-btn" onclick="adjFrame('brood',1)">+</div></div></div>
           <div class="frame-cell stores" id="fc-stores"><div class="frame-cell-label">Stores</div><div class="frame-cell-val" id="fc-stores-val">0</div><div class="frame-cell-btns"><div class="frame-cell-btn" onclick="adjFrame('stores',-1)">&#8722;</div><div class="frame-cell-btn" onclick="adjFrame('stores',1)">+</div></div></div>
@@ -2420,7 +2483,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <!-- HIVE COVER PHOTO — dedicated section at the bottom of the page -->
     <div id="hive-cover-banner-section" style="padding:0 20px;margin-top:16px;">
-      <div class="section-head"><div class="section-title">🖼 Hive image</div></div>
+      <div class="section-head"><div class="section-title">🖼 Hive image <span class="help-icon" onclick="event.stopPropagation();showHelp('cover-photo')" title="What's the cover photo for?">?</span></div></div>
       <div id="hive-cover-banner" style="margin-top:8px;"></div>
     </div>
     <div style="height:20px;"></div>
@@ -2472,7 +2535,7 @@ input[type="checkbox"].hk-chk:checked::after {
   <div class="modal-sheet" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div class="modal-title" style="margin:0;">Add new hive</div>
+      <div class="modal-title" style="margin:0;">Add new hive <span class="help-icon" onclick="event.stopPropagation();showHelp('add-hive')" title="What hive types are supported?">?</span></div>
       <div onclick="closeModalEl('modal-add-hive')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;">&#x2715;</div>
     </div>
     <div class="form-group"><label>Hive name</label><input type="text" id="new-hive-name" placeholder="e.g. Row 5 Hive 1"></div>
@@ -3025,7 +3088,7 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div class="modal-title">Log treatment</div>
+      <div class="modal-title">Log treatment <span class="help-icon" onclick="event.stopPropagation();showHelp('treatments')" title="When to use each treatment?">?</span></div>
       <div onclick="closeModalEl('modal-add-treatment')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
       <div class="form-group"><label>Product</label>
@@ -3071,7 +3134,7 @@ input[type="checkbox"].hk-chk:checked::after {
     <div class="modal-sheet" onclick="event.stopPropagation()">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
-      <div class="modal-title" id="hive-status-modal-title">Change hive status</div>
+      <div class="modal-title" id="hive-status-modal-title">Change hive status <span class="help-icon" onclick="event.stopPropagation();showHelp('hive-status')" title="What does each status mean?">?</span></div>
       <div onclick="closeModalEl('modal-hive-status')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
       <p style="font-size:12px;color:var(--text-l);margin-bottom:16px;line-height:1.5;" id="hive-status-modal-sub">Select the current status of this hive.</p>
@@ -3218,7 +3281,10 @@ input[type="checkbox"].hk-chk:checked::after {
           <div style="font-size:11px;font-weight:700;color:var(--honey);margin-top:2px;">View plans →</div>
         </div>
       </div>
-      <button id="manage-sub-btn" onclick="closeModalEl('modal-settings');openCustomerPortal();" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:10px;display:none;">Manage subscription →</button>
+      <div id="manage-sub-wrap" style="display:none;margin-bottom:10px;">
+        <button id="manage-sub-btn" onclick="closeModalEl('modal-settings');openCustomerPortal();" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;">Manage or cancel subscription →</button>
+        <div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:6px;line-height:1.4;padding:0 4px;">Cancel, downgrade, update payment, or view invoices — anytime, no questions asked.</div>
+      </div>
 
       <!-- 4-TILE GRID: Your details, Reports, Preferences, Data -->
       <div style="display:flex;gap:8px;margin-bottom:8px;">
@@ -17535,7 +17601,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:31 28 April 2026 BST · Phase 4v — community card at home bottom (deep forest), At The Apiary moved to Inspection Records, welcome banner pared back';
+var HIVEKEEPER_BUILD = '17:45 28 April 2026 BST · Phase 4w — sub mgmt clarity, 8 more ? icons (Apiary/Inspect/Hive Detail), custom honey bee SVG on auth screen';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -17592,6 +17658,38 @@ var HK_HELP = {
   'frame-comp': {
     title: 'Frame Composition (Pro)',
     body: 'Take a photo of a frame and HiveKeeper\'s AI estimates the percentage covered by:\n\n  • Capped brood\n  • Open brood / larvae\n  • Eggs\n  • Honey / nectar\n  • Pollen\n  • Empty cells\n\nUseful for tracking colony development objectively over time without manually counting cells.\n\nA Pro feature — included with Pro and Commercial subscriptions. Photos are processed privately and never shared.'
+  },
+  'apiary-markers': {
+    title: 'Apiary Map Markers',
+    body: 'Each pin on the apiary map represents a hive. The colour shows the hive\'s current status at a glance:\n\n  🟢 Green — active, healthy colony\n  🟡 Amber — needs attention (overdue inspection, low stores, or other concern)\n  🔴 Red — critical (lost colony, swarm risk, or urgent issue)\n  ⚪ Grey — empty / unused stand\n\nTap any marker to open that hive\'s detail screen.\n\nWith Colour Blind mode on (Settings → Preferences), reds become orange so they\'re distinct from greens.'
+  },
+  'add-hive': {
+    title: 'Adding a Hive',
+    body: 'Tap "Add hive" to register a new hive in this apiary.\n\nHiveKeeper supports the main UK and international hive types:\n  • National (most common in the UK)\n  • Commercial\n  • WBC\n  • Smith\n  • Langstroth\n  • Dadant\n\nFor each hive you can record:\n  • Name (free text — "Lavender 1", "By the apple tree", etc.)\n  • Type (from the list above)\n  • Acquisition date\n  • Queen details if known\n  • Photo\n\nYou can add or edit any of these later. Your apiary, your way.'
+  },
+  'hive-filters': {
+    title: 'Hive Filters & Sort',
+    body: 'Filter and sort the hive list to find what you need quickly.\n\nFilter by:\n  • Status (active, lost, empty, all)\n  • Apiary (if you have multiple)\n  • Recently inspected vs overdue\n\nSort by:\n  • Name (A–Z)\n  • Most recently inspected\n  • Most overdue\n  • Health score (best to worst, or worst to best)\n\nUseful when you have many hives and want to focus your visit on the ones needing attention.'
+  },
+  'hive-selector': {
+    title: 'Choosing a Hive to Inspect',
+    body: 'Tap the hive name at the top of the Inspect screen to switch to a different hive.\n\nThe selector shows hives in your current apiary. If you have multiple apiaries, switch apiary first from the Apiary screen, then return here.\n\nTip: HiveKeeper remembers the last hive you inspected, so you can move quickly through the apiary without re-selecting each time.'
+  },
+  'frame-counter': {
+    title: 'Frame Composition Counter',
+    body: 'Quick manual count of what each frame contains. Tap once for each frame you see:\n\n  • Brood — frames with capped brood, larvae, or eggs\n  • Stores — frames primarily with capped honey or nectar\n  • Foundation — frames with foundation but undrawn comb\n  • Empty — frames with drawn comb but no current contents\n\nCounts feed directly into the inspection record and your hive history.\n\nDifferent from Frame Composition AI (Pro) — that\'s a photo-based estimate of what\'s on a single frame. The counter here is for whole-frame totals.'
+  },
+  'treatments': {
+    title: 'Varroa Treatments',
+    body: 'When to use each common UK treatment:\n\n  • Apivar — slow-release amitraz strips. Late summer / early autumn after honey supers come off. 6–10 weeks in colony.\n  • Oxalic acid — winter trickle when colony is broodless (typically Dec–Jan). Fast-acting, single dose. Highly effective on phoretic mites.\n  • Formic acid (MAQS / Formic Pro) — vapour treatment that penetrates capped cells. Spring or autumn. Effective but temperature-sensitive.\n  • Thymol-based (Apiguard / Api-Life Var) — late summer. Temperature-dependent (above 15°C).\n\nHiveKeeper records what you used and when — useful for compliance, monitoring effectiveness, and BeeBase reporting.\n\nAlways follow product label instructions and your Bee Inspector\'s guidance for your area.'
+  },
+  'cover-photo': {
+    title: 'Hive Cover Photo',
+    body: 'A representative photo of this specific hive — the outside, the stand, distinguishing marks.\n\nUseful for:\n  • Quickly identifying the right hive when you arrive at an apiary with several similar-looking hives\n  • Sharing photos with the At The Apiary group when asking questions\n  • Insurance / theft records\n  • Year-on-year visual comparison\n\nDifferent from frame photos — those go in the inspection record. Cover photo is the hive itself.'
+  },
+  'hive-status': {
+    title: 'Hive Status',
+    body: 'Each hive carries a status describing its current state:\n\n  • Active — colony present and functioning\n  • Lost — colony dead or absconded; hive empty\n  • Empty — hive deliberately empty (no colony assigned, awaiting new one)\n  • Unclear — investigating, status not yet confirmed\n\nStatus drives apiary map colours, summary counts on the home screen, and which hives appear in inspection due lists.\n\nYou can change the status manually from the Hive Detail screen or it updates automatically when you record an inspection that changes the colony state (e.g. recording "no bees, plenty of stores" flips to Lost).'
   }
 };
 
@@ -19726,7 +19824,7 @@ function updatePlanBadge() {
   // during beta. Same rationale as handleUpgrade fix earlier today.
   // FIXME(phase-3d): when IAP/Play Billing ship, route to native
   // subscription management UI for those users instead of Stripe portal.
-  var manageBtn = document.getElementById('manage-sub-btn');
+  var manageBtn = document.getElementById('manage-sub-wrap');
   if (manageBtn) {
     var isPaid = tier === 'pro' || tier === 'commercial';
     manageBtn.style.display = (isPaid && !isFoundingBeekeeper()) ? 'block' : 'none';
