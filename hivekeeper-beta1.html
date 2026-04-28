@@ -13661,12 +13661,15 @@ function applySettings() {
   var cbOn = localStorage.getItem('hk_colour_blind') === '1';
   if (tcb) tcb.classList.toggle('on', cbOn);
   document.body.classList.toggle('colour-blind', cbOn);
-  // Push notifications — only show toggle if running in Median wrapper
+  // Push notifications — TEMPORARILY HIDDEN (28 April 2026 Phase 4u).
+  // Toggle infrastructure is in place but the backend isn't. Showing
+  // a toggle that does nothing is misleading. Hide unconditionally
+  // until the OneSignal/Median Premium backend ships. To re-enable:
+  // restore the inMedian check below.
   var pushRow = document.getElementById('push-notif-row');
   var pushToggle = document.getElementById('toggle-push');
   if (pushRow) {
-    var inMedian = typeof window.median !== 'undefined' || typeof window.gonative !== 'undefined';
-    pushRow.style.display = inMedian ? 'flex' : 'none';
+    pushRow.style.display = 'none';
     if (pushToggle) pushToggle.classList.toggle('on', localStorage.getItem('hk_push_enabled') === '1');
   }
 }
@@ -17522,7 +17525,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:34 28 April 2026 BST · Phase 4t — community signposting (At The Apiary on Inspect/Hive Detail, full community block in Settings, welcome banner CTA, Environment chat icon removed)';
+var HIVEKEEPER_BUILD = '14:54 28 April 2026 BST · Phase 4u — push notifications toggle hidden until backend ships (integrity fix)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
