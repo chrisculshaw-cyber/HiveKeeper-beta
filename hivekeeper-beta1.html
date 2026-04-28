@@ -9622,9 +9622,16 @@ const BRIGSTOCK_LNG = -0.5432;
 const WEATHER_CACHE_KEY = 'hk_weather_v1';
 const WEATHER_CACHE_MINS = 60;
 
+// 28 April 2026 — Phase 4ac: nightIcon variants added so the weather hero
+// icon reflects time of day. Open-Meteo's current.is_day flag (0=night,
+// 1=day) drives the choice. Codes that look the same regardless of time
+// (rain, fog, snow, thunderstorm) don't need a variant — those just keep
+// the single icon.
 const WMO_CODES = {
-  0:{icon:'☀️',desc:'Clear sky'},1:{icon:'🌤️',desc:'Mainly clear'},
-  2:{icon:'⛅',desc:'Partly cloudy'},3:{icon:'☁️',desc:'Overcast'},
+  0:{icon:'☀️',nightIcon:'🌙',desc:'Clear sky'},
+  1:{icon:'🌤️',nightIcon:'🌙',desc:'Mainly clear'},
+  2:{icon:'⛅',nightIcon:'☁️',desc:'Partly cloudy'},
+  3:{icon:'☁️',desc:'Overcast'},
   45:{icon:'🌫️',desc:'Foggy'},51:{icon:'🌦️',desc:'Light drizzle'},
   53:{icon:'🌦️',desc:'Drizzle'},55:{icon:'🌧️',desc:'Heavy drizzle'},
   61:{icon:'🌧️',desc:'Light rain'},63:{icon:'🌧️',desc:'Rain'},
@@ -9681,7 +9688,7 @@ async function fetchWeather() {
     }
   } catch(e) {}
   try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + USER_LAT + '&longitude=' + USER_LNG + '&current=temperature_2m,weathercode,windspeed_10m,precipitation,relative_humidity_2m&timezone=Europe%2FLondon';
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + USER_LAT + '&longitude=' + USER_LNG + '&current=temperature_2m,weathercode,windspeed_10m,precipitation,relative_humidity_2m,is_day&timezone=Europe%2FLondon';
     const res = await fetch(url);
     const data = await res.json();
     localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ts:Date.now(), data}));
@@ -9722,10 +9729,20 @@ function getCurrentWeatherSnapshot() {
     if (Date.now() - cached.ts > 6 * 60 * 60 * 1000) return null;
     var c = cached.data.current;
     var wmo = (typeof WMO_CODES !== 'undefined' && WMO_CODES[c.weathercode]) || { icon: '🌡️', desc: 'Variable' };
+    // 28 April 2026 — Phase 4ac: pick night icon if cached weather was
+    // captured at night.
+    var isNight;
+    if (typeof c.is_day === 'number') {
+      isNight = c.is_day === 0;
+    } else {
+      var hr = new Date(cached.ts).getHours();
+      isNight = hr < 7 || hr >= 20;
+    }
+    var displayIcon = (isNight && wmo.nightIcon) ? wmo.nightIcon : wmo.icon;
     return {
       tempC: Math.round(c.temperature_2m),
       condition: wmo.desc,
-      icon: wmo.icon,
+      icon: displayIcon,
       windKph: Math.round(c.windspeed_10m),
       windMph: Math.round(c.windspeed_10m * 0.621371),
       precipitationMm: c.precipitation || 0,
@@ -9748,6 +9765,19 @@ function renderWeather(data) {
   const wind = Math.round(c.windspeed_10m);
   const rain = c.precipitation || 0;
   const wmo = WMO_CODES[c.weathercode] || {icon:'🌡️', desc:'Variable'};
+  // 28 April 2026 — Phase 4ac: choose day or night icon. Open-Meteo's
+  // is_day flag is 0 at night, 1 during day. Fallback for cached
+  // pre-4ac weather data: derive from local hour (before 7am or after
+  // 8pm = night). Codes without a nightIcon variant (rain, fog, etc.)
+  // use the single icon regardless.
+  var isNight;
+  if (typeof c.is_day === 'number') {
+    isNight = c.is_day === 0;
+  } else {
+    var hr = new Date().getHours();
+    isNight = hr < 7 || hr >= 20;
+  }
+  var displayIcon = (isNight && wmo.nightIcon) ? wmo.nightIcon : wmo.icon;
   const month = new Date().getMonth() + 1;
   const pollen = typeof pollenLevel === 'function' ? pollenLevel(month) : {level:'', emoji:''};
   const flying = typeof flyingConditions === 'function' ? flyingConditions(temp, wind, rain) : '';
@@ -9759,7 +9789,7 @@ function renderWeather(data) {
   var tempBigEl = document.getElementById('weather-temp-big');
   var condEl = document.getElementById('weather-condition');
   var locEl = document.getElementById('weather-location-name');
-  if (iconEl) iconEl.textContent = wmo.icon;
+  if (iconEl) iconEl.textContent = displayIcon;
   if (tempBigEl) tempBigEl.textContent = temp + '°';
   if (condEl) condEl.textContent = wmo.desc;
   if (locEl) locEl.textContent = USER_LOCATION_NAME;
@@ -17651,7 +17681,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:27 28 April 2026 BST · Phase 4ab — CRITICAL data-loss fix (hk_inspections_v2 + hk_swarm_catches added to keysToKeep), swarm offline queue, weather follows apiary on init, stronger hive-save toast';
+var HIVEKEEPER_BUILD = '21:34 28 April 2026 BST · Phase 4ac — weather icon now reflects time of day (☀️ during day, 🌙 at night) using is_day from open-meteo';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
