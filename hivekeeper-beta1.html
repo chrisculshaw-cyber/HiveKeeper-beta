@@ -2906,7 +2906,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <label for="hid-photo" id="hid-photo-label" style="display:block;width:100%;padding:32px 14px;background:var(--cream);border:2px dashed var(--honey);border-radius:var(--rs);text-align:center;cursor:pointer;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:var(--bark);box-sizing:border-box;margin-bottom:12px;">
           📷 Take photo or choose from library
         </label>
-        <input type="file" id="hid-photo" accept="image/*" capture="environment" onchange="onHornetIdPhotoSelected(event)" style="display:none;">
+        <input type="file" id="hid-photo" accept="image/*" onchange="onHornetIdPhotoSelected(event)" style="display:none;">
         <div id="hid-photo-preview" style="display:none;margin-bottom:14px;text-align:center;"></div>
         <button id="hid-analyse-btn" onclick="analyseHornetPhoto()" disabled style="width:100%;background:linear-gradient(135deg,#C62828,#8B0000);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;opacity:0.5;letter-spacing:.02em;box-shadow:0 2px 6px rgba(198,40,40,.35);">🔍 Analyse photo</button>
         <div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:8px;line-height:1.5;">Best results: clear photo, insect roughly centred, daylight if possible. Multiple angles helpful for difficult IDs.</div>
@@ -2939,7 +2939,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- Photo -->
       <div style="margin-bottom:14px;">
         <label style="display:block;font-size:11px;font-weight:800;color:var(--forest);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Photo <span style="color:#C62828;">*</span></label>
-        <input type="file" id="hr-photo" accept="image/*" capture="environment" onchange="handleHornetPhotoUpload(event)" style="display:none;">
+        <input type="file" id="hr-photo" accept="image/*" onchange="handleHornetPhotoUpload(event)" style="display:none;">
         <button onclick="document.getElementById('hr-photo').click()" style="width:100%;padding:16px;background:var(--wax);border:2px dashed var(--honey);border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;color:var(--forest);cursor:pointer;font-weight:700;">
           <span id="hr-photo-label">📷 Take photo / choose from library</span>
         </button>
@@ -18010,7 +18010,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:53 28 April 2026 BST · Phase 4ad — Asian Hornet AI identifier UI scaffolding (modal, capture, analyse, verdict UI, report handoff with photo)';
+var HIVEKEEPER_BUILD = '22:03 28 April 2026 BST · Phase 4ae — file inputs allow library AND camera (was camera-only)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
