@@ -4011,6 +4011,78 @@ const REAL_INSPECTIONS = REAL_HIVES.map(h => ({
 }));
 
 // ═══════════════════════════════════════════════
+// MEDIAN GEOLOCATION READINESS — Phase 4ag, 28 April 2026
+// ═══════════════════════════════════════════════
+// Median's native iOS layer must initialise location services BEFORE
+// the webview calls navigator.geolocation, otherwise we can get a
+// double permission prompt or silent failures. Median calls
+// window.median_geolocation_ready() once initialisation is done.
+// On web (no Median wrapper) and Android (different lifecycle), the
+// callback never fires — handled by the timeout fallback so we never
+// block.
+//
+// All three geolocation call sites (SOS, AH report GPS button, apiary
+// find-me) use getCurrentPositionSafe() instead of calling
+// navigator.geolocation.getCurrentPosition() directly.
+//
+// Reference: https://median.co/docs/location-services
+// ═══════════════════════════════════════════════════════
+window._medianGeoReady = false;
+window._medianGeoQueue = [];
+
+window.median_geolocation_ready = function() {
+  window._medianGeoReady = true;
+  console.log('[Median] geolocation ready');
+  // Flush any queued calls that were waiting for the native layer
+  while (window._medianGeoQueue.length) {
+    var call = window._medianGeoQueue.shift();
+    try {
+      navigator.geolocation.getCurrentPosition(call.success, call.error, call.options);
+    } catch(e) {
+      console.error('Queued geo call failed:', e);
+      if (call.error) call.error({ code: 2, message: 'Geolocation error: ' + e.message });
+    }
+  }
+};
+
+function getCurrentPositionSafe(success, error, options) {
+  if (!navigator.geolocation) {
+    if (error) error({ code: 2, message: 'Geolocation API not supported' });
+    return;
+  }
+
+  // Already ready — fire immediately. Covers all calls after the first
+  // ~half-second on iOS-Median, and ALL calls on web/Android after the
+  // 600ms timeout has run once.
+  if (window._medianGeoReady) {
+    navigator.geolocation.getCurrentPosition(success, error, options);
+    return;
+  }
+
+  // Not ready yet — queue the call. Will fire either when Median calls
+  // median_geolocation_ready (iOS-Median), or after the 600ms timeout
+  // (web, Android-Median, or any case where the ready callback doesn't
+  // fire). 600ms chosen as: long enough for slow native init, short
+  // enough that user-initiated taps still feel responsive.
+  window._medianGeoQueue.push({ success: success, error: error, options: options });
+  setTimeout(function() {
+    if (!window._medianGeoReady) {
+      console.log('[Median] geolocation ready timeout — proceeding without native bridge');
+      window._medianGeoReady = true; // mark as ready so future calls go direct
+      while (window._medianGeoQueue.length) {
+        var call = window._medianGeoQueue.shift();
+        try {
+          navigator.geolocation.getCurrentPosition(call.success, call.error, call.options);
+        } catch(e) {
+          console.error('Queued geo call failed:', e);
+          if (call.error) call.error({ code: 2, message: 'Geolocation error: ' + e.message });
+        }
+      }
+    }
+  }, 600);
+}
+
+// ═══════════════════════════════════════════════
 // DATA LAYER
 // ═══════════════════════════════════════════════
 const HIVE_KEY = 'hk_hives_v2';
@@ -13184,7 +13256,7 @@ function useMyCurrentLocation() {
     return;
   }
   if (btn) { btn.textContent = '📍 Getting location…'; btn.disabled = true; }
-  navigator.geolocation.getCurrentPosition(function(pos) {
+  getCurrentPositionSafe(function(pos) {
     var lat = pos.coords.latitude;
     var lng = pos.coords.longitude;
     if (disp) disp.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6) + '  (±' + Math.round(pos.coords.accuracy) + 'm)';
@@ -16626,7 +16698,7 @@ function triggerSOS() {
   showToast('\uD83D\uDCCD Getting your current location... (up to 15 seconds)');
 
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
+    getCurrentPositionSafe(
       function(pos) {
         var lat = pos.coords.latitude.toFixed(6);
         var lng = pos.coords.longitude.toFixed(6);
@@ -18075,7 +18147,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:20 28 April 2026 BST · Phase 4af — separate active apiary location from user home location (fixes AH report fallback), better GPS error diagnostics';
+var HIVEKEEPER_BUILD = '22:33 28 April 2026 BST · Phase 4ag — Median geolocation readiness shim (median_geolocation_ready callback handling, prevents iOS double-prompt and silent failures on first GPS call after app launch)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -25935,7 +26007,7 @@ function locateMeOnMap() {
   if (statusEl) { statusEl.textContent = '⏳ Finding location…'; statusEl.style.display = 'block'; }
   if (btn) btn.style.opacity = '0.5';
 
-  navigator.geolocation.getCurrentPosition(
+  getCurrentPositionSafe(
     function(pos) {
       var lat = pos.coords.latitude;
       var lng = pos.coords.longitude;
