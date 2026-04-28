@@ -1243,9 +1243,71 @@ html.large-text { font-size: 112%; }
 #s-home .hive-scroll { max-width: 100%; overflow-x: auto; }
 
 
-/* Colour blind mode */
+/* ════════════════════════════════════════════════════════════════
+   Colour blind mode — comprehensive palette substitution
+   28 April 2026 Phase 4r — was previously a 2-line stub that only
+   changed greens to blue and missed all the reds. Audit revealed the
+   toggle was misleading: label promised "Blue/orange" but no orange
+   substitution existed. Most common colour-blindness is red/green
+   confusion (~8% of men), so red elements need to become a colour
+   that's distinguishable from both red AND from blue. Strong orange
+   (#E65100) is the standard accessible substitute.
+
+   Substitution palette:
+     greens (--green, #2A7A48)           → blue   #1E88E5
+     reds (--red, #B83228, #C62828, #B83228 hardcoded) → orange #E65100
+     pink alert backgrounds (#FDECEA, #FFF8F7)        → cream  #FFF3E0
+   ════════════════════════════════════════════════════════════════ */
+
+/* GREENS → BLUE (existing legacy rule, kept) */
 body.colour-blind .legend-dot[style*="var(--green)"],
 body.colour-blind .hive-status-dot.active { background: #1E88E5 !important; }
+
+/* REDS (foreground/text) → strong orange */
+body.colour-blind .val-red,
+body.colour-blind .count-bad,
+body.colour-blind .insp-chip.red,
+body.colour-blind .overdue,
+body.colour-blind .treatment-next.overdue,
+body.colour-blind .ah-badge-alert,
+body.colour-blind .ah-pill-alert,
+body.colour-blind .badge-alert { color: #E65100 !important; }
+
+/* REDS (backgrounds, solid) → strong orange */
+body.colour-blind .tl-dot.red,
+body.colour-blind .ah-pill-critical,
+body.colour-blind .rec-btn.recording { background: #E65100 !important; }
+
+/* REDS (light pink alert backgrounds) → soft cream/orange */
+body.colour-blind .overdue,
+body.colour-blind .insp-chip.red,
+body.colour-blind .alert-item.red,
+body.colour-blind .badge-alert,
+body.colour-blind .treatment-next.overdue,
+body.colour-blind .ah-badge-alert,
+body.colour-blind .ah-pill-alert { background: #FFF3E0 !important; }
+
+/* REDS (borders, outlines, shadows) → strong orange */
+body.colour-blind .alert-item.red { border-left-color: #E65100 !important; }
+body.colour-blind .tl-dot.red { box-shadow: 0 0 0 2px #E65100 !important; }
+body.colour-blind .ah-pill-critical { border-color: #BF4500 !important; }
+
+/* AH report button gradient (red → orange gradient) */
+body.colour-blind .ah-report-btn {
+  background: linear-gradient(135deg, #E65100, #BF4500) !important;
+  box-shadow: 0 2px 6px rgba(230,81,0,0.35) !important;
+}
+body.colour-blind .ah-report-btn:hover {
+  background: linear-gradient(135deg, #FF6F00, #D85700) !important;
+  box-shadow: 0 3px 10px rgba(230,81,0,0.5) !important;
+}
+
+/* Recording pulse animation — replace red glow with orange glow when CB-mode */
+@keyframes recpulse-cb-orange {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230,81,0,.5); }
+  50%      { box-shadow: 0 0 0 16px rgba(230,81,0,0); }
+}
+body.colour-blind .rec-btn.recording { animation: recpulse-cb-orange 1s infinite !important; }
 
 .hive-list-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
 .hive-card-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',Arial,sans-serif!important;}
@@ -15347,7 +15409,7 @@ function openPreferencesModal() {
       + '<div class="settings-toggle" id="toggle-large"></div>'
     + '</div>'
     + '<div class="settings-row" onclick="toggleColourBlind()">'
-      + '<div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Blue/orange on the apiary map</div></div>'
+      + '<div><div class="settings-label">Colour blind mode</div><div class="settings-sub">Replaces red/green with blue/orange palette</div></div>'
       + '<div class="settings-toggle" id="toggle-cb"></div>'
     + '</div>'
     + '<div class="settings-row" onclick="toggleImperial()">'
@@ -17202,7 +17264,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:49 28 April 2026 BST · Phase 4q — honeycomb cluster extended to 30 hexes trailing down the right side';
+var HIVEKEEPER_BUILD = '11:09 28 April 2026 BST · Phase 4r — colour-blind mode comprehensive (red/green palette substitution app-wide, honest toggle label)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
