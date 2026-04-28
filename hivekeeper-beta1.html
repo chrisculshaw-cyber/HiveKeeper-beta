@@ -1345,14 +1345,15 @@ input[type="checkbox"].hk-chk:checked::after {
 </style>
 <div id="auth-overlay" style="display:flex;visibility:visible;pointer-events:all;z-index:9999;position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg, #3a5e2e 0%, var(--forest) 30%, #1a2f10 80%, #0a1607 100%);flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;">
 
-  <!-- Honeycomb cluster — top-right corner reaching down behind the launch
-       info box (Phase 4p). Was a tighter 7-hex cluster in 4o; extended
-       here with 6 more hexes spanning rows 4, 5, 6 to reach further down
-       the right side of the auth screen, behind the "Now on the App
-       Store" box. SVG height bumped 140 → 270 to fit the extension. The
-       cluster tapers as it descends — fewer hexes per row — so it reads
-       as a fragment trailing into the page rather than a square block. -->
-  <svg width="220" height="270" viewBox="0 0 220 270"
+  <!-- Honeycomb cluster — top-right corner trailing down the right side
+       (Phase 4q). Was 13 hexes ending at row 6 in 4p; extended to 30 hexes
+       through row 15 to give the cluster more substance and reach. The
+       cluster follows a curve: dense at top-right, flowing down past the
+       launch info box, around the form panel, trailing to bottom-right.
+       SVG height bumped 270 → 620 to fit. Hexes weighted toward the right
+       half as the cluster descends so it reads as a fragment of a larger
+       pattern off-canvas to the right. -->
+  <svg width="220" height="620" viewBox="0 0 220 620"
        style="position:absolute;top:-30px;right:-40px;pointer-events:none;z-index:0;"
        xmlns="http://www.w3.org/2000/svg">
     <g fill="none" stroke="rgba(228,163,58,1)" stroke-width="1.4" opacity="0.22">
@@ -1366,15 +1367,41 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- ── Row 3 (y=99) ── -->
       <polygon points="162.5,73 185,86 185,112 162.5,125 140,112 140,86"/>
       <polygon points="117.5,73 140,86 140,112 117.5,125 95,112 95,86"/>
-      <!-- ── Row 4 (y=138) — extension begins ── -->
+      <!-- ── Row 4 (y=138) ── -->
       <polygon points="185,112 207.5,125 207.5,151 185,164 162.5,151 162.5,125"/>
       <polygon points="140,112 162.5,125 162.5,151 140,164 117.5,151 117.5,125"/>
       <polygon points="95,112 117.5,125 117.5,151 95,164 72.5,151 72.5,125"/>
-      <!-- ── Row 5 (y=177) — narrowing ── -->
+      <!-- ── Row 5 (y=177) ── -->
       <polygon points="162.5,151 185,164 185,190 162.5,203 140,190 140,164"/>
       <polygon points="117.5,151 140,164 140,190 117.5,203 95,190 95,164"/>
-      <!-- ── Row 6 (y=216) — single hex tail ── -->
+      <!-- ── Row 6 (y=216) ── -->
       <polygon points="140,190 162.5,203 162.5,229 140,242 117.5,229 117.5,203"/>
+      <!-- ── Row 7 (y=255) — extension begins ── -->
+      <polygon points="117.5,229 140,242 140,268 117.5,281 95,268 95,242"/>
+      <polygon points="162.5,229 185,242 185,268 162.5,281 140,268 140,242"/>
+      <polygon points="207.5,229 230,242 230,268 207.5,281 185,268 185,242"/>
+      <!-- ── Row 8 (y=294) ── -->
+      <polygon points="140,268 162.5,281 162.5,307 140,320 117.5,307 117.5,281"/>
+      <polygon points="185,268 207.5,281 207.5,307 185,320 162.5,307 162.5,281"/>
+      <!-- ── Row 9 (y=333) ── -->
+      <polygon points="117.5,307 140,320 140,346 117.5,359 95,346 95,320"/>
+      <polygon points="162.5,307 185,320 185,346 162.5,359 140,346 140,320"/>
+      <polygon points="207.5,307 230,320 230,346 207.5,359 185,346 185,320"/>
+      <!-- ── Row 10 (y=372) ── -->
+      <polygon points="140,346 162.5,359 162.5,385 140,398 117.5,385 117.5,359"/>
+      <polygon points="185,346 207.5,359 207.5,385 185,398 162.5,385 162.5,359"/>
+      <!-- ── Row 11 (y=411) ── -->
+      <polygon points="162.5,385 185,398 185,424 162.5,437 140,424 140,398"/>
+      <polygon points="207.5,385 230,398 230,424 207.5,437 185,424 185,398"/>
+      <!-- ── Row 12 (y=450) — narrowing tail ── -->
+      <polygon points="185,424 207.5,437 207.5,463 185,476 162.5,463 162.5,437"/>
+      <!-- ── Row 13 (y=489) ── -->
+      <polygon points="162.5,463 185,476 185,502 162.5,515 140,502 140,476"/>
+      <polygon points="207.5,463 230,476 230,502 207.5,515 185,502 185,476"/>
+      <!-- ── Row 14 (y=528) ── -->
+      <polygon points="185,502 207.5,515 207.5,541 185,554 162.5,541 162.5,515"/>
+      <!-- ── Row 15 (y=567) — final hex ── -->
+      <polygon points="162.5,541 185,554 185,580 162.5,593 140,580 140,554"/>
     </g>
   </svg>
 
@@ -17175,7 +17202,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:28 28 April 2026 BST · Phase 4p — honeycomb cluster extended downward (13 hexes, reaches behind launch info), founding beekeepers credit reworded';
+var HIVEKEEPER_BUILD = '10:49 28 April 2026 BST · Phase 4q — honeycomb cluster extended to 30 hexes trailing down the right side';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
