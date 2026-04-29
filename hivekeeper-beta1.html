@@ -5387,6 +5387,22 @@ function addSpray(spray) {
   var sprays = loadSprays();
   spray.id = 'spray_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
   spray.createdAt = new Date().toISOString();
+  // 29 April 2026 Phase 4am completion — capture active apiary's lat/lng
+  // on every spray. Without these, the community-share RLS policy filters
+  // the row out of every nearby read (it requires lat/lng IS NOT NULL).
+  // The user-visible 'distance from apiary' control is preserved; this just
+  // adds the geo coords needed for proximity matching.
+  if (spray.lat == null || spray.lng == null) {
+    try {
+      var ap = (typeof currentApiaryId !== 'undefined' && currentApiaryId)
+        ? loadApiaries().find(function(a){ return a.id === currentApiaryId; })
+        : null;
+      if (ap && typeof ap.lat === 'number' && typeof ap.lng === 'number') {
+        spray.lat = ap.lat;
+        spray.lng = ap.lng;
+      }
+    } catch(e) { /* leave coords null if anything fails — better than crashing */ }
+  }
   sprays.push(spray);
   saveSprays(sprays);
   return spray;
@@ -15927,12 +15943,13 @@ function openAccountModal() {
         + '<div style="font-size:14px;color:var(--text);font-weight:600;">Share my spray reports</div>'
         + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">Beekeepers within 10km of your apiary will see your reports</div>'
       + '</div>'
+      + '<div id="comm-share-status-pill" style="display:none;font-size:10px;font-weight:700;color:var(--forest);background:#E8F0DC;padding:4px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;">as: anonymous</div>'
       + '<input type="checkbox" id="acc-comm-share" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">'
     + '</div>'
 
     + '<div id="comm-identity-block" style="margin-bottom:20px;' + ((localStorage.getItem('hk_comm_share_sprays')!=='0') ? '' : 'opacity:0.5;pointer-events:none;') + '">'
       + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">How others see you on shared reports</label>'
-      + '<select id="acc-comm-identity" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;background:white;">'
+      + '<select id="acc-comm-identity" onchange="_renderCommShareToggle()" style="width:100%;padding:14px;border:2px solid var(--forest);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;font-weight:600;box-sizing:border-box;background:white;cursor:pointer;appearance:menulist;">'
         + '<option value="anonymous"' + (localStorage.getItem('hk_comm_share_identity')!=='first_name' && localStorage.getItem('hk_comm_share_identity')!=='full_name' ? ' selected' : '') + '>Anonymous \u2014 \u201CA beekeeper 1.2km away\u201D</option>'
         + '<option value="first_name"' + (localStorage.getItem('hk_comm_share_identity')==='first_name' ? ' selected' : '') + '>First name only \u2014 \u201CChris reported\u2026\u201D</option>'
         + '<option value="full_name"' + (localStorage.getItem('hk_comm_share_identity')==='full_name' ? ' selected' : '') + '>Full name \u2014 use my display name</option>'
@@ -15981,6 +15998,8 @@ function _renderCommShareToggle() {
   var indicator = document.getElementById('comm-share-indicator');
   var tick = document.getElementById('comm-share-tick');
   var identityBlock = document.getElementById('comm-identity-block');
+  var pill = document.getElementById('comm-share-status-pill');
+  var identitySelect = document.getElementById('acc-comm-identity');
   if (!cb || !indicator || !tick) return;
   if (cb.checked) {
     indicator.style.background = 'var(--forest)';
@@ -15990,6 +16009,14 @@ function _renderCommShareToggle() {
       identityBlock.style.opacity = '1';
       identityBlock.style.pointerEvents = 'auto';
     }
+    // Update + show the status pill so the user has glanceable confirmation
+    // of their current identity choice without needing to look at the dropdown
+    if (pill && identitySelect) {
+      var v = identitySelect.value || 'anonymous';
+      var labels = { anonymous: 'as: anonymous', first_name: 'as: first name', full_name: 'as: full name' };
+      pill.textContent = labels[v] || labels.anonymous;
+      pill.style.display = 'inline-block';
+    }
   } else {
     indicator.style.background = 'white';
     indicator.style.borderColor = 'var(--wax)';
@@ -15998,6 +16025,7 @@ function _renderCommShareToggle() {
       identityBlock.style.opacity = '0.5';
       identityBlock.style.pointerEvents = 'none';
     }
+    if (pill) pill.style.display = 'none';
   }
 }
 
@@ -18321,7 +18349,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:05 29 April 2026 BST · Phase 4am — community sprays foundation: sprayToRow writes shared_with_community + reporter_display, pullSprays maps them back, default ON, helpers in place. Awaits SQL migration + Phase 4an UI.';
+var HIVEKEEPER_BUILD = '10:08 29 April 2026 BST · Phase 4am — community sprays foundation: completion fix (lat/lng captured from active apiary on save so RLS proximity reads include the row), identity dropdown polish (forest border, status pill on toggle row).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
