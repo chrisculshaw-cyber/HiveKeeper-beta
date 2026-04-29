@@ -1542,28 +1542,31 @@ input[type="checkbox"].hk-chk:checked::after {
   box-sizing: border-box;
 }
 
-/* 29 April 2026 Phase 4bh — obvious dropdown styling for inventory modals.
+/* 29 April 2026 Phase 4bh / 4bi — obvious dropdown styling for inventory modals.
    Was using subtle wax-coloured borders that read as static fields on mobile.
    This adds a stronger forest border, slight inner shadow, and a chevron
-   indicator via background-image so users see "this is a picker." */
+   indicator via background-image so users see "this is a picker."
+   4bi: !important on every property because inline styles on each <select>
+   would otherwise override the background-image, padding-right, and appearance. */
 .hk-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-color: white;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234A5D3A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 10px 7px;
-  padding-right: 36px !important;
-  border: 1.5px solid var(--forest) !important;
-  font-weight: 600;
-  cursor: pointer;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-color: white !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234A5D3A' d='M6 8L0 0h12z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 12px 8px !important;
+  padding-right: 38px !important;
+  border: 2px solid var(--forest) !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  min-height: 44px;
 }
 .hk-select:focus {
-  outline: none;
+  outline: none !important;
   border-color: var(--honey) !important;
-  box-shadow: 0 0 0 2px rgba(232,183,66,0.25);
+  box-shadow: 0 0 0 2px rgba(232,183,66,0.25) !important;
 }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
@@ -2544,8 +2547,11 @@ input[type="checkbox"].hk-chk:checked::after {
     <div style="padding:0 20px;">
       <div id="hive-status-section" style="margin-top:12px;"></div>
       <div id="hive-stack-section" style="margin-top:12px;display:none;">
-        <div class="section-head"><div class="section-title">🏠 Hive stack</div></div>
-        <div id="hive-stack-visual" style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;cursor:pointer;" onclick="openHiveEditor(currentHiveId)" title="Tap to edit"></div>
+        <div class="section-head"><div class="section-title">🏠 Hive stack</div><button class="section-action" onclick="openHiveEditor(currentHiveId)">Edit ✏️</button></div>
+        <div style="position:relative;cursor:pointer;" onclick="openHiveEditor(currentHiveId)">
+          <div id="hive-stack-visual" style="background:var(--cream);border:1.5px dashed var(--forest);border-radius:var(--rs);padding:14px;display:flex;justify-content:center;align-items:flex-start;min-height:120px;" title="Tap to edit"></div>
+          <div style="position:absolute;top:8px;right:10px;background:var(--forest);color:white;font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;letter-spacing:.04em;text-transform:uppercase;font-family:Syne,sans-serif;pointer-events:none;">✏️ Tap to edit</div>
+        </div>
       </div>
       <div id="hive-quick-stats-section" style="margin-top:12px;"></div>
       <div id="hive-next-inspection-section" style="margin-top:12px;"></div>
@@ -3843,7 +3849,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Category</label>
-      <select class="hk-select" id="eq-category" onchange="_onEquipCategoryChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-category" onchange="_onEquipCategoryChange()" style="width:100%;border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;padding:12px;"></select>
     </div>
 
     <div id="eq-name-row" style="margin-bottom:14px;display:none;">
@@ -3855,7 +3861,7 @@ input[type="checkbox"].hk-chk:checked::after {
          categories where it matters (brood boxes, supers, frames, etc.) -->
     <div id="eq-hive-type-row" style="margin-bottom:14px;display:none;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Hive type</label>
-      <select class="hk-select" id="eq-hive-type" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-hive-type" style="width:100%;border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;padding:12px;"></select>
     </div>
 
     <div style="margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -3871,7 +3877,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Location</label>
-      <select class="hk-select" id="eq-location" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-location" style="width:100%;border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;padding:12px;"></select>
     </div>
 
     <div style="margin-bottom:14px;">
@@ -3890,7 +3896,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
         <input type="number" id="eq-adjust-amount" placeholder="amount" style="flex:1;padding:8px 10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
-        <select class="hk-select" id="eq-adjust-reason" style="flex:1.5;padding:8px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
+        <select class="hk-select" id="eq-adjust-reason" style="flex:1.5;border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;box-sizing:border-box;padding:8px;">
           <option value="Used in apiary">Used in apiary</option>
           <option value="Bottled honey">Bottled honey</option>
           <option value="Lost / damaged">Lost / damaged</option>
@@ -9178,7 +9184,7 @@ function renderStackEditor() {
     +   '<div style="flex-shrink:0;width:130px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:8px;">'
     +     previewSvg
     +   '</div>'
-    +   '<div style="flex:1;min-width:0;max-height:300px;overflow-y:auto;">' + rowsHtml + '</div>'
+    +   '<div style="flex:1;min-width:0;max-height:180px;overflow-y:auto;">' + rowsHtml + '</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;">'
     +   '<button onclick="stackEditorAdd(\'brood\')" style="padding:12px 4px;background:#3A6B4A;border:none;border-radius:var(--rs);color:white;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
@@ -21301,7 +21307,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23:55 29 April 2026 BST · Phase 4bh — six fixes & additions. (A) Diagnostic export was reading wrong localStorage keys (plural vs canonical singular) so harvests/treatments showed 0 even when present. Now correct + adds inventory layer to export. (B) TABLE_ORDER didn\u2019t include equipment/honey_stock/inventory_movements \u2014 added at right tiers. (C) Stack consumption hooks were reading hive.hiveType (status) instead of hive.boxType (system) AND too strict on equipment hiveType match \u2014 now correctly identifies hive system and falls back to no-hiveType equipment. (D) Forage pill now refreshes after weather updates, not only on screen entry. (E) New hk-select class for obvious dropdown styling (forest border + chevron). (F) Stack editor gains frames-used inputs: Replaced (audit-logged refurb, net zero on stock) and Knackered (pure burn-pile decrement).';
+var HIVEKEEPER_BUILD = '21:50 30 April 2026 BST · Phase 4bi — fix dropdowns, frame inputs visibility, stack tap-to-edit hint. (1) Equipment dropdowns: stripped conflicting inline styles + made every CSS property !important so chevron and forest border actually win. min-height 44px tap target. (2) Stack editor: dropped inner box-list scroll height from 300px to 180px so the frame inputs panel actually appears in viewport on mobile (was below the fold). (3) Stack section on hive detail: dashed forest border + green "Tap to edit" badge + Edit button in section header. cursor:pointer alone is invisible on mobile.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
