@@ -9543,7 +9543,12 @@ function openHiveEditor(hiveId) {
     stack: stackDraft,
     coverPhoto: hive.coverPhoto || null,
     isHidden: !!hive.isHidden,
-    isNuc: (hive.boxType === 'nuc' || hive.boxType === 'double-nuc')
+    isNuc: (hive.boxType === 'nuc' || hive.boxType === 'double-nuc'),
+    // 30 April 2026 Phase 4bj — original stack at open, for inventory delta on save
+    _stackOriginal: stackDraft.slice().map(function(b){ return { type: b.type }; }),
+    // 30 April 2026 Phase 4bj — frame consumption inputs (this editor, not the modal one)
+    _framesGood: 0,
+    _framesBad: 0
   };
 
   renderHiveEditor();
@@ -9685,6 +9690,21 @@ function renderHiveEditor() {
           +   '<button onclick="hiveEditorStackAdd(\'brood\')" style="padding:10px 4px;background:#3A6B4A;border:none;border-radius:6px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
           +   '<button onclick="hiveEditorStackAdd(\'super\')" style="padding:10px 4px;background:#F4D03F;border:none;border-radius:6px;color:#4A2E0E;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
           +   '<button onclick="hiveEditorStackAdd(\'qe\')" style="padding:10px 4px;background:#D8D8D8;border:1px solid #999;border-radius:6px;color:#333;font-size:11px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
+          + '</div>'
+          + '<!-- 30 April 2026 Phase 4bj — frames used during this stack edit. -->'
+          + '<div style="background:#FAEEDA;border-radius:6px;padding:10px;margin-top:6px;">'
+          +   '<div style="font-size:10px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Frames used today (optional)</div>'
+          +   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">'
+          +     '<div>'
+          +       '<label style="font-size:9px;color:var(--text-l);font-weight:700;display:block;margin-bottom:3px;">Replaced (good)</label>'
+          +       '<input type="number" min="0" placeholder="0" value="' + (d._framesGood || '') + '" oninput="_hiveEditorDraft._framesGood=parseInt(this.value)||0" style="width:100%;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;box-sizing:border-box;">'
+          +     '</div>'
+          +     '<div>'
+          +       '<label style="font-size:9px;color:var(--text-l);font-weight:700;display:block;margin-bottom:3px;">Knackered (burn)</label>'
+          +       '<input type="number" min="0" placeholder="0" value="' + (d._framesBad || '') + '" oninput="_hiveEditorDraft._framesBad=parseInt(this.value)||0" style="width:100%;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;box-sizing:border-box;">'
+          +     '</div>'
+          +   '</div>'
+          +   '<div style="font-size:9px;color:var(--text-l);margin-top:5px;line-height:1.4;">Replaced \u2014 stock decrements then returns (net zero, audit-logged). Knackered \u2014 pure decrement to burn pile.</div>'
           + '</div>')
     +     '</div>'
     +   '</div>'
@@ -9851,12 +9871,163 @@ function saveHiveEditor() {
   hive.isHidden = !!d.isHidden;
 
   saveHives(hives);
+
+  // 30 April 2026 Phase 4bj — apply inventory consumption for stack changes + frames.
+  // Box-type deltas vs original snapshot:
+  try {
+    var countByType = function(arr) {
+      var c = { brood: 0, super: 0, qe: 0 };
+      (arr || []).forEach(function(b) { if (c[b.type] !== undefined) c[b.type]++; });
+      return c;
+    };
+    var origCount = countByType(d._stackOriginal);
+    var newCount = countByType(d.stack);
+    var deltas = {
+      brood: newCount.brood - origCount.brood,
+      super: newCount.super - origCount.super,
+      qe:    newCount.qe    - origCount.qe
+    };
+    var typeToCategory = { brood: 'brood_box', super: 'super', qe: 'queen_excluder' };
+
+    var canonicaliseBoxType = function(bt) {
+      if (!bt) return null;
+      var lower = String(bt).toLowerCase();
+      var map = {
+        'national': 'National', 'langstroth': 'Langstroth', 'wbc': 'WBC',
+        'top-bar': 'Top Bar', 'top bar': 'Top Bar', 'topbar': 'Top Bar',
+        'warré': 'Warré', 'warre': 'Warré',
+        'smith': 'Smith', 'commercial': 'Commercial', 'nuc': 'Nuc'
+      };
+      return map[lower] || null;
+    };
+    var canonHiveType = canonicaliseBoxType(hive.boxType);
+
+    Object.keys(deltas).forEach(function(boxType) {
+      var delta = deltas[boxType];
+      if (delta === 0) return;
+      var category = typeToCategory[boxType];
+      var allEquipment = (typeof loadEquipment === 'function') ? loadEquipment() : [];
+      var preferred = allEquipment.filter(function(it) {
+        return it.category === category && canonHiveType && it.hiveType === canonHiveType;
+      });
+      var fallback = allEquipment.filter(function(it) {
+        return it.category === category && !it.hiveType;
+      });
+      var matches = preferred.length ? preferred : fallback;
+
+      if (delta < 0) {
+        // Removed boxes — return to inventory
+        var amount = -delta;
+        if (matches.length && typeof applyEquipmentMovement === 'function') {
+          applyEquipmentMovement(matches[0].id, amount, {
+            reason: 'Returned from hive',
+            actionType: 'manual',
+            relatedId: hive.id
+          });
+        } else if (typeof addEquipment === 'function') {
+          addEquipment({
+            category: category, name: null, quantity: amount,
+            location: 'store', reorderAt: null, unitCost: null,
+            notes: 'Returned from hive — auto-created',
+            hiveType: canonHiveType || null
+          });
+        }
+      } else {
+        // Added boxes — consume from inventory
+        var available = matches.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+        if (available >= delta && typeof applyEquipmentMovement === 'function') {
+          matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+          var remaining = delta;
+          for (var i = 0; i < matches.length && remaining > 0; i++) {
+            var take = Math.min(matches[i].quantity || 0, remaining);
+            if (take > 0) {
+              applyEquipmentMovement(matches[i].id, -take, {
+                reason: 'Added to hive', actionType: 'manual', relatedId: hive.id
+              });
+              remaining -= take;
+            }
+          }
+        } else if (available > 0 && typeof applyEquipmentMovement === 'function') {
+          // Partial: consume what we have, no auto-prompt to keep this save fast
+          matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+          var rem2 = available;
+          for (var j = 0; j < matches.length && rem2 > 0; j++) {
+            var t2 = Math.min(matches[j].quantity || 0, rem2);
+            if (t2 > 0) {
+              applyEquipmentMovement(matches[j].id, -t2, {
+                reason: 'Added to hive (partial — short by ' + (delta - available) + ')',
+                actionType: 'manual', relatedId: hive.id
+              });
+              rem2 -= t2;
+            }
+          }
+        }
+      }
+    });
+
+    // Frames-used consumption
+    var framesGood = d._framesGood || 0;
+    var framesBad = d._framesBad || 0;
+    if ((framesGood > 0 || framesBad > 0) && typeof applyEquipmentMovement === 'function') {
+      var allEq = (typeof loadEquipment === 'function') ? loadEquipment() : [];
+      var fPref = allEq.filter(function(it) {
+        return it.category === 'frame' && canonHiveType && it.hiveType === canonHiveType;
+      });
+      var fFall = allEq.filter(function(it) {
+        return it.category === 'frame' && !it.hiveType;
+      });
+      var fm = fPref.length ? fPref : fFall;
+      fm.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+
+      var consumeFrames = function(amount, reason) {
+        var rem = amount;
+        for (var i = 0; i < fm.length && rem > 0; i++) {
+          var take = Math.min(fm[i].quantity || 0, rem);
+          if (take > 0) {
+            applyEquipmentMovement(fm[i].id, -take, {
+              reason: reason, actionType: 'manual', relatedId: hive.id
+            });
+            rem -= take;
+          }
+        }
+        return amount - rem;
+      };
+
+      var availFrames = fm.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+      var needed = framesGood + framesBad;
+
+      if (availFrames >= needed) {
+        if (framesGood > 0) {
+          consumeFrames(framesGood, 'Frame replaced (good \u2014 refurbished)');
+          if (fm.length) {
+            applyEquipmentMovement(fm[0].id, framesGood, {
+              reason: 'Returned with new foundation',
+              actionType: 'manual', relatedId: hive.id
+            });
+          }
+        }
+        if (framesBad > 0) {
+          consumeFrames(framesBad, 'Frame knackered \u2014 burn pile');
+        }
+      } else if (availFrames > 0) {
+        consumeFrames(availFrames, 'Frame used in hive (partial \u2014 short by ' + (needed - availFrames) + ')');
+        if (typeof showToast === 'function') showToast('Only ' + availFrames + ' frames in stock \u2014 shortfall not tracked');
+      }
+    }
+  } catch(e) {
+    console.warn('[saveHiveEditor] inventory hooks error:', e);
+  }
+
   closeHiveEditor();
-  if (typeof showToast === 'function') showToast('💾 Hive saved ✓ — changes stored locally and will sync');
+  if (typeof showToast === 'function') showToast('\uD83D\uDCBE Hive saved \u2713');
   // Re-render dependent screens
   try { if (typeof renderHiveDetail === 'function') renderHiveDetail(); } catch(e) {}
   try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
   try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
+  // Refresh inventory views
+  try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
+  try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
+  try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
 }
 
 function closeHiveEditor() {
@@ -21307,7 +21478,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:50 30 April 2026 BST · Phase 4bi — fix dropdowns, frame inputs visibility, stack tap-to-edit hint. (1) Equipment dropdowns: stripped conflicting inline styles + made every CSS property !important so chevron and forest border actually win. min-height 44px tap target. (2) Stack editor: dropped inner box-list scroll height from 300px to 180px so the frame inputs panel actually appears in viewport on mobile (was below the fold). (3) Stack section on hive detail: dashed forest border + green "Tap to edit" badge + Edit button in section header. cursor:pointer alone is invisible on mobile.';
+var HIVEKEEPER_BUILD = '22:05 30 April 2026 BST · Phase 4bj — Frame inputs in the RIGHT editor + manual queue flush. (1) Edit Hive screen (renderHiveEditor) now has the frames-used inputs directly under the +Brood/+Super/+QE buttons \u2014 the editor I\u2019d been building in 4bg/4bh was a different code path Chris isn\u2019t using. (2) saveHiveEditor now applies stack consumption + frame consumption (Replaced=net zero with audit, Knackered=pure decrement). Original stack snapshot captured in _hiveEditorDraft._stackOriginal at open. (3) window.hkFlushNow() debug helper exposed for DevTools \u2014 pushes the offline queue and logs the real Supabase error per item so we can see why those 8 inventory_movements have been failing.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -27483,6 +27654,44 @@ document.addEventListener('visibilitychange', function() {
     try { updateHomeSyncIndicator(); } catch(e) {}
   }
 });
+
+// 30 April 2026 Phase 4bj — debug flush so we can see real Supabase errors.
+// Run from DevTools console: hkFlushNow() — pushes each queued row directly
+// and logs the raw error per item, with no retry logic in the way.
+window.hkFlushNow = async function() {
+  try {
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+    if (!sb) { console.error('[hkFlushNow] no Supabase client'); return; }
+    var q = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+    if (!q.length) { console.log('[hkFlushNow] queue is empty'); return; }
+    console.log('[hkFlushNow] attempting', q.length, 'items');
+    var results = [];
+    for (var i = 0; i < q.length; i++) {
+      var item = q[i];
+      var r = await sb.from(item.table).upsert(item.data, { onConflict: 'id' });
+      if (r.error) {
+        console.error('[hkFlushNow] FAIL [' + item.table + ']', item.data && item.data.id, '\u2014', r.error.message, '| code:', r.error.code, '| details:', r.error.details, '| hint:', r.error.hint);
+        results.push({ ok: false, table: item.table, id: item.data && item.data.id, msg: r.error.message, code: r.error.code, details: r.error.details, hint: r.error.hint });
+      } else {
+        console.log('[hkFlushNow] OK [' + item.table + ']', item.data && item.data.id);
+        results.push({ ok: true, table: item.table, id: item.data && item.data.id });
+      }
+    }
+    var ok = results.filter(function(r){return r.ok;}).length;
+    var fail = results.length - ok;
+    console.log('[hkFlushNow] done.', ok, 'succeeded,', fail, 'failed');
+    if (ok > 0) {
+      var remaining = results.filter(function(r){return !r.ok;}).map(function(r){
+        return q.find(function(it){ return it.table===r.table && it.data && it.data.id===r.id; });
+      }).filter(Boolean);
+      localStorage.setItem('hk_offline_queue', JSON.stringify(remaining));
+      console.log('[hkFlushNow] queue trimmed to', remaining.length);
+    }
+    return results;
+  } catch(e) {
+    console.error('[hkFlushNow] exception:', e);
+  }
+};
 
 async function flushOfflineQueue() {
   // 28 April 2026 Phase 4j — flush any pending profile update first.
