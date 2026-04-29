@@ -3689,6 +3689,11 @@ input[type="checkbox"].hk-chk:checked::after {
 
       <!-- Category-grouped list — populated by renderInventory() -->
       <div id="inventory-list" style="margin:0 16px;"></div>
+
+      <!-- 29 April 2026 Phase 4bf — Recent activity (audit log). Shows last
+           20 stock changes with reason, delta, and equipment name. Hidden
+           when no movements exist yet. -->
+      <div id="inventory-recent-movements" style="margin:18px 16px 0;"></div>
     </div>
 
     <!-- ── Honey panel ─────────────────────────────────────────── -->
@@ -3848,6 +3853,32 @@ input[type="checkbox"].hk-chk:checked::after {
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Unit cost (optional)</label>
       <input type="number" id="eq-cost" min="0" step="0.01" placeholder="£" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+    </div>
+
+    <!-- 29 April 2026 Phase 4bf — quick stock adjustment with audit log.
+         Hidden on add (no equipment to adjust yet). On edit, lets the keeper
+         consume / restock with a reason recorded to inventory_movements. -->
+    <div id="eq-use-panel" style="display:none;margin-bottom:14px;padding:12px;background:#FAEEDA;border-radius:var(--rs);">
+      <div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Adjust stock</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button onclick="quickAdjust(-1)" style="flex:1;padding:10px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">\u2212 Use 1</button>
+        <button onclick="quickAdjust(1)" style="flex:1;padding:10px;background:white;color:#2a6448;border:1.5px solid #2a6448;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">+ Restock 1</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input type="number" id="eq-adjust-amount" placeholder="amount" style="flex:1;padding:8px 10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        <select id="eq-adjust-reason" style="flex:1.5;padding:8px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
+          <option value="Used in apiary">Used in apiary</option>
+          <option value="Bottled honey">Bottled honey</option>
+          <option value="Lost / damaged">Lost / damaged</option>
+          <option value="Lent to another beekeeper">Lent to another beekeeper</option>
+          <option value="Sold">Sold</option>
+          <option value="Restock — bought more">Restock — bought more</option>
+          <option value="Restock — found / returned">Restock — found / returned</option>
+          <option value="Other">Other</option>
+        </select>
+        <button onclick="customAdjust(true)" style="padding:8px 10px;background:#B83228;color:white;border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Use</button>
+        <button onclick="customAdjust(false)" style="padding:8px 10px;background:#2a6448;color:white;border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Add</button>
+      </div>
     </div>
 
     <div style="margin-bottom:18px;">
@@ -5956,6 +5987,128 @@ function getLowStockItems() {
 }
 
 // ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4bf — INVENTORY MOVEMENTS (audit log)
+// ════════════════════════════════════════════════════════════════
+// Records every quantity change. Negative delta = consumption, positive =
+// restock. Used by manual +/- adjustments, bottling-completion workflow,
+// and (future) per-action consumption hooks. Movements are immutable —
+// undo means writing an opposite-sign movement.
+
+var MOVEMENT_REASONS = [
+  'Used in apiary',
+  'Bottled honey',
+  'Lost / damaged',
+  'Lent to another beekeeper',
+  'Sold',
+  'Restock — bought more',
+  'Restock — found / returned',
+  'Other'
+];
+
+function loadMovements() {
+  try { return JSON.parse(localStorage.getItem('hk_inventory_movements_v1') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveMovementsLocal(rows) {
+  try { localStorage.setItem('hk_inventory_movements_v1', JSON.stringify(rows)); } catch(e) {}
+}
+
+function movementToRow(m, uid) {
+  return {
+    id: m.id,
+    user_id: uid,
+    equipment_id: m.equipmentId,
+    delta: m.delta,
+    reason: m.reason || null,
+    action_type: m.actionType || 'manual',
+    related_id: m.relatedId || null,
+    created_at: m.createdAt || new Date().toISOString()
+  };
+}
+
+async function pushMovements() {
+  var uid = getUserId(); if (!uid) return;
+  var rows = loadMovements();
+  if (!rows.length) return;
+  var payload = rows.map(function(m) { return movementToRow(m, uid); });
+  var sb = getSupabase();
+  var { error } = await sb.from('inventory_movements').upsert(payload, { onConflict: 'id' });
+  if (error) {
+    console.warn('[pushMovements] error — queueing:', error.message);
+    payload.forEach(function(r) { queueOfflineSave('inventory_movements', r); });
+  }
+}
+
+async function pullMovementsLog() {
+  var uid = getUserId(); if (!uid) return;
+  var sb = getSupabase();
+  var { data, error } = await sb.from('inventory_movements').select('*').eq('user_id', uid).order('created_at', { ascending: false }).limit(500);
+  if (error) { console.warn('[pullMovementsLog]', error.message); return; }
+  if (!data) return;
+  var local = data.map(function(r) {
+    return {
+      id: r.id,
+      equipmentId: r.equipment_id,
+      delta: r.delta,
+      reason: r.reason || null,
+      actionType: r.action_type || 'manual',
+      relatedId: r.related_id || null,
+      createdAt: r.created_at
+    };
+  });
+  saveMovementsLocal(local);
+}
+
+// Apply a quantity change atomically: write the movement row, then update
+// equipment.quantity. Returns the new quantity, or null on validation fail.
+//   equipmentId: equipment row id
+//   delta: signed integer; negative = consumption
+//   opts: { reason, actionType, relatedId }
+function applyEquipmentMovement(equipmentId, delta, opts) {
+  opts = opts || {};
+  if (!equipmentId || typeof delta !== 'number' || delta === 0) return null;
+  var items = loadEquipment();
+  var idx = items.findIndex(function(it) { return it.id === equipmentId; });
+  if (idx < 0) return null;
+  var current = items[idx].quantity || 0;
+  var next = current + delta;
+  if (next < 0) {
+    // Don't allow negative stock — caller should validate first
+    return null;
+  }
+  // Write movement row first
+  var movement = {
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+    equipmentId: equipmentId,
+    delta: delta,
+    reason: opts.reason || null,
+    actionType: opts.actionType || 'manual',
+    relatedId: opts.relatedId || null,
+    createdAt: new Date().toISOString()
+  };
+  var movements = loadMovements();
+  movements.unshift(movement);  // newest first for cheap reads
+  // Cap local cache at 500 — Supabase has the full history
+  if (movements.length > 500) movements.length = 500;
+  saveMovementsLocal(movements);
+  if (getUserId()) {
+    if (isOnline()) {
+      pushMovements().catch(function(){});
+    } else {
+      queueOfflineSave('inventory_movements', movementToRow(movement, getUserId()));
+    }
+  }
+  // Then update equipment quantity using existing updateEquipment so push fires
+  updateEquipment(equipmentId, { quantity: next });
+  return next;
+}
+
+function getRecentMovements(limit) {
+  return loadMovements().slice(0, limit || 20);
+}
+
+// ════════════════════════════════════════════════════════════════
 // 29 April 2026 Phase 4ay — HONEY STOCK
 // ════════════════════════════════════════════════════════════════
 // Tracks jars-in-storage, optionally linked to a harvest record for
@@ -7119,6 +7272,55 @@ function renderInventory() {
   }).join('');
 
   listEl.innerHTML = html;
+
+  // 29 April 2026 Phase 4bf — render recent activity below the list
+  try { renderRecentMovements(); } catch(e) {}
+}
+
+// Render last 20 inventory movements as a compact list. Hidden when none.
+function renderRecentMovements() {
+  var el = document.getElementById('inventory-recent-movements');
+  if (!el) return;
+  var movements = getRecentMovements(20);
+  if (!movements.length) { el.innerHTML = ''; return; }
+
+  var equipment = loadEquipment();
+  var equipmentIndex = {};
+  equipment.forEach(function(it) { equipmentIndex[it.id] = it; });
+
+  var esc = function(t){ return String(t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  var rowsHtml = movements.map(function(m) {
+    var eq = equipmentIndex[m.equipmentId];
+    var label;
+    if (eq) {
+      var catLabel = (typeof getEquipmentCategoryLabel === 'function') ? getEquipmentCategoryLabel(eq.category) : eq.category;
+      label = eq.name || (eq.hiveType ? eq.hiveType + ' ' + catLabel.toLowerCase() : catLabel);
+    } else {
+      label = '(deleted item)';
+    }
+    var deltaText = (m.delta > 0 ? '+' : '') + m.delta;
+    var deltaColour = m.delta < 0 ? '#B83228' : '#2a6448';
+    var when = '';
+    try {
+      var d = new Date(m.createdAt);
+      var diffMs = Date.now() - d.getTime();
+      var hrs = diffMs / (1000*60*60);
+      if (hrs < 1) when = Math.max(1, Math.round(diffMs / 60000)) + ' min ago';
+      else if (hrs < 24) when = Math.round(hrs) + 'h ago';
+      else when = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    } catch(e) {}
+    return '<div style="background:white;border-left:3px solid ' + deltaColour + ';border-radius:6px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;gap:10px;">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:12px;font-weight:700;color:var(--text);">' + esc(label) + '</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + esc(m.reason || 'Adjustment') + ' \u00B7 ' + when + '</div>'
+      + '</div>'
+      + '<div style="font-size:14px;font-weight:800;color:' + deltaColour + ';font-family:Syne,sans-serif;flex-shrink:0;">' + deltaText + '</div>'
+    + '</div>';
+  }).join('');
+
+  el.innerHTML = '<div class="section-head" style="margin-bottom:8px;"><div class="section-title" style="font-size:13px;">Recent activity</div></div>'
+    + rowsHtml;
 }
 
 // Module-level draft for the modal
@@ -7194,6 +7396,9 @@ function openAddEquipmentModal() {
   document.getElementById('eq-notes').value = '';
   document.getElementById('eq-hive-type').value = '';
   document.getElementById('eq-delete-btn').style.display = 'none';
+  // 29 April 2026 Phase 4bf — hide use-panel on add (no row to adjust yet)
+  var usePanel = document.getElementById('eq-use-panel');
+  if (usePanel) usePanel.style.display = 'none';
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
 }
@@ -7215,6 +7420,13 @@ function editEquipment(id) {
   document.getElementById('eq-notes').value = it.notes || '';
   document.getElementById('eq-hive-type').value = it.hiveType || '';
   document.getElementById('eq-delete-btn').style.display = 'inline-block';
+  // 29 April 2026 Phase 4bf — show use-panel on edit, reset its inputs
+  var usePanel = document.getElementById('eq-use-panel');
+  if (usePanel) usePanel.style.display = 'block';
+  var amt = document.getElementById('eq-adjust-amount');
+  if (amt) amt.value = '';
+  var rsn = document.getElementById('eq-adjust-reason');
+  if (rsn) rsn.value = 'Used in apiary';
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
 }
@@ -7266,6 +7478,55 @@ function saveEquipmentFromModal() {
   }
   closeEquipmentModal();
   renderInventory();
+  try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+// 29 April 2026 Phase 4bf — quick stock adjustment helpers from the modal.
+// Both call applyEquipmentMovement which writes to the inventory_movements
+// audit log AND updates equipment.quantity in one step.
+
+function quickAdjust(delta) {
+  if (!_equipmentEditingId) return;
+  var reasonEl = document.getElementById('eq-adjust-reason');
+  var reason = reasonEl ? reasonEl.value : (delta < 0 ? 'Used in apiary' : 'Restock — bought more');
+  var newQty = applyEquipmentMovement(_equipmentEditingId, delta, {
+    reason: reason,
+    actionType: 'manual'
+  });
+  if (newQty === null) {
+    showToast('Cannot — would go below zero');
+    return;
+  }
+  var qtyEl = document.getElementById('eq-quantity');
+  if (qtyEl) qtyEl.value = newQty;
+  showToast(delta < 0 ? 'Used 1 \u2713' : 'Added 1 \u2713');
+  try { renderInventory(); } catch(e) {}
+  try { renderHomeDashboard(); } catch(e) {}
+  try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+function customAdjust(isUse) {
+  if (!_equipmentEditingId) return;
+  var amtEl = document.getElementById('eq-adjust-amount');
+  var reasonEl = document.getElementById('eq-adjust-reason');
+  var amt = parseInt(amtEl ? amtEl.value : '', 10);
+  if (isNaN(amt) || amt <= 0) { showToast('Enter a positive amount'); return; }
+  var delta = isUse ? -amt : amt;
+  var reason = reasonEl ? reasonEl.value : (isUse ? 'Used in apiary' : 'Restock — bought more');
+  var newQty = applyEquipmentMovement(_equipmentEditingId, delta, {
+    reason: reason,
+    actionType: 'manual'
+  });
+  if (newQty === null) {
+    showToast('Cannot — would go below zero');
+    return;
+  }
+  var qtyEl = document.getElementById('eq-quantity');
+  if (qtyEl) qtyEl.value = newQty;
+  if (amtEl) amtEl.value = '';
+  showToast(isUse ? ('Used ' + amt + ' \u2713') : ('Added ' + amt + ' \u2713'));
+  try { renderInventory(); } catch(e) {}
+  try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
 }
 
@@ -7520,6 +7781,9 @@ function renderBottlingReadiness() {
     + '</div>'
     + '<div style="padding:12px 14px;background:' + verdictBg + ';border-top:3px solid ' + verdictBorder + ';">'
       + '<div style="font-size:13px;font-weight:800;color:' + verdictColour + ';font-family:Syne,sans-serif;text-align:center;">' + verdictText + '</div>'
+      + (readiness.ready
+          ? '<button onclick="completeBottlingNow()" style="margin-top:10px;width:100%;background:#2a6448;color:white;border:none;border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;font-weight:800;cursor:pointer;">\uD83C\uDF6F Bottle now \u2014 ' + readiness.jarsNeeded + ' \u00D7 ' + readiness.targetJarSizeG + 'g</button>'
+          : '')
     + '</div>'
   + '</div>';
 }
@@ -7532,6 +7796,73 @@ function _onBottlingHarvestChange(harvestId) {
 function _onBottlingSizeChange(sizeG) {
   _bottlingJarSizeG = parseInt(sizeG, 10) || 454;
   renderBottlingReadiness();
+}
+
+// 29 April 2026 Phase 4bf — bottle-now action. Decrements jar / lid / label
+// stock from FIRST-MATCHING equipment rows (FIFO across location), creates
+// a honey_stock row linked to the harvest. All movements record the new
+// honey_stock id as related_id so we can trace which bottling consumed what.
+function completeBottlingNow() {
+  if (!_bottlingHarvestId || !_bottlingJarSizeG) {
+    showToast('Pick a harvest and jar size first');
+    return;
+  }
+  var readiness = computeBottlingReadiness(_bottlingHarvestId, _bottlingJarSizeG);
+  if (!readiness.ready) {
+    showToast('Not enough stock yet');
+    return;
+  }
+  var n = readiness.jarsNeeded;
+  if (!n) return;
+
+  // Confirm before consuming — this isn't reversible without manual fixup
+  if (!confirm('Bottle ' + n + ' \u00D7 ' + _bottlingJarSizeG + 'g jars from this harvest?\n\nThis will use ' + n + ' jars, ' + n + ' lids, and ' + n + ' labels from your stock.')) return;
+
+  // 1. Create the honey_stock row first so we have an id for the audit trail
+  var newStock = addHoneyStock({
+    harvestId: _bottlingHarvestId,
+    jarSizeG: _bottlingJarSizeG,
+    jarCount: n,
+    labelDesign: null,
+    notes: 'Bottled from readiness card'
+  });
+
+  // 2. Decrement matching equipment FIFO across categories
+  var consume = function(category, count, relatedId) {
+    var remaining = count;
+    var items = loadEquipment().filter(function(it) {
+      return it.category === category && (it.quantity || 0) > 0;
+    });
+    // Sort by created_at so we consume oldest stock first (FIFO)
+    items.sort(function(a, b) {
+      return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+    });
+    for (var i = 0; i < items.length && remaining > 0; i++) {
+      var take = Math.min(items[i].quantity || 0, remaining);
+      if (take > 0) {
+        applyEquipmentMovement(items[i].id, -take, {
+          reason: 'Bottled honey',
+          actionType: 'bottling',
+          relatedId: relatedId
+        });
+        remaining -= take;
+      }
+    }
+    return remaining === 0;
+  };
+
+  consume('jar_empty', n, newStock.id);
+  consume('jar_lid',   n, newStock.id);
+  consume('label',     n, newStock.id);
+
+  showToast(n + ' jars bottled \u2713');
+
+  // Refresh everything that touches inventory or honey
+  try { renderBottlingReadiness(); } catch(e) {}
+  try { renderHoneyStock(); } catch(e) {}
+  try { renderInventory(); } catch(e) {}
+  try { renderHomeDashboard(); } catch(e) {}
+  try { renderHomeLowStockBanner(); } catch(e) {}
 }
 
 var _honeyStockEditingId = null;
@@ -20673,7 +21004,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:35 29 April 2026 BST · Phase 4be — home page reorganisation. Forage Conditions moved under Weather (they belong together). Crop Spraying / Community Spray banners stay under Asian Hornet (already there structurally). Active hives section replaced with new Equipment & Honey section housing the inventory dashboard + low-stock banner. Dashboard now shows placeholder when no data, since section header is permanent.';
+var HIVEKEEPER_BUILD = '23:05 29 April 2026 BST · Phase 4bf — STOCK CONSUMPTION FLOW. New inventory_movements audit table. Equipment edit modal gains \u00B1 quick-adjust panel with reason picker (Used in apiary / Bottled honey / Lost / Lent / Sold / Restock / Other). Bottling readiness card now has \u201CBottle now\u201D button when ready \u2014 atomically decrements jars/lids/labels FIFO and creates honey_stock row linked back via related_id. Recent activity log shows last 20 movements on inventory screen. Inventory now LIVES.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -21782,7 +22113,9 @@ async function pullFromSupabase() {
         // pull cycles so locally-edited items aren't wiped before re-sync.
         'hk_equipment_v1',
         // 29 April 2026 — Phase 4ay: honey jar stock store.
-        'hk_honey_stock_v1'];
+        'hk_honey_stock_v1',
+        // 29 April 2026 — Phase 4bf: inventory movements audit log.
+        'hk_inventory_movements_v1'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -22140,7 +22473,9 @@ async function pullFromSupabase() {
       // 29 April 2026 Phase 4aw — pull equipment inventory
       pullEquipment().catch(function(e){ console.warn('[pull equipment]', e); }),
       // 29 April 2026 Phase 4ay — pull honey stock
-      pullHoneyStock().catch(function(e){ console.warn('[pull honey stock]', e); })
+      pullHoneyStock().catch(function(e){ console.warn('[pull honey stock]', e); }),
+      // 29 April 2026 Phase 4bf — pull inventory movement log
+      pullMovementsLog().catch(function(e){ console.warn('[pull movements log]', e); })
     ]);
 
     return true;
