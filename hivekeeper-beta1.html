@@ -3630,23 +3630,103 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
   <div class="scroll-area">
 
-    <!-- Low-stock alert banner — appears only when items are at/below reorder threshold -->
-    <div id="inventory-low-stock-banner" style="display:none;margin:12px 16px;padding:12px 14px;background:#FFF3E0;border-left:4px solid #C8730A;border-radius:8px;">
-      <div style="font-size:12px;font-weight:800;color:#C8730A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">⚠ Low stock</div>
-      <div id="inventory-low-stock-detail" style="font-size:13px;color:var(--text);"></div>
+    <!-- 29 April 2026 Phase 4ay — Inventory tabs: Equipment vs Honey -->
+    <div style="display:flex;gap:6px;margin:12px 16px 0;">
+      <button id="inv-tab-equipment" onclick="switchInventoryTab('equipment')" style="flex:1;padding:10px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">📦 Equipment</button>
+      <button id="inv-tab-honey" onclick="switchInventoryTab('honey')" style="flex:1;padding:10px;background:white;color:var(--text);border:1.5px solid var(--wax);border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">🍯 Honey</button>
     </div>
 
-    <!-- Add item button -->
-    <div style="margin:12px 16px;">
-      <button onclick="openAddEquipmentModal()" style="width:100%;background:var(--forest);color:white;border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-        <span style="font-size:18px;">+</span> Add equipment
-      </button>
+    <!-- ── Equipment panel ─────────────────────────────────────── -->
+    <div id="inv-panel-equipment">
+      <!-- Low-stock alert banner — appears only when items are at/below reorder threshold -->
+      <div id="inventory-low-stock-banner" style="display:none;margin:12px 16px;padding:12px 14px;background:#FFF3E0;border-left:4px solid #C8730A;border-radius:8px;">
+        <div style="font-size:12px;font-weight:800;color:#C8730A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">⚠ Low stock</div>
+        <div id="inventory-low-stock-detail" style="font-size:13px;color:var(--text);"></div>
+      </div>
+
+      <!-- Add equipment button -->
+      <div style="margin:12px 16px;">
+        <button onclick="openAddEquipmentModal()" style="width:100%;background:var(--forest);color:white;border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span style="font-size:18px;">+</span> Add equipment
+        </button>
+      </div>
+
+      <!-- Category-grouped list — populated by renderInventory() -->
+      <div id="inventory-list" style="margin:0 16px;"></div>
     </div>
 
-    <!-- Category-grouped list — populated by renderInventory() -->
-    <div id="inventory-list" style="margin:0 16px;"></div>
+    <!-- ── Honey panel ─────────────────────────────────────────── -->
+    <div id="inv-panel-honey" style="display:none;">
+      <!-- Total honey stock summary card -->
+      <div id="honey-stock-summary" style="margin:12px 16px;padding:14px;background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);box-shadow:var(--shadow);"></div>
+
+      <!-- Add jars button -->
+      <div style="margin:12px 16px;">
+        <button onclick="openAddHoneyStockModal()" style="width:100%;background:var(--forest);color:white;border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <span style="font-size:18px;">+</span> Log jars
+        </button>
+      </div>
+
+      <!-- Honey stock list, grouped by harvest — populated by renderHoneyStock() -->
+      <div id="honey-stock-list" style="margin:0 16px;"></div>
+    </div>
 
     <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- 29 April 2026 Phase 4ay — Add/Edit honey jar stock modal -->
+<div class="modal-overlay" id="modal-honey-stock-edit" onclick="closeModal(event,'modal-honey-stock-edit')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title" style="margin:0;" id="honey-modal-title">Log jars</div>
+      <div onclick="closeHoneyStockModal()" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Source harvest</label>
+      <select id="hs-harvest" onchange="_onHoneyHarvestChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <div id="hs-harvest-summary" style="font-size:11px;color:var(--text-l);margin-top:6px;line-height:1.5;"></div>
+    </div>
+
+    <div style="margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Jar size</label>
+        <select id="hs-size" onchange="_onHoneyJarSizeChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
+          <option value="227">227g (8oz)</option>
+          <option value="340">340g (12oz)</option>
+          <option value="454" selected>454g (1lb)</option>
+          <option value="custom">Custom\u2026</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Number of jars</label>
+        <input type="number" id="hs-count" min="0" placeholder="0" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <div id="hs-custom-row" style="margin-bottom:14px;display:none;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Custom size in grams</label>
+      <input type="number" id="hs-custom" min="1" placeholder="e.g. 113" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Label / variety (optional)</label>
+      <input type="text" id="hs-label" placeholder="e.g. Summer Wildflower" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Notes</label>
+      <textarea id="hs-notes" rows="2" placeholder="Optional notes" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button id="hs-delete-btn" onclick="confirmDeleteHoneyStock()" style="display:none;flex:0 0 auto;padding:14px 16px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Delete</button>
+      <button onclick="closeHoneyStockModal()" style="flex:1;padding:14px;background:white;color:var(--text-l);border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Cancel</button>
+      <button onclick="saveHoneyStockFromModal()" style="flex:1;padding:14px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Save</button>
+    </div>
   </div>
 </div>
 
@@ -5795,6 +5875,127 @@ function getLowStockItems() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4ay — HONEY STOCK
+// ════════════════════════════════════════════════════════════════
+// Tracks jars-in-storage, optionally linked to a harvest record for
+// traceability. UK common jar sizes: 1lb (454g), 12oz (340g), 8oz (227g),
+// plus a "custom" option for any other size in grams.
+
+var COMMON_JAR_SIZES = [
+  { g: 227, label: '227g (8oz)' },
+  { g: 340, label: '340g (12oz)' },
+  { g: 454, label: '454g (1lb)' }
+];
+
+function loadHoneyStock() {
+  try { return JSON.parse(localStorage.getItem('hk_honey_stock_v1') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveHoneyStock(rows) {
+  try { localStorage.setItem('hk_honey_stock_v1', JSON.stringify(rows)); } catch(e) {}
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    rows.forEach(function(r) { queueOfflineSave('honey_stock', honeyStockToRow(r, uid)); });
+    return;
+  }
+  pushHoneyStock().catch(function(){});
+}
+
+function honeyStockToRow(s, uid) {
+  return {
+    id: s.id,
+    user_id: uid,
+    harvest_id: s.harvestId || null,
+    jar_size_g: typeof s.jarSizeG === 'number' ? s.jarSizeG : 454,
+    jar_count: typeof s.jarCount === 'number' ? s.jarCount : 0,
+    label_design: s.labelDesign || null,
+    notes: s.notes || null,
+    created_at: s.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function pushHoneyStock() {
+  var uid = getUserId(); if (!uid) return;
+  var rows = loadHoneyStock();
+  if (!rows.length) return;
+  var payload = rows.map(function(s) { return honeyStockToRow(s, uid); });
+  var sb = getSupabase();
+  var { error } = await sb.from('honey_stock').upsert(payload, { onConflict: 'id' });
+  if (error) {
+    console.warn('[pushHoneyStock] error — queueing:', error.message);
+    payload.forEach(function(r) { queueOfflineSave('honey_stock', r); });
+  }
+}
+
+async function pullHoneyStock() {
+  var uid = getUserId(); if (!uid) return;
+  var sb = getSupabase();
+  var { data, error } = await sb.from('honey_stock').select('*').eq('user_id', uid);
+  if (error) { console.warn('[pullHoneyStock]', error.message); return; }
+  if (!data) return;
+  var local = data.map(function(r) {
+    return {
+      id: r.id,
+      harvestId: r.harvest_id || null,
+      jarSizeG: typeof r.jar_size_g === 'number' ? r.jar_size_g : 454,
+      jarCount: typeof r.jar_count === 'number' ? r.jar_count : 0,
+      labelDesign: r.label_design || null,
+      notes: r.notes || null,
+      createdAt: r.created_at
+    };
+  });
+  try { localStorage.setItem('hk_honey_stock_v1', JSON.stringify(local)); } catch(e) {}
+}
+
+function addHoneyStock(rec) {
+  var rows = loadHoneyStock();
+  rec.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('hs_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+  rec.createdAt = new Date().toISOString();
+  rows.push(rec);
+  saveHoneyStock(rows);
+  return rec;
+}
+
+function updateHoneyStock(id, patch) {
+  var rows = loadHoneyStock();
+  var idx = rows.findIndex(function(r) { return r.id === id; });
+  if (idx < 0) return null;
+  rows[idx] = Object.assign({}, rows[idx], patch);
+  saveHoneyStock(rows);
+  return rows[idx];
+}
+
+function deleteHoneyStockById(id) {
+  var rows = loadHoneyStock().filter(function(r) { return r.id !== id; });
+  saveHoneyStock(rows);
+  if (getUserId() && isOnline()) {
+    try { getSupabase().from('honey_stock').delete().eq('id', id).then(function(){}); }
+    catch(e) {}
+  }
+}
+
+// Sum kg jarred for a specific harvest (or null for untracked stock)
+function getHoneyKgJarredForHarvest(harvestId) {
+  var rows = loadHoneyStock().filter(function(r) {
+    return harvestId ? r.harvestId === harvestId : !r.harvestId;
+  });
+  return rows.reduce(function(sum, r) {
+    return sum + ((r.jarSizeG || 0) * (r.jarCount || 0)) / 1000;
+  }, 0);
+}
+
+// Sum total jars across all stock rows
+function getTotalHoneyStock() {
+  var rows = loadHoneyStock();
+  var totalJars = rows.reduce(function(s, r){ return s + (r.jarCount || 0); }, 0);
+  var totalKg = rows.reduce(function(s, r){ return s + ((r.jarSizeG||0)*(r.jarCount||0))/1000; }, 0);
+  return { jars: totalJars, kg: totalKg };
+}
+
 function getSprayStatusSummary() {
   var sprays = loadSprays();
   if (!sprays.length) return { level: 'clear', summary: 'No sprays reported nearby', pill: 'NONE' };
@@ -6521,6 +6722,274 @@ function confirmDeleteEquipment() {
   showToast('Deleted');
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4ay — HONEY STOCK rendering & modal
+// ════════════════════════════════════════════════════════════════
+
+// Build a human-readable summary of a harvest — date, kg, hive name
+function _summariseHarvest(harvest, hivesIndex) {
+  if (!harvest) return 'Untracked source';
+  var d = harvest.date ? new Date(harvest.date) : null;
+  var dateStr = d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+  var hiveName = (hivesIndex && hivesIndex[harvest.hiveId]) ? hivesIndex[harvest.hiveId].name : 'Hive';
+  return dateStr + ' \u2022 ' + (hiveName || 'Hive') + ' \u2022 ' + (harvest.kg || 0) + 'kg';
+}
+
+// Switch between Equipment / Honey panels in the inventory screen
+function switchInventoryTab(which) {
+  var eqBtn = document.getElementById('inv-tab-equipment');
+  var hyBtn = document.getElementById('inv-tab-honey');
+  var eqPanel = document.getElementById('inv-panel-equipment');
+  var hyPanel = document.getElementById('inv-panel-honey');
+  if (!eqBtn || !hyBtn) return;
+
+  var setActive = function(btn, active) {
+    btn.style.background = active ? 'var(--forest)' : 'white';
+    btn.style.color = active ? 'white' : 'var(--text)';
+    btn.style.border = active ? 'none' : '1.5px solid var(--wax)';
+  };
+
+  if (which === 'honey') {
+    setActive(eqBtn, false); setActive(hyBtn, true);
+    if (eqPanel) eqPanel.style.display = 'none';
+    if (hyPanel) hyPanel.style.display = 'block';
+    try { renderHoneyStock(); } catch(e) { console.warn('renderHoneyStock:', e); }
+  } else {
+    setActive(eqBtn, true); setActive(hyBtn, false);
+    if (eqPanel) eqPanel.style.display = 'block';
+    if (hyPanel) hyPanel.style.display = 'none';
+    try { renderInventory(); } catch(e) {}
+  }
+}
+
+function renderHoneyStock() {
+  var listEl = document.getElementById('honey-stock-list');
+  var summaryEl = document.getElementById('honey-stock-summary');
+  if (!listEl) return;
+
+  var totals = getTotalHoneyStock();
+  if (summaryEl) {
+    summaryEl.innerHTML = '<div style="display:flex;align-items:center;gap:14px;">'
+      + '<div style="font-size:32px;">\uD83C\uDF6F</div>'
+      + '<div style="flex:1;">'
+        + '<div style="font-size:11px;font-weight:800;color:#5C3A17;text-transform:uppercase;letter-spacing:.04em;">Total in stock</div>'
+        + '<div style="font-size:22px;font-weight:800;color:#3A2509;font-family:Syne,sans-serif;margin-top:2px;">' + totals.jars + ' jars</div>'
+        + '<div style="font-size:12px;color:#5C3A17;font-weight:600;margin-top:2px;">' + totals.kg.toFixed(2) + ' kg</div>'
+      + '</div>'
+    + '</div>';
+  }
+
+  var rows = loadHoneyStock();
+  if (!rows.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-l);">'
+      + '<div style="font-size:42px;margin-bottom:12px;">\uD83C\uDF6F</div>'
+      + '<div style="font-weight:700;margin-bottom:4px;">No jars logged yet</div>'
+      + '<div style="font-size:12px;line-height:1.5;">Tap "Log jars" above to record your stock. You can link each batch to a harvest for full traceability.</div>'
+      + '</div>';
+    return;
+  }
+
+  var harvests = (typeof loadHarvests === 'function') ? loadHarvests() : [];
+  var hives = (typeof loadHives === 'function') ? loadHives() : [];
+  var hivesIndex = {};
+  hives.forEach(function(h) { hivesIndex[h.id] = h; });
+  var harvestIndex = {};
+  harvests.forEach(function(h) { harvestIndex[h.id] = h; });
+
+  var grouped = {};
+  rows.forEach(function(r) {
+    var key = r.harvestId || '__untracked__';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+
+  var esc = function(t){ return (t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  var keys = Object.keys(grouped).filter(function(k){ return k !== '__untracked__'; });
+  keys.sort(function(a, b) {
+    var ha = harvestIndex[a], hb = harvestIndex[b];
+    if (!ha) return 1; if (!hb) return -1;
+    return new Date(hb.date || 0).getTime() - new Date(ha.date || 0).getTime();
+  });
+  if (grouped['__untracked__']) keys.push('__untracked__');
+
+  var html = keys.map(function(key) {
+    var groupRows = grouped[key];
+    var harvest = (key === '__untracked__') ? null : harvestIndex[key];
+    var groupTitle = (key === '__untracked__') ? 'Untracked source' : _summariseHarvest(harvest, hivesIndex);
+    var groupKg = groupRows.reduce(function(s, r){ return s + ((r.jarSizeG||0)*(r.jarCount||0))/1000; }, 0);
+    var groupJars = groupRows.reduce(function(s, r){ return s + (r.jarCount||0); }, 0);
+
+    var sanity = '';
+    if (harvest && harvest.kg) {
+      var diff = groupKg - harvest.kg;
+      if (diff > 0.1) sanity = '<span style="font-size:10px;color:#B83228;font-weight:800;margin-left:6px;">OVER ' + diff.toFixed(1) + 'kg</span>';
+      else if (diff < -0.1) sanity = '<span style="font-size:10px;color:var(--text-l);font-weight:700;margin-left:6px;">' + Math.abs(diff).toFixed(1) + 'kg unjarred</span>';
+      else sanity = '<span style="font-size:10px;color:#2a6448;font-weight:700;margin-left:6px;">\u2713 fully jarred</span>';
+    }
+
+    var rowsHtml = groupRows.map(function(r) {
+      var sizeLabel = r.jarSizeG + 'g';
+      var totalKg = ((r.jarSizeG||0)*(r.jarCount||0))/1000;
+      return '<div data-stockid="' + esc(r.id) + '" onclick="editHoneyStock(\'' + esc(r.id) + '\')" '
+        + 'style="background:white;border-left:3px solid #E8B742;border-radius:6px;padding:10px 12px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:12px;">'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + r.jarCount + ' \u00D7 ' + esc(sizeLabel) + (r.labelDesign ? ' \u2014 ' + esc(r.labelDesign) : '') + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + totalKg.toFixed(2) + ' kg' + (r.notes ? ' \u00B7 ' + esc(r.notes.substring(0, 40)) : '') + '</div>'
+        + '</div>'
+      + '</div>';
+    }).join('');
+
+    return '<div style="margin-bottom:18px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:4px;">'
+        + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">' + esc(groupTitle) + sanity + '</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text-l);">' + groupJars + ' jars \u00B7 ' + groupKg.toFixed(2) + 'kg</div>'
+      + '</div>'
+      + rowsHtml
+    + '</div>';
+  }).join('');
+
+  listEl.innerHTML = html;
+}
+
+var _honeyStockEditingId = null;
+
+function _populateHoneyHarvestDropdown() {
+  var sel = document.getElementById('hs-harvest');
+  if (!sel) return;
+  var harvests = (typeof loadHarvests === 'function') ? loadHarvests() : [];
+  var hives = (typeof loadHives === 'function') ? loadHives() : [];
+  var hivesIndex = {};
+  hives.forEach(function(h) { hivesIndex[h.id] = h; });
+  harvests = harvests.slice().sort(function(a, b) {
+    return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+  });
+  var html = '<option value="">No source / untracked</option>';
+  harvests.forEach(function(h) {
+    html += '<option value="' + h.id + '">' + _summariseHarvest(h, hivesIndex) + '</option>';
+  });
+  sel.innerHTML = html;
+}
+
+function _onHoneyHarvestChange() {
+  var sel = document.getElementById('hs-harvest');
+  var summaryEl = document.getElementById('hs-harvest-summary');
+  if (!sel || !summaryEl) return;
+  var hid = sel.value;
+  if (!hid) {
+    summaryEl.textContent = 'Use this for stock with no harvest record \u2014 e.g. existing inventory before you started tracking.';
+    return;
+  }
+  var harvest = (typeof loadHarvests === 'function') ? loadHarvests().find(function(h){ return h.id === hid; }) : null;
+  if (!harvest) { summaryEl.textContent = ''; return; }
+  var jarred = loadHoneyStock().filter(function(r) {
+    return r.harvestId === hid && r.id !== _honeyStockEditingId;
+  }).reduce(function(s, r){ return s + ((r.jarSizeG||0)*(r.jarCount||0))/1000; }, 0);
+  var remaining = (harvest.kg || 0) - jarred;
+  var msg = (harvest.kg || 0).toFixed(1) + 'kg recorded \u00B7 ' + jarred.toFixed(2) + 'kg already jarred \u00B7 ';
+  if (remaining > 0.1) msg += '<strong style="color:#2a6448;">' + remaining.toFixed(2) + 'kg remaining</strong>';
+  else if (remaining < -0.1) msg += '<strong style="color:#B83228;">over by ' + Math.abs(remaining).toFixed(2) + 'kg</strong>';
+  else msg += '<strong>fully jarred</strong>';
+  summaryEl.innerHTML = msg;
+}
+
+function _onHoneyJarSizeChange() {
+  var sel = document.getElementById('hs-size');
+  var customRow = document.getElementById('hs-custom-row');
+  if (!sel || !customRow) return;
+  customRow.style.display = sel.value === 'custom' ? 'block' : 'none';
+}
+
+function openAddHoneyStockModal() {
+  _honeyStockEditingId = null;
+  _populateHoneyHarvestDropdown();
+  document.getElementById('honey-modal-title').textContent = 'Log jars';
+  document.getElementById('hs-harvest').value = '';
+  document.getElementById('hs-size').value = '454';
+  document.getElementById('hs-count').value = '';
+  document.getElementById('hs-custom').value = '';
+  document.getElementById('hs-label').value = '';
+  document.getElementById('hs-notes').value = '';
+  document.getElementById('hs-delete-btn').style.display = 'none';
+  _onHoneyHarvestChange();
+  _onHoneyJarSizeChange();
+  openModalEl('modal-honey-stock-edit');
+}
+
+function editHoneyStock(id) {
+  var rec = loadHoneyStock().find(function(x){ return x.id === id; });
+  if (!rec) return;
+  _honeyStockEditingId = id;
+  _populateHoneyHarvestDropdown();
+  document.getElementById('honey-modal-title').textContent = 'Edit jars';
+  document.getElementById('hs-harvest').value = rec.harvestId || '';
+  var common = COMMON_JAR_SIZES.some(function(s){ return s.g === rec.jarSizeG; });
+  if (common) {
+    document.getElementById('hs-size').value = String(rec.jarSizeG);
+    document.getElementById('hs-custom').value = '';
+  } else {
+    document.getElementById('hs-size').value = 'custom';
+    document.getElementById('hs-custom').value = rec.jarSizeG;
+  }
+  document.getElementById('hs-count').value = rec.jarCount || 0;
+  document.getElementById('hs-label').value = rec.labelDesign || '';
+  document.getElementById('hs-notes').value = rec.notes || '';
+  document.getElementById('hs-delete-btn').style.display = 'inline-block';
+  _onHoneyHarvestChange();
+  _onHoneyJarSizeChange();
+  openModalEl('modal-honey-stock-edit');
+}
+
+function closeHoneyStockModal() {
+  closeModalEl('modal-honey-stock-edit');
+  _honeyStockEditingId = null;
+}
+
+function saveHoneyStockFromModal() {
+  var harvestId = document.getElementById('hs-harvest').value;
+  var sizeRaw = document.getElementById('hs-size').value;
+  var custom = document.getElementById('hs-custom').value.trim();
+  var count = parseInt(document.getElementById('hs-count').value, 10);
+  var label = document.getElementById('hs-label').value.trim();
+  var notes = document.getElementById('hs-notes').value.trim();
+
+  var jarSize;
+  if (sizeRaw === 'custom') {
+    jarSize = parseInt(custom, 10);
+    if (!jarSize || jarSize <= 0) { showToast('Custom jar size must be more than 0g'); return; }
+  } else {
+    jarSize = parseInt(sizeRaw, 10);
+  }
+  if (isNaN(count) || count < 0) { showToast('Number of jars must be 0 or higher'); return; }
+
+  var patch = {
+    harvestId: harvestId || null,
+    jarSizeG: jarSize,
+    jarCount: count,
+    labelDesign: label || null,
+    notes: notes || null
+  };
+
+  if (_honeyStockEditingId) {
+    updateHoneyStock(_honeyStockEditingId, patch);
+    showToast('Updated \u2713');
+  } else {
+    addHoneyStock(patch);
+    showToast('Jars logged \u2713');
+  }
+  closeHoneyStockModal();
+  renderHoneyStock();
+}
+
+function confirmDeleteHoneyStock() {
+  if (!_honeyStockEditingId) return;
+  if (!confirm('Delete this jar record?')) return;
+  deleteHoneyStockById(_honeyStockEditingId);
+  closeHoneyStockModal();
+  showToast('Deleted');
+  renderHoneyStock();
 }
 
 // Home-screen low-stock banner — renders into #home-low-stock-banner if present.
@@ -19407,7 +19876,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '19:25 29 April 2026 BST · Phase 4ax — equipment hive_type dimension. Brood boxes/supers/frames/queen excluders/crown boards/floors/roofs/foundation sheets/nuc boxes now require a hive type (National/Langstroth/WBC/Top Bar/Warré/Smith/Commercial/Nuc). Display: "National brood box". Tools/PPE/consumables unaffected.';
+var HIVEKEEPER_BUILD = '19:55 29 April 2026 BST · Phase 4ay — Honey jar stock layer. New honey_stock table linked to harvests for traceability. Inventory screen now has Equipment / Honey tabs. Per-harvest sanity check (over-jarred / unjarred), summary card showing total jars + kg, custom jar sizes supported.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20514,7 +20983,9 @@ async function pullFromSupabase() {
         'hk_migrated_pests',
         // 29 April 2026 — Phase 4aw: equipment inventory store. Survives
         // pull cycles so locally-edited items aren't wiped before re-sync.
-        'hk_equipment_v1'];
+        'hk_equipment_v1',
+        // 29 April 2026 — Phase 4ay: honey jar stock store.
+        'hk_honey_stock_v1'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -20870,7 +21341,9 @@ async function pullFromSupabase() {
       pullSprays().catch(function(e){ console.warn('[pull sprays]', e); }),
       pullMovements().catch(function(e){ console.warn('[pull movements]', e); }),
       // 29 April 2026 Phase 4aw — pull equipment inventory
-      pullEquipment().catch(function(e){ console.warn('[pull equipment]', e); })
+      pullEquipment().catch(function(e){ console.warn('[pull equipment]', e); }),
+      // 29 April 2026 Phase 4ay — pull honey stock
+      pullHoneyStock().catch(function(e){ console.warn('[pull honey stock]', e); })
     ]);
 
     return true;
