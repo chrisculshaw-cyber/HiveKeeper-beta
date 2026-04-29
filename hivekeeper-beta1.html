@@ -9080,10 +9080,10 @@ function resetInspectStatusButtons() {
 // from the lifecycle status enum. See backlog Item #18 for the rationale.
 
 var PESTS = [
-  { key: 'wax_moth', label: 'Wax moth', icon: '\u{1F98B}' },
-  { key: 'mice',     label: 'Mice',     icon: '\u{1F401}' },
-  { key: 'ants',     label: 'Ants',     icon: '\u{1F41C}' },
-  { key: 'wasps',    label: 'Wasps',    icon: '\u{1F41D}' },
+  { key: 'wax_moth', label: 'Wax moth', icon: '\uD83E\uDD8B' },
+  { key: 'mice',     label: 'Mice',     icon: '\uD83D\uDC01' },
+  { key: 'ants',     label: 'Ants',     icon: '\uD83D\uDC1C' },
+  { key: 'wasps',    label: 'Wasps',    icon: '\uD83D\uDC1D' },
   { key: 'hornets',  label: 'Hornets',  icon: '\u26A0' }
 ];
 
@@ -18746,7 +18746,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:55 29 April 2026 BST · Phase 4at — pests refactored to multi-select array (per-inspection). PESTS const (wax_moth, mice, ants, wasps, hornets), togglePest UI, hiveHasPest helper, push/pull mappers updated, migratePestsArray idempotent migration. Legacy waxMoth boolean kept in sync for backwards-compat with the 22 unchanged display reads.';
+var HIVEKEEPER_BUILD = '15:10 29 April 2026 BST · Phase 4at follow-up — fix PESTS const unicode escapes (ES6 \\u{1F98B} → surrogate-pair \\uD83E\\uDD8B). The ES6 form may not parse in the Median webview\u2019s JS engine; if the const assignment failed silently, the chips never rendered (caught by surrounding try/catch). Issues row should now show 5 chips on the inspect screen.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
