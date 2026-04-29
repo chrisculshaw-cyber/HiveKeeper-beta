@@ -1541,6 +1541,30 @@ input[type="checkbox"].hk-chk:checked::after {
   transform: rotate(45deg);
   box-sizing: border-box;
 }
+
+/* 29 April 2026 Phase 4bh — obvious dropdown styling for inventory modals.
+   Was using subtle wax-coloured borders that read as static fields on mobile.
+   This adds a stronger forest border, slight inner shadow, and a chevron
+   indicator via background-image so users see "this is a picker." */
+.hk-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: white;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%234A5D3A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 10px 7px;
+  padding-right: 36px !important;
+  border: 1.5px solid var(--forest) !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hk-select:focus {
+  outline: none;
+  border-color: var(--honey) !important;
+  box-shadow: 0 0 0 2px rgba(232,183,66,0.25);
+}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -3819,7 +3843,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Category</label>
-      <select id="eq-category" onchange="_onEquipCategoryChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-category" onchange="_onEquipCategoryChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
     </div>
 
     <div id="eq-name-row" style="margin-bottom:14px;display:none;">
@@ -3831,7 +3855,7 @@ input[type="checkbox"].hk-chk:checked::after {
          categories where it matters (brood boxes, supers, frames, etc.) -->
     <div id="eq-hive-type-row" style="margin-bottom:14px;display:none;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Hive type</label>
-      <select id="eq-hive-type" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-hive-type" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
     </div>
 
     <div style="margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -3847,7 +3871,7 @@ input[type="checkbox"].hk-chk:checked::after {
 
     <div style="margin-bottom:14px;">
       <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Location</label>
-      <select id="eq-location" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+      <select class="hk-select" id="eq-location" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
     </div>
 
     <div style="margin-bottom:14px;">
@@ -3866,7 +3890,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
         <input type="number" id="eq-adjust-amount" placeholder="amount" style="flex:1;padding:8px 10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
-        <select id="eq-adjust-reason" style="flex:1.5;padding:8px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
+        <select class="hk-select" id="eq-adjust-reason" style="flex:1.5;padding:8px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
           <option value="Used in apiary">Used in apiary</option>
           <option value="Bottled honey">Bottled honey</option>
           <option value="Lost / damaged">Lost / damaged</option>
@@ -9058,6 +9082,9 @@ var _stackEditorDraft = null;
 var _stackEditorHiveId = null;
 // 29 April 2026 Phase 4bg — original stack at open, for inventory delta on save
 var _stackEditorOriginal = null;
+// 29 April 2026 Phase 4bh — frames used during this stack-edit session
+var _stackEditorFramesGood = 0;
+var _stackEditorFramesBad = 0;
 
 function openStackEditor(hiveId) {
   console.log('[stack-editor] opening for hiveId=', hiveId);
@@ -9093,6 +9120,10 @@ function openStackEditor(hiveId) {
 
   // 29 April 2026 Phase 4bg — snapshot for consumption-hook delta on save
   _stackEditorOriginal = _stackEditorDraft.slice().map(function(b){ return { type: b.type }; });
+
+  // 29 April 2026 Phase 4bh — reset frame counters for this session
+  _stackEditorFramesGood = 0;
+  _stackEditorFramesBad = 0;
 
   renderStackEditor();
   openModalEl('modal-hive-components');
@@ -9153,6 +9184,21 @@ function renderStackEditor() {
     +   '<button onclick="stackEditorAdd(\'brood\')" style="padding:12px 4px;background:#3A6B4A;border:none;border-radius:var(--rs);color:white;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Brood</button>'
     +   '<button onclick="stackEditorAdd(\'super\')" style="padding:12px 4px;background:#F4D03F;border:none;border-radius:var(--rs);color:#4A2E0E;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ Super</button>'
     +   '<button onclick="stackEditorAdd(\'qe\')" style="padding:12px 4px;background:#D8D8D8;border:1px solid #999;border-radius:var(--rs);color:#333;font-size:12px;font-weight:800;cursor:pointer;font-family:Syne,sans-serif;">+ QE</button>'
+    + '</div>'
+    + '<!-- 29 April 2026 Phase 4bh — frames used during this stack edit. -->'
+    + '<div style="background:#FAEEDA;border-radius:var(--rs);padding:10px 12px;margin-bottom:10px;">'
+    +   '<div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Frames used today (optional)</div>'
+    +   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+    +     '<div>'
+    +       '<label style="font-size:10px;color:var(--text-l);font-weight:700;display:block;margin-bottom:4px;">Replaced (good)</label>'
+    +       '<input type="number" id="stack-frames-good" min="0" placeholder="0" value="' + (_stackEditorFramesGood || '') + '" oninput="_stackEditorFramesGood=parseInt(this.value)||0" style="width:100%;padding:8px;border:1.5px solid var(--wax);border-radius:6px;font-size:13px;font-family:Syne,sans-serif;box-sizing:border-box;">'
+    +     '</div>'
+    +     '<div>'
+    +       '<label style="font-size:10px;color:var(--text-l);font-weight:700;display:block;margin-bottom:4px;">Knackered (burn)</label>'
+    +       '<input type="number" id="stack-frames-bad" min="0" placeholder="0" value="' + (_stackEditorFramesBad || '') + '" oninput="_stackEditorFramesBad=parseInt(this.value)||0" style="width:100%;padding:8px;border:1.5px solid var(--wax);border-radius:6px;font-size:13px;font-family:Syne,sans-serif;box-sizing:border-box;">'
+    +     '</div>'
+    +   '</div>'
+    +   '<div style="font-size:10px;color:var(--text-l);margin-top:6px;line-height:1.4;">Replaced = decrements stock then returns one (net zero — used a sheet of foundation). Knackered = pure decrement.</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
     +   '<button onclick="closeStackEditor()" style="background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>'
@@ -9220,37 +9266,42 @@ function saveStackEditor() {
   saveHives(hives);
 
   // Now apply inventory consumption / restock for each non-zero delta
-  var hiveType = hive.hiveType ? hive.hiveType.charAt(0).toUpperCase() + hive.hiveType.slice(1) : null;
-  // Normalise common values: 'national' → 'National'. The hiveType field
-  // might be lowercase or canonical; equipment.hiveType uses canonical.
-  var canonicaliseHiveType = function(ht) {
-    if (!ht) return null;
-    var lower = String(ht).toLowerCase();
+  // 29 April 2026 Phase 4bh fix — was reading hive.hiveType which stores
+  // the colony status (overwintered/active/etc), NOT the hive system.
+  // Real field is hive.boxType: 'national', 'commercial', 'wbc', 'langstroth',
+  // 'smith', 'top-bar', 'warre', 'nuc', 'double-nuc'. Map to canonical
+  // equipment hiveType values which are 'National', 'Commercial', etc.
+  var canonicaliseBoxType = function(bt) {
+    if (!bt) return null;
+    var lower = String(bt).toLowerCase();
     var map = {
       'national': 'National', 'langstroth': 'Langstroth', 'wbc': 'WBC',
-      'top bar': 'Top Bar', 'topbar': 'Top Bar',
+      'top-bar': 'Top Bar', 'top bar': 'Top Bar', 'topbar': 'Top Bar',
       'warré': 'Warré', 'warre': 'Warré',
       'smith': 'Smith', 'commercial': 'Commercial', 'nuc': 'Nuc'
     };
-    return map[lower] || ht;
+    return map[lower] || null;
   };
-  var canonHiveType = canonicaliseHiveType(hiveType);
+  var canonHiveType = canonicaliseBoxType(hive.boxType);
 
   Object.keys(deltas).forEach(function(boxType) {
     var delta = deltas[boxType];
     if (delta === 0) return;
     var category = typeToCategory[boxType];
 
-    // Find equipment rows: same category, matching hive type when applicable
+    // Find equipment rows of the right category. Two-tier match:
+    //   a) hive type matches canonHiveType (preferred — proper hive-type tracking)
+    //   b) equipment has no hiveType set (fallback — keeper hadn't filled that field)
+    // Without (b), keepers who never set hiveType on their equipment had
+    // nothing matched and consumption silently no-op'd (the 4bg shipping bug).
     var allEquipment = loadEquipment();
-    var matches = allEquipment.filter(function(it) {
-      if (it.category !== category) return false;
-      // Queen excluder needs hive type match same as boxes; if hive has no
-      // hiveType set, accept any matching category row
-      if (canonHiveType && it.hiveType) return it.hiveType === canonHiveType;
-      if (canonHiveType && !it.hiveType) return false;  // strict: don't consume mismatched
-      return true;
+    var preferred = allEquipment.filter(function(it) {
+      return it.category === category && canonHiveType && it.hiveType === canonHiveType;
     });
+    var fallback = allEquipment.filter(function(it) {
+      return it.category === category && !it.hiveType;
+    });
+    var matches = preferred.length ? preferred : fallback;
 
     if (delta < 0) {
       // User REMOVED boxes — return them to inventory.
@@ -9355,6 +9406,65 @@ function saveStackEditor() {
     }
   });
 
+  // 29 April 2026 Phase 4bh — apply frame consumption (entered in stack editor).
+  // Capture before closeStackEditor wipes the vars.
+  var framesGood = _stackEditorFramesGood || 0;
+  var framesBad = _stackEditorFramesBad || 0;
+  if (framesGood > 0 || framesBad > 0) {
+    var frameMatches = loadEquipment().filter(function(it) {
+      if (it.category !== 'frame') return false;
+      if (canonHiveType && it.hiveType) return it.hiveType === canonHiveType;
+      if (canonHiveType && !it.hiveType) return true;  // fallback for unset
+      return true;
+    });
+    // FIFO oldest first
+    frameMatches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+
+    var totalDelta = framesGood + framesBad; // total decrement
+    var availableFrames = frameMatches.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+
+    var consumeFrames = function(amount, reason) {
+      var remaining = amount;
+      for (var i = 0; i < frameMatches.length && remaining > 0; i++) {
+        var take = Math.min(frameMatches[i].quantity || 0, remaining);
+        if (take > 0) {
+          applyEquipmentMovement(frameMatches[i].id, -take, {
+            reason: reason,
+            actionType: 'manual',
+            relatedId: hive.id
+          });
+          remaining -= take;
+        }
+      }
+      return amount - remaining;  // how many we managed to consume
+    };
+
+    if (availableFrames >= totalDelta) {
+      // Enough stock — straightforward
+      if (framesGood > 0) {
+        consumeFrames(framesGood, 'Frame replaced (good — refurbished)');
+        // Refurbished frames go back to inventory after a wax sheet. Net zero
+        // on stock but audited as a separate movement so the trail is clear.
+        if (frameMatches.length) {
+          applyEquipmentMovement(frameMatches[0].id, framesGood, {
+            reason: 'Returned with new foundation',
+            actionType: 'manual',
+            relatedId: hive.id
+          });
+        }
+      }
+      if (framesBad > 0) {
+        consumeFrames(framesBad, 'Frame knackered — burn pile');
+      }
+    } else {
+      // Not enough stock for full ask — consume what we have, log shortfall toast
+      var consumed = consumeFrames(availableFrames, framesBad > 0 ? 'Frame used in hive (mixed good/knackered)' : 'Frame replaced (good — refurbished)');
+      if (typeof showToast === 'function') {
+        showToast('Only ' + consumed + ' frames in stock — shortfall not tracked');
+      }
+    }
+  }
+
   closeStackEditor();
   if (typeof showToast === 'function') showToast('Stack updated \u2713');
   // Re-render all screens that show the stack
@@ -9371,6 +9481,8 @@ function closeStackEditor() {
   _stackEditorDraft = null;
   _stackEditorHiveId = null;
   _stackEditorOriginal = null;
+  _stackEditorFramesGood = 0;
+  _stackEditorFramesBad = 0;
   closeModalEl('modal-hive-components');
 }
 
@@ -12657,6 +12769,9 @@ async function fetchWeather() {
     const data = await res.json();
     localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({ts:Date.now(), data}));
     renderWeather(data);
+    // 29 April 2026 Phase 4bh fix — refresh forage pill alongside weather.
+    // Was only firing on screen entry, leaving the pill stale until next nav.
+    try { if (typeof renderForageConditions === 'function') renderForageConditions(); } catch(e) {}
   } catch(e) {
     // Try to show cached data first
     try {
@@ -21186,7 +21301,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23:30 29 April 2026 BST · Phase 4bg — (1) Fix \u22121 button rendering literal \\u2212 (HTML entity now). (2) Adding empty jars prompts to add lids 1:1 (UK common pattern). (3) Hive stack editor now applies inventory consumption on save: add brood/super/QE \u2192 decrements matching equipment by hive type; remove \u2192 returns to inventory. Stock-not-available case asks user to add to inventory or skip \u2014 no silent failures.';
+var HIVEKEEPER_BUILD = '23:55 29 April 2026 BST · Phase 4bh — six fixes & additions. (A) Diagnostic export was reading wrong localStorage keys (plural vs canonical singular) so harvests/treatments showed 0 even when present. Now correct + adds inventory layer to export. (B) TABLE_ORDER didn\u2019t include equipment/honey_stock/inventory_movements \u2014 added at right tiers. (C) Stack consumption hooks were reading hive.hiveType (status) instead of hive.boxType (system) AND too strict on equipment hiveType match \u2014 now correctly identifies hive system and falls back to no-hiveType equipment. (D) Forage pill now refreshes after weather updates, not only on screen entry. (E) New hk-select class for obvious dropdown styling (forest border + chevron). (F) Stack editor gains frames-used inputs: Replaced (audit-logged refurb, net zero on stock) and Knackered (pure burn-pile decrement).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -26452,12 +26567,18 @@ function exportFailureLog() {
 
     // Counts of records on this device — useful for spotting "you have X
     // inspections locally but cloud only has Y" gaps.
+    // 29 April 2026 Phase 4bh fix — were reading wrong key names
+    // (plural). Canonical keys are singular: HARVEST_KEY = 'hk_harvest_v1'
+    // not 'hk_harvests_v1'. Also adds inventory layer for visibility.
     var counts = {};
     try {
       counts.inspections = (JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]')).length;
-      counts.harvests = (JSON.parse(localStorage.getItem('hk_harvests_v1') || '[]')).length;
-      counts.treatments = (JSON.parse(localStorage.getItem('hk_treatments_v1') || '[]')).length;
+      counts.harvests = (JSON.parse(localStorage.getItem('hk_harvest_v1') || '[]')).length;
+      counts.treatments = (JSON.parse(localStorage.getItem('hk_treatment_v1') || '[]')).length;
       counts.varroaCounts = (JSON.parse(localStorage.getItem('hk_varroa_v1') || '[]')).length;
+      counts.equipment = (JSON.parse(localStorage.getItem('hk_equipment_v1') || '[]')).length;
+      counts.honeyStock = (JSON.parse(localStorage.getItem('hk_honey_stock_v1') || '[]')).length;
+      counts.inventoryMovements = (JSON.parse(localStorage.getItem('hk_inventory_movements_v1') || '[]')).length;
     } catch(e) {}
 
     var uid = (typeof getUserId === 'function') ? getUserId() : null;
@@ -27386,14 +27507,21 @@ async function flushOfflineQueue() {
   //   → inspections (FK → hives + apiaries)
   //   → harvests, treatments, varroa_counts, swarm_catches (FK → hives)
   //   → hive_movements (FK → hives + apiaries)
+  //   → honey_stock (FK → harvests, optional)
+  //   → inventory_movements (FK → equipment, honey_stock, optional)
   // Within the same "tier" order is preserved (stable sort).
   var TABLE_ORDER = {
-    'apiaries': 1,
+    'apiaries': 1, 'profiles': 1,
+    // 29 April 2026 Phase 4bh — equipment has no FK; tier 1 alongside apiaries
+    'equipment': 1,
     'hives': 2, 'rows': 2, 'landmarks': 2, 'sprays': 2,
     'inspections': 3,
     'harvests': 4, 'treatments': 4, 'varroa_counts': 4, 'swarm_catches': 4,
     'hive_movements': 5,
-    'profiles': 1
+    // 29 April 2026 Phase 4bh — honey_stock optionally FK to harvests; tier 5
+    'honey_stock': 5,
+    // 29 April 2026 Phase 4bh — inventory_movements optionally FK to equipment+honey_stock; tier 6
+    'inventory_movements': 6
   };
   q.sort(function(a, b) {
     var ao = TABLE_ORDER[a.table] || 99;
