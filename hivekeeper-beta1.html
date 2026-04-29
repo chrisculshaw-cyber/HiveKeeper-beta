@@ -2008,6 +2008,8 @@ input[type="checkbox"].hk-chk:checked::after {
          reported nearby" which felt like dead weight on Home. The Environment
          screen still has the Crop spraying reports section for users who want
          to log + browse manually. -->
+    <!-- Inventory low-stock alert — renders only when items at/below reorder threshold -->
+    <div id="home-low-stock-banner" style="display:none;"></div>
     <div class="env-banner" id="spray-banner" style="display:none;">
       <div class="env-header" id="spray-header-el" onclick="goToEnvironmentSprays()">
         <div class="env-header-icon">
@@ -3401,9 +3403,15 @@ input[type="checkbox"].hk-chk:checked::after {
            single row beneath the 2x2 grid. Houses the Manage apiaries flow
            that was previously in Tools as a button. Horizontal icon-label
            layout (instead of stacked) for better visual balance at full width. -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(openManageApiaries,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+      <button onclick="closeModalEl('modal-settings');setTimeout(openManageApiaries,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
         <span style="font-size:22px;">🏡</span>
         <span>Apiary settings</span>
+      </button>
+
+      <!-- 29 April 2026 Phase 4aw — Inventory entry from Settings -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){goTo('s-inventory');},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:22px;">📦</span>
+        <span>Inventory</span>
       </button>
 
       <!-- TOOLS — inline, as they were before the tile experiment -->
@@ -3596,6 +3604,103 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
 
     <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- ───────────────────────────────────────────────────────────────
+  INVENTORY SCREEN — Phase 4aw, 29 April 2026
+  Equipment inventory: track kit (brood boxes, supers, frames, treatments,
+  etc.) per apiary or in central store. Future Phase 4ax adds honey jars
+  as a separate tab; Phase 4ay layers market-stock via is_for_sale.
+─────────────────────────────────────────────────────────────── -->
+<div class="screen" id="s-inventory">
+  <div class="screen-header-wrap" style="flex-shrink:0;background:linear-gradient(180deg,#4A5D3A 0%,#3A4A2C 100%);">
+    <div style="height:4px;background:#9BC27B;"></div>
+    <div class="app-header forest">
+      <div>
+        <div class="dash-greeting" style="color:white;font-size:10px;opacity:0.8;letter-spacing:0.08em;text-transform:uppercase;font-weight:700;">Your kit</div>
+        <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;">Inventory</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+        <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
+        <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-area">
+
+    <!-- Low-stock alert banner — appears only when items are at/below reorder threshold -->
+    <div id="inventory-low-stock-banner" style="display:none;margin:12px 16px;padding:12px 14px;background:#FFF3E0;border-left:4px solid #C8730A;border-radius:8px;">
+      <div style="font-size:12px;font-weight:800;color:#C8730A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">⚠ Low stock</div>
+      <div id="inventory-low-stock-detail" style="font-size:13px;color:var(--text);"></div>
+    </div>
+
+    <!-- Add item button -->
+    <div style="margin:12px 16px;">
+      <button onclick="openAddEquipmentModal()" style="width:100%;background:var(--forest);color:white;border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span style="font-size:18px;">+</span> Add equipment
+      </button>
+    </div>
+
+    <!-- Category-grouped list — populated by renderInventory() -->
+    <div id="inventory-list" style="margin:0 16px;"></div>
+
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+
+<!-- Add/Edit equipment modal -->
+<div class="modal" id="modal-equipment-edit" style="display:none;">
+  <div class="modal-backdrop" onclick="closeEquipmentModal()"></div>
+  <div class="modal-card" style="max-width:480px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:800;font-family:'Syne',sans-serif;color:var(--text);" id="equipment-modal-title">Add equipment</div>
+      <button onclick="closeEquipmentModal()" style="background:transparent;border:none;font-size:24px;color:var(--text-l);cursor:pointer;line-height:1;">&times;</button>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Category</label>
+      <select id="eq-category" onchange="_onEquipCategoryChange()" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+    </div>
+
+    <div id="eq-name-row" style="margin-bottom:14px;display:none;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Custom name</label>
+      <input type="text" id="eq-name" placeholder="e.g. Cedar super 14×12" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Quantity</label>
+        <input type="number" id="eq-quantity" min="0" placeholder="0" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Reorder at</label>
+        <input type="number" id="eq-reorder" min="0" placeholder="optional" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Location</label>
+      <select id="eq-location" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Unit cost (optional)</label>
+      <input type="number" id="eq-cost" min="0" step="0.01" placeholder="£" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Notes</label>
+      <textarea id="eq-notes" rows="2" placeholder="Optional notes" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;resize:vertical;"></textarea>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button id="eq-delete-btn" onclick="confirmDeleteEquipment()" style="display:none;flex:0 0 auto;padding:14px 16px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Delete</button>
+      <button onclick="closeEquipmentModal()" style="flex:1;padding:14px;background:white;color:var(--text-l);border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Cancel</button>
+      <button onclick="saveEquipmentFromModal()" style="flex:1;padding:14px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Save</button>
+    </div>
   </div>
 </div>
 
@@ -4832,7 +4937,11 @@ function goTo(id){
   if (id !== 's-home' && id !== 's-dashboard') {
     history.pushState({ screen: id }, '', window.location.pathname);
   }
-  if(id==='s-home'||id==='s-dashboard') renderDashboard();
+  if(id==='s-home'||id==='s-dashboard') {
+    renderDashboard();
+    // 29 April 2026 Phase 4aw — inventory low-stock alert on home
+    try { renderHomeLowStockBanner(); } catch(e) {}
+  }
   if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
     // OFFLINE-AWARE MAP LOAD (24 April 2026)
     // If online: pull latest map_positions from Supabase, then render hives.
@@ -4858,6 +4967,7 @@ function goTo(id){
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){} }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
+  if(id==='s-inventory') { try { renderInventory(); } catch(e) { console.warn('renderInventory:', e); } }
   // Sync universal headers
   try { syncUniversalHeaders(id); } catch(e) {}
 }
@@ -5506,6 +5616,158 @@ function getSpraySeverity(spray) {
   return 'watch';
 }
 
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4aw — EQUIPMENT INVENTORY
+// ════════════════════════════════════════════════════════════════
+// Tracks physical kit (brood boxes, supers, frames, treatments, etc.) and
+// — once Phase 4ay layers it on — market-stock items via the is_for_sale
+// flag. Honey jars are separate (Phase 4ax — honey_stock table).
+//
+// Per-apiary location tracking. The location field stores either an apiary
+// UUID or the literal string 'store' for central storage.
+
+var EQUIPMENT_CATEGORIES = [
+  { key: 'brood_box',           label: 'Brood box',          group: 'Hive parts' },
+  { key: 'super',               label: 'Super',              group: 'Hive parts' },
+  { key: 'frame',               label: 'Frame',              group: 'Hive parts' },
+  { key: 'queen_excluder',      label: 'Queen excluder',     group: 'Hive parts' },
+  { key: 'crown_board',         label: 'Crown board',        group: 'Hive parts' },
+  { key: 'floor',               label: 'Floor',              group: 'Hive parts' },
+  { key: 'roof',                label: 'Roof',               group: 'Hive parts' },
+  { key: 'foundation_sheet',    label: 'Foundation sheet',   group: 'Hive parts' },
+  { key: 'feeder_rapid',        label: 'Rapid feeder',       group: 'Feeders' },
+  { key: 'feeder_contact',      label: 'Contact feeder',     group: 'Feeders' },
+  { key: 'feeder_eke',          label: 'Eke feeder',         group: 'Feeders' },
+  { key: 'smoker',              label: 'Smoker',             group: 'Tools' },
+  { key: 'hive_tool',           label: 'Hive tool',          group: 'Tools' },
+  { key: 'queen_marking_pen',   label: 'Queen marking pen',  group: 'Tools' },
+  { key: 'gloves',              label: 'Gloves',             group: 'PPE' },
+  { key: 'suit',                label: 'Suit',               group: 'PPE' },
+  { key: 'treatment_varroa',    label: 'Varroa treatment',   group: 'Treatments' },
+  { key: 'treatment_other',     label: 'Other treatment',    group: 'Treatments' },
+  { key: 'jar_empty',           label: 'Empty jar',          group: 'Honey supplies' },
+  { key: 'jar_lid',             label: 'Jar lid',            group: 'Honey supplies' },
+  { key: 'label',               label: 'Label',              group: 'Honey supplies' },
+  { key: 'wax_bar',             label: 'Wax bar',            group: 'Products' },
+  { key: 'propolis',            label: 'Propolis',           group: 'Products' },
+  { key: 'comb_honey_frame',    label: 'Comb honey frame',   group: 'Products' },
+  { key: 'candle',              label: 'Candle',             group: 'Products' },
+  { key: 'nuc_box',             label: 'Nuc box',            group: 'Hive parts' },
+  { key: 'other',               label: 'Other (custom)',     group: 'Other' }
+];
+
+function getEquipmentCategoryLabel(key) {
+  for (var i = 0; i < EQUIPMENT_CATEGORIES.length; i++) {
+    if (EQUIPMENT_CATEGORIES[i].key === key) return EQUIPMENT_CATEGORIES[i].label;
+  }
+  return key;
+}
+
+function loadEquipment() {
+  try { return JSON.parse(localStorage.getItem('hk_equipment_v1') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveEquipment(items) {
+  try { localStorage.setItem('hk_equipment_v1', JSON.stringify(items)); } catch(e) {}
+  if (!getUserId()) return;
+  if (!isOnline()) {
+    var uid = getUserId();
+    items.forEach(function(it) { queueOfflineSave('equipment', equipmentToRow(it, uid)); });
+    return;
+  }
+  pushEquipment().catch(function(){});
+}
+
+function equipmentToRow(it, uid) {
+  return {
+    id: it.id,
+    user_id: uid,
+    category: it.category || 'other',
+    name: it.name || null,
+    quantity: typeof it.quantity === 'number' ? it.quantity : 0,
+    location: it.location || null,
+    unit_cost: it.unitCost != null ? it.unitCost : null,
+    reorder_at: it.reorderAt != null ? it.reorderAt : null,
+    notes: it.notes || null,
+    is_for_sale: !!it.isForSale,
+    sale_price: it.salePrice != null ? it.salePrice : null,
+    created_at: it.createdAt || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function pushEquipment() {
+  var uid = getUserId(); if (!uid) return;
+  var items = loadEquipment();
+  if (!items.length) return;
+  var rows = items.map(function(it) { return equipmentToRow(it, uid); });
+  var sb = getSupabase();
+  var { error } = await sb.from('equipment').upsert(rows, { onConflict: 'id' });
+  if (error) {
+    console.warn('[pushEquipment] error — queueing:', error.message);
+    rows.forEach(function(r) { queueOfflineSave('equipment', r); });
+  }
+}
+
+async function pullEquipment() {
+  var uid = getUserId(); if (!uid) return;
+  var sb = getSupabase();
+  var { data, error } = await sb.from('equipment').select('*').eq('user_id', uid);
+  if (error) { console.warn('[pullEquipment]', error.message); return; }
+  if (!data) return;
+  var local = data.map(function(r) {
+    return {
+      id: r.id,
+      category: r.category || 'other',
+      name: r.name || null,
+      quantity: typeof r.quantity === 'number' ? r.quantity : 0,
+      location: r.location || null,
+      unitCost: r.unit_cost != null ? r.unit_cost : null,
+      reorderAt: r.reorder_at != null ? r.reorder_at : null,
+      notes: r.notes || null,
+      isForSale: !!r.is_for_sale,
+      salePrice: r.sale_price != null ? r.sale_price : null,
+      createdAt: r.created_at
+    };
+  });
+  try { localStorage.setItem('hk_equipment_v1', JSON.stringify(local)); } catch(e) {}
+}
+
+function addEquipment(item) {
+  var items = loadEquipment();
+  item.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('eq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+  item.createdAt = new Date().toISOString();
+  items.push(item);
+  saveEquipment(items);
+  return item;
+}
+
+function updateEquipment(id, patch) {
+  var items = loadEquipment();
+  var idx = items.findIndex(function(it) { return it.id === id; });
+  if (idx < 0) return null;
+  items[idx] = Object.assign({}, items[idx], patch);
+  saveEquipment(items);
+  return items[idx];
+}
+
+function deleteEquipmentById(id) {
+  var items = loadEquipment().filter(function(it) { return it.id !== id; });
+  saveEquipment(items);
+  if (getUserId() && isOnline()) {
+    try { getSupabase().from('equipment').delete().eq('id', id).then(function(){}); }
+    catch(e) {}
+  }
+}
+
+// Returns array of items where quantity <= reorder_at (only when reorder_at is set)
+function getLowStockItems() {
+  return loadEquipment().filter(function(it) {
+    return typeof it.reorderAt === 'number' && it.reorderAt > 0 && it.quantity <= it.reorderAt;
+  });
+}
+
 function getSprayStatusSummary() {
   var sprays = loadSprays();
   if (!sprays.length) return { level: 'clear', summary: 'No sprays reported nearby', pill: 'NONE' };
@@ -5975,6 +6237,258 @@ function renderEnvironment() {
   try { renderSprays(); } catch(e) { console.warn('renderSprays:', e); }
   // 29 April 2026 Phase 4an — community nearby spray reports
   try { renderNearbySprays(); } catch(e) { console.warn('renderNearbySprays:', e); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4aw — INVENTORY rendering & modal
+// ════════════════════════════════════════════════════════════════
+
+// Build a friendly location label from an apiary id or 'store'
+function _equipLocationLabel(loc) {
+  if (!loc) return 'Unspecified';
+  if (loc === 'store') return 'Central store';
+  try {
+    var ap = loadApiaries().find(function(a){ return a.id === loc; });
+    if (ap) return ap.name || 'Apiary';
+  } catch(e) {}
+  return 'Apiary';
+}
+
+function renderInventory() {
+  var items = loadEquipment();
+  var listEl = document.getElementById('inventory-list');
+  if (!listEl) return;
+
+  // Update low-stock banner
+  var banner = document.getElementById('inventory-low-stock-banner');
+  var detail = document.getElementById('inventory-low-stock-detail');
+  var low = getLowStockItems();
+  if (banner && detail) {
+    if (low.length) {
+      detail.textContent = low.length + ' item' + (low.length === 1 ? '' : 's') + ' at or below reorder threshold. Tap to review.';
+      banner.style.display = 'block';
+      banner.style.cursor = 'pointer';
+      banner.onclick = function() {
+        // Scroll to first low-stock item
+        var firstId = low[0].id;
+        var el = document.querySelector('[data-equipid="' + firstId + '"]');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-l);">'
+      + '<div style="font-size:42px;margin-bottom:12px;">📦</div>'
+      + '<div style="font-weight:700;margin-bottom:4px;">No equipment yet</div>'
+      + '<div style="font-size:12px;line-height:1.5;">Tap "Add equipment" above to start tracking your kit. Set reorder thresholds and we\u2019ll alert you when stocks run low.</div>'
+      + '</div>';
+    return;
+  }
+
+  // Group by category, then by location within each category
+  var byCategory = {};
+  items.forEach(function(it) {
+    var cat = it.category || 'other';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(it);
+  });
+
+  // Order: follow EQUIPMENT_CATEGORIES order, then any custom keys not in that list
+  var orderedKeys = [];
+  EQUIPMENT_CATEGORIES.forEach(function(c) { if (byCategory[c.key]) orderedKeys.push(c.key); });
+  Object.keys(byCategory).forEach(function(k) { if (orderedKeys.indexOf(k) === -1) orderedKeys.push(k); });
+
+  var esc = function(t){ return (t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  var html = orderedKeys.map(function(catKey) {
+    var catItems = byCategory[catKey];
+    var catLabel = getEquipmentCategoryLabel(catKey);
+    var totalQty = catItems.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+
+    var rows = catItems.map(function(it) {
+      var lowStock = (typeof it.reorderAt === 'number' && it.reorderAt > 0 && it.quantity <= it.reorderAt);
+      var border = lowStock ? '3px solid #C8730A' : '3px solid var(--forest)';
+      var displayName = it.name ? esc(it.name) : esc(catLabel);
+      var locLabel = _equipLocationLabel(it.location);
+      return '<div data-equipid="' + esc(it.id) + '" onclick="editEquipment(\'' + esc(it.id) + '\')" '
+        + 'style="background:white;border-left:' + border + ';border-radius:6px;padding:10px 12px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:12px;">'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + displayName + (lowStock ? ' <span style="font-size:10px;color:#C8730A;font-weight:800;">LOW</span>' : '') + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + esc(locLabel) + (typeof it.reorderAt === 'number' && it.reorderAt > 0 ? ' \u00B7 reorder at ' + it.reorderAt : '') + '</div>'
+        + '</div>'
+        + '<div style="font-size:18px;font-weight:800;color:var(--text);font-family:Syne,sans-serif;">' + (it.quantity || 0) + '</div>'
+      + '</div>';
+    }).join('');
+
+    return '<div style="margin-bottom:18px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">'
+        + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">' + esc(catLabel) + '</div>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text-l);">' + totalQty + ' total</div>'
+      + '</div>'
+      + rows
+    + '</div>';
+  }).join('');
+
+  listEl.innerHTML = html;
+}
+
+// Module-level draft for the modal
+var _equipmentEditingId = null;
+
+function _populateEquipmentCategoryDropdown() {
+  var sel = document.getElementById('eq-category');
+  if (!sel) return;
+  // Group by EQUIPMENT_CATEGORIES.group
+  var groups = {};
+  EQUIPMENT_CATEGORIES.forEach(function(c) {
+    if (!groups[c.group]) groups[c.group] = [];
+    groups[c.group].push(c);
+  });
+  var html = '';
+  Object.keys(groups).forEach(function(g) {
+    html += '<optgroup label="' + g + '">';
+    groups[g].forEach(function(c) {
+      html += '<option value="' + c.key + '">' + c.label + '</option>';
+    });
+    html += '</optgroup>';
+  });
+  sel.innerHTML = html;
+}
+
+function _populateEquipmentLocationDropdown() {
+  var sel = document.getElementById('eq-location');
+  if (!sel) return;
+  var html = '<option value="store">Central store</option>';
+  try {
+    var apiaries = loadApiaries();
+    apiaries.forEach(function(a) {
+      html += '<option value="' + a.id + '">' + (a.name || 'Apiary') + '</option>';
+    });
+  } catch(e) {}
+  sel.innerHTML = html;
+}
+
+function _onEquipCategoryChange() {
+  var sel = document.getElementById('eq-category');
+  var nameRow = document.getElementById('eq-name-row');
+  if (!sel || !nameRow) return;
+  // Show name field for "Other (custom)" only — for fixed categories the name is optional
+  // but always visible would clutter; hide it unless 'other' is selected.
+  nameRow.style.display = sel.value === 'other' ? 'block' : 'none';
+}
+
+function openAddEquipmentModal() {
+  _equipmentEditingId = null;
+  _populateEquipmentCategoryDropdown();
+  _populateEquipmentLocationDropdown();
+  document.getElementById('equipment-modal-title').textContent = 'Add equipment';
+  document.getElementById('eq-category').value = 'brood_box';
+  document.getElementById('eq-name').value = '';
+  document.getElementById('eq-quantity').value = '';
+  document.getElementById('eq-reorder').value = '';
+  document.getElementById('eq-location').value = 'store';
+  document.getElementById('eq-cost').value = '';
+  document.getElementById('eq-notes').value = '';
+  document.getElementById('eq-delete-btn').style.display = 'none';
+  _onEquipCategoryChange();
+  openModalEl('modal-equipment-edit');
+}
+
+function editEquipment(id) {
+  var it = loadEquipment().find(function(x){ return x.id === id; });
+  if (!it) return;
+  _equipmentEditingId = id;
+  _populateEquipmentCategoryDropdown();
+  _populateEquipmentLocationDropdown();
+  document.getElementById('equipment-modal-title').textContent = 'Edit ' + (it.name || getEquipmentCategoryLabel(it.category));
+  document.getElementById('eq-category').value = it.category || 'other';
+  document.getElementById('eq-name').value = it.name || '';
+  document.getElementById('eq-quantity').value = it.quantity || 0;
+  document.getElementById('eq-reorder').value = (typeof it.reorderAt === 'number') ? it.reorderAt : '';
+  document.getElementById('eq-location').value = it.location || 'store';
+  document.getElementById('eq-cost').value = (typeof it.unitCost === 'number') ? it.unitCost : '';
+  document.getElementById('eq-notes').value = it.notes || '';
+  document.getElementById('eq-delete-btn').style.display = 'inline-block';
+  _onEquipCategoryChange();
+  openModalEl('modal-equipment-edit');
+}
+
+function closeEquipmentModal() {
+  closeModalEl('modal-equipment-edit');
+  _equipmentEditingId = null;
+}
+
+function saveEquipmentFromModal() {
+  var category = document.getElementById('eq-category').value;
+  var name = document.getElementById('eq-name').value.trim();
+  var quantity = parseInt(document.getElementById('eq-quantity').value, 10);
+  var reorder = document.getElementById('eq-reorder').value.trim();
+  var location = document.getElementById('eq-location').value;
+  var cost = document.getElementById('eq-cost').value.trim();
+  var notes = document.getElementById('eq-notes').value.trim();
+
+  if (!category) { showToast('Pick a category'); return; }
+  if (category === 'other' && !name) { showToast('Custom items need a name'); return; }
+  if (isNaN(quantity) || quantity < 0) { showToast('Quantity must be 0 or higher'); return; }
+
+  var patch = {
+    category: category,
+    name: name || null,
+    quantity: quantity,
+    location: location || null,
+    reorderAt: reorder ? parseInt(reorder, 10) : null,
+    unitCost: cost ? parseFloat(cost) : null,
+    notes: notes || null
+  };
+
+  if (_equipmentEditingId) {
+    updateEquipment(_equipmentEditingId, patch);
+    showToast('Updated \u2713');
+  } else {
+    addEquipment(patch);
+    showToast('Equipment added \u2713');
+  }
+  closeEquipmentModal();
+  renderInventory();
+  try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+function confirmDeleteEquipment() {
+  if (!_equipmentEditingId) return;
+  if (!confirm('Delete this equipment record?')) return;
+  deleteEquipmentById(_equipmentEditingId);
+  closeEquipmentModal();
+  showToast('Deleted');
+  renderInventory();
+  try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+// Home-screen low-stock banner — renders into #home-low-stock-banner if present.
+// Silent when no items at threshold; visible with action prompt when at least one.
+function renderHomeLowStockBanner() {
+  var el = document.getElementById('home-low-stock-banner');
+  if (!el) return;
+  var low = getLowStockItems();
+  if (!low.length) {
+    el.style.display = 'none';
+    return;
+  }
+  var summary = low.length === 1
+    ? (low[0].name || getEquipmentCategoryLabel(low[0].category)) + ' running low'
+    : low.length + ' items running low';
+  el.style.display = 'block';
+  el.innerHTML = '<div onclick="goTo(\'s-inventory\');renderInventory();" '
+    + 'style="margin:8px 16px;padding:12px 14px;background:#FFF3E0;border-left:4px solid #C8730A;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;">'
+    + '<div style="font-size:20px;">\u26A0</div>'
+    + '<div style="flex:1;">'
+      + '<div style="font-size:11px;font-weight:800;color:#C8730A;text-transform:uppercase;letter-spacing:.04em;">Inventory alert</div>'
+      + '<div style="font-size:13px;color:var(--text);font-weight:600;margin-top:2px;">' + summary + '</div>'
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--text-l);font-weight:700;">Review \u203A</div>'
+  + '</div>';
 }
 
 // Deep link from home spray banner → Environment tab, scroll to sprays
@@ -18836,7 +19350,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:05 29 April 2026 BST · Phase 4av — hive detail banner "Change photo" button now uses handleHivePhotoTap so the Take new / Remove / Cancel sheet appears here too. "Add a photo" first-time upload stays single-tap as on the apiary screen.';
+var HIVEKEEPER_BUILD = '17:35 29 April 2026 BST · Phase 4aw — Equipment inventory: new Inventory screen accessed from Settings, category-grouped list, per-apiary location, reorder thresholds, low-stock banner on home, full CRUD modal, Supabase equipment table with RLS, push/pull mappers, manifest entry. Foundation for 4ax (honey stock) and 4ay (market layer).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19940,7 +20454,10 @@ async function pullFromSupabase() {
         // re-runs every sign-in and could re-introduce wax_moth from the
         // legacy boolean even after the user has explicitly cleared it via
         // an inspection.
-        'hk_migrated_pests'];
+        'hk_migrated_pests',
+        // 29 April 2026 — Phase 4aw: equipment inventory store. Survives
+        // pull cycles so locally-edited items aren't wiped before re-sync.
+        'hk_equipment_v1'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -20294,7 +20811,9 @@ async function pullFromSupabase() {
     // but don't fail the overall pull.
     await Promise.all([
       pullSprays().catch(function(e){ console.warn('[pull sprays]', e); }),
-      pullMovements().catch(function(e){ console.warn('[pull movements]', e); })
+      pullMovements().catch(function(e){ console.warn('[pull movements]', e); }),
+      // 29 April 2026 Phase 4aw — pull equipment inventory
+      pullEquipment().catch(function(e){ console.warn('[pull equipment]', e); })
     ]);
 
     return true;
