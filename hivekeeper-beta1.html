@@ -2818,9 +2818,12 @@ input[type="checkbox"].hk-chk:checked::after {
         <input type="number" id="swarm-frames" placeholder="e.g. 4" min="0" max="20" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:Syne,sans-serif;font-size:14px;box-sizing:border-box;">
       </div>
 
-      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
-        <input type="checkbox" id="swarm-queen" style="width:18px;height:18px;accent-color:var(--honey);">
-        <label for="swarm-queen" style="font-size:13px;color:var(--text);cursor:pointer;font-weight:600;">Queen seen</label>
+      <div id="swarm-queen-row" onclick="toggleSwarmQueen()" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);background:white;cursor:pointer;min-height:44px;user-select:none;-webkit-tap-highlight-color:transparent;">
+        <div id="swarm-queen-indicator" style="width:22px;height:22px;border-radius:5px;border:2px solid var(--wax);background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;">
+          <span id="swarm-queen-tick" style="font-size:14px;font-weight:900;color:white;display:none;">&#x2713;</span>
+        </div>
+        <span style="font-size:14px;color:var(--text);font-weight:600;">Queen seen</span>
+        <input type="checkbox" id="swarm-queen" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
       </div>
 
       <div style="margin-bottom:20px;">
@@ -17746,7 +17749,41 @@ function openSwarmCatchModal() {
   
   document.getElementById('swarm-hive-select').innerHTML = '<option value="">-- New hive (create on catch) --</option>' + hiveOptions;
   document.getElementById('swarm-date').value = new Date().toISOString().split('T')[0];
+
+  // 29 April 2026 Phase 4aj: reset queen-seen toggle visual state on open
+  // (form fields persist between opens; without this, the visual stays
+  // ticked from the previous swarm but the underlying state may have reset).
+  var qcb = document.getElementById('swarm-queen');
+  if (qcb) qcb.checked = false;
+  _renderSwarmQueenToggle();
+
   openModalEl('modal-swarm-catch');
+}
+
+// 29 April 2026 Phase 4aj: replace native checkbox click handling with a
+// large tappable row. The hidden <input id="swarm-queen"> is kept so that
+// saveSwarmCatch() at line 17760 continues to read .checked unchanged.
+function toggleSwarmQueen() {
+  var qcb = document.getElementById('swarm-queen');
+  if (!qcb) return;
+  qcb.checked = !qcb.checked;
+  _renderSwarmQueenToggle();
+}
+
+function _renderSwarmQueenToggle() {
+  var qcb = document.getElementById('swarm-queen');
+  var indicator = document.getElementById('swarm-queen-indicator');
+  var tick = document.getElementById('swarm-queen-tick');
+  if (!qcb || !indicator || !tick) return;
+  if (qcb.checked) {
+    indicator.style.background = 'var(--honey)';
+    indicator.style.borderColor = 'var(--honey)';
+    tick.style.display = 'block';
+  } else {
+    indicator.style.background = 'white';
+    indicator.style.borderColor = 'var(--wax)';
+    tick.style.display = 'none';
+  }
 }
 
 function saveSwarmCatch() {
@@ -18160,7 +18197,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '08:25 29 April 2026 BST · Phase 4ai — external link audit (window.open _blank everywhere, rel=noopener noreferrer on all <a target=_blank>, mailto/tel get target=_blank for Median scheme passthrough)';
+var HIVEKEEPER_BUILD = '08:42 29 April 2026 BST · Phase 4aj — swarm Queen seen checkbox replaced with large tappable toggle row (Android tap target was too small in webview)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
