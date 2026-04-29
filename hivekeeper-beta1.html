@@ -1922,6 +1922,15 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
 
+    <!-- 29 April 2026 Phase 4be — Forage Conditions sits under Weather (was
+         further down). Forage is weather-derived; they belong together. -->
+    <div class="forage-card" id="forage-conditions-card" style="margin:8px 20px 0;background:white;border-radius:var(--rs);padding:14px;box-shadow:var(--shadow);border:1px solid var(--wax);">
+      <div class="forage-card-title" style="font-size:12px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">🌼 Forage conditions</div>
+      <div id="forage-conditions-body" style="font-size:13px;color:var(--text);line-height:1.5;">
+        Weather and flow conditions update when online.
+      </div>
+    </div>
+
     <!-- THIS MONTH IN THE APIARY (27 April 2026 Phase 4d — dashboard format) -->
     <div id="dash-tip-teaser" onclick="goTo('s-calendar')" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;">
       <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
@@ -2009,32 +2018,11 @@ input[type="checkbox"].hk-chk:checked::after {
          screen still has the Crop spraying reports section for users who want
          to log + browse manually. -->
 
-    <!-- 29 April 2026 Phase 4bc — Inventory & honey dashboard. Renders a
-         multi-card snapshot of stock, season harvests, and equipment health
-         above the existing home banners. Hidden until first data exists
-         (no point showing zeros to a brand-new user). -->
-    <div id="home-inventory-dashboard" style="display:none;"></div>
-
-    <!-- Inventory low-stock alert — renders only when items at/below reorder threshold -->
-    <div id="home-low-stock-banner" style="display:none;"></div>
-
     <!-- 29 April 2026 Phase 4bc — community spray alert. Surfaces OTHER
          beekeepers' nearby reports passively on home. Hidden unless a report
          within 5km/7d (alert) or 1km/2d (critical) exists. Distinct from the
          own-sprays banner below which reads loadSprays(). -->
     <div id="home-community-spray-banner" style="display:none;"></div>
-
-    <!-- 29 April 2026 Phase 4bb — Forage conditions on home (moved from
-         Environment). Weather-driven indicator, glanceable on first open.
-         Renders into the same id used by renderEnvironment-era code so the
-         existing render logic continues to work; only the card's location
-         and styling change. -->
-    <div class="forage-card" id="forage-conditions-card" style="margin:8px 16px;background:white;border-radius:var(--rs);padding:14px;box-shadow:var(--shadow);border:1px solid var(--wax);">
-      <div class="forage-card-title" style="font-size:12px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">🌼 Forage conditions</div>
-      <div id="forage-conditions-body" style="font-size:13px;color:var(--text);line-height:1.5;">
-        Weather and flow conditions update when online.
-      </div>
-    </div>
 
     <div class="env-banner" id="spray-banner" style="display:none;">
       <div class="env-header" id="spray-header-el" onclick="goToEnvironmentSprays()">
@@ -2094,8 +2082,14 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
     </div>
-    <div class="section-head" style="margin-top:4px;"><div class="section-title">Active hives</div><button class="section-action" onclick="goTo('s-apiary')">Map →</button></div>
-    <div class="hive-scroll" id="dash-hives"></div>
+    <!-- 29 April 2026 Phase 4be — Equipment & Honey replaces what used to be
+         the Active hives section. The old section duplicated the Apiary screen
+         and added little; the inventory dashboard surfaces real value here.
+         Includes section heading, then the dashboard card (renders into
+         #home-inventory-dashboard) and low-stock alert below. -->
+    <div class="section-head" style="margin-top:4px;"><div class="section-title">Equipment &amp; Honey</div><button class="section-action" onclick="goTo('s-inventory')">Manage →</button></div>
+    <div id="home-inventory-dashboard" style="display:none;"></div>
+    <div id="home-low-stock-banner" style="display:none;"></div>
     <div class="section-head" style="margin-top:14px;"><div class="section-title">Reports</div></div>
     <div class="hive-scroll" style="grid-template-columns:repeat(3,1fr);">
       <!-- Session Report — direct jump to today's session with a "Change date range"
@@ -5517,7 +5511,8 @@ function renderDashboard(){
     return !h.apiaryId;
   });
   if (activeHives.length === 0) {
-    document.getElementById('dash-hives').innerHTML = `
+    var dhEmpty = document.getElementById('dash-hives');
+    if (dhEmpty) dhEmpty.innerHTML = `
       <div style="padding:20px 4px;text-align:center;">
         <div style="font-size:36px;margin-bottom:10px;">🐝</div>
         <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:6px;">No hives yet</div>
@@ -5525,7 +5520,8 @@ function renderDashboard(){
         <button onclick="localStorage.removeItem('hk_onboarded');obShowStep(1);openModalEl('modal-onboarding');" style="background:var(--forest);border:none;border-radius:var(--rs);padding:12px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Set up my apiary →</button>
       </div>`;
   } else {
-    document.getElementById('dash-hives').innerHTML = activeHives.map(h => {
+    var dhList = document.getElementById('dash-hives');
+    if (dhList) dhList.innerHTML = activeHives.map(h => {
     const badge = getBadge(h);
     return `
       <div class="hive-mini" onclick="viewHive('${h.id}')">
@@ -6276,9 +6272,19 @@ function renderHomeDashboard() {
   });
   var yearKg = yearHarvests.reduce(function(s, h){ return s + (parseFloat(h.kg) || 0); }, 0);
 
-  // Hide whole dashboard if no data anywhere yet — first-launch case
+  // 29 April 2026 Phase 4be — show a placeholder card when no data yet,
+  // because the section now has a permanent header above it on home.
+  // Hiding the whole thing leaves an awkward empty section.
   var hasAnyData = honeyTotals.jars > 0 || harvests.length > 0 || equipment.length > 0;
-  if (!hasAnyData) { el.style.display = 'none'; return; }
+  if (!hasAnyData) {
+    el.style.display = 'block';
+    el.innerHTML = '<div onclick="goTo(\'s-inventory\');" style="margin:8px 16px;padding:18px;background:white;border-radius:var(--rs);border:1px dashed var(--wax);text-align:center;cursor:pointer;">'
+      + '<div style="font-size:36px;margin-bottom:8px;">\uD83D\uDCE6</div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">Track your kit and your honey</div>'
+      + '<div style="font-size:11px;color:var(--text-l);line-height:1.5;">Log brood boxes, supers, frames, jars and harvests to see them here. <span style="color:var(--honey);font-weight:700;">Tap to start \u203A</span></div>'
+    + '</div>';
+    return;
+  }
 
   el.style.display = 'block';
 
@@ -20667,7 +20673,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:15 29 April 2026 BST · Phase 4bd — gate financial features (per-jar pricing, \u00A3 stock value) behind Pro+. Free tier still sees jars + kg on home, but \u00A3 value replaced with discreet "Pro feature" pill. Settings menu shows pricing button with lock icon for Free; tapping it opens upgrade prompt. Centralised hasFinancialFeatures() helper for future gates.';
+var HIVEKEEPER_BUILD = '22:35 29 April 2026 BST · Phase 4be — home page reorganisation. Forage Conditions moved under Weather (they belong together). Crop Spraying / Community Spray banners stay under Asian Hornet (already there structurally). Active hives section replaced with new Equipment & Honey section housing the inventory dashboard + low-stock banner. Dashboard now shows placeholder when no data, since section header is permanent.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
