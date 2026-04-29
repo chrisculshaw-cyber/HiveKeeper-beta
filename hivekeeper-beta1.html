@@ -2008,8 +2008,21 @@ input[type="checkbox"].hk-chk:checked::after {
          reported nearby" which felt like dead weight on Home. The Environment
          screen still has the Crop spraying reports section for users who want
          to log + browse manually. -->
+
+    <!-- 29 April 2026 Phase 4bc — Inventory & honey dashboard. Renders a
+         multi-card snapshot of stock, season harvests, and equipment health
+         above the existing home banners. Hidden until first data exists
+         (no point showing zeros to a brand-new user). -->
+    <div id="home-inventory-dashboard" style="display:none;"></div>
+
     <!-- Inventory low-stock alert — renders only when items at/below reorder threshold -->
     <div id="home-low-stock-banner" style="display:none;"></div>
+
+    <!-- 29 April 2026 Phase 4bc — community spray alert. Surfaces OTHER
+         beekeepers' nearby reports passively on home. Hidden unless a report
+         within 5km/7d (alert) or 1km/2d (critical) exists. Distinct from the
+         own-sprays banner below which reads loadSprays(). -->
+    <div id="home-community-spray-banner" style="display:none;"></div>
 
     <!-- 29 April 2026 Phase 4bb — Forage conditions on home (moved from
          Environment). Weather-driven indicator, glanceable on first open.
@@ -3440,9 +3453,15 @@ input[type="checkbox"].hk-chk:checked::after {
       </button>
 
       <!-- 29 April 2026 Phase 4aw — Inventory entry from Settings -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){goTo('s-inventory');},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+      <button onclick="closeModalEl('modal-settings');setTimeout(function(){goTo('s-inventory');},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
         <span style="font-size:22px;">📦</span>
         <span>Inventory</span>
+      </button>
+
+      <!-- 29 April 2026 Phase 4bc — Honey pricing entry from Settings -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(openHoneyPricingModal,200);" style="width:100%;background:linear-gradient(135deg,#C8730A,#A0580A);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
+        <span style="font-size:22px;">💷</span>
+        <span>Honey pricing</span>
       </button>
 
       <!-- TOOLS — inline, as they were before the tile experiment -->
@@ -3753,6 +3772,38 @@ input[type="checkbox"].hk-chk:checked::after {
       <button id="hs-delete-btn" onclick="confirmDeleteHoneyStock()" style="display:none;flex:0 0 auto;padding:14px 16px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Delete</button>
       <button onclick="closeHoneyStockModal()" style="flex:1;padding:14px;background:white;color:var(--text-l);border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Cancel</button>
       <button onclick="saveHoneyStockFromModal()" style="flex:1;padding:14px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 29 April 2026 Phase 4bc — Honey pricing modal. Per-jar-size price list. -->
+<div class="modal-overlay" id="modal-honey-pricing" onclick="closeModal(event,'modal-honey-pricing')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="modal-title" style="margin:0;">💷 Honey pricing</div>
+      <div onclick="closeModalEl('modal-honey-pricing')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+    </div>
+    <div style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.5;">
+      Set the sale price for each jar size you sell. Empty sizes are excluded from the home dashboard\u2019s estimated value figure.
+    </div>
+
+    <div id="honey-pricing-rows"></div>
+
+    <!-- Add custom size -->
+    <div style="margin-top:12px;padding-top:12px;border-top:1px dashed var(--wax);">
+      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Add another size</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" id="hp-new-size" min="1" placeholder="grams" style="flex:1;padding:10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        <input type="number" id="hp-new-price" min="0" step="0.01" placeholder="£" style="flex:1;padding:10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        <button onclick="addCustomHoneyPriceSize()" style="padding:10px 14px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Add</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button onclick="closeModalEl('modal-honey-pricing')" style="flex:1;padding:14px;background:white;color:var(--text-l);border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Cancel</button>
+      <button onclick="saveHoneyPricing()" style="flex:1;padding:14px;background:var(--forest);color:white;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Save prices</button>
     </div>
   </div>
 </div>
@@ -5057,6 +5108,10 @@ function goTo(id){
     try { renderHomeLowStockBanner(); } catch(e) {}
     // 29 April 2026 Phase 4bb — forage conditions on home (moved from Environment)
     try { renderForageConditions(); } catch(e) {}
+    // 29 April 2026 Phase 4bc — community spray alert on home (async, fire-and-forget)
+    try { renderHomeCommunitySprayAlert(); } catch(e) {}
+    // 29 April 2026 Phase 4bc — inventory & honey dashboard
+    try { renderHomeDashboard(); } catch(e) {}
   }
   if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
     // OFFLINE-AWARE MAP LOAD (24 April 2026)
@@ -6026,6 +6081,283 @@ function getTotalHoneyStock() {
 }
 
 // ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4bc — JAR SIZE PRICING
+// ════════════════════════════════════════════════════════════════
+// Per-jar-size pricing stored as {grams: pricePounds}. Local-only for now
+// (per-keeper preference, low-stakes data). Used by the home dashboard's
+// est. value calculation. Sizes the keeper hasn't priced are EXCLUDED from
+// est. value rather than estimated — cleaner than a flat £/kg fallback.
+
+function loadJarPrices() {
+  try { return JSON.parse(localStorage.getItem('hk_jar_prices_v1') || '{}'); }
+  catch(e) { return {}; }
+}
+
+function saveJarPrices(prices) {
+  try { localStorage.setItem('hk_jar_prices_v1', JSON.stringify(prices || {})); } catch(e) {}
+}
+
+// Returns price in £ for a given jar size in grams, or null if unpriced.
+function getJarPrice(jarSizeG) {
+  var prices = loadJarPrices();
+  var p = prices[String(jarSizeG)];
+  return (typeof p === 'number' && p > 0) ? p : null;
+}
+
+// Compute total stock value across all priced jars. Returns:
+//   { value: total£, pricedJars: count, unpricedJars: count, unpricedSizes: [g,...] }
+function getHoneyStockValue() {
+  var rows = loadHoneyStock();
+  var prices = loadJarPrices();
+  var value = 0;
+  var pricedJars = 0;
+  var unpricedJars = 0;
+  var unpricedSet = {};
+  rows.forEach(function(r) {
+    var size = r.jarSizeG || 0;
+    var count = r.jarCount || 0;
+    if (!size || !count) return;
+    var p = prices[String(size)];
+    if (typeof p === 'number' && p > 0) {
+      value += p * count;
+      pricedJars += count;
+    } else {
+      unpricedJars += count;
+      unpricedSet[size] = true;
+    }
+  });
+  return {
+    value: value,
+    pricedJars: pricedJars,
+    unpricedJars: unpricedJars,
+    unpricedSizes: Object.keys(unpricedSet).map(Number).sort(function(a,b){return a-b;})
+  };
+}
+
+// Return distinct jar sizes the user has actual stock in, sorted small→large.
+// Used to default the price-list editor to "show me sizes I'm actually using".
+function getUsedJarSizes() {
+  var sizes = {};
+  loadHoneyStock().forEach(function(r) {
+    if (r.jarSizeG) sizes[r.jarSizeG] = true;
+  });
+  return Object.keys(sizes).map(Number).sort(function(a,b){return a-b;});
+}
+
+// 29 April 2026 Phase 4bc — Honey pricing modal handlers
+function openHoneyPricingModal() {
+  _renderHoneyPricingRows();
+  document.getElementById('hp-new-size').value = '';
+  document.getElementById('hp-new-price').value = '';
+  openModalEl('modal-honey-pricing');
+}
+
+// Build rows: union of (jar sizes user has stock in) + (sizes already in price list).
+// Each row has size label, price input, and a remove button (for sizes with no stock).
+function _renderHoneyPricingRows() {
+  var container = document.getElementById('honey-pricing-rows');
+  if (!container) return;
+  var prices = loadJarPrices();
+  var stockSizes = getUsedJarSizes();
+  var pricedSizes = Object.keys(prices).map(Number);
+  // Union, deduplicated, sorted
+  var union = {};
+  stockSizes.forEach(function(g){ union[g] = true; });
+  pricedSizes.forEach(function(g){ union[g] = true; });
+  var sizes = Object.keys(union).map(Number).sort(function(a,b){return a-b;});
+
+  if (!sizes.length) {
+    container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:12px;line-height:1.5;">'
+      + '<div style="font-size:32px;margin-bottom:8px;">\uD83C\uDF6F</div>'
+      + 'No jar sizes yet. Log honey jars in <strong>Inventory \u2192 Honey</strong>, or add a custom size below.'
+      + '</div>';
+    return;
+  }
+
+  var html = sizes.map(function(g) {
+    var hasStock = stockSizes.indexOf(g) !== -1;
+    var existingPrice = prices[String(g)];
+    var priceVal = (typeof existingPrice === 'number') ? existingPrice.toFixed(2) : '';
+    var sizeLabel = g + 'g' + (g === 227 ? ' (8oz)' : g === 340 ? ' (12oz)' : g === 454 ? ' (1lb)' : '');
+    var stockBadge = hasStock ? '' : '<span style="font-size:9px;color:var(--text-l);font-weight:700;margin-left:6px;">no stock</span>';
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:10px 12px;background:#FAEEDA;border-radius:6px;">'
+      + '<div style="flex:1;font-size:13px;font-weight:700;color:var(--text);">' + sizeLabel + stockBadge + '</div>'
+      + '<div style="display:flex;align-items:center;gap:4px;">'
+        + '<span style="font-size:13px;color:var(--text-l);font-weight:700;">£</span>'
+        + '<input type="number" data-pricesize="' + g + '" min="0" step="0.01" value="' + priceVal + '" placeholder="0.00" style="width:80px;padding:8px;border:1.5px solid var(--wax);border-radius:6px;font-size:13px;font-family:Syne,sans-serif;text-align:right;box-sizing:border-box;">'
+      + '</div>'
+    + '</div>';
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+function addCustomHoneyPriceSize() {
+  var sizeInput = document.getElementById('hp-new-size');
+  var priceInput = document.getElementById('hp-new-price');
+  var size = parseInt(sizeInput.value, 10);
+  var price = parseFloat(priceInput.value);
+  if (!size || size <= 0) { showToast('Enter a valid size in grams'); return; }
+  if (isNaN(price) || price < 0) { showToast('Enter a valid price'); return; }
+  var prices = loadJarPrices();
+  prices[String(size)] = price;
+  saveJarPrices(prices);
+  sizeInput.value = '';
+  priceInput.value = '';
+  _renderHoneyPricingRows();
+  showToast('Added \u2713');
+}
+
+function saveHoneyPricing() {
+  var inputs = document.querySelectorAll('input[data-pricesize]');
+  var prices = loadJarPrices();
+  inputs.forEach(function(inp) {
+    var size = inp.getAttribute('data-pricesize');
+    var v = inp.value.trim();
+    if (v === '') {
+      delete prices[size];
+    } else {
+      var p = parseFloat(v);
+      if (!isNaN(p) && p >= 0) {
+        prices[size] = p;
+      }
+    }
+  });
+  saveJarPrices(prices);
+  closeModalEl('modal-honey-pricing');
+  showToast('Prices saved \u2713');
+  // Refresh dashboard if user lands back on home
+  try { renderHomeDashboard(); } catch(e) {}
+}
+
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4bc — HOME INVENTORY DASHBOARD
+// ════════════════════════════════════════════════════════════════
+// Multi-card snapshot of the keeper's current state — jars, kg, est. value,
+// season harvest count, equipment alerts, most recent harvest. All cards
+// link to deeper screens. Hidden when the keeper has no data yet (avoids
+// showing zeros on first launch).
+
+function renderHomeDashboard() {
+  var el = document.getElementById('home-inventory-dashboard');
+  if (!el) return;
+
+  var honeyTotals = (typeof getTotalHoneyStock === 'function') ? getTotalHoneyStock() : { jars: 0, kg: 0 };
+  var honeyValue = (typeof getHoneyStockValue === 'function') ? getHoneyStockValue() : { value: 0, pricedJars: 0, unpricedJars: 0, unpricedSizes: [] };
+  var harvests = (typeof loadHarvests === 'function') ? loadHarvests() : [];
+  var equipment = (typeof loadEquipment === 'function') ? loadEquipment() : [];
+  var lowStock = (typeof getLowStockItems === 'function') ? getLowStockItems() : [];
+
+  var thisYear = new Date().getFullYear();
+  var yearHarvests = harvests.filter(function(h){
+    return h.date && new Date(h.date).getFullYear() === thisYear;
+  });
+  var yearKg = yearHarvests.reduce(function(s, h){ return s + (parseFloat(h.kg) || 0); }, 0);
+
+  // Hide whole dashboard if no data anywhere yet — first-launch case
+  var hasAnyData = honeyTotals.jars > 0 || harvests.length > 0 || equipment.length > 0;
+  if (!hasAnyData) { el.style.display = 'none'; return; }
+
+  el.style.display = 'block';
+
+  var hives = (typeof loadHives === 'function') ? loadHives() : [];
+  var hivesIndex = {};
+  hives.forEach(function(h){ hivesIndex[h.id] = h; });
+
+  // Most recent harvest (any year)
+  var sortedHarvests = harvests.slice().sort(function(a, b){
+    return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+  });
+  var lastHarvest = sortedHarvests[0] || null;
+
+  var esc = function(t){ return String(t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  // Hero card — honey stock + value
+  var valueText, valueSubtext;
+  if (honeyTotals.jars === 0) {
+    valueText = '—';
+    valueSubtext = 'No jars logged yet';
+  } else if (honeyValue.value > 0 && honeyValue.unpricedJars === 0) {
+    valueText = '£' + honeyValue.value.toFixed(0);
+    valueSubtext = 'Estimated stock value';
+  } else if (honeyValue.value > 0 && honeyValue.unpricedJars > 0) {
+    valueText = '£' + honeyValue.value.toFixed(0) + '+';
+    valueSubtext = honeyValue.unpricedJars + ' jar' + (honeyValue.unpricedJars === 1 ? '' : 's') + ' unpriced \u00B7 tap to set';
+  } else {
+    valueText = '— ';
+    valueSubtext = 'Set jar prices to see value';
+  }
+
+  var heroCard = '<div onclick="goTo(\'s-inventory\');setTimeout(function(){switchInventoryTab(\'honey\');},100);" '
+    + 'style="margin:8px 16px;padding:16px;background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);box-shadow:var(--shadow);cursor:pointer;">'
+    + '<div style="display:flex;align-items:center;gap:14px;">'
+      + '<div style="font-size:36px;flex-shrink:0;">\uD83C\uDF6F</div>'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:11px;font-weight:800;color:#5C3A17;text-transform:uppercase;letter-spacing:.04em;">Honey in stock</div>'
+        + '<div style="font-size:24px;font-weight:800;color:#3A2509;font-family:Syne,sans-serif;margin-top:2px;line-height:1.1;">' + honeyTotals.jars + ' jars \u00B7 ' + honeyTotals.kg.toFixed(1) + 'kg</div>'
+        + '<div style="font-size:13px;font-weight:700;color:#5C3A17;margin-top:4px;">' + valueText + ' \u00B7 <span style="font-weight:600;font-size:11px;">' + esc(valueSubtext) + '</span></div>'
+      + '</div>'
+      + '<div style="font-size:14px;color:#5C3A17;font-weight:700;flex-shrink:0;">\u203A</div>'
+    + '</div>'
+  + '</div>';
+
+  // Click target if user wants to set prices (when unpriced jars exist)
+  var pricingPrompt = '';
+  if (honeyValue.unpricedJars > 0) {
+    pricingPrompt = '<div onclick="openHoneyPricingModal()" style="margin:0 16px 8px;padding:10px 12px;background:#FFF3E0;border-left:3px solid #C8730A;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;">'
+      + '<div style="font-size:18px;">\uD83D\uDCB7</div>'
+      + '<div style="flex:1;font-size:12px;color:var(--text);">'
+        + '<strong>Set prices for ' + esc(honeyValue.unpricedSizes.join('g, ') + 'g') + '</strong> jars to see your stock value'
+      + '</div>'
+      + '<div style="font-size:11px;color:#C8730A;font-weight:700;">\u203A</div>'
+    + '</div>';
+  }
+
+  // Stat row: harvests this season + recent harvest
+  var statsRow = '';
+  if (harvests.length > 0) {
+    var lastHarvestLine = '';
+    if (lastHarvest) {
+      var d = new Date(lastHarvest.date);
+      var dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      var hiveName = (hivesIndex[lastHarvest.hiveId] ? hivesIndex[lastHarvest.hiveId].name : 'Hive');
+      lastHarvestLine = '<div style="font-size:11px;color:var(--text-l);font-weight:600;margin-top:2px;">' + esc(dateStr) + ' \u00B7 ' + esc(hiveName) + ' \u00B7 ' + (lastHarvest.kg || 0).toFixed(1) + 'kg</div>';
+    }
+    statsRow = '<div style="display:flex;gap:8px;margin:0 16px 8px;">'
+      + '<div style="flex:1;padding:12px;background:white;border-radius:var(--rs);border:1px solid var(--wax);">'
+        + '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Season ' + thisYear + '</div>'
+        + '<div style="font-size:20px;font-weight:800;color:var(--text);font-family:Syne,sans-serif;margin-top:2px;line-height:1.1;">' + yearKg.toFixed(1) + 'kg</div>'
+        + '<div style="font-size:11px;color:var(--text-l);font-weight:600;margin-top:2px;">' + yearHarvests.length + ' harvest' + (yearHarvests.length === 1 ? '' : 's') + '</div>'
+      + '</div>'
+      + '<div style="flex:1.4;padding:12px;background:white;border-radius:var(--rs);border:1px solid var(--wax);">'
+        + '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">Last harvest</div>'
+        + (lastHarvest ? lastHarvestLine : '<div style="font-size:11px;color:var(--text-l);margin-top:6px;">No harvests yet</div>')
+      + '</div>'
+    + '</div>';
+  }
+
+  // Equipment health line
+  var equipmentLine = '';
+  if (equipment.length > 0) {
+    var totalItems = equipment.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+    var healthIcon = lowStock.length === 0 ? '\u2713' : '\u26A0';
+    var healthColour = lowStock.length === 0 ? '#2a6448' : '#C8730A';
+    var healthText = lowStock.length === 0
+      ? totalItems + ' items \u00B7 all stock levels healthy'
+      : lowStock.length + ' item' + (lowStock.length === 1 ? '' : 's') + ' need restocking';
+    equipmentLine = '<div onclick="goTo(\'s-inventory\');" style="margin:0 16px 8px;padding:10px 12px;background:white;border:1px solid var(--wax);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px;">'
+      + '<div style="font-size:18px;">\uD83D\uDCE6</div>'
+      + '<div style="flex:1;font-size:12px;color:var(--text);">'
+        + '<strong style="color:' + healthColour + ';">' + healthIcon + '</strong> ' + esc(healthText)
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--text-l);font-weight:700;">\u203A</div>'
+    + '</div>';
+  }
+
+  el.innerHTML = heroCard + pricingPrompt + statsRow + equipmentLine;
+}
+
+// ════════════════════════════════════════════════════════════════
 // 29 April 2026 Phase 4az — BOTTLING READINESS
 // ════════════════════════════════════════════════════════════════
 // Cross-references unjarred honey (from harvests) against equipment
@@ -6333,6 +6665,88 @@ async function renderNearbySprays() {
     + '</div>';
   }).join('');
   body.innerHTML = html;
+}
+
+// 29 April 2026 Phase 4bc — Home-screen alert for nearby community sprays.
+// Distinct from getSprayStatusSummary (which reads the keeper's OWN sprays
+// from loadSprays). This reads OTHER beekeepers' shared reports via
+// loadNearbySprays. Two-stage severity:
+//   critical — within 1km AND date within 2 days
+//   alert    — within 5km AND date within 7 days
+// Anything older/farther returns null so home stays silent (no noise).
+async function getNearbyCommunitySprayAlert() {
+  try {
+    var nearby = await loadNearbySprays();
+    if (!nearby || !nearby.length) return null;
+    var now = Date.now();
+    var dayMs = 24*60*60*1000;
+    // Filter to alert-worthy
+    var worthy = nearby.filter(function(s) {
+      var daysAgo = (now - new Date(s.date).getTime()) / dayMs;
+      var km = s.distanceFromApiaryKm || 999;
+      var critical = (km <= 1 && daysAgo <= 2);
+      var alertish = (km <= 5 && daysAgo <= 7);
+      return critical || alertish;
+    });
+    if (!worthy.length) return null;
+    // Worst-first: critical beats alert
+    worthy.sort(function(a, b) {
+      var ad = (now - new Date(a.date).getTime()) / dayMs;
+      var bd = (now - new Date(b.date).getTime()) / dayMs;
+      var aCrit = (a.distanceFromApiaryKm <= 1 && ad <= 2) ? 1 : 0;
+      var bCrit = (b.distanceFromApiaryKm <= 1 && bd <= 2) ? 1 : 0;
+      if (bCrit !== aCrit) return bCrit - aCrit;
+      // Same severity → closest first
+      return a.distanceFromApiaryKm - b.distanceFromApiaryKm;
+    });
+    var worst = worthy[0];
+    var daysAgo = Math.floor((now - new Date(worst.date).getTime()) / dayMs);
+    var ago = daysAgo === 0 ? 'today' : daysAgo === 1 ? 'yesterday' : daysAgo + ' days ago';
+    var km = worst.distanceFromApiaryKm;
+    var distTxt = km < 1 ? '<1km' : km.toFixed(1) + 'km';
+    var isCritical = (km <= 1 && daysAgo <= 2);
+    return {
+      level: isCritical ? 'critical' : 'alert',
+      count: worthy.length,
+      worst: worst,
+      summary: (worst.cropType || 'Spray') + ' \u00B7 ' + distTxt + ' \u00B7 ' + ago,
+      countLabel: worthy.length === 1 ? '1 nearby report' : worthy.length + ' nearby reports'
+    };
+  } catch(e) {
+    console.warn('[getNearbyCommunitySprayAlert]', e);
+    return null;
+  }
+}
+
+// Render the home-screen community spray alert banner. Async; safe to
+// fire-and-forget. Hides banner when no alert-worthy reports are nearby.
+async function renderHomeCommunitySprayAlert() {
+  var el = document.getElementById('home-community-spray-banner');
+  if (!el) return;
+  var alert = await getNearbyCommunitySprayAlert();
+  if (!alert) {
+    el.style.display = 'none';
+    return;
+  }
+  var bgColour = alert.level === 'critical' ? '#FFEBEE' : '#FFF3E0';
+  var borderColour = alert.level === 'critical' ? '#C62828' : '#C8730A';
+  var pillBg = alert.level === 'critical' ? '#C62828' : '#C8730A';
+  var pillText = alert.level === 'critical' ? 'CRITICAL' : 'ALERT';
+  var esc = function(t){ return (t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  el.style.display = 'block';
+  el.innerHTML = '<div onclick="goToEnvironmentSprays()" '
+    + 'style="margin:8px 16px;padding:12px 14px;background:' + bgColour + ';border-left:4px solid ' + borderColour + ';border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;">'
+    + '<div style="font-size:22px;flex-shrink:0;">\uD83D\uDED1</div>'
+    + '<div style="flex:1;min-width:0;">'
+      + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px;">'
+        + '<div style="font-size:11px;font-weight:800;color:' + borderColour + ';text-transform:uppercase;letter-spacing:.04em;">Community spray nearby</div>'
+        + '<span style="background:' + pillBg + ';color:white;border-radius:8px;padding:1px 6px;font-size:9px;font-weight:800;letter-spacing:.05em;">' + pillText + '</span>'
+      + '</div>'
+      + '<div style="font-size:13px;color:var(--text);font-weight:600;">' + esc(alert.summary) + '</div>'
+      + (alert.count > 1 ? '<div style="font-size:11px;color:var(--text-l);margin-top:1px;">' + alert.countLabel + ' \u00B7 tap to review</div>' : '<div style="font-size:11px;color:var(--text-l);margin-top:1px;">Tap to review</div>')
+    + '</div>'
+    + '<div style="font-size:11px;color:' + borderColour + ';font-weight:700;flex-shrink:0;">\u203A</div>'
+  + '</div>';
 }
 
 function renderSprays() {
@@ -7198,6 +7612,8 @@ function saveHoneyStockFromModal() {
   }
   closeHoneyStockModal();
   renderHoneyStock();
+  // 29 April 2026 Phase 4bc — refresh home dashboard
+  try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
 }
 
 function confirmDeleteHoneyStock() {
@@ -12508,6 +12924,8 @@ function saveHarvest(){
   try { if (typeof renderEnvironment === 'function' && document.getElementById('s-forage')) renderEnvironment(); } catch(e) {}
   try { if (typeof renderHiveHarvestSummary === 'function') renderHiveHarvestSummary(); } catch(e) {}
   try { if (typeof renderHoneyStock === 'function' && document.getElementById('inv-panel-honey') && document.getElementById('inv-panel-honey').style.display !== 'none') renderHoneyStock(); } catch(e) {}
+  // 29 April 2026 Phase 4bc — refresh home dashboard
+  try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
 }
 
 function renderHarvestPanel(){
@@ -20206,7 +20624,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:10 29 April 2026 BST · Phase 4bb — (1) Environment harvest aggregation fix: was reading from h.harvests/h.weight legacy shape (never existed); now reads loadHarvests()/h.kg. Pre-existing zero bug now resolved. (2) Forage Conditions moved from Environment to home — more glanceable, single source of truth. renderForageConditions extracted, wired into home entry hook.';
+var HIVEKEEPER_BUILD = '21:55 29 April 2026 BST · Phase 4bc — Home inventory dashboard + per-jar-size pricing. (1) Settings \u2192 Honey pricing modal lets keepers set \u00A3 per jar size; sizes start blank. (2) Home shows hero card (jars / kg / \u00A3value), pricing prompt when unpriced jars exist, season summary, last harvest, equipment health line. Hidden when no data exists. Refreshes on every harvest / jar log.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
