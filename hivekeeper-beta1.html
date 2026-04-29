@@ -2539,12 +2539,20 @@ input[type="checkbox"].hk-chk:checked::after {
       <div id="hive-cover-banner" style="margin-top:8px;"></div>
     </div>
 
+    <!-- 29 April 2026 Phase 4ba — Honey harvested summary on hive detail.
+         Shows running total + recent harvest list so keepers can see at a
+         glance what's been pulled off this hive this season. Multiple
+         harvests per year are common (OSR / summer flow / ivy), so the
+         list view matters as much as the headline number. Hidden when no
+         harvests logged yet. -->
+    <div id="hive-harvest-summary" style="display:none;padding:0 20px;margin-top:18px;"></div>
+
     <!-- 29 April 2026 Phase 4az.2 — Log honey harvest. Per-hive action that
          shouldn't require opening a full inspection. Lives on the hive detail
          screen below the cover photo so it's discoverable when keepers visit
          the hive after extraction. Reuses openAddHarvest() which is already
          hive-scoped via currentHiveId. -->
-    <div style="padding:0 20px;margin-top:18px;">
+    <div style="padding:0 20px;margin-top:12px;">
       <button onclick="openAddHarvest()" style="width:100%;background:#F4D77A;border:1.5px solid #C8730A;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#3A2509;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F36F; Log honey harvest</button>
     </div>
 
@@ -8846,6 +8854,8 @@ function renderHiveDetail(){
   // Cover banner — own dedicated section at the bottom
   renderHiveCoverBanner(hive);
   renderHiveStackSection(hive);
+  // 29 April 2026 Phase 4ba — per-hive harvest summary (above Log harvest button)
+  try { renderHiveHarvestSummary(); } catch(e) { console.warn('renderHiveHarvestSummary:', e); }
 
   // Status section
   const statusEl = document.getElementById('hive-status-section');
@@ -12473,6 +12483,12 @@ function saveHarvest(){
   closeModalEl('modal-add-harvest');
   showToast(kg+'kg harvest saved');
   renderHarvestPanel();
+  // 29 April 2026 Phase 4ba — refresh other views that show harvest totals
+  // so the running tally stays accurate across screens (Environment, hive
+  // detail summary, inventory honey readiness all read fresh state on next render).
+  try { if (typeof renderEnvironment === 'function' && document.getElementById('s-forage')) renderEnvironment(); } catch(e) {}
+  try { if (typeof renderHiveHarvestSummary === 'function') renderHiveHarvestSummary(); } catch(e) {}
+  try { if (typeof renderHoneyStock === 'function' && document.getElementById('inv-panel-honey') && document.getElementById('inv-panel-honey').style.display !== 'none') renderHoneyStock(); } catch(e) {}
 }
 
 function renderHarvestPanel(){
@@ -12496,6 +12512,70 @@ function renderHarvestPanel(){
       +'<div class="harvest-notes">'+(r.notes||'')+(r.supers?' &middot; '+r.supers+' super'+(r.supers>1?'s':''):'')+'</div>'
       +'</div>';
   }).join('');
+}
+
+// 29 April 2026 Phase 4ba — Per-hive harvest summary on hive detail screen.
+// Shows above the Log harvest button. Multiple harvests per year are common
+// (early OSR, summer flow, autumn ivy) — so the list view matters as much
+// as the headline number. Hidden when no harvests yet.
+function renderHiveHarvestSummary() {
+  var el = document.getElementById('hive-harvest-summary');
+  if (!el || !currentHiveId) return;
+  var records = loadHarvests().filter(function(r){ return r.hiveId === currentHiveId; })
+    .sort(function(a, b){ return new Date(b.date) - new Date(a.date); });
+  if (!records.length) { el.style.display = 'none'; return; }
+
+  var thisYear = new Date().getFullYear();
+  var ytd = records.filter(function(r){
+    var y = r.date ? new Date(r.date).getFullYear() : null;
+    return y === thisYear;
+  });
+  var ytdKg = ytd.reduce(function(s, r){ return s + (r.kg || 0); }, 0);
+  var lifetimeKg = records.reduce(function(s, r){ return s + (r.kg || 0); }, 0);
+
+  var esc = function(t){ return (t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  // Show top 5 most recent. If there are more, summarise the rest as a footer.
+  var recent = records.slice(0, 5);
+  var rowsHtml = recent.map(function(r) {
+    var d = new Date(r.date);
+    var dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    var supersBit = r.supers ? ' \u00B7 ' + r.supers + ' super' + (r.supers > 1 ? 's' : '') : '';
+    var notesBit = r.notes ? ' \u00B7 ' + esc(r.notes.substring(0, 50)) + (r.notes.length > 50 ? '\u2026' : '') : '';
+    return '<div style="background:white;border-left:3px solid #C8730A;border-radius:6px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:12px;">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + dateStr + supersBit + '</div>'
+        + (notesBit ? '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + notesBit.substring(3) + '</div>' : '')
+      + '</div>'
+      + '<div style="font-size:18px;font-weight:800;color:var(--text);font-family:Syne,sans-serif;">' + (r.kg || 0).toFixed(1) + 'kg</div>'
+    + '</div>';
+  }).join('');
+
+  var moreNote = '';
+  if (records.length > 5) {
+    moreNote = '<div style="font-size:11px;color:var(--text-l);text-align:center;margin-top:4px;font-style:italic;">+ ' + (records.length - 5) + ' earlier harvest' + (records.length - 5 === 1 ? '' : 's') + '</div>';
+  }
+
+  // Header with two stats — YTD this season, plus all-time on second line if different
+  var headerHtml = '<div style="background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);padding:14px;box-shadow:var(--shadow);margin-bottom:10px;">'
+    + '<div style="display:flex;align-items:center;gap:14px;">'
+      + '<div style="font-size:30px;">\uD83C\uDF6F</div>'
+      + '<div style="flex:1;">'
+        + '<div style="font-size:11px;font-weight:800;color:#5C3A17;text-transform:uppercase;letter-spacing:.04em;">Honey harvested ' + thisYear + '</div>'
+        + '<div style="font-size:22px;font-weight:800;color:#3A2509;font-family:Syne,sans-serif;margin-top:2px;">' + ytdKg.toFixed(1) + ' kg</div>'
+        + '<div style="font-size:11px;color:#5C3A17;font-weight:600;margin-top:2px;">'
+          + ytd.length + ' harvest' + (ytd.length === 1 ? '' : 's') + ' this season'
+          + (lifetimeKg > ytdKg ? ' \u00B7 ' + lifetimeKg.toFixed(1) + 'kg lifetime' : '')
+        + '</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  el.innerHTML = '<div class="section-head" style="margin-bottom:8px;"><div class="section-title">\uD83C\uDF6F Harvest history</div></div>'
+    + headerHtml
+    + rowsHtml
+    + moreNote;
+  el.style.display = 'block';
 }
 
 // ═══════════════════════════════════════════════
@@ -20107,7 +20187,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20:25 29 April 2026 BST · Phase 4az.2 — moved Log honey harvest button to hive detail screen, below Hive image. Better fit than inspect screen — you don\u2019t need to open a full inspection just to log a harvest. Plus 4az bottling readiness card on Honey tab.';
+var HIVEKEEPER_BUILD = '20:50 29 April 2026 BST · Phase 4ba — harvest cross-screen sync + per-hive harvest summary. (1) saveHarvest now refreshes Environment, hive-detail, and Honey tab views so totals stay in sync everywhere. (2) New "Harvest history" card on hive detail above the Log button — shows YTD kg + harvest count + 5 most recent harvests with dates. Multiple harvests per year (OSR / summer flow / ivy) all visible.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
