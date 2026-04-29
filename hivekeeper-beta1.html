@@ -2465,6 +2465,13 @@ input[type="checkbox"].hk-chk:checked::after {
     <div style="padding:8px 20px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
     </div>
+    <!-- 29 April 2026 Phase 4az — log harvest from inspect screen.
+         Keepers extracting honey are usually on the inspect screen anyway,
+         so the entry point belongs here. Secondary styling keeps it from
+         competing with the primary Save inspection action. -->
+    <div style="padding:8px 20px 4px;">
+      <button onclick="openAddHarvest()" style="width:100%;background:#F4D77A;border:1.5px solid #C8730A;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#3A2509;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F36F; Log honey harvest</button>
+    </div>
     <div style="height:20px;"></div>
     </div><!-- /#inspect-form-content -->
   </div>
@@ -3659,6 +3666,10 @@ input[type="checkbox"].hk-chk:checked::after {
     <div id="inv-panel-honey" style="display:none;">
       <!-- Total honey stock summary card -->
       <div id="honey-stock-summary" style="margin:12px 16px;padding:14px;background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);box-shadow:var(--shadow);"></div>
+
+      <!-- 29 April 2026 Phase 4az — Bottling readiness card. Hidden when no
+           unjarred honey exists; shows analysis when there is. -->
+      <div id="bottling-readiness" style="display:none;margin:12px 16px;"></div>
 
       <!-- Add jars button -->
       <div style="margin:12px 16px;">
@@ -5996,6 +6007,98 @@ function getTotalHoneyStock() {
   return { jars: totalJars, kg: totalKg };
 }
 
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4az — BOTTLING READINESS
+// ════════════════════════════════════════════════════════════════
+// Cross-references unjarred honey (from harvests) against equipment
+// inventory (jars by hive_type-irrelevant categories: jar_empty, jar_lid,
+// label) to compute what's needed to finish bottling.
+//
+// User picks a target jar size; we calculate jars-required, then compare
+// against in-stock counts of matching empty jars, lids, and labels.
+// Output: per-resource shortfall (or "in stock") plus a top-level
+// readiness summary.
+
+// What's the user's most-common jar size in the existing honey_stock?
+// Falls back to 454g if no history.
+function getDefaultBottleSizeG() {
+  var rows = loadHoneyStock();
+  if (!rows.length) return 454;
+  var counts = {};
+  rows.forEach(function(r) {
+    if (typeof r.jarSizeG === 'number' && r.jarSizeG > 0) {
+      counts[r.jarSizeG] = (counts[r.jarSizeG] || 0) + (r.jarCount || 1);
+    }
+  });
+  var best = 454, bestCount = 0;
+  Object.keys(counts).forEach(function(k) {
+    if (counts[k] > bestCount) { best = parseInt(k, 10); bestCount = counts[k]; }
+  });
+  return best;
+}
+
+// Compute readiness for a specific harvest at a specific jar size.
+// Returns { harvest, kgUnjarred, targetJarSizeG, jarsNeeded,
+//   jarsInStock, lidsInStock, labelsInStock,
+//   jarsShortfall, lidsShortfall, labelsShortfall, ready }
+function computeBottlingReadiness(harvestId, jarSizeG) {
+  var harvest = harvestId
+    ? loadHarvests().find(function(h){ return h.id === harvestId; })
+    : null;
+  var kgRecorded = harvest ? (harvest.kg || 0) : 0;
+  var kgJarred = getHoneyKgJarredForHarvest(harvestId);
+  var kgUnjarred = Math.max(0, kgRecorded - kgJarred);
+
+  var jarsNeeded = jarSizeG > 0
+    ? Math.ceil((kgUnjarred * 1000) / jarSizeG)
+    : 0;
+
+  // Look up matching equipment by category. Note: jar_empty doesn't track
+  // size internally yet — we sum across all empty jar rows for now and
+  // surface that as a known limitation in the UI. Future enhancement could
+  // add a size attribute to jar_empty rows.
+  var equipment = loadEquipment();
+  var sumByCategory = function(cat) {
+    return equipment
+      .filter(function(it) { return it.category === cat; })
+      .reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+  };
+  var jarsInStock = sumByCategory('jar_empty');
+  var lidsInStock = sumByCategory('jar_lid');
+  var labelsInStock = sumByCategory('label');
+
+  return {
+    harvest: harvest,
+    kgRecorded: kgRecorded,
+    kgJarred: kgJarred,
+    kgUnjarred: kgUnjarred,
+    targetJarSizeG: jarSizeG,
+    jarsNeeded: jarsNeeded,
+    jarsInStock: jarsInStock,
+    lidsInStock: lidsInStock,
+    labelsInStock: labelsInStock,
+    jarsShortfall: Math.max(0, jarsNeeded - jarsInStock),
+    lidsShortfall: Math.max(0, jarsNeeded - lidsInStock),
+    labelsShortfall: Math.max(0, jarsNeeded - labelsInStock),
+    ready: jarsNeeded > 0
+      && jarsInStock >= jarsNeeded
+      && lidsInStock >= jarsNeeded
+      && labelsInStock >= jarsNeeded
+  };
+}
+
+// Returns array of harvests with kgUnjarred > 0, newest first.
+// Used to surface "you've got honey waiting to be jarred" prompts.
+function getHarvestsAwaitingBottling() {
+  var harvests = loadHarvests();
+  return harvests.filter(function(h) {
+    var kgJarred = getHoneyKgJarredForHarvest(h.id);
+    return (h.kg || 0) - kgJarred > 0.1;
+  }).sort(function(a, b) {
+    return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+  });
+}
+
 function getSprayStatusSummary() {
   var sprays = loadSprays();
   if (!sprays.length) return { level: 'clear', summary: 'No sprays reported nearby', pill: 'NONE' };
@@ -6781,6 +6884,10 @@ function renderHoneyStock() {
     + '</div>';
   }
 
+  // 29 April 2026 Phase 4az — also re-render bottling readiness here so it
+  // refreshes when honey stock changes (jars added → unjarred kg drops).
+  try { renderBottlingReadiness(); } catch(e) { console.warn('renderBottlingReadiness:', e); }
+
   var rows = loadHoneyStock();
   if (!rows.length) {
     listEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-l);">'
@@ -6852,6 +6959,127 @@ function renderHoneyStock() {
   }).join('');
 
   listEl.innerHTML = html;
+}
+
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4az — BOTTLING READINESS CARD render
+// ════════════════════════════════════════════════════════════════
+// State held on window so the user's harvest + size picker survives
+// re-renders triggered by honey stock changes elsewhere.
+var _bottlingHarvestId = null;
+var _bottlingJarSizeG = null;
+
+function renderBottlingReadiness() {
+  var card = document.getElementById('bottling-readiness');
+  if (!card) return;
+
+  var awaiting = getHarvestsAwaitingBottling();
+  if (!awaiting.length) {
+    card.style.display = 'none';
+    return;
+  }
+
+  // Pick default harvest if state is null OR points to a harvest no longer awaiting
+  if (!_bottlingHarvestId || !awaiting.find(function(h){ return h.id === _bottlingHarvestId; })) {
+    _bottlingHarvestId = awaiting[0].id;
+  }
+  if (!_bottlingJarSizeG) {
+    _bottlingJarSizeG = getDefaultBottleSizeG();
+  }
+
+  var hives = (typeof loadHives === 'function') ? loadHives() : [];
+  var hivesIndex = {};
+  hives.forEach(function(h) { hivesIndex[h.id] = h; });
+
+  var readiness = computeBottlingReadiness(_bottlingHarvestId, _bottlingJarSizeG);
+  var esc = function(t){ return (t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+
+  // Harvest dropdown options
+  var harvestOpts = awaiting.map(function(h) {
+    var sel = h.id === _bottlingHarvestId ? ' selected' : '';
+    return '<option value="' + esc(h.id) + '"' + sel + '>' + esc(_summariseHarvest(h, hivesIndex)) + '</option>';
+  }).join('');
+
+  // Jar size dropdown — common sizes + most-common-from-history if unusual
+  var sizeOptions = [{g:227,label:'227g (8oz)'},{g:340,label:'340g (12oz)'},{g:454,label:'454g (1lb)'}];
+  if (!sizeOptions.find(function(s){ return s.g === _bottlingJarSizeG; })) {
+    sizeOptions.push({ g: _bottlingJarSizeG, label: _bottlingJarSizeG + 'g (custom)' });
+  }
+  var sizeOpts = sizeOptions.map(function(s) {
+    var sel = s.g === _bottlingJarSizeG ? ' selected' : '';
+    return '<option value="' + s.g + '"' + sel + '>' + s.label + '</option>';
+  }).join('');
+
+  // Per-resource line — green if enough, amber if short
+  var line = function(label, inStock, needed) {
+    if (needed <= 0) return '';
+    var ok = inStock >= needed;
+    var icon = ok ? '\u2713' : '\u26A0';
+    var colour = ok ? '#2a6448' : '#C8730A';
+    var msg = ok
+      ? inStock + ' in stock \u2014 enough'
+      : inStock + ' in stock, need ' + (needed - inStock) + ' more';
+    return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);margin-top:6px;">'
+      + '<div style="width:18px;height:18px;border-radius:50%;background:' + colour + ';color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">' + icon + '</div>'
+      + '<div><strong>' + label + ':</strong> ' + msg + '</div>'
+      + '</div>';
+  };
+
+  // Top-line verdict
+  var anyShort = readiness.jarsShortfall > 0 || readiness.lidsShortfall > 0 || readiness.labelsShortfall > 0;
+  var verdictBg = anyShort ? '#FFF3E0' : '#E8F5E9';
+  var verdictBorder = anyShort ? '#C8730A' : '#2a6448';
+  var verdictColour = anyShort ? '#8C4A0A' : '#1A4530';
+  var verdictText;
+  if (readiness.jarsNeeded === 0) {
+    verdictText = 'Nothing left to jar';
+  } else if (anyShort) {
+    var bits = [];
+    if (readiness.jarsShortfall) bits.push(readiness.jarsShortfall + ' jars');
+    if (readiness.lidsShortfall) bits.push(readiness.lidsShortfall + ' lids');
+    if (readiness.labelsShortfall) bits.push(readiness.labelsShortfall + ' labels');
+    verdictText = 'Need: ' + bits.join(', ');
+  } else {
+    verdictText = 'Ready to bottle \u2713';
+  }
+
+  card.style.display = 'block';
+  card.innerHTML =
+    '<div style="background:white;border-radius:var(--rs);box-shadow:var(--shadow);overflow:hidden;">'
+    + '<div style="padding:14px 14px 10px;border-bottom:1px solid var(--wax);">'
+      + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">\uD83E\uDED9 Bottling readiness</div>'
+      + '<div style="font-size:13px;color:var(--text);">' + readiness.kgUnjarred.toFixed(2) + ' kg unjarred from this harvest</div>'
+    + '</div>'
+    + '<div style="padding:12px 14px;background:#FAF6EE;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+      + '<div>'
+        + '<label style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Harvest</label>'
+        + '<select onchange="_onBottlingHarvestChange(this.value)" style="width:100%;padding:8px;border:1px solid var(--wax);border-radius:6px;font-size:12px;font-family:Syne,sans-serif;background:white;box-sizing:border-box;">' + harvestOpts + '</select>'
+      + '</div>'
+      + '<div>'
+        + '<label style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;">Target jar size</label>'
+        + '<select onchange="_onBottlingSizeChange(this.value)" style="width:100%;padding:8px;border:1px solid var(--wax);border-radius:6px;font-size:12px;font-family:Syne,sans-serif;background:white;box-sizing:border-box;">' + sizeOpts + '</select>'
+      + '</div>'
+    + '</div>'
+    + '<div style="padding:12px 14px;">'
+      + '<div style="font-size:13px;color:var(--text);"><strong>' + readiness.jarsNeeded + ' \u00D7 ' + readiness.targetJarSizeG + 'g jars</strong> required</div>'
+      + line('Jars', readiness.jarsInStock, readiness.jarsNeeded)
+      + line('Lids', readiness.lidsInStock, readiness.jarsNeeded)
+      + line('Labels', readiness.labelsInStock, readiness.jarsNeeded)
+    + '</div>'
+    + '<div style="padding:12px 14px;background:' + verdictBg + ';border-top:3px solid ' + verdictBorder + ';">'
+      + '<div style="font-size:13px;font-weight:800;color:' + verdictColour + ';font-family:Syne,sans-serif;text-align:center;">' + verdictText + '</div>'
+    + '</div>'
+  + '</div>';
+}
+
+function _onBottlingHarvestChange(harvestId) {
+  _bottlingHarvestId = harvestId;
+  renderBottlingReadiness();
+}
+
+function _onBottlingSizeChange(sizeG) {
+  _bottlingJarSizeG = parseInt(sizeG, 10) || 454;
+  renderBottlingReadiness();
 }
 
 var _honeyStockEditingId = null;
@@ -19876,7 +20104,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '19:55 29 April 2026 BST · Phase 4ay — Honey jar stock layer. New honey_stock table linked to harvests for traceability. Inventory screen now has Equipment / Honey tabs. Per-harvest sanity check (over-jarred / unjarred), summary card showing total jars + kg, custom jar sizes supported.';
+var HIVEKEEPER_BUILD = '20:15 29 April 2026 BST · Phase 4az + harvest-on-inspect — Bottling readiness card on Honey tab (jars/lids/labels needed vs stock, target size picker). Plus "Log honey harvest" button at bottom of inspect screen so keepers find it where they actually are after extraction.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
