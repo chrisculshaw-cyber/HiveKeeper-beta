@@ -17807,11 +17807,24 @@ function saveSwarmCatch() {
   // as saveInspections.
   try {
     if (typeof getUserId === 'function' && getUserId() && typeof queueOfflineSave === 'function') {
+      // 29 April 2026 — Phase 4ah CRITICAL FIX: schema match with the
+      // canonical pushSwarmCatches mapping at line ~19095. Phase 4ab
+      // shipped with wrong column names (frames vs frames_of_bees, missing
+      // apiary_id, missing source default, missing logged_at) which meant
+      // every swarm save failed to reach Supabase with a 42703 column
+      // error. Local copy was safe via keysToKeep, but cloud sync broken.
       queueOfflineSave('swarm_catches', {
-        id: catch_.id, user_id: getUserId(), hive_id: hiveId,
-        date: catch_.date, location: catch_.location || null,
-        frames: catch_.frames || null, queen_seen: !!catch_.queenSeen,
-        source: catch_.source || null, notes: catch_.notes || null
+        id: catch_.id,
+        user_id: getUserId(),
+        hive_id: hiveId,
+        apiary_id: (typeof currentApiaryId !== 'undefined') ? currentApiaryId : null,
+        date: catch_.date,
+        location: catch_.location || '',
+        source: catch_.source || 'unknown',
+        frames_of_bees: parseInt(catch_.frames || 0),
+        queen_seen: !!catch_.queenSeen,
+        notes: catch_.notes || '',
+        logged_at: new Date(catch_.loggedAt || Date.now()).toISOString()
       });
     }
   } catch(e) { console.warn('saveSwarmCatch queue failed:', e); }
@@ -18147,7 +18160,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:33 28 April 2026 BST · Phase 4ag — Median geolocation readiness shim (median_geolocation_ready callback handling, prevents iOS double-prompt and silent failures on first GPS call after app launch)';
+var HIVEKEEPER_BUILD = '08:15 29 April 2026 BST · Phase 4ah — CRITICAL: fix swarm_catches schema mismatch (frames_of_bees not frames, +apiary_id, +logged_at) so swarm saves actually reach Supabase';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
