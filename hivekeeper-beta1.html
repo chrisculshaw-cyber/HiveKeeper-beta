@@ -5304,6 +5304,20 @@ function saveSprays(sprays) {
 }
 
 // Convert local spray object to Supabase row shape (shared by push + queue)
+// 29 April 2026 Phase 4am — helpers for community-sharing preferences. Read
+// from localStorage (managed via Account screen). Default is ON for sharing
+// and 'anonymous' for identity mode. New sprays inherit the user's preference
+// at save time; the saved row is the source of truth from then on. Changing
+// preferences in Settings does NOT retroactively rewrite past spray rows —
+// that's deliberate, prevents surprise re-attribution.
+function isCommunityShareEnabled() {
+  return localStorage.getItem('hk_comm_share_sprays') !== '0';
+}
+function getCommunityIdentityMode() {
+  var m = localStorage.getItem('hk_comm_share_identity');
+  return (m === 'first_name' || m === 'full_name') ? m : 'anonymous';
+}
+
 function sprayToRow(sp, uid) {
   return {
     id: sp.id,
@@ -5316,6 +5330,12 @@ function sprayToRow(sp, uid) {
     lat: sp.lat != null ? sp.lat : null,
     lng: sp.lng != null ? sp.lng : null,
     notes: sp.notes || '',
+    // 29 April 2026 Phase 4am — community sharing columns. Per-row snapshot
+    // of the user's preferences at save time. The Supabase columns have
+    // sensible defaults (TRUE / 'anonymous') so older rows that pre-date
+    // this code remain compatible.
+    shared_with_community: (sp.sharedWithCommunity != null) ? !!sp.sharedWithCommunity : isCommunityShareEnabled(),
+    reporter_display: sp.reporterDisplay || getCommunityIdentityMode(),
     created_at: sp.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -5352,6 +5372,11 @@ async function pullSprays() {
       lat: r.lat,
       lng: r.lng,
       notes: r.notes || '',
+      // 29 April 2026 Phase 4am — community-sharing columns. Defaults applied
+      // for rows from before the migration ran (when these columns didn't
+      // exist yet — Postgres returns undefined which we treat as default).
+      sharedWithCommunity: (r.shared_with_community != null) ? !!r.shared_with_community : true,
+      reporterDisplay: r.reporter_display || 'anonymous',
       createdAt: r.created_at
     };
   });
@@ -15886,6 +15911,35 @@ function openAccountModal() {
       + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">If set, SOS sends SMS and WhatsApp at the same time</div>'
     + '</div>'
 
+    // === COMMUNITY SHARING (Phase 4am — 29 April 2026) ===
+    // Foundation for the crop intelligence feature. Beekeepers can opt-in to
+    // share their spray reports with others within a 10km radius. Privacy is
+    // taken seriously: default is OFF, identity choice defaults to Anonymous,
+    // and existing spray reports stay private until explicit opt-in.
+    + '<div style="font-size:11px;font-weight:800;color:#3B6D11;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">\uD83C\uDF3E Community sharing</div>'
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:12px;">Help local beekeepers protect their colonies. When you log a crop spray, share it with beekeepers within 10km of your apiary so they know what\u2019s happening near them too.</p>'
+
+    + '<div id="comm-share-row" onclick="toggleCommShare()" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);background:white;cursor:pointer;min-height:44px;user-select:none;-webkit-tap-highlight-color:transparent;">'
+      + '<div id="comm-share-indicator" style="width:22px;height:22px;border-radius:5px;border:2px solid var(--wax);background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;">'
+        + '<span id="comm-share-tick" style="font-size:14px;font-weight:900;color:white;display:none;">\u2713</span>'
+      + '</div>'
+      + '<div style="flex:1;">'
+        + '<div style="font-size:14px;color:var(--text);font-weight:600;">Share my spray reports</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">Beekeepers within 10km of your apiary will see your reports</div>'
+      + '</div>'
+      + '<input type="checkbox" id="acc-comm-share" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">'
+    + '</div>'
+
+    + '<div id="comm-identity-block" style="margin-bottom:20px;' + ((localStorage.getItem('hk_comm_share_sprays')!=='0') ? '' : 'opacity:0.5;pointer-events:none;') + '">'
+      + '<label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">How others see you on shared reports</label>'
+      + '<select id="acc-comm-identity" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;background:white;">'
+        + '<option value="anonymous"' + (localStorage.getItem('hk_comm_share_identity')!=='first_name' && localStorage.getItem('hk_comm_share_identity')!=='full_name' ? ' selected' : '') + '>Anonymous \u2014 \u201CA beekeeper 1.2km away\u201D</option>'
+        + '<option value="first_name"' + (localStorage.getItem('hk_comm_share_identity')==='first_name' ? ' selected' : '') + '>First name only \u2014 \u201CChris reported\u2026\u201D</option>'
+        + '<option value="full_name"' + (localStorage.getItem('hk_comm_share_identity')==='full_name' ? ' selected' : '') + '>Full name \u2014 use my display name</option>'
+      + '</select>'
+      + '<div style="font-size:10px;color:var(--text-l);margin-top:4px;">You can change this any time. Existing reports update with your new choice.</div>'
+    + '</div>'
+
     + '<button onclick="saveAccount()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:16px;">Save account details</button>'
 
     // === ACCOUNT ACTIONS ===
@@ -15902,6 +15956,49 @@ function openAccountModal() {
     + '<button onclick="closeToSettings(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
 
   openModalEl('modal-account');
+
+  // 29 April 2026 Phase 4am — sync community-share toggle visual state on open
+  // (default ON: localStorage null/missing reads as 'share enabled', only an
+  // explicit '0' opts out — established 29 Apr morning per architectural decision)
+  var commCb = document.getElementById('acc-comm-share');
+  if (commCb) commCb.checked = (localStorage.getItem('hk_comm_share_sprays') !== '0');
+  _renderCommShareToggle();
+}
+
+// 29 April 2026 Phase 4am — community sharing toggle. Mirrors the Phase 4aj
+// swarm Queen-seen pattern: the visible row is a tappable div, the actual
+// state lives on a hidden <input type=checkbox> so saveAccount() can read
+// .checked unchanged. Toggling also enables/disables the identity dropdown.
+function toggleCommShare() {
+  var cb = document.getElementById('acc-comm-share');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  _renderCommShareToggle();
+}
+
+function _renderCommShareToggle() {
+  var cb = document.getElementById('acc-comm-share');
+  var indicator = document.getElementById('comm-share-indicator');
+  var tick = document.getElementById('comm-share-tick');
+  var identityBlock = document.getElementById('comm-identity-block');
+  if (!cb || !indicator || !tick) return;
+  if (cb.checked) {
+    indicator.style.background = 'var(--forest)';
+    indicator.style.borderColor = 'var(--forest)';
+    tick.style.display = 'block';
+    if (identityBlock) {
+      identityBlock.style.opacity = '1';
+      identityBlock.style.pointerEvents = 'auto';
+    }
+  } else {
+    indicator.style.background = 'white';
+    indicator.style.borderColor = 'var(--wax)';
+    tick.style.display = 'none';
+    if (identityBlock) {
+      identityBlock.style.opacity = '0.5';
+      identityBlock.style.pointerEvents = 'none';
+    }
+  }
 }
 
 function saveAccount() {
@@ -15911,6 +16008,9 @@ function saveAccount() {
   var sosName = (document.getElementById('acc-sos-name')||{}).value || '';
   var sosSms = (document.getElementById('acc-sos-sms')||{}).value || '';
   var sosWa = (document.getElementById('acc-sos-wa')||{}).value || '';
+  // 29 April 2026 Phase 4am — community sharing preferences
+  var commShare = !!((document.getElementById('acc-comm-share')||{}).checked);
+  var commIdentity = (document.getElementById('acc-comm-identity')||{}).value || 'anonymous';
 
   name = name.trim(); phone = phone.trim(); address = address.trim();
   sosName = sosName.trim(); sosSms = sosSms.trim(); sosWa = sosWa.trim();
@@ -15927,6 +16027,9 @@ function saveAccount() {
     if (name) localStorage.setItem('hk_display_name', name); else localStorage.removeItem('hk_display_name');
     if (phone) localStorage.setItem('hk_user_phone', phone); else localStorage.removeItem('hk_user_phone');
     if (address) localStorage.setItem('hk_user_address', address); else localStorage.removeItem('hk_user_address');
+    // 29 April 2026 Phase 4am
+    localStorage.setItem('hk_comm_share_sprays', commShare ? '1' : '0');
+    localStorage.setItem('hk_comm_share_identity', commIdentity);
   } catch(e) { console.warn('Account localStorage save failed:', e); }
 
   // Save SOS contact (reuse existing shape so triggerSOS still works unchanged)
@@ -15936,6 +16039,12 @@ function saveAccount() {
   // saves. Now caches the update payload locally if Supabase write fails or
   // we're offline, and the existing on-reconnect path retries it. Profiles
   // is a single-row-per-user table so last-write-wins is fine.
+  // 29 April 2026 Phase 4am NOTE: community sharing prefs (comm_share_sprays,
+  // comm_share_identity) are deliberately NOT in this payload yet — they're
+  // localStorage-only this phase. Phase 4an adds the columns to profiles
+  // and adds them to this payload at the same time. If we sent them now,
+  // Supabase would reject the whole update with an unknown-column error,
+  // breaking the existing SOS contact + phone sync. Belt and braces.
   var payload = {
     name: name || null,
     display_name: name || null,
@@ -18212,7 +18321,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '09:12 29 April 2026 BST · Phase 4al — CRITICAL stop the bleeding: migrateLegacyIds idempotency guard (each sign-in was creating a new UUID Meadowbrook duplicate; Chris had 29 in Supabase)';
+var HIVEKEEPER_BUILD = '10:05 29 April 2026 BST · Phase 4am — community sprays foundation: sprayToRow writes shared_with_community + reporter_display, pullSprays maps them back, default ON, helpers in place. Awaits SQL migration + Phase 4an UI.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19285,7 +19394,16 @@ async function pullFromSupabase() {
         // time. Chris's account had 29 such duplicates when this was
         // discovered. Once set on first run, never reset; any localStorage
         // wipe (sign-out or pre-pull) would otherwise re-trigger the bug.
-        'hk_migrated_legacy_ids'];
+        'hk_migrated_legacy_ids',
+        // 29 April 2026 — Phase 4am: community sharing preferences. These
+        // are user-set toggles that need to persist across sign-out/sign-in.
+        // Cloud sync to profiles table comes in Phase 4an; until then,
+        // localStorage is the source of truth and the manifest must protect
+        // the keys from the pull-wipe cycle. Once 4an lands and the values
+        // are restored from profiles on pull, these manifest entries can
+        // be reviewed (probably stay anyway as a write-survives-cloud-blip
+        // belt-and-braces, same pattern as hk_seeded_beta).
+        'hk_comm_share_sprays', 'hk_comm_share_identity'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
