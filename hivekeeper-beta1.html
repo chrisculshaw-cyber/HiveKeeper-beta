@@ -3652,12 +3652,12 @@ input[type="checkbox"].hk-chk:checked::after {
 
 
 <!-- Add/Edit equipment modal -->
-<div class="modal" id="modal-equipment-edit" style="display:none;">
-  <div class="modal-backdrop" onclick="closeEquipmentModal()"></div>
-  <div class="modal-card" style="max-width:480px;">
+<div class="modal-overlay" id="modal-equipment-edit" onclick="closeModal(event,'modal-equipment-edit')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
+    <div class="modal-handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div style="font-size:18px;font-weight:800;font-family:'Syne',sans-serif;color:var(--text);" id="equipment-modal-title">Add equipment</div>
-      <button onclick="closeEquipmentModal()" style="background:transparent;border:none;font-size:24px;color:var(--text-l);cursor:pointer;line-height:1;">&times;</button>
+      <div class="modal-title" style="margin:0;" id="equipment-modal-title">Add equipment</div>
+      <div onclick="closeEquipmentModal()" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
     <div style="margin-bottom:14px;">
@@ -19350,7 +19350,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:35 29 April 2026 BST · Phase 4aw — Equipment inventory: new Inventory screen accessed from Settings, category-grouped list, per-apiary location, reorder thresholds, low-stock banner on home, full CRUD modal, Supabase equipment table with RLS, push/pull mappers, manifest entry. Foundation for 4ax (honey stock) and 4ay (market layer).';
+var HIVEKEEPER_BUILD = '17:50 29 April 2026 BST · Phase 4aw follow-up — fix Add equipment modal markup. Was using class="modal" + inline display:none (modal class doesn\u2019t exist in CSS, openModalEl can\u2019t override inline style). Switched to the codebase\u2019s established modal-overlay / modal-sheet pattern matching modal-add-hive.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
