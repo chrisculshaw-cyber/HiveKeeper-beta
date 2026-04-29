@@ -5334,10 +5334,26 @@ function getCommunityIdentityMode() {
 // spray row (denormalised) so renames don't retroactively change old reports
 // and other users can see reporter names without needing cross-user reads
 // against the profiles table.
+//
+// 29 April 2026 Phase 4an follow-up: the helper originally read only from
+// hk_display_name, but many users never set the optional display_name field
+// in Account — meaning the spray would log with reporter_name null even when
+// they have a name elsewhere. Fall back through the same chain the rest of
+// the codebase uses: user_metadata.full_name → user_metadata.name → hk_display_name.
 function getReporterNameForSave(mode) {
   if (mode === 'anonymous') return null;
-  var fullName = (localStorage.getItem('hk_display_name') || '').trim();
-  if (!fullName) return null; // user hasn't set a display name; treat as anonymous
+  var fullName = '';
+  try {
+    if (typeof _currentUser !== 'undefined' && _currentUser && _currentUser.user_metadata) {
+      var meta = _currentUser.user_metadata;
+      fullName = meta.full_name || meta.name || '';
+    }
+  } catch(e) {}
+  if (!fullName) {
+    fullName = localStorage.getItem('hk_display_name') || '';
+  }
+  fullName = (fullName || '').trim();
+  if (!fullName) return null; // no name available anywhere; row goes anonymous
   if (mode === 'first_name') {
     return fullName.split(/\s+/)[0]; // first whitespace-separated word
   }
@@ -9359,6 +9375,13 @@ function saveInspection(){
   insp.status = (currentInspData.status === 'active' || currentInspData.status === 'unclear' || currentInspData.status === 'dead' || currentInspData.status === 'empty') ? currentInspData.status : null;
   if (currentInspData.status === 'wax_moth') {
     insp.waxMoth = true;
+  } else if (insp.status) {
+    // 29 April 2026 Phase 4ao — when user explicitly picks a non-wax_moth
+    // status, clear the flag. Without this, once a hive had wax_moth, the
+    // flag was sticky — only clearable via the standalone Hive Status modal
+    // (line 14035) which has its own explicit clear logic. Mirror that
+    // behaviour here so the inspect screen's status row can also clear.
+    insp.waxMoth = false;
   }
   var hives=loadHives();
   const hi=hives.findIndex(h=>h.id===currentHiveId);
@@ -18560,7 +18583,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:25 29 April 2026 BST · Phase 4an — community nearby spray reports: read query, haversine refinement, "Reports within 10km" card on Environment screen with empty / no-apiary states, identity rendered from per-row reporter_display + reporter_name snapshot.';
+var HIVEKEEPER_BUILD = '10:55 29 April 2026 BST · Phase 4ao — fix sticky wax moth flag (inspect screen status change to active/dead/empty/unclear now explicitly clears waxMoth=false; previously only the standalone Hive Status modal cleared it).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
