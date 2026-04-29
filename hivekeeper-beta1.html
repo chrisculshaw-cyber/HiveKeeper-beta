@@ -3551,6 +3551,17 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
 
+    <!-- COMMUNITY SPRAY REPORTS (Phase 4an — 29 April 2026) -->
+    <!-- Reports from other beekeepers within 10km. Hidden via JS if no       -->
+    <!-- apiary location is set; otherwise shows nearby reports or empty msg. -->
+    <div class="forage-card" id="forage-nearby-sprays-card">
+      <div class="forage-card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>📍 Reports within 10km</span>
+        <span id="forage-nearby-sprays-count" style="font-size:11px;color:var(--text-l);font-weight:600;"></span>
+      </div>
+      <div id="forage-nearby-sprays-body"></div>
+    </div>
+
     <!-- CROP SPRAYING REPORTS -->
     <div class="forage-card" id="forage-sprays-card">
       <div class="forage-card-title" style="display:flex;justify-content:space-between;align-items:center;">
@@ -5318,7 +5329,28 @@ function getCommunityIdentityMode() {
   return (m === 'first_name' || m === 'full_name') ? m : 'anonymous';
 }
 
+// 29 April 2026 Phase 4an — resolve the user's name for the chosen identity
+// mode at save time. Snapshot pattern: the resolved name is stored on each
+// spray row (denormalised) so renames don't retroactively change old reports
+// and other users can see reporter names without needing cross-user reads
+// against the profiles table.
+function getReporterNameForSave(mode) {
+  if (mode === 'anonymous') return null;
+  var fullName = (localStorage.getItem('hk_display_name') || '').trim();
+  if (!fullName) return null; // user hasn't set a display name; treat as anonymous
+  if (mode === 'first_name') {
+    return fullName.split(/\s+/)[0]; // first whitespace-separated word
+  }
+  // mode === 'full_name'
+  return fullName;
+}
+
 function sprayToRow(sp, uid) {
+  // 29 April 2026 Phase 4an — capture identity choices at save time
+  var identityMode = sp.reporterDisplay || getCommunityIdentityMode();
+  var reporterName = (sp.reporterName !== undefined)
+    ? sp.reporterName
+    : getReporterNameForSave(identityMode);
   return {
     id: sp.id,
     user_id: uid,
@@ -5335,7 +5367,8 @@ function sprayToRow(sp, uid) {
     // sensible defaults (TRUE / 'anonymous') so older rows that pre-date
     // this code remain compatible.
     shared_with_community: (sp.sharedWithCommunity != null) ? !!sp.sharedWithCommunity : isCommunityShareEnabled(),
-    reporter_display: sp.reporterDisplay || getCommunityIdentityMode(),
+    reporter_display: identityMode,
+    reporter_name: reporterName,
     created_at: sp.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -5377,6 +5410,9 @@ async function pullSprays() {
       // exist yet — Postgres returns undefined which we treat as default).
       sharedWithCommunity: (r.shared_with_community != null) ? !!r.shared_with_community : true,
       reporterDisplay: r.reporter_display || 'anonymous',
+      // 29 April 2026 Phase 4an — denormalised reporter name. May be null
+      // for anonymous reporters or rows from before the column existed.
+      reporterName: r.reporter_name || null,
       createdAt: r.created_at
     };
   });
@@ -5480,6 +5516,179 @@ function renderSprayStatus() {
   else { pill.classList.add('env-pill-clear'); }
   pill.textContent = info.pill;
   sub.textContent = info.summary;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4an — COMMUNITY NEARBY SPRAY REPORTS
+// ═══════════════════════════════════════════════════════════════════════
+// Read-only view of other beekeepers' shared spray reports within 10km of
+// the user's active apiary. RLS enforces a bounding-box-based proximity
+// filter server-side; this code applies a client-side haversine refinement
+// for accurate distance display. Identity is rendered from the per-row
+// reporter_display + reporter_name snapshot (Phase 4am/4an).
+
+// Haversine distance in km between two lat/lng pairs. Used to compute exact
+// distance for the bounding-box-filtered server result, and to refine the
+// "within 10km" cutoff (RLS bounding box is slightly wider for performance).
+function haversineKm(lat1, lng1, lat2, lng2) {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return null;
+  var R = 6371; // Earth radius in km
+  var toRad = function(d){ return d * Math.PI / 180; };
+  var dLat = toRad(lat2 - lat1);
+  var dLng = toRad(lng2 - lng1);
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// Format a "time ago" label for a date that's already in the past.
+function formatTimeAgo(date) {
+  if (!date) return '';
+  var ms = Date.now() - new Date(date).getTime();
+  var days = Math.floor(ms / (24*60*60*1000));
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return days + ' days ago';
+  if (days < 14) return '1 week ago';
+  if (days < 30) return Math.floor(days/7) + ' weeks ago';
+  if (days < 60) return '1 month ago';
+  return Math.floor(days/30) + ' months ago';
+}
+
+// Get reporter display label for UI rendering.
+// Honours the per-row reporter_display + reporter_name snapshot.
+function getReporterLabel(spray) {
+  var mode = spray.reporterDisplay || 'anonymous';
+  if (mode === 'anonymous') return 'A beekeeper';
+  if (spray.reporterName) return spray.reporterName;
+  // Reporter chose first/full name but no name was captured (e.g. older row,
+  // or user hadn't set a display name at save time). Fall back gracefully.
+  return 'A beekeeper';
+}
+
+// Pull community-shared sprays within 10km of the active apiary, last 30 days.
+// Returns Promise<Array> of objects: {id, cropType, date, distanceKm, lat, lng,
+// notes, reporterDisplay, reporterName, distanceFromApiaryKm}. Excludes the
+// user's own sprays. Returns empty array if no apiary set or any error.
+async function loadNearbySprays() {
+  if (!getUserId()) return [];
+  // Find active apiary
+  var apiary = null;
+  try {
+    var apiaries = loadApiaries();
+    apiary = apiaries.find(function(a){ return a.id === currentApiaryId; });
+  } catch(e) {}
+  if (!apiary || typeof apiary.lat !== 'number' || typeof apiary.lng !== 'number') {
+    return []; // no GPS for active apiary, can't compute proximity
+  }
+  if (!isOnline()) return []; // can't pull while offline; UI handles this case
+  var sb = getSupabase();
+  // RLS handles the proximity bounding box server-side. We add a 30-day
+  // recency filter and exclude our own sprays. Limit defensive — even at
+  // dense beekeeping density, 100 sprays in a 10km radius in 30 days is
+  // already a busy region.
+  var thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+  var uid = getUserId();
+  try {
+    var result = await sb.from('sprays')
+      .select('id, crop_type, date, distance_km, lat, lng, notes, reporter_display, reporter_name, user_id, created_at')
+      .eq('shared_with_community', true)
+      .neq('user_id', uid)
+      .gte('date', thirtyDaysAgo)
+      .order('date', { ascending: false })
+      .limit(100);
+    if (result.error) {
+      console.warn('[loadNearbySprays] error:', result.error.message);
+      return [];
+    }
+    var rows = result.data || [];
+    // Compute exact haversine distance + final 10km filter, drop nulls
+    var enriched = rows.map(function(r) {
+      return {
+        id: r.id,
+        cropType: r.crop_type || '',
+        date: r.date,
+        distanceKm: r.distance_km, // self-reported "distance from MY apiary" by reporter — different concept from ours
+        lat: r.lat,
+        lng: r.lng,
+        notes: r.notes || '',
+        reporterDisplay: r.reporter_display || 'anonymous',
+        reporterName: r.reporter_name || null,
+        createdAt: r.created_at,
+        distanceFromApiaryKm: haversineKm(apiary.lat, apiary.lng, r.lat, r.lng)
+      };
+    }).filter(function(s) {
+      return s.distanceFromApiaryKm != null && s.distanceFromApiaryKm <= 10;
+    });
+    // Sort by distance ascending (closest first)
+    enriched.sort(function(a, b) { return a.distanceFromApiaryKm - b.distanceFromApiaryKm; });
+    return enriched;
+  } catch(e) {
+    console.warn('[loadNearbySprays] exception:', e);
+    return [];
+  }
+}
+
+// Render the "Reports within 10km" card on the Environment screen.
+// Three states:
+//   1. No apiary GPS → prompt to set apiary location
+//   2. Loading / online but no nearby sprays → empty-friendly message
+//   3. Has nearby sprays → list them
+async function renderNearbySprays() {
+  var body = document.getElementById('forage-nearby-sprays-body');
+  var countEl = document.getElementById('forage-nearby-sprays-count');
+  if (!body) return;
+
+  // Check apiary GPS first
+  var apiary = null;
+  try {
+    apiary = loadApiaries().find(function(a){ return a.id === currentApiaryId; });
+  } catch(e) {}
+  if (!apiary || typeof apiary.lat !== 'number' || typeof apiary.lng !== 'number') {
+    if (countEl) countEl.textContent = '';
+    body.innerHTML = '<div class="spray-empty">'
+      + '<div style="font-size:32px;margin-bottom:8px;">\uD83D\uDCCD</div>'
+      + '<div style="font-weight:700;margin-bottom:4px;">Set your apiary location</div>'
+      + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;">Once your apiary has a GPS location, you\u2019ll see spray reports from beekeepers within 10km.</div>'
+      + '<div style="margin-top:14px;"><button onclick="openManageApiaries()" style="background:var(--forest);color:white;border:none;border-radius:var(--rs);padding:10px 16px;font-weight:700;font-size:12px;cursor:pointer;font-family:\'Syne\',sans-serif;">Manage apiaries</button></div>'
+      + '</div>';
+    return;
+  }
+
+  // Show a quick loading state while we query
+  if (countEl) countEl.textContent = 'Loading\u2026';
+  body.innerHTML = '<div style="padding:14px;text-align:center;color:var(--text-l);font-size:12px;">Looking for nearby reports\u2026</div>';
+
+  var sprays = await loadNearbySprays();
+
+  if (countEl) countEl.textContent = sprays.length === 0 ? '' : sprays.length + ' nearby';
+
+  if (!sprays.length) {
+    body.innerHTML = '<div class="spray-empty">'
+      + '<div style="font-size:32px;margin-bottom:8px;">\uD83C\uDF3F</div>'
+      + '<div style="font-weight:700;margin-bottom:4px;">No reports nearby</div>'
+      + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;">No spray reports from other beekeepers within 10km in the last 30 days. When you log a spray, others nearby will see it too.</div>'
+      + '</div>';
+    return;
+  }
+
+  var esc = function(t){ return (t||'').replace(/[<>&"]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]; }); };
+  var html = sprays.map(function(s) {
+    var distLabel = s.distanceFromApiaryKm < 0.5 ? 'Adjacent'
+                  : s.distanceFromApiaryKm < 1 ? '<1km'
+                  : s.distanceFromApiaryKm.toFixed(1) + 'km';
+    var ago = formatTimeAgo(s.date);
+    var reporter = getReporterLabel(s);
+    return '<div class="spray-item" style="border-left:3px solid #639922;padding-left:10px;">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-weight:700;font-size:13px;color:var(--text);">' + esc(s.cropType || 'Crop spray') + '</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + esc(reporter) + ' \u00B7 ' + distLabel + ' away \u00B7 ' + ago + '</div>'
+        + (s.notes ? '<div style="font-size:11px;color:var(--text-l);margin-top:4px;font-style:italic;">' + esc(s.notes) + '</div>' : '')
+      + '</div>'
+    + '</div>';
+  }).join('');
+  body.innerHTML = html;
 }
 
 function renderSprays() {
@@ -5731,6 +5940,8 @@ function renderEnvironment() {
 
   // Crop spraying reports
   try { renderSprays(); } catch(e) { console.warn('renderSprays:', e); }
+  // 29 April 2026 Phase 4an — community nearby spray reports
+  try { renderNearbySprays(); } catch(e) { console.warn('renderNearbySprays:', e); }
 }
 
 // Deep link from home spray banner → Environment tab, scroll to sprays
@@ -18349,7 +18560,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:10 29 April 2026 BST · Phase 4am — community sprays foundation + lat/lng capture + dropdown polish + build pill readability (auth stamp now 11px white 0.85 alpha, bold; settings chip 12px bold).';
+var HIVEKEEPER_BUILD = '10:25 29 April 2026 BST · Phase 4an — community nearby spray reports: read query, haversine refinement, "Reports within 10km" card on Environment screen with empty / no-apiary states, identity rendered from per-row reporter_display + reporter_name snapshot.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
