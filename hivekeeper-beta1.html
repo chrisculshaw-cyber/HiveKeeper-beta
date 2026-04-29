@@ -5654,9 +5654,24 @@ function renderEnvironment() {
   var condBody = document.getElementById('forage-conditions-body');
   if (condBody) {
     try {
+      // 29 April 2026 Phase 4ak: was reading from 'hk_weather_cache' which
+      // doesn't exist (the actual cache key is 'hk_weather_v1'), and looking
+      // for w.temperature which also doesn't exist (structure is {ts, data}
+      // where data.current.temperature_2m is the value). Surfaced by lint
+      // script Check 3 (dead-letter keys). Forage conditions card has
+      // likely been silently empty since it was first written.
       var w = null;
-      var cached = localStorage.getItem('hk_weather_cache');
-      if (cached) w = JSON.parse(cached);
+      var cached = localStorage.getItem('hk_weather_v1');
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (parsed && parsed.data && parsed.data.current) {
+          w = {
+            temperature: parsed.data.current.temperature_2m,
+            windSpeed: parsed.data.current.windspeed_10m,
+            rain: parsed.data.current.precipitation || 0
+          };
+        }
+      }
       if (w && typeof w.temperature === 'number') {
         var msg = '';
         if (w.temperature >= 16 && (!w.windSpeed || w.windSpeed < 15) && (!w.rain || w.rain < 0.5)) {
@@ -11901,7 +11916,7 @@ function generateReport(id) {
   }
 
   if (id === 'harvest_record') {
-    var harvests = (JSON.parse(localStorage.getItem('hk_harvests_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
+    var harvests = (JSON.parse(localStorage.getItem('hk_harvest_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
     var total = harvests.reduce(function(s,h){ return s + (parseFloat(h.kg)||0); }, 0);
     var rows = harvests.sort(function(a,b){ return new Date(b.date) - new Date(a.date); }).map(function(h) {
       var hive = hives.find(function(x){ return x.id === h.hiveId; });
@@ -11919,7 +11934,7 @@ function generateReport(id) {
   }
 
   if (id === 'treatment_log') {
-    var treatments = (JSON.parse(localStorage.getItem('hk_treatments_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
+    var treatments = (JSON.parse(localStorage.getItem('hk_treatment_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
     var rows = treatments.sort(function(a,b){ return new Date(b.date) - new Date(a.date); }).map(function(t) {
       var hive = hives.find(function(h){ return h.id === t.hiveId; });
       return '<tr><td style="' + tdStyle + '">' + t.date + '</td>'
@@ -11937,7 +11952,7 @@ function generateReport(id) {
 
   if (id === 'annual_summary') {
     var yearInsps = inspections.filter(function(i){ return new Date(i.inspectedAt).getFullYear() === year; });
-    var yearHarvests = (JSON.parse(localStorage.getItem('hk_harvests_v1')||'[]')).filter(function(h){ return hives.find(function(x){ return x.id === h.hiveId; }) && h.date && h.date.startsWith(year); });
+    var yearHarvests = (JSON.parse(localStorage.getItem('hk_harvest_v1')||'[]')).filter(function(h){ return hives.find(function(x){ return x.id === h.hiveId; }) && h.date && h.date.startsWith(year); });
     var totalKg = yearHarvests.reduce(function(s,h){ return s + (parseFloat(h.kg)||0); }, 0);
     var lostHives = hives.filter(function(h){ return h.status === 'dead'; }).length;
     return header('Annual Apiary Summary — ' + year)
@@ -11963,7 +11978,7 @@ function generateReport(id) {
 
   if (id === 'treatment_efficacy') {
     var varroa2 = (JSON.parse(localStorage.getItem('hk_varroa_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
-    var treatments2 = (JSON.parse(localStorage.getItem('hk_treatments_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
+    var treatments2 = (JSON.parse(localStorage.getItem('hk_treatment_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
     var rows = treatments2.map(function(t) {
       var hive = hives.find(function(h){ return h.id === t.hiveId; });
       var before = varroa2.filter(function(v){ return v.hiveId === t.hiveId && new Date(v.date) < new Date(t.date); }).pop();
@@ -18197,7 +18212,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '08:42 29 April 2026 BST · Phase 4aj — swarm Queen seen checkbox replaced with large tappable toggle row (Android tap target was too small in webview)';
+var HIVEKEEPER_BUILD = '09:12 29 April 2026 BST · Phase 4al — CRITICAL stop the bleeding: migrateLegacyIds idempotency guard (each sign-in was creating a new UUID Meadowbrook duplicate; Chris had 29 in Supabase)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19263,7 +19278,14 @@ async function pullFromSupabase() {
         // hk_user_* which now correctly remains the user's manually-set
         // home location. Wiping on pull would break apiary-location-aware
         // behaviour every login.
-        'hk_active_lat', 'hk_active_lng', 'hk_active_location_name'];
+        'hk_active_lat', 'hk_active_lng', 'hk_active_location_name',
+        // 29 April 2026 — Phase 4al: idempotency flag for migrateLegacyIds.
+        // Without this, the legacy-ID migration runs every sign-in cycle
+        // and creates a fresh UUID Meadowbrook duplicate in Supabase each
+        // time. Chris's account had 29 such duplicates when this was
+        // discovered. Once set on first run, never reset; any localStorage
+        // wipe (sign-out or pre-pull) would otherwise re-trigger the bug.
+        'hk_migrated_legacy_ids'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -21573,10 +21595,24 @@ function saveLandmarks(l) {
   if (!isOnline()) {
     var uid = getUserId();
     l.forEach(function(lm) {
+      // 29 April 2026 — Phase 4ak: schema match with the canonical
+      // pushLandmarks mapping at line ~21764. Earlier code used name/icon/
+      // lat/lng/notes which are NOT columns in the landmarks table — the
+      // actual schema is type/label/x/y/r/scale/map_lat/map_lng. Same bug
+      // class as the swarm_catches Phase 4ah fix; surfaced by the
+      // keysToKeep+schema lint script (Item #11).
       queueOfflineSave('landmarks', {
-        id: lm.id, user_id: uid, apiary_id: lm.apiaryId,
-        name: lm.name || '', icon: lm.icon || '',
-        lat: lm.lat, lng: lm.lng, notes: lm.notes || ''
+        id: lm.id,
+        user_id: uid,
+        apiary_id: lm.apiaryId || (typeof currentApiaryId !== 'undefined' ? currentApiaryId : null),
+        type: lm.type,
+        label: lm.label,
+        x: lm.x,
+        y: lm.y,
+        r: lm.r || 0,
+        scale: lm.scale || 1.0,
+        map_lat: (typeof lm.mapLat === 'number') ? lm.mapLat : null,
+        map_lng: (typeof lm.mapLng === 'number') ? lm.mapLng : null
       });
     });
   } else {
@@ -22134,6 +22170,18 @@ function applyColourBlindMode() {
 // ── LEGACY ID MIGRATION ──────────────────────────────────
 // Convert old string IDs (apiary_default, apiary_xxxx) to UUID v4
 function migrateLegacyIds() {
+  // 29 April 2026 — Phase 4al: CRITICAL idempotency guard.
+  // This function used to run every sign-in. On a fresh device with seeded
+  // data (apiary_meadowbrook string ID), it would assign a new random UUID
+  // and that UUID would get pushed to Supabase before the pull caught up.
+  // Result: one new Meadowbrook duplicate row in the cloud per sign-in
+  // cycle. Chris's account had 29 such rows when this was discovered, all
+  // sharing the seed function's hardcoded createdAt: 1712000000000 timestamp.
+  //
+  // The guard: once migration runs, set hk_migrated_legacy_ids and never
+  // run again. Flag is in the pre-pull manifest so it survives wipes.
+  if (localStorage.getItem('hk_migrated_legacy_ids') === '1') return false;
+
   var apiaries = loadApiaries();
   var hives = loadHives();
   var changed = false;
@@ -22169,6 +22217,11 @@ function migrateLegacyIds() {
     }
     console.log('HiveKeeper: Migrated legacy IDs to UUID v4');
   }
+  // Mark migration done regardless of whether anything changed — if all IDs
+  // are already UUIDs, there's nothing to migrate now and never will be on
+  // this device. Setting the flag prevents the function running again on
+  // every sign-in.
+  localStorage.setItem('hk_migrated_legacy_ids', '1');
   return changed;
 }
 
