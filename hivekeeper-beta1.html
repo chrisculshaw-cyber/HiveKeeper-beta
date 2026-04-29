@@ -3861,7 +3861,7 @@ input[type="checkbox"].hk-chk:checked::after {
     <div id="eq-use-panel" style="display:none;margin-bottom:14px;padding:12px;background:#FAEEDA;border-radius:var(--rs);">
       <div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Adjust stock</div>
       <div style="display:flex;gap:6px;margin-bottom:8px;">
-        <button onclick="quickAdjust(-1)" style="flex:1;padding:10px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">\u2212 Use 1</button>
+        <button onclick="quickAdjust(-1)" style="flex:1;padding:10px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">&minus; Use 1</button>
         <button onclick="quickAdjust(1)" style="flex:1;padding:10px;background:white;color:#2a6448;border:1.5px solid #2a6448;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">+ Restock 1</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -7475,6 +7475,26 @@ function saveEquipmentFromModal() {
   } else {
     addEquipment(patch);
     showToast('Equipment added \u2713');
+    // 29 April 2026 Phase 4bg — when adding empty jars, offer to add lids
+    // 1:1. Common pattern in UK beekeeping (jars and lids usually bought
+    // together). User can decline if they already have lids in stock.
+    if (category === 'jar_empty' && quantity > 0) {
+      setTimeout(function() {
+        if (confirm('Add ' + quantity + ' lids to match? Lids usually come 1:1 with jars.')) {
+          addEquipment({
+            category: 'jar_lid',
+            name: null,
+            quantity: quantity,
+            location: location || null,
+            reorderAt: null,
+            unitCost: null,
+            notes: 'Added with jars'
+          });
+          showToast(quantity + ' lids added \u2713');
+          renderInventory();
+        }
+      }, 300);
+    }
   }
   closeEquipmentModal();
   renderInventory();
@@ -9036,6 +9056,8 @@ function renderHiveStackSection(hive) {
 // old hive gets its first stack array.
 var _stackEditorDraft = null;
 var _stackEditorHiveId = null;
+// 29 April 2026 Phase 4bg — original stack at open, for inventory delta on save
+var _stackEditorOriginal = null;
 
 function openStackEditor(hiveId) {
   console.log('[stack-editor] opening for hiveId=', hiveId);
@@ -9068,6 +9090,9 @@ function openStackEditor(hiveId) {
     for (var i = 0; i < bb; i++) _stackEditorDraft.push({ type: 'brood' });
     for (var j = 0; j < sp; j++) _stackEditorDraft.push({ type: 'super' });
   }
+
+  // 29 April 2026 Phase 4bg — snapshot for consumption-hook delta on save
+  _stackEditorOriginal = _stackEditorDraft.slice().map(function(b){ return { type: b.type }; });
 
   renderStackEditor();
   openModalEl('modal-hive-components');
@@ -9171,24 +9196,181 @@ function saveStackEditor() {
   var hives = loadHives();
   var hive = hives.find(function(h){ return h.id === _stackEditorHiveId; });
   if (!hive) { closeStackEditor(); return; }
-  // Persist the new stack
+
+  // 29 April 2026 Phase 4bg — compute net delta vs original snapshot per box type
+  var countByType = function(arr) {
+    var c = { brood: 0, super: 0, qe: 0 };
+    (arr || []).forEach(function(b) { if (c[b.type] !== undefined) c[b.type]++; });
+    return c;
+  };
+  var origCount = countByType(_stackEditorOriginal);
+  var newCount = countByType(_stackEditorDraft);
+  var deltas = {
+    brood: newCount.brood - origCount.brood,    // positive = user ADDED brood box(es)
+    super: newCount.super - origCount.super,
+    qe:    newCount.qe    - origCount.qe
+  };
+  // Map stack-editor box type → equipment category
+  var typeToCategory = { brood: 'brood_box', super: 'super', qe: 'queen_excluder' };
+
+  // Persist stack changes first (so failure in inventory hooks doesn't lose user's edit)
   hive.stack = _stackEditorDraft.slice().map(function(b){ return { type: b.type }; });
-  // Keep broodBoxes + supers counts in sync for backward compatibility
-  // (other parts of the app still read these)
   hive.broodBoxes = hive.stack.filter(function(b){return b.type==='brood';}).length;
   hive.supers = hive.stack.filter(function(b){return b.type==='super';}).length;
   saveHives(hives);
+
+  // Now apply inventory consumption / restock for each non-zero delta
+  var hiveType = hive.hiveType ? hive.hiveType.charAt(0).toUpperCase() + hive.hiveType.slice(1) : null;
+  // Normalise common values: 'national' → 'National'. The hiveType field
+  // might be lowercase or canonical; equipment.hiveType uses canonical.
+  var canonicaliseHiveType = function(ht) {
+    if (!ht) return null;
+    var lower = String(ht).toLowerCase();
+    var map = {
+      'national': 'National', 'langstroth': 'Langstroth', 'wbc': 'WBC',
+      'top bar': 'Top Bar', 'topbar': 'Top Bar',
+      'warré': 'Warré', 'warre': 'Warré',
+      'smith': 'Smith', 'commercial': 'Commercial', 'nuc': 'Nuc'
+    };
+    return map[lower] || ht;
+  };
+  var canonHiveType = canonicaliseHiveType(hiveType);
+
+  Object.keys(deltas).forEach(function(boxType) {
+    var delta = deltas[boxType];
+    if (delta === 0) return;
+    var category = typeToCategory[boxType];
+
+    // Find equipment rows: same category, matching hive type when applicable
+    var allEquipment = loadEquipment();
+    var matches = allEquipment.filter(function(it) {
+      if (it.category !== category) return false;
+      // Queen excluder needs hive type match same as boxes; if hive has no
+      // hiveType set, accept any matching category row
+      if (canonHiveType && it.hiveType) return it.hiveType === canonHiveType;
+      if (canonHiveType && !it.hiveType) return false;  // strict: don't consume mismatched
+      return true;
+    });
+
+    if (delta < 0) {
+      // User REMOVED boxes — return them to inventory.
+      // Increment first matching row, or create a new row if none exists.
+      var amount = -delta;
+      if (matches.length) {
+        applyEquipmentMovement(matches[0].id, amount, {
+          reason: 'Returned from hive',
+          actionType: 'manual',
+          relatedId: hive.id
+        });
+      } else {
+        // No matching equipment row — create one to receive the returned box(es)
+        addEquipment({
+          category: category,
+          name: null,
+          quantity: amount,
+          location: 'store',
+          reorderAt: null,
+          unitCost: null,
+          notes: 'Returned from hive — auto-created',
+          hiveType: canonHiveType || null
+        });
+      }
+    } else {
+      // User ADDED boxes — consume from inventory.
+      // Sum available stock across matching rows
+      var available = matches.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+      if (available >= delta) {
+        // FIFO: decrement oldest first
+        matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+        var remaining = delta;
+        for (var i = 0; i < matches.length && remaining > 0; i++) {
+          var take = Math.min(matches[i].quantity || 0, remaining);
+          if (take > 0) {
+            applyEquipmentMovement(matches[i].id, -take, {
+              reason: 'Added to hive',
+              actionType: 'manual',
+              relatedId: hive.id
+            });
+            remaining -= take;
+          }
+        }
+      } else {
+        // Not enough stock — ask the user. Use setTimeout so the toast and
+        // hive-saved feedback come first; consent dialog second.
+        setTimeout(function() {
+          var catLabel = (typeof getEquipmentCategoryLabel === 'function') ? getEquipmentCategoryLabel(category) : category;
+          var label = (canonHiveType ? canonHiveType + ' ' + catLabel.toLowerCase() : catLabel);
+          var msg = 'You added ' + delta + ' ' + label + (delta > 1 ? 's' : '') + ' to this hive but inventory shows only ' + available + ' available.\n\n'
+            + 'Add the missing ' + (delta - available) + ' to inventory now? (Tap Cancel to skip stock tracking for this change.)';
+          if (confirm(msg)) {
+            // Decrement what we have first
+            if (available > 0 && matches.length) {
+              matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
+              var remaining = available;
+              for (var i = 0; i < matches.length && remaining > 0; i++) {
+                var take = Math.min(matches[i].quantity || 0, remaining);
+                if (take > 0) {
+                  applyEquipmentMovement(matches[i].id, -take, {
+                    reason: 'Added to hive',
+                    actionType: 'manual',
+                    relatedId: hive.id
+                  });
+                  remaining -= take;
+                }
+              }
+            }
+            // Now record the shortfall as: add to inventory then immediately consume
+            var shortfall = delta - available;
+            addEquipment({
+              category: category,
+              name: null,
+              quantity: 0,  // will be added then consumed
+              location: 'store',
+              reorderAt: null,
+              unitCost: null,
+              notes: 'Auto-created when adding to hive',
+              hiveType: canonHiveType || null
+            });
+            // Find the row we just created, restock it, then consume
+            var newRow = loadEquipment().filter(function(it){
+              return it.category === category && it.notes === 'Auto-created when adding to hive';
+            }).pop();
+            if (newRow) {
+              applyEquipmentMovement(newRow.id, shortfall, {
+                reason: 'Restock — bought more',
+                actionType: 'restock',
+                relatedId: hive.id
+              });
+              applyEquipmentMovement(newRow.id, -shortfall, {
+                reason: 'Added to hive',
+                actionType: 'manual',
+                relatedId: hive.id
+              });
+            }
+          }
+          // If user cancels, we still record the available portion as consumed
+          // (handled above) but skip the shortfall. No surprise.
+        }, 250);
+      }
+    }
+  });
+
   closeStackEditor();
-  if (typeof showToast === 'function') showToast('Stack updated ✓');
+  if (typeof showToast === 'function') showToast('Stack updated \u2713');
   // Re-render all screens that show the stack
   try { if (typeof renderHiveDetail === 'function') renderHiveDetail(); } catch(e) {}
   try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
   try { if (typeof renderApiary === 'function') renderApiary(); } catch(e) {}
+  // Refresh anything that shows inventory counts
+  try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
+  try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
+  try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
 }
 
 function closeStackEditor() {
   _stackEditorDraft = null;
   _stackEditorHiveId = null;
+  _stackEditorOriginal = null;
   closeModalEl('modal-hive-components');
 }
 
@@ -21004,7 +21186,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23:05 29 April 2026 BST · Phase 4bf — STOCK CONSUMPTION FLOW. New inventory_movements audit table. Equipment edit modal gains \u00B1 quick-adjust panel with reason picker (Used in apiary / Bottled honey / Lost / Lent / Sold / Restock / Other). Bottling readiness card now has \u201CBottle now\u201D button when ready \u2014 atomically decrements jars/lids/labels FIFO and creates honey_stock row linked back via related_id. Recent activity log shows last 20 movements on inventory screen. Inventory now LIVES.';
+var HIVEKEEPER_BUILD = '23:30 29 April 2026 BST · Phase 4bg — (1) Fix \u22121 button rendering literal \\u2212 (HTML entity now). (2) Adding empty jars prompts to add lids 1:1 (UK common pattern). (3) Hive stack editor now applies inventory consumption on save: add brood/super/QE \u2192 decrements matching equipment by hive type; remove \u2192 returns to inventory. Stock-not-available case asks user to add to inventory or skip \u2014 no silent failures.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
