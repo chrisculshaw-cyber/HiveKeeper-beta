@@ -3670,6 +3670,13 @@ input[type="checkbox"].hk-chk:checked::after {
       <input type="text" id="eq-name" placeholder="e.g. Cedar super 14×12" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
     </div>
 
+    <!-- 29 April 2026 Phase 4ax — hive type dimension. Shown only for
+         categories where it matters (brood boxes, supers, frames, etc.) -->
+    <div id="eq-hive-type-row" style="margin-bottom:14px;display:none;">
+      <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Hive type</label>
+      <select id="eq-hive-type" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;"></select>
+    </div>
+
     <div style="margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <div>
         <label style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;">Quantity</label>
@@ -5656,6 +5663,21 @@ var EQUIPMENT_CATEGORIES = [
   { key: 'other',               label: 'Other (custom)',     group: 'Other' }
 ];
 
+// 29 April 2026 Phase 4ax — hive-type dropdown values for equipment.
+// Mirrors the codebase's HIVE_TYPES const at line ~15512, plus Nuc as
+// equipment-tracking-only. Dropdown only shown for hive-type-relevant
+// categories (see CATEGORIES_NEEDING_HIVE_TYPE below).
+var HIVE_TYPES_FOR_EQUIPMENT = ['National','Langstroth','WBC','Top Bar','Warré','Smith','Commercial','Nuc'];
+
+// Categories where the hive type matters — i.e. items that are
+// physically different per hive system. Items that span all systems
+// (smokers, gloves, jars, treatments, candles) don't need this dimension.
+var CATEGORIES_NEEDING_HIVE_TYPE = ['brood_box','super','frame','queen_excluder','crown_board','floor','roof','foundation_sheet','nuc_box'];
+
+function categoryNeedsHiveType(catKey) {
+  return CATEGORIES_NEEDING_HIVE_TYPE.indexOf(catKey) !== -1;
+}
+
 function getEquipmentCategoryLabel(key) {
   for (var i = 0; i < EQUIPMENT_CATEGORIES.length; i++) {
     if (EQUIPMENT_CATEGORIES[i].key === key) return EQUIPMENT_CATEGORIES[i].label;
@@ -5692,6 +5714,9 @@ function equipmentToRow(it, uid) {
     notes: it.notes || null,
     is_for_sale: !!it.isForSale,
     sale_price: it.salePrice != null ? it.salePrice : null,
+    // 29 April 2026 Phase 4ax — hive_type dimension (e.g. "National" brood box
+    // vs "Commercial" brood box). Null for categories that don't need it.
+    hive_type: it.hiveType || null,
     created_at: it.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -5728,6 +5753,8 @@ async function pullEquipment() {
       notes: r.notes || null,
       isForSale: !!r.is_for_sale,
       salePrice: r.sale_price != null ? r.sale_price : null,
+      // 29 April 2026 Phase 4ax — hive type dimension
+      hiveType: r.hive_type || null,
       createdAt: r.created_at
     };
   });
@@ -6311,7 +6338,10 @@ function renderInventory() {
     var rows = catItems.map(function(it) {
       var lowStock = (typeof it.reorderAt === 'number' && it.reorderAt > 0 && it.quantity <= it.reorderAt);
       var border = lowStock ? '3px solid #C8730A' : '3px solid var(--forest)';
-      var displayName = it.name ? esc(it.name) : esc(catLabel);
+      // 29 April 2026 Phase 4ax — display hive type alongside category label
+      // when present (e.g. "National brood box" instead of just "Brood box")
+      var nameBase = it.name ? esc(it.name) : esc(catLabel);
+      var displayName = (it.hiveType && !it.name) ? esc(it.hiveType) + ' ' + nameBase.toLowerCase() : nameBase;
       var locLabel = _equipLocationLabel(it.location);
       return '<div data-equipid="' + esc(it.id) + '" onclick="editEquipment(\'' + esc(it.id) + '\')" '
         + 'style="background:white;border-left:' + border + ';border-radius:6px;padding:10px 12px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:12px;">'
@@ -6371,19 +6401,33 @@ function _populateEquipmentLocationDropdown() {
   sel.innerHTML = html;
 }
 
+// 29 April 2026 Phase 4ax — populate the hive-type dropdown
+function _populateEquipmentHiveTypeDropdown() {
+  var sel = document.getElementById('eq-hive-type');
+  if (!sel) return;
+  var html = '<option value="">— Select —</option>';
+  HIVE_TYPES_FOR_EQUIPMENT.forEach(function(t) {
+    html += '<option value="' + t + '">' + t + '</option>';
+  });
+  sel.innerHTML = html;
+}
+
 function _onEquipCategoryChange() {
   var sel = document.getElementById('eq-category');
   var nameRow = document.getElementById('eq-name-row');
-  if (!sel || !nameRow) return;
-  // Show name field for "Other (custom)" only — for fixed categories the name is optional
-  // but always visible would clutter; hide it unless 'other' is selected.
-  nameRow.style.display = sel.value === 'other' ? 'block' : 'none';
+  var hiveTypeRow = document.getElementById('eq-hive-type-row');
+  if (!sel) return;
+  // Custom name field — only when "Other (custom)"
+  if (nameRow) nameRow.style.display = sel.value === 'other' ? 'block' : 'none';
+  // 29 April 2026 Phase 4ax — show hive-type field only for relevant categories
+  if (hiveTypeRow) hiveTypeRow.style.display = categoryNeedsHiveType(sel.value) ? 'block' : 'none';
 }
 
 function openAddEquipmentModal() {
   _equipmentEditingId = null;
   _populateEquipmentCategoryDropdown();
   _populateEquipmentLocationDropdown();
+  _populateEquipmentHiveTypeDropdown();
   document.getElementById('equipment-modal-title').textContent = 'Add equipment';
   document.getElementById('eq-category').value = 'brood_box';
   document.getElementById('eq-name').value = '';
@@ -6392,6 +6436,7 @@ function openAddEquipmentModal() {
   document.getElementById('eq-location').value = 'store';
   document.getElementById('eq-cost').value = '';
   document.getElementById('eq-notes').value = '';
+  document.getElementById('eq-hive-type').value = '';
   document.getElementById('eq-delete-btn').style.display = 'none';
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
@@ -6403,6 +6448,7 @@ function editEquipment(id) {
   _equipmentEditingId = id;
   _populateEquipmentCategoryDropdown();
   _populateEquipmentLocationDropdown();
+  _populateEquipmentHiveTypeDropdown();
   document.getElementById('equipment-modal-title').textContent = 'Edit ' + (it.name || getEquipmentCategoryLabel(it.category));
   document.getElementById('eq-category').value = it.category || 'other';
   document.getElementById('eq-name').value = it.name || '';
@@ -6411,6 +6457,7 @@ function editEquipment(id) {
   document.getElementById('eq-location').value = it.location || 'store';
   document.getElementById('eq-cost').value = (typeof it.unitCost === 'number') ? it.unitCost : '';
   document.getElementById('eq-notes').value = it.notes || '';
+  document.getElementById('eq-hive-type').value = it.hiveType || '';
   document.getElementById('eq-delete-btn').style.display = 'inline-block';
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
@@ -6429,10 +6476,18 @@ function saveEquipmentFromModal() {
   var location = document.getElementById('eq-location').value;
   var cost = document.getElementById('eq-cost').value.trim();
   var notes = document.getElementById('eq-notes').value.trim();
+  var hiveType = document.getElementById('eq-hive-type').value;
 
   if (!category) { showToast('Pick a category'); return; }
   if (category === 'other' && !name) { showToast('Custom items need a name'); return; }
   if (isNaN(quantity) || quantity < 0) { showToast('Quantity must be 0 or higher'); return; }
+  // 29 April 2026 Phase 4ax — require hive type for relevant categories.
+  // A National brood box and a Commercial brood box are different physical items;
+  // saving without specifying makes the data half-formed.
+  if (categoryNeedsHiveType(category) && !hiveType) {
+    showToast('Pick a hive type — brood boxes/supers/frames vary by system');
+    return;
+  }
 
   var patch = {
     category: category,
@@ -6441,7 +6496,9 @@ function saveEquipmentFromModal() {
     location: location || null,
     reorderAt: reorder ? parseInt(reorder, 10) : null,
     unitCost: cost ? parseFloat(cost) : null,
-    notes: notes || null
+    notes: notes || null,
+    // 29 April 2026 Phase 4ax — hive type dimension
+    hiveType: categoryNeedsHiveType(category) ? (hiveType || null) : null
   };
 
   if (_equipmentEditingId) {
@@ -19350,7 +19407,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:50 29 April 2026 BST · Phase 4aw follow-up — fix Add equipment modal markup. Was using class="modal" + inline display:none (modal class doesn\u2019t exist in CSS, openModalEl can\u2019t override inline style). Switched to the codebase\u2019s established modal-overlay / modal-sheet pattern matching modal-add-hive.';
+var HIVEKEEPER_BUILD = '19:25 29 April 2026 BST · Phase 4ax — equipment hive_type dimension. Brood boxes/supers/frames/queen excluders/crown boards/floors/roofs/foundation sheets/nuc boxes now require a hive type (National/Langstroth/WBC/Top Bar/Warré/Smith/Commercial/Nuc). Display: "National brood box". Tools/PPE/consumables unaffected.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
