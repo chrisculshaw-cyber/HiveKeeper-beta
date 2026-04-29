@@ -6124,6 +6124,81 @@ async function uploadHiveCoverPhoto(hiveId) {
   input.click();
 }
 
+// ── Hive cover photo action sheet (Phase 4au — 29 April 2026) ─────
+// Single tap on the apiary-screen 📷 button now opens a chooser when a
+// photo already exists, giving "Take new" / "Remove" / "Cancel". When no
+// photo exists, falls straight through to the upload flow (zero behaviour
+// change for first-time uploads). Closes the UX gap captured as Item #19.
+function handleHivePhotoTap(hiveId) {
+  var hive = loadHives().find(function(h){ return h.id === hiveId; });
+  if (!hive || !hive.coverPhoto) {
+    // No existing photo — straight to upload (preserves single-tap flow)
+    uploadHiveCoverPhoto(hiveId);
+    return;
+  }
+  // Existing photo — present action sheet
+  var existing = document.getElementById('hive-photo-action-sheet');
+  if (existing) existing.remove();
+  var sheet = document.createElement('div');
+  sheet.id = 'hive-photo-action-sheet';
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:white;border-radius:20px 20px 0 0;padding:24px 20px;box-shadow:0 -4px 24px rgba(0,0,0,.25);max-width:480px;margin:0 auto;text-align:center;';
+  sheet.innerHTML = '<div style="font-size:22px;margin-bottom:8px;">\uD83D\uDCF7</div>'
+    + '<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;font-family:Syne,sans-serif;">' + (hive.name || 'Hive photo') + '</div>'
+    + '<div style="font-size:13px;color:var(--text-l);margin-bottom:20px;">What would you like to do?</div>'
+    + '<button id="hive-photo-replace" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;font-family:Syne,sans-serif;">Take a new photo</button>'
+    + '<button id="hive-photo-remove" style="width:100%;background:#B83228;border:none;border-radius:var(--rs);padding:14px;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;font-family:Syne,sans-serif;">Remove and use default icon</button>'
+    + '<button id="hive-photo-cancel" style="width:100%;background:transparent;border:none;padding:10px;font-size:13px;color:var(--text-l);cursor:pointer;font-family:Syne,sans-serif;">Cancel</button>';
+  document.body.appendChild(sheet);
+  document.getElementById('hive-photo-replace').addEventListener('click', function(){
+    sheet.remove();
+    uploadHiveCoverPhoto(hiveId);
+  });
+  document.getElementById('hive-photo-remove').addEventListener('click', function(){
+    sheet.remove();
+    removeHiveCoverPhoto(hiveId);
+  });
+  document.getElementById('hive-photo-cancel').addEventListener('click', function(){
+    sheet.remove();
+  });
+}
+
+// Remove a hive's cover photo entirely. Clears the local hive.coverPhoto
+// reference, persists, and best-effort deletes the storage object to avoid
+// orphan files. Doesn't fail loud if the storage delete fails — the user's
+// experience is fine either way (they wanted the photo gone, and it visibly
+// is). The bucket DELETE policy needs to exist for the storage cleanup to
+// succeed; see the bucket-policies note in Item #20's resolution.
+async function removeHiveCoverPhoto(hiveId) {
+  var hives = loadHives();
+  var hive = hives.find(function(h){ return h.id === hiveId; });
+  if (!hive) return;
+  var hadPhoto = !!hive.coverPhoto;
+  hive.coverPhoto = null;
+  saveHives(hives);
+  showToast('Hive photo removed');
+  try { renderApiary(); } catch(e) {}
+  if (currentScreen === 's-hive' && currentHiveId === hiveId) {
+    try { renderHiveDetail(); } catch(e) {}
+  }
+  // Best-effort storage cleanup. If we don't have an UPDATE/DELETE policy,
+  // this 400s silently — local state is already correct, the user doesn't
+  // see a regression. Worth doing because otherwise orphan files accumulate.
+  if (hadPhoto) {
+    try {
+      var uid = getUserId();
+      if (uid) {
+        var sb = getSupabase();
+        // We standardise on .jpg paths from Phase 4ar. Older photos may have
+        // been .png — try both to be safe.
+        var paths = [uid + '/covers/' + hiveId + '.jpg', uid + '/covers/' + hiveId + '.png'];
+        await sb.storage.from('hive-photos').remove(paths);
+      }
+    } catch(e) {
+      console.warn('[removeHiveCoverPhoto] storage cleanup failed (local state still correct):', e);
+    }
+  }
+}
+
 function renderApiary(){
   if (typeof renderRowTabs === "function") renderRowTabs();
   // Update apiary name in header
@@ -6222,7 +6297,7 @@ function renderApiary(){
         ${dragHandle}
         <div class="hive-list-icon" style="position:relative;">
           ${h.coverPhoto ? '<img src="' + h.coverPhoto + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)}
-          <div onclick="event.stopPropagation();uploadHiveCoverPhoto('${h.id}')" title="Add hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
+          <div onclick="event.stopPropagation();handleHivePhotoTap('${h.id}')" title="Hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
         </div>
         <div class="hive-list-info">
           <div class="hive-list-name" style="${isDead?'color:#9E9E9E;':''}">${h.name}</div>
@@ -18761,7 +18836,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:25 29 April 2026 BST · Phase 4at follow-up #2 — make _renderPestsRow fully defensive (currentInspData may be undefined or missing .pests). Wire direct call into the screen-entry hook so chips render regardless of renderInspectHeader\u2019s early-return branches.';
+var HIVEKEEPER_BUILD = '15:50 29 April 2026 BST · Phase 4au — apiary-screen 📷 button gains action sheet when photo exists (Take new / Remove / Cancel). New uploads still single-tap. removeHiveCoverPhoto persists null + best-effort storage cleanup. Closes Item #19.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
