@@ -4847,7 +4847,14 @@ function goTo(id){
     }
   }catch(e){} }, 1100); }
   if(id==='s-hive') renderHiveDetail();
-  if(id==='s-inspect') renderInspectHeader();
+  if(id==='s-inspect') {
+    renderInspectHeader();
+    // 29 April 2026 Phase 4at follow-up — always render the pests row chips
+    // when the inspect screen opens, independent of whether
+    // renderInspectHeader took its early-return-no-hive branch. _renderPestsRow
+    // is fully defensive (handles missing currentInspData, missing pests key).
+    try { if (typeof _renderPestsRow === 'function') _renderPestsRow(); } catch(e) {}
+  }
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){ console.error('cal',e); } }
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){} }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
@@ -9101,7 +9108,15 @@ function togglePest(pestKey) {
 function _renderPestsRow() {
   var row = document.getElementById('inspect-pests-row');
   if (!row) return;
-  var current = (currentInspData.pests && Array.isArray(currentInspData.pests)) ? currentInspData.pests : [];
+  // Defensive: currentInspData may be undefined, null, or {} without a pests
+  // key. Always coerce to a safe array. Chips render their on/off visual based
+  // on this; safe-default empty means all chips render in the "off" state.
+  var current = [];
+  try {
+    if (typeof currentInspData !== 'undefined' && currentInspData && Array.isArray(currentInspData.pests)) {
+      current = currentInspData.pests;
+    }
+  } catch(e) {}
   // Build chips. Each chip is a single tappable element. When selected, fills
   // honey amber (warning colour) so the user sees at a glance that this hive
   // has issues. Subtle but distinct from the forest-green status row above.
@@ -18746,7 +18761,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:10 29 April 2026 BST · Phase 4at follow-up — fix PESTS const unicode escapes (ES6 \\u{1F98B} → surrogate-pair \\uD83E\\uDD8B). The ES6 form may not parse in the Median webview\u2019s JS engine; if the const assignment failed silently, the chips never rendered (caught by surrounding try/catch). Issues row should now show 5 chips on the inspect screen.';
+var HIVEKEEPER_BUILD = '15:25 29 April 2026 BST · Phase 4at follow-up #2 — make _renderPestsRow fully defensive (currentInspData may be undefined or missing .pests). Wire direct call into the screen-entry hook so chips render regardless of renderInspectHeader\u2019s early-return branches.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
