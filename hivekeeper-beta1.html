@@ -1722,7 +1722,7 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 
   <!-- Build stamp (subtle, dynamically updated by JS on load) -->
-  <div id="auth-build-stamp" class="hk-auth-fadein-1" style="position:relative;font-size:9px;color:rgba(255,255,255,.28);margin-top:14px;margin-bottom:18px;font-family:monospace;letter-spacing:.02em;z-index:1;">
+  <div id="auth-build-stamp" class="hk-auth-fadein-1" style="position:relative;font-size:11px;color:rgba(255,255,255,.85);margin-top:14px;margin-bottom:18px;font-family:monospace;font-weight:600;letter-spacing:.02em;line-height:1.4;z-index:1;">
     <span id="auth-build-stamp-text"></span>
   </div>
 
@@ -3450,9 +3450,9 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- BUILD VERSION CHIP (27 April 2026 — Phase 1c) — populated by
            updateBuildVersionInSettings() so the auth-screen stamp is the
            single source of truth. -->
-      <div id="settings-build-version" style="margin-top:12px;padding:8px 10px;background:var(--cream);border:1px solid var(--wax);border-radius:8px;font-size:10px;color:var(--text-l);line-height:1.4;font-family:'DM Mono',monospace;text-align:center;">
+      <div id="settings-build-version" style="margin-top:12px;padding:10px 12px;background:var(--cream);border:1px solid var(--wax);border-radius:8px;font-size:10px;color:var(--text-l);line-height:1.5;font-family:'DM Mono',monospace;text-align:center;">
         <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--text-l);opacity:0.7;">BUILD</span>
-        <span id="settings-build-version-text" style="display:block;margin-top:2px;color:var(--text-m);"></span>
+        <span id="settings-build-version-text" style="display:block;margin-top:3px;color:var(--text);font-size:12px;font-weight:700;"></span>
       </div>
     </div>
   </div>
@@ -18349,7 +18349,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:08 29 April 2026 BST · Phase 4am — community sprays foundation: completion fix (lat/lng captured from active apiary on save so RLS proximity reads include the row), identity dropdown polish (forest border, status pill on toggle row).';
+var HIVEKEEPER_BUILD = '10:10 29 April 2026 BST · Phase 4am — community sprays foundation + lat/lng capture + dropdown polish + build pill readability (auth stamp now 11px white 0.85 alpha, bold; settings chip 12px bold).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
