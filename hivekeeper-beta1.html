@@ -2465,13 +2465,6 @@ input[type="checkbox"].hk-chk:checked::after {
     <div style="padding:8px 20px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
     </div>
-    <!-- 29 April 2026 Phase 4az — log harvest from inspect screen.
-         Keepers extracting honey are usually on the inspect screen anyway,
-         so the entry point belongs here. Secondary styling keeps it from
-         competing with the primary Save inspection action. -->
-    <div style="padding:8px 20px 4px;">
-      <button onclick="openAddHarvest()" style="width:100%;background:#F4D77A;border:1.5px solid #C8730A;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#3A2509;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F36F; Log honey harvest</button>
-    </div>
     <div style="height:20px;"></div>
     </div><!-- /#inspect-form-content -->
   </div>
@@ -2545,6 +2538,16 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="section-head"><div class="section-title">🖼 Hive image</div><span class="help-icon" onclick="event.stopPropagation();showHelp('cover-photo')" title="What's the cover photo for?">?</span></div>
       <div id="hive-cover-banner" style="margin-top:8px;"></div>
     </div>
+
+    <!-- 29 April 2026 Phase 4az.2 — Log honey harvest. Per-hive action that
+         shouldn't require opening a full inspection. Lives on the hive detail
+         screen below the cover photo so it's discoverable when keepers visit
+         the hive after extraction. Reuses openAddHarvest() which is already
+         hive-scoped via currentHiveId. -->
+    <div style="padding:0 20px;margin-top:18px;">
+      <button onclick="openAddHarvest()" style="width:100%;background:#F4D77A;border:1.5px solid #C8730A;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#3A2509;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F36F; Log honey harvest</button>
+    </div>
+
     <div style="height:20px;"></div>
   </div>
 </div>
@@ -20104,7 +20107,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20:15 29 April 2026 BST · Phase 4az + harvest-on-inspect — Bottling readiness card on Honey tab (jars/lids/labels needed vs stock, target size picker). Plus "Log honey harvest" button at bottom of inspect screen so keepers find it where they actually are after extraction.';
+var HIVEKEEPER_BUILD = '20:25 29 April 2026 BST · Phase 4az.2 — moved Log honey harvest button to hive detail screen, below Hive image. Better fit than inspect screen — you don\u2019t need to open a full inspection just to log a harvest. Plus 4az bottling readiness card on Honey tab.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
