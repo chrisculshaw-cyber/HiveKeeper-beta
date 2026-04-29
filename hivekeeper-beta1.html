@@ -17440,7 +17440,15 @@ async function loadUserProfile() {
     if (data.referral_code) _referralCode = data.referral_code;
     if (data.referral_hive_bonus) _referralHiveBonus = data.referral_hive_bonus || 0;
     // Restore personal details on this device (account sync)
-    if (data.display_name) localStorage.setItem('hk_display_name', data.display_name);
+    // 29 April 2026 Phase 4as — fall back to data.name when display_name is
+    // null. Many users never set the optional display_name field but always
+    // have name (captured at signup). Without this fallback, hk_display_name
+    // never gets restored on a fresh device for those users — same bug class
+    // as Phase 4an follow-up. (Pre-pull manifest also extended below to
+    // protect these keys belt-and-braces, in case loadUserProfile fails or
+    // races with pullFromSupabase.)
+    var resolvedDisplayName = data.display_name || data.name || '';
+    if (resolvedDisplayName) localStorage.setItem('hk_display_name', resolvedDisplayName);
     if (data.phone) localStorage.setItem('hk_user_phone', data.phone);
     if (data.address) localStorage.setItem('hk_user_address', data.address);
     // Restore SOS contact on this device
@@ -18656,7 +18664,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:25 29 April 2026 BST · Phase 4ar — client-side image compression (compressImageFile helper, 1600px max edge JPEG q0.85). Applied to BOTH hive cover photo upload paths (apiary-screen camera + Edit Hive screen). Phone photos no longer hit Supabase free-tier 5MB cap.';
+var HIVEKEEPER_BUILD = '12:35 29 April 2026 BST · Phase 4as — fix account details restore on fresh device install. (1) loadUserProfile falls back data.display_name → data.name (was skipping restore when display_name null). (2) hk_display_name, hk_user_phone, hk_user_address added to pre-pull manifest as belt-and-braces.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19738,7 +19746,16 @@ async function pullFromSupabase() {
         // are restored from profiles on pull, these manifest entries can
         // be reviewed (probably stay anyway as a write-survives-cloud-blip
         // belt-and-braces, same pattern as hk_seeded_beta).
-        'hk_comm_share_sprays', 'hk_comm_share_identity'];
+        'hk_comm_share_sprays', 'hk_comm_share_identity',
+        // 29 April 2026 — Phase 4as: personal-detail keys. Belt-and-braces
+        // against loadUserProfile failing on a fresh sign-in. saveAccount
+        // writes to both localStorage and profiles; loadUserProfile restores
+        // from profiles on every sign-in. But if that read fails (network
+        // blip mid-sign-in, auth race), the user faces a fresh device with
+        // their account details mysteriously missing. Including these keys
+        // in the manifest means the local copy survives the wipe-and-pull
+        // cycle, so loadUserProfile getting flaky doesn't actually lose data.
+        'hk_display_name', 'hk_user_phone', 'hk_user_address'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
