@@ -2010,6 +2010,19 @@ input[type="checkbox"].hk-chk:checked::after {
          to log + browse manually. -->
     <!-- Inventory low-stock alert — renders only when items at/below reorder threshold -->
     <div id="home-low-stock-banner" style="display:none;"></div>
+
+    <!-- 29 April 2026 Phase 4bb — Forage conditions on home (moved from
+         Environment). Weather-driven indicator, glanceable on first open.
+         Renders into the same id used by renderEnvironment-era code so the
+         existing render logic continues to work; only the card's location
+         and styling change. -->
+    <div class="forage-card" id="forage-conditions-card" style="margin:8px 16px;background:white;border-radius:var(--rs);padding:14px;box-shadow:var(--shadow);border:1px solid var(--wax);">
+      <div class="forage-card-title" style="font-size:12px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">🌼 Forage conditions</div>
+      <div id="forage-conditions-body" style="font-size:13px;color:var(--text);line-height:1.5;">
+        Weather and flow conditions update when online.
+      </div>
+    </div>
+
     <div class="env-banner" id="spray-banner" style="display:none;">
       <div class="env-header" id="spray-header-el" onclick="goToEnvironmentSprays()">
         <div class="env-header-icon">
@@ -3613,14 +3626,6 @@ input[type="checkbox"].hk-chk:checked::after {
       <div id="forage-harvest-body"></div>
     </div>
 
-    <!-- FORAGE CONDITIONS -->
-    <div class="forage-card" id="forage-conditions-card">
-      <div class="forage-card-title">Forage conditions</div>
-      <div id="forage-conditions-body" style="font-size:12px;color:var(--text);line-height:1.6;">
-        Weather and flow conditions update when online.
-      </div>
-    </div>
-
     <div style="height:30px;"></div>
   </div>
 </div>
@@ -5050,6 +5055,8 @@ function goTo(id){
     renderDashboard();
     // 29 April 2026 Phase 4aw — inventory low-stock alert on home
     try { renderHomeLowStockBanner(); } catch(e) {}
+    // 29 April 2026 Phase 4bb — forage conditions on home (moved from Environment)
+    try { renderForageConditions(); } catch(e) {}
   }
   if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
     // OFFLINE-AWARE MAP LOAD (24 April 2026)
@@ -6514,16 +6521,21 @@ function renderEnvironment() {
   var harvestBody = document.getElementById('forage-harvest-body');
   if (harvestBody) {
     try {
-      var harvests = [];
-      var hives = (typeof loadHives === 'function') ? loadHives() : [];
-      hives.forEach(function(h){ if (h.harvests && Array.isArray(h.harvests)) harvests = harvests.concat(h.harvests); });
+      // 29 April 2026 Phase 4bb fix — was reading from h.harvests + h.weight
+      // (legacy/wrong data shape that never existed). Real shape: loadHarvests()
+      // returns a top-level array with rows {id, hiveId, kg, date, supers, notes}.
+      // Pre-existing bug — Environment harvest tile has been silently zero'd
+      // forever. Surfaced now because Chris is testing the harvest flow.
+      var harvests = (typeof loadHarvests === 'function') ? loadHarvests() : [];
       var thisYear = new Date().getFullYear();
-      var yearHarvests = harvests.filter(function(h){ return new Date(h.date).getFullYear() === thisYear; });
-      var totalKg = yearHarvests.reduce(function(sum, h){ return sum + (parseFloat(h.weight) || 0); }, 0);
+      var yearHarvests = harvests.filter(function(h){
+        return h.date && new Date(h.date).getFullYear() === thisYear;
+      });
+      var totalKg = yearHarvests.reduce(function(sum, h){ return sum + (parseFloat(h.kg) || 0); }, 0);
       var harvestCount = yearHarvests.length;
       var estValue = Math.round(totalKg * 12);
       if (harvestCount === 0) {
-        harvestBody.innerHTML = '<div class="harvest-empty">No harvests logged yet this year.<br><span style="color:var(--honey);font-weight:700;">Tap a hive → Harvest to log your first</span></div>';
+        harvestBody.innerHTML = '<div class="harvest-empty">No harvests logged yet this year.<br><span style="color:var(--honey);font-weight:700;">Tap a hive → Log honey harvest</span></div>';
       } else {
         harvestBody.innerHTML =
           '<div class="harvest-stat-row">' +
@@ -6537,43 +6549,9 @@ function renderEnvironment() {
     }
   }
 
-  // Forage conditions — weather-driven
-  var condBody = document.getElementById('forage-conditions-body');
-  if (condBody) {
-    try {
-      // 29 April 2026 Phase 4ak: was reading from 'hk_weather_cache' which
-      // doesn't exist (the actual cache key is 'hk_weather_v1'), and looking
-      // for w.temperature which also doesn't exist (structure is {ts, data}
-      // where data.current.temperature_2m is the value). Surfaced by lint
-      // script Check 3 (dead-letter keys). Forage conditions card has
-      // likely been silently empty since it was first written.
-      var w = null;
-      var cached = localStorage.getItem('hk_weather_v1');
-      if (cached) {
-        var parsed = JSON.parse(cached);
-        if (parsed && parsed.data && parsed.data.current) {
-          w = {
-            temperature: parsed.data.current.temperature_2m,
-            windSpeed: parsed.data.current.windspeed_10m,
-            rain: parsed.data.current.precipitation || 0
-          };
-        }
-      }
-      if (w && typeof w.temperature === 'number') {
-        var msg = '';
-        if (w.temperature >= 16 && (!w.windSpeed || w.windSpeed < 15) && (!w.rain || w.rain < 0.5)) {
-          msg = '<strong style="color:#3B6D11;">Excellent foraging conditions</strong> — ' + Math.round(w.temperature) + '°C, light wind. Bees will be out in force.';
-        } else if (w.temperature >= 12) {
-          msg = '<strong style="color:#854F0B;">Moderate conditions</strong> — ' + Math.round(w.temperature) + '°C. Bees active but not peak.';
-        } else {
-          msg = '<strong style="color:#A32D2D;">Poor foraging</strong> — ' + Math.round(w.temperature) + '°C. Bees staying close to the hive.';
-        }
-        condBody.innerHTML = msg;
-      } else {
-        condBody.innerHTML = 'Weather and flow conditions update when online.';
-      }
-    } catch(e) { condBody.innerHTML = 'Forage conditions unavailable offline.'; }
-  }
+  // Forage conditions — weather-driven (Phase 4bb extracted so home + any
+  // other surface can call it without duplicating logic)
+  try { renderForageConditions(); } catch(e) {}
 
   // Crop spraying reports
   try { renderSprays(); } catch(e) { console.warn('renderSprays:', e); }
@@ -7229,6 +7207,47 @@ function confirmDeleteHoneyStock() {
   closeHoneyStockModal();
   showToast('Deleted');
   renderHoneyStock();
+}
+
+// 29 April 2026 Phase 4bb — extracted from renderEnvironment so it can be
+// called from any surface that renders #forage-conditions-body. Currently
+// home (Phase 4bb) and historically the Environment screen (now removed).
+// Weather data lives in 'hk_weather_v1' cache with shape {ts, data} where
+// data.current.temperature_2m is the value (not 'temperature' — was a
+// pre-Phase 4ak bug). Defensive: no-ops cleanly if no card present, no
+// cached weather, or unexpected shape.
+function renderForageConditions() {
+  var condBody = document.getElementById('forage-conditions-body');
+  if (!condBody) return;
+  try {
+    var w = null;
+    var cached = localStorage.getItem('hk_weather_v1');
+    if (cached) {
+      var parsed = JSON.parse(cached);
+      if (parsed && parsed.data && parsed.data.current) {
+        w = {
+          temperature: parsed.data.current.temperature_2m,
+          windSpeed: parsed.data.current.windspeed_10m,
+          rain: parsed.data.current.precipitation || 0
+        };
+      }
+    }
+    if (w && typeof w.temperature === 'number') {
+      var msg = '';
+      if (w.temperature >= 16 && (!w.windSpeed || w.windSpeed < 15) && (!w.rain || w.rain < 0.5)) {
+        msg = '<strong style="color:#3B6D11;">Excellent foraging conditions</strong> — ' + Math.round(w.temperature) + '°C, light wind. Bees will be out in force.';
+      } else if (w.temperature >= 12) {
+        msg = '<strong style="color:#854F0B;">Moderate conditions</strong> — ' + Math.round(w.temperature) + '°C. Bees active but not peak.';
+      } else {
+        msg = '<strong style="color:#A32D2D;">Poor foraging</strong> — ' + Math.round(w.temperature) + '°C. Bees staying close to the hive.';
+      }
+      condBody.innerHTML = msg;
+    } else {
+      condBody.innerHTML = 'Weather and flow conditions update when online.';
+    }
+  } catch(e) {
+    condBody.innerHTML = 'Forage conditions unavailable offline.';
+  }
 }
 
 // Home-screen low-stock banner — renders into #home-low-stock-banner if present.
@@ -20187,7 +20206,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20:50 29 April 2026 BST · Phase 4ba — harvest cross-screen sync + per-hive harvest summary. (1) saveHarvest now refreshes Environment, hive-detail, and Honey tab views so totals stay in sync everywhere. (2) New "Harvest history" card on hive detail above the Log button — shows YTD kg + harvest count + 5 most recent harvests with dates. Multiple harvests per year (OSR / summer flow / ivy) all visible.';
+var HIVEKEEPER_BUILD = '21:10 29 April 2026 BST · Phase 4bb — (1) Environment harvest aggregation fix: was reading from h.harvests/h.weight legacy shape (never existed); now reads loadHarvests()/h.kg. Pre-existing zero bug now resolved. (2) Forage Conditions moved from Environment to home — more glanceable, single source of truth. renderForageConditions extracted, wired into home entry hook.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
