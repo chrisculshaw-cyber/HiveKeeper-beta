@@ -7230,7 +7230,12 @@ function hiveEditorChangeHiveType(type) {
 
 // Photo handlers — defer to existing cover photo flow if present, otherwise no-op
 function hiveEditorChangePhoto() {
-  // Trigger native file picker. Reuses the same approach as existing cover photo upload.
+  // 29 April 2026 Phase 4aq — was stuffing the raw dataURL directly into the
+  // draft, which tried to push as the cover_photo column on save. The push
+  // payload was megabytes of base64; Supabase rejected with "row violates
+  // RLS policy" (likely a column length / size guard masquerading as RLS).
+  // Now mirrors the working uploadHiveCoverPhoto path: upload the blob to
+  // storage first, get back the publicUrl, store that.
   var input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -7238,9 +7243,36 @@ function hiveEditorChangePhoto() {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
     var reader = new FileReader();
-    reader.onload = function(ev) {
-      _hiveEditorDraft.coverPhoto = ev.target.result;
-      renderHiveEditor();
+    reader.onload = async function(ev) {
+      var dataUrl = ev.target.result;
+      var uid = (typeof getUserId === 'function') ? getUserId() : null;
+      if (!uid) { showToast('Sign in to save hive photos'); return; }
+      if (!_hiveEditorHiveId) { showToast('Cannot upload — no hive context'); return; }
+      try {
+        var sb = getSupabase();
+        var arr = dataUrl.split(',');
+        var mime = arr[0].match(/:(.*?);/)[1];
+        var bstr = atob(arr[1]);
+        var n = bstr.length;
+        var u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        var blob = new Blob([u8arr], { type: mime });
+        var ext = mime === 'image/png' ? 'png' : 'jpg';
+        var path = uid + '/covers/' + _hiveEditorHiveId + '.' + ext;
+        showToast('Uploading hive photo...');
+        var { error } = await sb.storage.from('hive-photos').upload(path, blob, { contentType: mime, upsert: true });
+        if (error) { showToast('Upload failed: ' + error.message); return; }
+        var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(path);
+        var url = urlData && urlData.publicUrl ? urlData.publicUrl + '?t=' + Date.now() : null;
+        if (url) {
+          _hiveEditorDraft.coverPhoto = url;
+          renderHiveEditor();
+          showToast('Hive photo saved \u2713');
+        }
+      } catch(err) {
+        showToast('Photo upload failed');
+        console.warn('[hiveEditorChangePhoto]', err);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -18580,7 +18612,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:05 29 April 2026 BST · Phase 4ap — fix sticky hive cover photo (4 display sites were stripping the upload cache-buster from URL, browser kept showing old cached photo despite successful upload).';
+var HIVEKEEPER_BUILD = '11:55 29 April 2026 BST · Phase 4aq — fix Edit Hive screen photo upload (was pushing megabytes of dataURL base64 to cover_photo column, Supabase RLS-rejected; now uploads to hive-photos bucket like the apiary screen camera button does, stores the publicUrl).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
