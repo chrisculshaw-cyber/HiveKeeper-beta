@@ -6148,7 +6148,7 @@ function renderApiary(){
       <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
         ${dragHandle}
         <div class="hive-list-icon" style="position:relative;">
-          ${h.coverPhoto ? '<img src="' + h.coverPhoto.split('?')[0] + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)}
+          ${h.coverPhoto ? '<img src="' + h.coverPhoto + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)}
           <div onclick="event.stopPropagation();uploadHiveCoverPhoto('${h.id}')" title="Add hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
         </div>
         <div class="hive-list-info">
@@ -7067,9 +7067,8 @@ function renderHiveEditor() {
 
   var photoHtml;
   if (d.coverPhoto) {
-    var clean = d.coverPhoto.split('?')[0];
     photoHtml = '<div style="display:flex;align-items:center;gap:10px;">'
-      + '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:#e0e0e0;flex-shrink:0;"><img src="' + clean + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+      + '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;background:#e0e0e0;flex-shrink:0;"><img src="' + d.coverPhoto + '" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
       + '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">'
       +   '<button onclick="hiveEditorChangePhoto()" style="padding:8px 12px;background:var(--forest);color:white;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">Change photo</button>'
       +   '<button onclick="hiveEditorRemovePhoto()" style="padding:8px 12px;background:white;color:#B83228;border:1px solid #B83228;border-radius:6px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">Remove photo</button>'
@@ -7317,10 +7316,9 @@ function renderHiveCoverBanner(hive) {
   var bannerEl = document.getElementById('hive-cover-banner');
   if (!bannerEl || !hive) return;
   if (hive.coverPhoto) {
-    var cleanUrl = hive.coverPhoto.split('?')[0];
     bannerEl.innerHTML = ''
       + '<div style="position:relative;width:100%;aspect-ratio:16/9;max-height:280px;border-radius:var(--rs);overflow:hidden;background:#e0e0e0;box-shadow:var(--shadow);">'
-      +   '<img src="' + cleanUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
+      +   '<img src="' + hive.coverPhoto + '" style="width:100%;height:100%;object-fit:cover;display:block;">'
       +   '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.65));padding:12px 16px;">'
       +     '<div style="color:white;font-size:15px;font-weight:800;font-family:Syne,sans-serif;">' + (hive.name || 'Hive') + '</div>'
       +   '</div>'
@@ -11464,9 +11462,8 @@ function populateHiveSelector(){
     if(hive){
       var photoHtml = '';
       if (hive.coverPhoto) {
-        var cleanUrl = hive.coverPhoto.split('?')[0];
         photoHtml = '<div style="width:110px;flex-shrink:0;background:#e0e0e0;overflow:hidden;border-right:1px solid var(--wax);align-self:stretch;">'
-          + '<img src="' + cleanUrl + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">'
+          + '<img src="' + hive.coverPhoto + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="">'
           + '</div>';
       }
       var stackHtml = '<div style="width:80px;flex-shrink:0;padding:10px 8px;align-self:center;">' + renderHiveStackSVG(hive, { width: 80 }) + '</div>';
@@ -18583,7 +18580,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:55 29 April 2026 BST · Phase 4ao — fix sticky wax moth flag (inspect screen status change to active/dead/empty/unclear now explicitly clears waxMoth=false; previously only the standalone Hive Status modal cleared it).';
+var HIVEKEEPER_BUILD = '11:05 29 April 2026 BST · Phase 4ap — fix sticky hive cover photo (4 display sites were stripping the upload cache-buster from URL, browser kept showing old cached photo despite successful upload).';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
