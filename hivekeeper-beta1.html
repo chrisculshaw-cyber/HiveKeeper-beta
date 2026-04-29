@@ -3043,7 +3043,7 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </form>
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;">
-        💡 <b>Tip:</b> The UK's free <b>BeeConnected</b> service sends automatic alerts when farmers plan to spray near your hives. <a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Sign up</a>.
+        💡 <b>Tip:</b> The UK's free <b>BeeConnected</b> service sends automatic alerts when farmers plan to spray near your hives. <a href="https://www.beeconnected.org.uk" target="_blank" rel="noopener noreferrer" style="color:#BA7517;font-weight:700;">Sign up</a>.
       </div>
     </div>
   </div>
@@ -5451,7 +5451,7 @@ function renderSprays() {
       + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;">Log spraying events near your apiaries to track exposure risk</div>'
       + '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;">'
       + 'Subscribe to the UK\'s free <b>BeeConnected</b> service for automatic pesticide alerts.<br/>'
-      + '<a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Learn more →</a>'
+      + '<a href="https://www.beeconnected.org.uk" target="_blank" rel="noopener noreferrer" style="color:#BA7517;font-weight:700;">Learn more →</a>'
       + '</div></div>';
     return;
   }
@@ -5474,7 +5474,7 @@ function renderSprays() {
   body.innerHTML = html
     + '<div style="margin-top:10px;padding-top:12px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">'
     + 'Sign up for <b>BeeConnected</b> UK for automatic spray alerts · '
-    + '<a href="https://www.beeconnected.org.uk" target="_blank" style="color:#BA7517;font-weight:700;">Learn more</a>'
+    + '<a href="https://www.beeconnected.org.uk" target="_blank" rel="noopener noreferrer" style="color:#BA7517;font-weight:700;">Learn more</a>'
     + '</div>';
 }
 
@@ -5875,7 +5875,7 @@ function renderApiary(){
             var hiveInsps = loadInspections().filter(function(i){ return i.hiveId === h.id && i.photoUrls && i.photoUrls.length; }).sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
             if (!hiveInsps.length) return '';
             var url = hiveInsps[0].photoUrls[0];
-            return '<img src="' + url + '" onclick="event.stopPropagation();window.open(\'' + url + '\')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--wax);cursor:pointer;" title="Latest frame photo">';
+            return '<img src="' + url + '" onclick="event.stopPropagation();window.open(\'' + url + '\',\'_blank\')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--wax);cursor:pointer;" title="Latest frame photo">';
           })()}
           <div class="badge ${badge.cls}">${badge.text}</div>
           <button onclick="event.stopPropagation();viewHive('${h.id}')" style="background:var(--honey);border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap;">Open hive</button>
@@ -7260,7 +7260,7 @@ function renderHiveDetail(){
         <div class="tl-type">📋 Inspection · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
         <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}${insp.weather ? ' · ' + insp.weather.icon + ' ' + formatTemp(insp.weather.tempC) + ' ' + insp.weather.condition + (insp.weather.windKph ? ' · ' + formatSpeed(insp.weather.windKph) + ' wind' : (insp.weather.windMph ? ' · ' + insp.weather.windMph + 'mph wind' : '')) : ''}</div>
-        ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
+        ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
       </div>
     </div>
   `;
@@ -7295,10 +7295,10 @@ function renderHivePhotoTimeline() {
 
 function openPhotoFullscreen(url, label) {
   var sheet = document.querySelector('#modal-sos .modal-sheet');
-  if (!sheet) { window.open(url); return; }
+  if (!sheet) { window.open(url, '_blank'); return; }
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title" style="font-size:14px;">' + (label||'Photo') + '</div>'
-    + '<img src="' + url + '" style="width:100%;border-radius:8px;margin-bottom:12px;" onclick="window.open(\'' + url + '\')">'
+    + '<img src="' + url + '" style="width:100%;border-radius:8px;margin-bottom:12px;" onclick="window.open(\'' + url + '\',\'_blank\')">'
     + '<button onclick="closeModalEl(\'modal-sos\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
   openModalEl('modal-sos');
 }
@@ -8369,7 +8369,7 @@ function addPhotoToStrip(dataUrl, photoIndex, label) {
         _capturedPhoto.url = url;
         _capturedPhoto.hiveId = uploadHiveId;
         if (statusEl) statusEl.textContent = '☁️';
-        thumb.onclick = function(){ window.open(url); };
+        thumb.onclick = function(){ window.open(url, '_blank'); };
         // RETROSPECTIVE ATTACHMENT (Apr 21 late): if the user already tapped
         // Save while this upload was in flight, saveInspection will have
         // tagged this photo with _inspectionId. Attach the URL to that
@@ -8655,9 +8655,9 @@ async function subscribeToCalendar() {
   var openBtn = document.getElementById('cal-open-btn');
   if (openBtn) openBtn.addEventListener('click', function(){ window.location.href = webcalUrl; });
   var googleBtn = document.getElementById('cal-google-btn');
-  if (googleBtn) googleBtn.addEventListener('click', function(){ window.open(googleCalUrl); });
+  if (googleBtn) googleBtn.addEventListener('click', function(){ window.open(googleCalUrl, '_blank'); });
   var icalBtn = document.getElementById('cal-ical-btn');
-  if (icalBtn) icalBtn.addEventListener('click', function(){ window.open(calUrl); });
+  if (icalBtn) icalBtn.addEventListener('click', function(){ window.open(calUrl, '_blank'); });
   document.getElementById('cal-close-btn').addEventListener('click', function(){ sheet.remove(); });
 }
 
@@ -13415,7 +13415,7 @@ function openMyHornetReports() {
         + '    <div style="font-size:11px;color:var(--text-l);margin-top:2px;">Seen: '+dReported.toLocaleString('en-GB', {dateStyle:'medium', timeStyle:'short'})+'</div>'
         + '    <div style="font-size:11px;color:var(--text-l);">Submitted: '+dSubmitted.toLocaleDateString('en-GB', {dateStyle:'medium'})+'</div>'
         + '  </div>'
-        + '  <a href="'+mapsLink+'" target="_blank" style="font-size:11px;color:var(--honey);text-decoration:none;font-weight:700;white-space:nowrap;">📍 View map</a>'
+        + '  <a href="'+mapsLink+'" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--honey);text-decoration:none;font-weight:700;white-space:nowrap;">📍 View map</a>'
         + '</div>'
         + desc
         + '</div>';
@@ -13609,7 +13609,7 @@ function renderAsianHornetWatch(lat, lng) {
     +sightingsHtml
     +'<div class="ah-footer-note">'
       +(AH_LIVE_FETCHED
-        ? 'Data: <a href="https://www.google.com/maps/d/viewer?mid=1BGAdYHaIszxPKWrjX8dASHpU8mN-_2HV" target="_blank">Community-curated Asian Hornet Map UK</a>, sourced from BBKA / National Bee Unit rolling updates. Live \u2014 refreshed hourly. Peak risk: August\u2013October.'
+        ? 'Data: <a href="https://www.google.com/maps/d/viewer?mid=1BGAdYHaIszxPKWrjX8dASHpU8mN-_2HV" target="_blank" rel="noopener noreferrer">Community-curated Asian Hornet Map UK</a>, sourced from BBKA / National Bee Unit rolling updates. Live \u2014 refreshed hourly. Peak risk: August\u2013October.'
         : 'Data: NBU confirmed sightings (cached). Live data will load when online. Peak risk: August\u2013October.')
     +'</div>';
 
@@ -18160,7 +18160,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '08:15 29 April 2026 BST · Phase 4ah — CRITICAL: fix swarm_catches schema mismatch (frames_of_bees not frames, +apiary_id, +logged_at) so swarm saves actually reach Supabase';
+var HIVEKEEPER_BUILD = '08:25 29 April 2026 BST · Phase 4ai — external link audit (window.open _blank everywhere, rel=noopener noreferrer on all <a target=_blank>, mailto/tel get target=_blank for Median scheme passthrough)';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -20106,7 +20106,7 @@ function showInviteAcknowledgement(invite) {
       + '</div>'
       + '<div id="invite-ack-box" onclick="toggleInviteAck()" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:16px;background:white;transition:border-color .2s;">'
         + '<div id="cb-invite-ack" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>'
-        + '<span style="font-size:13px;color:var(--text);line-height:1.6;">I understand that any inspection records I add to this apiary will be stored by HiveKeeper and visible to the apiary owner. See our <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a>.</span>'
+        + '<span style="font-size:13px;color:var(--text);line-height:1.6;">I understand that any inspection records I add to this apiary will be stored by HiveKeeper and visible to the apiary owner. See our <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a>.</span>'
       + '</div>'
       + '<div id="invite-ack-error" style="display:none;background:#FDECEA;border-radius:var(--rs);padding:10px 12px;font-size:12px;color:#B83228;margin-bottom:12px;font-weight:600;">Please tick the box to continue.</div>'
       + '<button id="invite-ack-btn" onclick="confirmInviteAck()" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:10px;">Join apiary</button>'
@@ -25056,15 +25056,15 @@ function goToApiaryAlerts() {
       <div style="margin-bottom:16px;">
         <label onclick="toggleConsent('consent-privacy')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:10px;background:white;transition:border-color .2s;" id="label-consent-privacy">
           <div id="cb-consent-privacy" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
-          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a></span>
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/privacy-policy.html" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Privacy Policy</a></span>
         </label>
         <label onclick="toggleConsent('consent-security')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:10px;background:white;transition:border-color .2s;" id="label-consent-security">
           <div id="cb-consent-security" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
-          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/security-policy.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Security Policy</a></span>
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/security-policy.html" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Security Policy</a></span>
         </label>
         <label onclick="toggleConsent('consent-terms')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);margin-bottom:10px;background:white;transition:border-color .2s;" id="label-consent-terms">
           <div id="cb-consent-terms" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
-          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/terms-of-service.html" target="_blank" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Terms of Service</a></span>
+          <span style="font-size:13px;color:var(--text);line-height:1.6;">I have read and agree to the <a href="https://gethivekeeper.com/terms-of-service.html" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" style="color:var(--forest);font-weight:700;">Terms of Service</a></span>
         </label>
         <label onclick="toggleConsent('consent-age')" style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px;border-radius:var(--rs);border:2px solid var(--wax);background:white;transition:border-color .2s;" id="label-consent-age">
           <div id="cb-consent-age" style="width:22px;height:22px;border-radius:4px;border:2px solid var(--wax);background:white;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;"></div>
@@ -25198,9 +25198,9 @@ function goToApiaryAlerts() {
       <div style="background:#E8F5E9;border-radius:var(--rs);padding:14px;margin-bottom:14px;border:1px solid #A5D6A7;">
         <div style="font-size:11px;font-weight:800;color:#1B5E20;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">National Bee Unit (NBU)</div>
         <div style="font-size:13px;color:var(--text);line-height:1.8;">
-          <div>📧 <a href="mailto:beehealth@apha.gov.uk" style="color:var(--forest);font-weight:700;">beehealth@apha.gov.uk</a></div>
-          <div>📞 <a href="tel:03003030094" style="color:var(--forest);font-weight:700;">0300 303 0094</a></div>
-          <div>🌐 <a href="https://www.nationalbeeunit.com" target="_blank" style="color:var(--forest);font-weight:700;">nationalbeeunit.com</a></div>
+          <div>📧 <a href="mailto:beehealth@apha.gov.uk" target="_blank" rel="noopener noreferrer" style="color:var(--forest);font-weight:700;">beehealth@apha.gov.uk</a></div>
+          <div>📞 <a href="tel:03003030094" target="_blank" rel="noopener noreferrer" style="color:var(--forest);font-weight:700;">0300 303 0094</a></div>
+          <div>🌐 <a href="https://www.nationalbeeunit.com" target="_blank" rel="noopener noreferrer" style="color:var(--forest);font-weight:700;">nationalbeeunit.com</a></div>
         </div>
       </div>
 
@@ -25228,8 +25228,8 @@ function goToApiaryAlerts() {
       <div style="background:var(--cream);border-radius:var(--rs);padding:14px;margin-bottom:16px;border:1px solid var(--wax);">
         <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">BBKA — British Beekeepers Association</div>
         <div style="font-size:13px;color:var(--text);line-height:1.8;">
-          <div>📞 <a href="tel:02476696679" style="color:var(--forest);font-weight:700;">024 7669 6679</a></div>
-          <div>🌐 <a href="https://www.bbka.org.uk" target="_blank" style="color:var(--forest);font-weight:700;">bbka.org.uk</a></div>
+          <div>📞 <a href="tel:02476696679" target="_blank" rel="noopener noreferrer" style="color:var(--forest);font-weight:700;">024 7669 6679</a></div>
+          <div>🌐 <a href="https://www.bbka.org.uk" target="_blank" rel="noopener noreferrer" style="color:var(--forest);font-weight:700;">bbka.org.uk</a></div>
         </div>
       </div>
 
