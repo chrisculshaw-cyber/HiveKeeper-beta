@@ -2409,16 +2409,26 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
     <!-- Hive status control — sets insp.status on save AND persists to hive record.
          Placed in the inspection body so the keeper sees it as part of the natural
-         inspection flow. Tap any button to select; leave untouched to preserve current. -->
+         inspection flow. Tap any button to select; leave untouched to preserve current.
+         29 April 2026 Phase 4at: wax_moth removed from this row — it's now a pest
+         issue, not a lifecycle status. See pests row below. -->
     <div style="margin:12px 20px 0;">
       <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Hive status (optional — leave untouched to keep current)</div>
-      <div id="inspect-status-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">
+      <div id="inspect-status-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
         <button type="button" onclick="setInspectStatus('active')" id="inspect-status-active" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Active</button>
         <button type="button" onclick="setInspectStatus('unclear')" id="inspect-status-unclear" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Unclear</button>
         <button type="button" onclick="setInspectStatus('dead')" id="inspect-status-dead" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Dead</button>
         <button type="button" onclick="setInspectStatus('empty')" id="inspect-status-empty" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">Empty</button>
-        <button type="button" onclick="setInspectStatus('wax_moth')" id="inspect-status-wax_moth" class="inspect-status-btn" style="padding:10px 4px;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;border-radius:var(--rs);border:1px solid var(--wax);background:white;color:var(--text);cursor:pointer;">🦋 Wax moth</button>
       </div>
+    </div>
+    <!-- Pests / Issues — Phase 4at, 29 April 2026 — multi-select chips.
+         Independent of hive lifecycle status. Active hives can have pest issues
+         and resolving them doesn't require changing status. Pests are recorded
+         on each inspection (point-in-time), with the hive's current pest list
+         derived from the most recent inspection. -->
+    <div style="margin:10px 20px 0;">
+      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Issues seen (optional — multi-select)</div>
+      <div id="inspect-pests-row" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;"></div>
     </div>
     <div class="section-head" style="margin-top:12px;"><div class="section-title">Photos</div></div>
     <div class="photo-strip" id="photo-strip">
@@ -7821,6 +7831,7 @@ function renderInspectHeader(){
     console.log('[changeInspectHive] skipping currentInspData reset (edit mode, id=', window._editingInspId, ')');
   }
   try { resetInspectStatusButtons(); } catch(e) {}
+  try { resetPestsRow(); } catch(e) {}
   // Reset unsaved-work tracking for this new inspection. Also skip in edit
   // mode so the dirty-flag guard doesn't trigger spuriously on amend.
   if (!window._editingInspId) {
@@ -9029,7 +9040,7 @@ async function subscribeToCalendar() {
 // corrupting status data (non-queen-sighted inspections were flipping
 // active hives to unclear). Now user explicitly owns the status change.
 function setInspectStatus(newStatus) {
-  if (newStatus !== 'active' && newStatus !== 'unclear' && newStatus !== 'dead' && newStatus !== 'empty' && newStatus !== 'wax_moth') return;
+  if (newStatus !== 'active' && newStatus !== 'unclear' && newStatus !== 'dead' && newStatus !== 'empty') return;
   // Toggle off if tapping the already-selected option
   if (currentInspData.status === newStatus) {
     currentInspData.status = null;
@@ -9037,7 +9048,7 @@ function setInspectStatus(newStatus) {
     currentInspData.status = newStatus;
   }
   // Visual update — light-theme colours to match the other inspection-form toggles
-  ['active','unclear','dead','empty','wax_moth'].forEach(function(s) {
+  ['active','unclear','dead','empty'].forEach(function(s) {
     var btn = document.getElementById('inspect-status-' + s);
     if (!btn) return;
     var isSel = (currentInspData.status === s);
@@ -9049,13 +9060,79 @@ function setInspectStatus(newStatus) {
 
 // Reset the status buttons — called from inspect screen enter/reset
 function resetInspectStatusButtons() {
-  ['active','unclear','dead','empty','wax_moth'].forEach(function(s) {
+  ['active','unclear','dead','empty'].forEach(function(s) {
     var btn = document.getElementById('inspect-status-' + s);
     if (!btn) return;
     btn.style.background = 'white';
     btn.style.color = 'var(--text)';
     btn.style.borderColor = 'var(--wax)';
   });
+}
+
+// ════════════════════════════════════════════════════════════════
+// 29 April 2026 Phase 4at — PESTS (multi-select, per-inspection)
+// ════════════════════════════════════════════════════════════════
+// Pests are recorded as an array on each inspection. Multi-select; ticking
+// any combination is fine. The hive's "current pests" = the most recent
+// inspection's pests array (denormalised onto the hive row for fast reads).
+//
+// Replaces the legacy hive.waxMoth boolean and the wax_moth pseudo-status
+// from the lifecycle status enum. See backlog Item #18 for the rationale.
+
+var PESTS = [
+  { key: 'wax_moth', label: 'Wax moth', icon: '\u{1F98B}' },
+  { key: 'mice',     label: 'Mice',     icon: '\u{1F401}' },
+  { key: 'ants',     label: 'Ants',     icon: '\u{1F41C}' },
+  { key: 'wasps',    label: 'Wasps',    icon: '\u{1F41D}' },
+  { key: 'hornets',  label: 'Hornets',  icon: '\u26A0' }
+];
+
+function togglePest(pestKey) {
+  if (!currentInspData.pests) currentInspData.pests = [];
+  var idx = currentInspData.pests.indexOf(pestKey);
+  if (idx >= 0) {
+    currentInspData.pests.splice(idx, 1);
+  } else {
+    currentInspData.pests.push(pestKey);
+  }
+  _renderPestsRow();
+}
+
+function _renderPestsRow() {
+  var row = document.getElementById('inspect-pests-row');
+  if (!row) return;
+  var current = (currentInspData.pests && Array.isArray(currentInspData.pests)) ? currentInspData.pests : [];
+  // Build chips. Each chip is a single tappable element. When selected, fills
+  // honey amber (warning colour) so the user sees at a glance that this hive
+  // has issues. Subtle but distinct from the forest-green status row above.
+  row.innerHTML = PESTS.map(function(p) {
+    var isSel = current.indexOf(p.key) !== -1;
+    var bg = isSel ? '#C8730A' : 'white';
+    var fg = isSel ? 'white' : 'var(--text)';
+    var bc = isSel ? '#C8730A' : 'var(--wax)';
+    return '<button type="button" onclick="togglePest(\'' + p.key + '\')" '
+      + 'style="padding:10px 4px;font-size:11px;font-weight:700;font-family:\'Syne\',sans-serif;'
+      + 'border-radius:var(--rs);border:1px solid ' + bc + ';background:' + bg + ';color:' + fg + ';cursor:pointer;">'
+      + p.icon + '<br>' + p.label + '</button>';
+  }).join('');
+}
+
+// Reset pests row visual state — called from inspect screen enter/reset
+function resetPestsRow() {
+  if (currentInspData) currentInspData.pests = [];
+  _renderPestsRow();
+}
+
+// Read helper: does this hive currently have a given pest issue?
+// Used by dashboard / display sites that previously read hive.waxMoth.
+function hiveHasPest(hive, pestKey) {
+  if (!hive) return false;
+  // Prefer the new pests array (Phase 4at). Fall back to legacy waxMoth boolean
+  // for hives that haven't yet been touched by the migration. Once Phase 4at is
+  // bedded in across all clients, the legacy fallback can be removed.
+  if (Array.isArray(hive.pests) && hive.pests.indexOf(pestKey) !== -1) return true;
+  if (pestKey === 'wax_moth' && hive.waxMoth === true) return true;
+  return false;
 }
 
 // ── INSPECT DIRTY TRACKING — TOGGLE BUTTON + TEXTAREA COVERAGE ──
@@ -9441,22 +9518,14 @@ function saveInspection(){
   // Update hive fields from inspection. Status is EXPLICITLY controlled by the
   // user via the status buttons above Save — not inferred from queen-seen.
   // (Old logic "!==active → queenSeen?active:unclear" was silently flipping
-  // healthy non-queen-sighted hives to unclear.)
-  //
-  // Record insp.status from the user's explicit selection (null if unchanged).
-  // wax_moth is a SEPARATE flag in the status row — it sets the waxMoth bool
-  // without overwriting the colony status (which stays whatever it was).
+  // 29 April 2026 Phase 4at: pests now multi-select, recorded as an array
+  // independent of lifecycle status. wax_moth was removed from the status row.
+  // The legacy waxMoth boolean is kept in sync (derived from the pests array)
+  // for any code that hasn't been migrated to use hiveHasPest yet.
   insp.status = (currentInspData.status === 'active' || currentInspData.status === 'unclear' || currentInspData.status === 'dead' || currentInspData.status === 'empty') ? currentInspData.status : null;
-  if (currentInspData.status === 'wax_moth') {
-    insp.waxMoth = true;
-  } else if (insp.status) {
-    // 29 April 2026 Phase 4ao — when user explicitly picks a non-wax_moth
-    // status, clear the flag. Without this, once a hive had wax_moth, the
-    // flag was sticky — only clearable via the standalone Hive Status modal
-    // (line 14035) which has its own explicit clear logic. Mirror that
-    // behaviour here so the inspect screen's status row can also clear.
-    insp.waxMoth = false;
-  }
+  insp.pests = (currentInspData.pests && Array.isArray(currentInspData.pests)) ? currentInspData.pests.slice() : [];
+  // Maintain the legacy waxMoth boolean in sync with the pests array.
+  insp.waxMoth = insp.pests.indexOf('wax_moth') !== -1;
   var hives=loadHives();
   const hi=hives.findIndex(h=>h.id===currentHiveId);
   if(hi>=0){
@@ -9467,7 +9536,11 @@ function saveInspection(){
     if(insp.temper) hives[hi].temper=insp.temper;
     if(insp.healthScore) hives[hi].healthScore=insp.healthScore;
     if(insp.swarmRisk) hives[hi].swarmRisk=insp.swarmRisk;
-    if(insp.waxMoth === true) hives[hi].waxMoth=true; else if(insp.waxMoth === false) hives[hi].waxMoth=false;
+    // Phase 4at: hive.pests = most recent inspection's pests array
+    // (denormalised so dashboard reads don't need to walk inspection history).
+    // hive.waxMoth kept in sync for legacy reads.
+    hives[hi].pests = insp.pests.slice();
+    hives[hi].waxMoth = insp.waxMoth;
     saveHives(hives);
   }
   // Toast handled by _finaliseAndNavigate
@@ -16045,7 +16118,14 @@ function editInspection(inspId) {
       framesStores: insp.framesStores || 0,
       framesFoundation: insp.framesFoundation || 0,
       framesEmpty: insp.framesEmpty || 0, // was missing — now present
+      // 29 April 2026 Phase 4at: pests array. If older inspection has only the
+      // legacy waxMoth boolean and no pests array, synthesise one for editing.
+      pests: (Array.isArray(insp.pests) && insp.pests.length)
+        ? insp.pests.slice()
+        : (insp.waxMoth === true ? ['wax_moth'] : []),
     };
+    // Re-render pests row to show the loaded selection
+    try { _renderPestsRow(); } catch(e) {}
 
     // Show the extracted data fields populated
     if (notesEl && notesEl.value) {
@@ -17320,6 +17400,8 @@ async function onAuthSuccess() {
   try {
     // Migrate any legacy string IDs to proper UUID v4 first
     migrateLegacyIds();
+    // 29 April 2026 Phase 4at — migrate legacy waxMoth boolean to pests array
+    try { migratePestsArray(); } catch(e) { console.warn('migratePestsArray failed:', e); }
 
     // Pull from Supabase first — before any rendering
     if (typeof loadSettingsFromCloud === 'function') {
@@ -18664,7 +18746,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:35 29 April 2026 BST · Phase 4as — fix account details restore on fresh device install. (1) loadUserProfile falls back data.display_name → data.name (was skipping restore when display_name null). (2) hk_display_name, hk_user_phone, hk_user_address added to pre-pull manifest as belt-and-braces.';
+var HIVEKEEPER_BUILD = '14:55 29 April 2026 BST · Phase 4at — pests refactored to multi-select array (per-inspection). PESTS const (wax_moth, mice, ants, wasps, hornets), togglePest UI, hiveHasPest helper, push/pull mappers updated, migratePestsArray idempotent migration. Legacy waxMoth boolean kept in sync for backwards-compat with the 22 unchanged display reads.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -19434,7 +19516,10 @@ async function pushHives() {
       map_lng: h.map_lng || null,
       list_order: (typeof h.listOrder === 'number') ? h.listOrder : null,
       roof_style: h.roofStyle || 'flat',
-      stack: h.stack || null
+      stack: h.stack || null,
+      // 29 April 2026 Phase 4at — pests array (multi-select). Mirror of the
+      // most recent inspection's pests; kept on hive for fast dashboard reads.
+      pests: Array.isArray(h.pests) ? h.pests : (h.waxMoth ? ['wax_moth'] : [])
     };
   });
   var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
@@ -19503,7 +19588,11 @@ async function pushInspections() {
       // Next-inspection notes (24 April 2026) — extracted from voice/text on save,
       // cleared when user taps Mark done (stamps next_inspection_notes_done_at)
       next_inspection_notes: i.nextInspectionNotes || null,
-      next_inspection_notes_done_at: i.nextInspectionNotesDoneAt ? new Date(i.nextInspectionNotesDoneAt).toISOString() : null
+      next_inspection_notes_done_at: i.nextInspectionNotesDoneAt ? new Date(i.nextInspectionNotesDoneAt).toISOString() : null,
+      // 29 April 2026 Phase 4at — pests array (multi-select, point-in-time
+      // observation). Replaces the legacy waxMoth boolean (kept local-only;
+      // never pushed historically — same pattern preserved here).
+      pests: Array.isArray(i.pests) ? i.pests : (i.waxMoth ? ['wax_moth'] : [])
     };
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
@@ -19755,7 +19844,13 @@ async function pullFromSupabase() {
         // their account details mysteriously missing. Including these keys
         // in the manifest means the local copy survives the wipe-and-pull
         // cycle, so loadUserProfile getting flaky doesn't actually lose data.
-        'hk_display_name', 'hk_user_phone', 'hk_user_address'];
+        'hk_display_name', 'hk_user_phone', 'hk_user_address',
+        // 29 April 2026 — Phase 4at: pests-array migration idempotency flag.
+        // Same pattern as hk_migrated_legacy_ids. Without this, the migration
+        // re-runs every sign-in and could re-introduce wax_moth from the
+        // legacy boolean even after the user has explicitly cleared it via
+        // an inspection.
+        'hk_migrated_pests'];
       Object.keys(localStorage).filter(function(k){
         return k.startsWith('hk_') && keysToKeep.indexOf(k) === -1;
       }).forEach(function(k){ localStorage.removeItem(k); });
@@ -19869,7 +19964,8 @@ async function pullFromSupabase() {
           varroaLevel: h.varroa_level, healthScore: h.health_score,
           mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
           isHidden: h.is_hidden, notes: h.notes,
-          waxMoth: h.wax_moth, temper: h.temper,
+          waxMoth: h.wax_moth, pests: Array.isArray(h.pests) ? h.pests : (h.wax_moth ? ['wax_moth'] : []), temper: h.temper,
+          pests: Array.isArray(h.pests) ? h.pests : (h.wax_moth ? ['wax_moth'] : []),
           coverPhoto: h.cover_photo || null,
           userId: h.user_id || null,
           roofStyle: h.roof_style || 'flat',
@@ -19900,7 +19996,8 @@ async function pullFromSupabase() {
           framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
           weather: i.weather || null,
           nextInspectionNotes: i.next_inspection_notes || null,
-          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null
+          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null,
+          pests: Array.isArray(i.pests) ? i.pests : []
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mapped));
@@ -19994,7 +20091,7 @@ async function pullFromSupabase() {
               hiveType: h.hive_type, boxType: h.box_type, broodBoxes: h.brood_boxes, supers: h.supers,
               queenStatus: h.queen_status, storesLevel: h.stores_level, varroaLevel: h.varroa_level,
               healthScore: h.health_score, mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
-              isHidden: h.is_hidden, notes: h.notes, waxMoth: h.wax_moth, temper: h.temper, isShared: true });
+              isHidden: h.is_hidden, notes: h.notes, waxMoth: h.wax_moth, pests: Array.isArray(h.pests) ? h.pests : (h.wax_moth ? ['wax_moth'] : []), temper: h.temper, isShared: true });
           }
         });
         localStorage.setItem('hk_hives_v2', JSON.stringify(existingHives));
@@ -20222,7 +20319,9 @@ function hiveToRow(h, uid) {
     map_lng: h.map_lng || null,
     list_order: (typeof h.listOrder === 'number') ? h.listOrder : null,
     roof_style: h.roofStyle || 'flat',
-    stack: h.stack || null
+    stack: h.stack || null,
+    // 29 April 2026 Phase 4at — pests array (kept in sync with pushHives mapper)
+    pests: Array.isArray(h.pests) ? h.pests : (h.waxMoth ? ['wax_moth'] : [])
   };
 }
 
@@ -20727,7 +20826,7 @@ async function processInviteToken(token) {
           return { id:h.id,name:h.name,row:h.row,status:h.status,hiveType:h.hive_type,boxType:h.box_type,
             broodBoxes:h.brood_boxes,supers:h.supers,queenStatus:h.queen_status,storesLevel:h.stores_level,
             varroaLevel:h.varroa_level,healthScore:h.health_score,mapX:h.map_x,mapY:h.map_y,
-            apiaryId:h.apiary_id,isHidden:h.is_hidden,notes:h.notes,waxMoth:h.wax_moth,
+            apiaryId:h.apiary_id,isHidden:h.is_hidden,notes:h.notes,waxMoth:h.wax_moth,pests:Array.isArray(h.pests)?h.pests:(h.wax_moth?['wax_moth']:[]),
             temper:h.temper,coverPhoto:h.cover_photo||null,userId:h.user_id||null };
         })));
         currentApiaryId = invite.apiary_id;
@@ -20811,7 +20910,7 @@ async function processInviteToken(token) {
         varroaLevel: h.varroa_level, healthScore: h.health_score,
         mapX: h.map_x, mapY: h.map_y, apiaryId: h.apiary_id,
         isHidden: h.is_hidden, notes: h.notes,
-        waxMoth: h.wax_moth, temper: h.temper,
+        waxMoth: h.wax_moth, pests: Array.isArray(h.pests) ? h.pests : (h.wax_moth ? ['wax_moth'] : []), temper: h.temper,
         coverPhoto: h.cover_photo || null, userId: h.user_id || null,
         roofStyle: h.roof_style || 'flat', stack: h.stack || null
       };
@@ -21910,7 +22009,8 @@ async function loadTesterData() {
           framesFoundation: i.frames_foundation, framesEmpty: i.frames_empty,
           weather: i.weather || null,
           nextInspectionNotes: i.next_inspection_notes || null,
-          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null
+          nextInspectionNotesDoneAt: i.next_inspection_notes_done_at ? new Date(i.next_inspection_notes_done_at).getTime() : null,
+          pests: Array.isArray(i.pests) ? i.pests : []
         };
       });
       localStorage.setItem('hk_inspections_v2', JSON.stringify(mappedI));
@@ -22693,6 +22793,48 @@ function migrateLegacyIds() {
   // every sign-in.
   localStorage.setItem('hk_migrated_legacy_ids', '1');
   return changed;
+}
+
+// 29 April 2026 Phase 4at — one-time migration: legacy waxMoth boolean →
+// pests array. Idempotent (sets hk_migrated_pests flag, never re-runs).
+// Also rewrites any hives with the legacy 'wax_moth' status to 'unclear'
+// (per architectural decision — wax_moth is a pest issue, not a lifecycle
+// status; existing wax_moth status hives default to 'unclear' so the keeper
+// reviews and adjusts).
+function migratePestsArray() {
+  if (localStorage.getItem('hk_migrated_pests') === '1') return false;
+
+  var hives = loadHives();
+  var changed = false;
+  hives.forEach(function(h) {
+    if (!Array.isArray(h.pests)) {
+      h.pests = h.waxMoth === true ? ['wax_moth'] : [];
+      changed = true;
+    }
+    // Legacy hive.status === 'wax_moth' — migrate to 'unclear' + add wax_moth pest
+    if (h.status === 'wax_moth') {
+      h.status = 'unclear';
+      if (h.pests.indexOf('wax_moth') === -1) h.pests.push('wax_moth');
+      h.waxMoth = true;
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('hk_hives_v2', JSON.stringify(hives));
+
+  // Inspections: same boolean → array migration. Don't overwrite existing pests arrays.
+  var inspections = JSON.parse(localStorage.getItem('hk_inspections_v2') || '[]');
+  var iChanged = false;
+  inspections.forEach(function(i) {
+    if (!Array.isArray(i.pests)) {
+      i.pests = i.waxMoth === true ? ['wax_moth'] : [];
+      iChanged = true;
+    }
+  });
+  if (iChanged) localStorage.setItem('hk_inspections_v2', JSON.stringify(inspections));
+
+  if (changed || iChanged) console.log('HiveKeeper: migrated waxMoth → pests array');
+  localStorage.setItem('hk_migrated_pests', '1');
+  return changed || iChanged;
 }
 
 // ── SHARED APIARY HELPERS ─────────────────────────────────
