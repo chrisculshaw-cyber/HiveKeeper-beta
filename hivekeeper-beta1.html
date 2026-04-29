@@ -5993,6 +5993,68 @@ function filterRow(row, el){
 
 
 // ── Hive cover photo ──────────────────────────────────────────
+
+// 29 April 2026 Phase 4ar — reusable image compression helper.
+// Same pattern the AH hornet identifier uses (line ~13308) for consistency.
+// Used by both hive cover photo upload paths (apiary-screen camera button +
+// Edit Hive screen) so we don't drift between the two — see Item #19/#20
+// retrospectives where parallel-but-divergent upload paths caused real bugs.
+//
+// Returns a Promise<Blob>. Falls back to the original file if anything goes
+// wrong (better to upload a too-large file and let it fail server-side than
+// silently lose the user's photo).
+//
+// Defaults: 1600px max edge, JPEG quality 0.85. The hive cover banner displays
+// at up to ~280px wide (line ~7321); 1600px gives retina-density headroom plus
+// future-proofs for higher-res displays. Phone photos are typically 8-12MB
+// straight from sensor; this brings them down to 200-500KB with no visible
+// quality loss for the display sizes we use.
+function compressImageFile(file, maxEdge, quality) {
+  maxEdge = maxEdge || 1600;
+  quality = (typeof quality === 'number') ? quality : 0.85;
+  return new Promise(function(resolve) {
+    try {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          try {
+            var canvas = document.createElement('canvas');
+            var w = img.width, h = img.height;
+            if (w > maxEdge || h > maxEdge) {
+              var scale = maxEdge / Math.max(w, h);
+              w = Math.round(w * scale); h = Math.round(h * scale);
+            }
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function(blob) {
+              if (blob) resolve(blob);
+              else resolve(file); // canvas.toBlob can fail in rare browser bugs
+            }, 'image/jpeg', quality);
+          } catch (innerErr) {
+            console.warn('[compressImageFile] canvas error, returning original:', innerErr);
+            resolve(file);
+          }
+        };
+        img.onerror = function() {
+          console.warn('[compressImageFile] image load failed, returning original');
+          resolve(file);
+        };
+        img.src = e.target.result;
+      };
+      reader.onerror = function() {
+        console.warn('[compressImageFile] FileReader failed, returning original');
+        resolve(file);
+      };
+      reader.readAsDataURL(file);
+    } catch (outerErr) {
+      console.warn('[compressImageFile] outer error, returning original:', outerErr);
+      resolve(file);
+    }
+  });
+}
+
 async function uploadHiveCoverPhoto(hiveId) {
   if (getUserTier() === 'free' && !isFoundingBeekeeper()) {
     showUpgradeModal('photos');
@@ -6015,38 +6077,32 @@ async function uploadHiveCoverPhoto(hiveId) {
     var file = e.target.files && e.target.files[0];
     input.value = ''; // reset immediately so it can be reused
     if (!file) return;
-    var reader = new FileReader();
-    reader.onload = async function(ev) {
-      var dataUrl = ev.target.result;
-      var uid = getUserId();
-      if (!uid) { showToast('Sign in to save hive photos'); return; }
-      var sb = getSupabase();
-      var arr = dataUrl.split(',');
-      var mime = arr[0].match(/:(.*?);/)[1];
-      var bstr = atob(arr[1]);
-      var n = bstr.length;
-      var u8arr = new Uint8Array(n);
-      while (n--) u8arr[n] = bstr.charCodeAt(n);
-      var blob = new Blob([u8arr], { type: mime });
-      var ext = mime === 'image/png' ? 'png' : 'jpg';
-      var path = uid + '/covers/' + hiveId + '.' + ext;
-      showToast('Uploading hive photo...');
-      var { error } = await sb.storage.from('hive-photos').upload(path, blob, { contentType: mime, upsert: true });
-      if (error) { showToast('Upload failed: ' + error.message); return; }
-      var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(path);
-      var url = urlData && urlData.publicUrl ? urlData.publicUrl + '?t=' + Date.now() : null;
-      if (url) {
-        var hives = loadHives();
-        var hive = hives.find(function(h){ return h.id === hiveId; });
-        if (hive) { hive.coverPhoto = url; saveHives(hives); }
-        showToast('Hive photo saved ✓');
-        try { renderApiary(); } catch(e2) {}
-        if (currentScreen === 's-hive' && currentHiveId === hiveId) {
-          try { renderHiveDetail(); } catch(e2) {}
-        }
+    var uid = getUserId();
+    if (!uid) { showToast('Sign in to save hive photos'); return; }
+    showToast('Compressing photo\u2026');
+    // 29 April 2026 Phase 4ar — compress before upload. Phone photos are
+    // routinely 4-12MB straight from sensor; the supabase free tier with
+    // spend cap caps uploads at 5MB, so uncompressed photos 400'd silently.
+    // compressImageFile downscales to 1600px max edge JPEG q0.85
+    // (~200-500KB typical). Always returns JPEG.
+    var blob = await compressImageFile(file);
+    var sb = getSupabase();
+    var path = uid + '/covers/' + hiveId + '.jpg';
+    showToast('Uploading hive photo\u2026');
+    var { error } = await sb.storage.from('hive-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) { showToast('Upload failed: ' + error.message); return; }
+    var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(path);
+    var url = urlData && urlData.publicUrl ? urlData.publicUrl + '?t=' + Date.now() : null;
+    if (url) {
+      var hives = loadHives();
+      var hive = hives.find(function(h){ return h.id === hiveId; });
+      if (hive) { hive.coverPhoto = url; saveHives(hives); }
+      showToast('Hive photo saved \u2713');
+      try { renderApiary(); } catch(e2) {}
+      if (currentScreen === 's-hive' && currentHiveId === hiveId) {
+        try { renderHiveDetail(); } catch(e2) {}
       }
-    };
-    reader.readAsDataURL(file);
+    }
   };
   input.click();
 }
@@ -7230,51 +7286,39 @@ function hiveEditorChangeHiveType(type) {
 
 // Photo handlers — defer to existing cover photo flow if present, otherwise no-op
 function hiveEditorChangePhoto() {
-  // 29 April 2026 Phase 4aq — was stuffing the raw dataURL directly into the
-  // draft, which tried to push as the cover_photo column on save. The push
-  // payload was megabytes of base64; Supabase rejected with "row violates
-  // RLS policy" (likely a column length / size guard masquerading as RLS).
-  // Now mirrors the working uploadHiveCoverPhoto path: upload the blob to
-  // storage first, get back the publicUrl, store that.
+  // 29 April 2026 Phase 4aq + Phase 4ar — was stuffing the raw dataURL
+  // directly into the draft (wrong: 4aq fixed). Now mirrors the apiary-screen
+  // camera button pattern: compress → upload to storage → store URL. Both
+  // upload paths now use compressImageFile so they produce identical-shape
+  // uploads and don't drift again (Item #19/#20 retrospective lesson).
   var input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  input.onchange = function(e) {
+  input.onchange = async function(e) {
     var file = e.target.files && e.target.files[0];
     if (!file) return;
-    var reader = new FileReader();
-    reader.onload = async function(ev) {
-      var dataUrl = ev.target.result;
-      var uid = (typeof getUserId === 'function') ? getUserId() : null;
-      if (!uid) { showToast('Sign in to save hive photos'); return; }
-      if (!_hiveEditorHiveId) { showToast('Cannot upload — no hive context'); return; }
-      try {
-        var sb = getSupabase();
-        var arr = dataUrl.split(',');
-        var mime = arr[0].match(/:(.*?);/)[1];
-        var bstr = atob(arr[1]);
-        var n = bstr.length;
-        var u8arr = new Uint8Array(n);
-        while (n--) u8arr[n] = bstr.charCodeAt(n);
-        var blob = new Blob([u8arr], { type: mime });
-        var ext = mime === 'image/png' ? 'png' : 'jpg';
-        var path = uid + '/covers/' + _hiveEditorHiveId + '.' + ext;
-        showToast('Uploading hive photo...');
-        var { error } = await sb.storage.from('hive-photos').upload(path, blob, { contentType: mime, upsert: true });
-        if (error) { showToast('Upload failed: ' + error.message); return; }
-        var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(path);
-        var url = urlData && urlData.publicUrl ? urlData.publicUrl + '?t=' + Date.now() : null;
-        if (url) {
-          _hiveEditorDraft.coverPhoto = url;
-          renderHiveEditor();
-          showToast('Hive photo saved \u2713');
-        }
-      } catch(err) {
-        showToast('Photo upload failed');
-        console.warn('[hiveEditorChangePhoto]', err);
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    if (!uid) { showToast('Sign in to save hive photos'); return; }
+    if (!_hiveEditorHiveId) { showToast('Cannot upload \u2014 no hive context'); return; }
+    try {
+      showToast('Compressing photo\u2026');
+      var blob = await compressImageFile(file);
+      var sb = getSupabase();
+      var path = uid + '/covers/' + _hiveEditorHiveId + '.jpg';
+      showToast('Uploading hive photo\u2026');
+      var { error } = await sb.storage.from('hive-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+      if (error) { showToast('Upload failed: ' + error.message); return; }
+      var { data: urlData } = sb.storage.from('hive-photos').getPublicUrl(path);
+      var url = urlData && urlData.publicUrl ? urlData.publicUrl + '?t=' + Date.now() : null;
+      if (url) {
+        _hiveEditorDraft.coverPhoto = url;
+        renderHiveEditor();
+        showToast('Hive photo saved \u2713');
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      showToast('Photo upload failed');
+      console.warn('[hiveEditorChangePhoto]', err);
+    }
   };
   input.click();
 }
@@ -18612,7 +18656,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:55 29 April 2026 BST · Phase 4aq — fix Edit Hive screen photo upload (was pushing megabytes of dataURL base64 to cover_photo column, Supabase RLS-rejected; now uploads to hive-photos bucket like the apiary screen camera button does, stores the publicUrl).';
+var HIVEKEEPER_BUILD = '12:25 29 April 2026 BST · Phase 4ar — client-side image compression (compressImageFile helper, 1600px max edge JPEG q0.85). Applied to BOTH hive cover photo upload paths (apiary-screen camera + Edit Hive screen). Phone photos no longer hit Supabase free-tier 5MB cap.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
