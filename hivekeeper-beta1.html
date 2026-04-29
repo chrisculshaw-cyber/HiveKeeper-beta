@@ -6274,7 +6274,10 @@ function getTotalHoneyStock() {
 function hasFinancialFeatures() {
   try {
     var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
-    return tier === 'pro' || tier === 'commercial' || tier === 'trial';
+    // 30 April 2026 Phase 4bk — Founder and Beta were missing. Both have
+    // full feature access elsewhere; pricing & stock value should not gate them.
+    return tier === 'pro' || tier === 'commercial' || tier === 'trial'
+        || tier === 'founder' || tier === 'beta';
   } catch(e) {
     return false;
   }
@@ -9200,11 +9203,11 @@ function renderStackEditor() {
     +       '<input type="number" id="stack-frames-good" min="0" placeholder="0" value="' + (_stackEditorFramesGood || '') + '" oninput="_stackEditorFramesGood=parseInt(this.value)||0" style="width:100%;padding:8px;border:1.5px solid var(--wax);border-radius:6px;font-size:13px;font-family:Syne,sans-serif;box-sizing:border-box;">'
     +     '</div>'
     +     '<div>'
-    +       '<label style="font-size:10px;color:var(--text-l);font-weight:700;display:block;margin-bottom:4px;">Knackered (burn)</label>'
+    +       '<label style="font-size:10px;color:var(--text-l);font-weight:700;display:block;margin-bottom:4px;">Unusable (burn)</label>'
     +       '<input type="number" id="stack-frames-bad" min="0" placeholder="0" value="' + (_stackEditorFramesBad || '') + '" oninput="_stackEditorFramesBad=parseInt(this.value)||0" style="width:100%;padding:8px;border:1.5px solid var(--wax);border-radius:6px;font-size:13px;font-family:Syne,sans-serif;box-sizing:border-box;">'
     +     '</div>'
     +   '</div>'
-    +   '<div style="font-size:10px;color:var(--text-l);margin-top:6px;line-height:1.4;">Replaced = decrements stock then returns one (net zero — used a sheet of foundation). Knackered = pure decrement.</div>'
+    +   '<div style="font-size:10px;color:var(--text-l);margin-top:6px;line-height:1.4;">Replaced = decrements stock then returns one (net zero — used a sheet of foundation). Unusable = pure decrement.</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
     +   '<button onclick="closeStackEditor()" style="background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>'
@@ -9460,11 +9463,11 @@ function saveStackEditor() {
         }
       }
       if (framesBad > 0) {
-        consumeFrames(framesBad, 'Frame knackered — burn pile');
+        consumeFrames(framesBad, 'Frame unusable — burn pile');
       }
     } else {
       // Not enough stock for full ask — consume what we have, log shortfall toast
-      var consumed = consumeFrames(availableFrames, framesBad > 0 ? 'Frame used in hive (mixed good/knackered)' : 'Frame replaced (good — refurbished)');
+      var consumed = consumeFrames(availableFrames, framesBad > 0 ? 'Frame used in hive (mixed good/unusable)' : 'Frame replaced (good — refurbished)');
       if (typeof showToast === 'function') {
         showToast('Only ' + consumed + ' frames in stock — shortfall not tracked');
       }
@@ -9700,11 +9703,11 @@ function renderHiveEditor() {
           +       '<input type="number" min="0" placeholder="0" value="' + (d._framesGood || '') + '" oninput="_hiveEditorDraft._framesGood=parseInt(this.value)||0" style="width:100%;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;box-sizing:border-box;">'
           +     '</div>'
           +     '<div>'
-          +       '<label style="font-size:9px;color:var(--text-l);font-weight:700;display:block;margin-bottom:3px;">Knackered (burn)</label>'
+          +       '<label style="font-size:9px;color:var(--text-l);font-weight:700;display:block;margin-bottom:3px;">Unusable (burn)</label>'
           +       '<input type="number" min="0" placeholder="0" value="' + (d._framesBad || '') + '" oninput="_hiveEditorDraft._framesBad=parseInt(this.value)||0" style="width:100%;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;box-sizing:border-box;">'
           +     '</div>'
           +   '</div>'
-          +   '<div style="font-size:9px;color:var(--text-l);margin-top:5px;line-height:1.4;">Replaced \u2014 stock decrements then returns (net zero, audit-logged). Knackered \u2014 pure decrement to burn pile.</div>'
+          +   '<div style="font-size:9px;color:var(--text-l);margin-top:5px;line-height:1.4;">Replaced \u2014 stock decrements then returns (net zero, audit-logged). Unusable \u2014 pure decrement to burn pile.</div>'
           + '</div>')
     +     '</div>'
     +   '</div>'
@@ -10007,7 +10010,7 @@ function saveHiveEditor() {
           }
         }
         if (framesBad > 0) {
-          consumeFrames(framesBad, 'Frame knackered \u2014 burn pile');
+          consumeFrames(framesBad, 'Frame unusable \u2014 burn pile');
         }
       } else if (availFrames > 0) {
         consumeFrames(availFrames, 'Frame used in hive (partial \u2014 short by ' + (needed - availFrames) + ')');
@@ -21478,7 +21481,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:05 30 April 2026 BST · Phase 4bj — Frame inputs in the RIGHT editor + manual queue flush. (1) Edit Hive screen (renderHiveEditor) now has the frames-used inputs directly under the +Brood/+Super/+QE buttons \u2014 the editor I\u2019d been building in 4bg/4bh was a different code path Chris isn\u2019t using. (2) saveHiveEditor now applies stack consumption + frame consumption (Replaced=net zero with audit, Knackered=pure decrement). Original stack snapshot captured in _hiveEditorDraft._stackOriginal at open. (3) window.hkFlushNow() debug helper exposed for DevTools \u2014 pushes the offline queue and logs the real Supabase error per item so we can see why those 8 inventory_movements have been failing.';
+var HIVEKEEPER_BUILD = '22:35 30 April 2026 BST · Phase 4bk — Two fixes. (1) Founder & Beta tiers added to hasFinancialFeatures (were missing, so even Founder Chris saw the upgrade prompt when tapping the honey card on home). (2) Renamed "Knackered" \u2192 "Unusable" everywhere user-facing: the input label, helper text, and audit log reasons.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
