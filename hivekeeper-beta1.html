@@ -6088,6 +6088,19 @@ function getTotalHoneyStock() {
 // est. value calculation. Sizes the keeper hasn't priced are EXCLUDED from
 // est. value rather than estimated — cleaner than a flat £/kg fallback.
 
+// 29 April 2026 Phase 4bd — Centralised gate for financial features
+// (per-jar pricing, est. value displays). Pro / Commercial / Trial
+// all get access; Free is gated. This single helper lets us tighten
+// or loosen the gate later from one place.
+function hasFinancialFeatures() {
+  try {
+    var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
+    return tier === 'pro' || tier === 'commercial' || tier === 'trial';
+  } catch(e) {
+    return false;
+  }
+}
+
 function loadJarPrices() {
   try { return JSON.parse(localStorage.getItem('hk_jar_prices_v1') || '{}'); }
   catch(e) { return {}; }
@@ -6146,6 +6159,15 @@ function getUsedJarSizes() {
 
 // 29 April 2026 Phase 4bc — Honey pricing modal handlers
 function openHoneyPricingModal() {
+  // 29 April 2026 Phase 4bd — financial features are Pro+
+  if (!hasFinancialFeatures()) {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('honey-pricing');
+    } else {
+      showToast('Honey pricing is a Pro feature');
+    }
+    return;
+  }
   _renderHoneyPricingRows();
   document.getElementById('hp-new-size').value = '';
   document.getElementById('hp-new-price').value = '';
@@ -6272,38 +6294,59 @@ function renderHomeDashboard() {
 
   var esc = function(t){ return String(t||'').replace(/[<>&"']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
 
-  // Hero card — honey stock + value
-  var valueText, valueSubtext;
-  if (honeyTotals.jars === 0) {
-    valueText = '—';
+  // 29 April 2026 Phase 4bd — financial features (£ value, pricing) are Pro+
+  var canShowValue = hasFinancialFeatures();
+
+  // Hero card — honey stock + value (value only for Pro+)
+  var valueText, valueSubtext, valueSubAction;
+  if (!canShowValue) {
+    // Free tier: show jars + kg only, with discreet upgrade hint
+    valueText = '';
+    valueSubtext = 'Stock value tracking \u2014 Pro feature';
+    valueSubAction = 'tap to learn more';
+  } else if (honeyTotals.jars === 0) {
+    valueText = '\u2014';
     valueSubtext = 'No jars logged yet';
+    valueSubAction = '';
   } else if (honeyValue.value > 0 && honeyValue.unpricedJars === 0) {
-    valueText = '£' + honeyValue.value.toFixed(0);
+    valueText = '\u00A3' + honeyValue.value.toFixed(0);
     valueSubtext = 'Estimated stock value';
+    valueSubAction = '';
   } else if (honeyValue.value > 0 && honeyValue.unpricedJars > 0) {
-    valueText = '£' + honeyValue.value.toFixed(0) + '+';
+    valueText = '\u00A3' + honeyValue.value.toFixed(0) + '+';
     valueSubtext = honeyValue.unpricedJars + ' jar' + (honeyValue.unpricedJars === 1 ? '' : 's') + ' unpriced \u00B7 tap to set';
+    valueSubAction = '';
   } else {
-    valueText = '— ';
+    valueText = '\u2014';
     valueSubtext = 'Set jar prices to see value';
+    valueSubAction = '';
   }
 
-  var heroCard = '<div onclick="goTo(\'s-inventory\');setTimeout(function(){switchInventoryTab(\'honey\');},100);" '
+  // Hero click target — Pro+ goes to honey tab; Free clicks the value line opens upgrade
+  var heroOnClick = canShowValue
+    ? "goTo('s-inventory');setTimeout(function(){switchInventoryTab('honey');},100);"
+    : "goTo('s-inventory');setTimeout(function(){switchInventoryTab('honey');},100);";
+
+  var valueLine = canShowValue
+    ? '<div style="font-size:13px;font-weight:700;color:#5C3A17;margin-top:4px;">' + valueText + ' \u00B7 <span style="font-weight:600;font-size:11px;">' + esc(valueSubtext) + '</span></div>'
+    : '<div onclick="event.stopPropagation();showUpgradeModal(\'honey-pricing\');" style="font-size:11px;font-weight:600;color:#5C3A17;margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,0.08);padding:3px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:10px;">\uD83D\uDD12</span> ' + esc(valueSubtext) + '</div>';
+
+  var heroCard = '<div onclick="' + heroOnClick + '" '
     + 'style="margin:8px 16px;padding:16px;background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);box-shadow:var(--shadow);cursor:pointer;">'
     + '<div style="display:flex;align-items:center;gap:14px;">'
       + '<div style="font-size:36px;flex-shrink:0;">\uD83C\uDF6F</div>'
       + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:11px;font-weight:800;color:#5C3A17;text-transform:uppercase;letter-spacing:.04em;">Honey in stock</div>'
         + '<div style="font-size:24px;font-weight:800;color:#3A2509;font-family:Syne,sans-serif;margin-top:2px;line-height:1.1;">' + honeyTotals.jars + ' jars \u00B7 ' + honeyTotals.kg.toFixed(1) + 'kg</div>'
-        + '<div style="font-size:13px;font-weight:700;color:#5C3A17;margin-top:4px;">' + valueText + ' \u00B7 <span style="font-weight:600;font-size:11px;">' + esc(valueSubtext) + '</span></div>'
+        + valueLine
       + '</div>'
       + '<div style="font-size:14px;color:#5C3A17;font-weight:700;flex-shrink:0;">\u203A</div>'
     + '</div>'
   + '</div>';
 
-  // Click target if user wants to set prices (when unpriced jars exist)
+  // Click target if user wants to set prices (Pro+ only — free users get the hint inside hero)
   var pricingPrompt = '';
-  if (honeyValue.unpricedJars > 0) {
+  if (canShowValue && honeyValue.unpricedJars > 0) {
     pricingPrompt = '<div onclick="openHoneyPricingModal()" style="margin:0 16px 8px;padding:10px 12px;background:#FFF3E0;border-left:3px solid #C8730A;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;">'
       + '<div style="font-size:18px;">\uD83D\uDCB7</div>'
       + '<div style="flex:1;font-size:12px;color:var(--text);">'
@@ -20624,7 +20667,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:55 29 April 2026 BST · Phase 4bc — Home inventory dashboard + per-jar-size pricing. (1) Settings \u2192 Honey pricing modal lets keepers set \u00A3 per jar size; sizes start blank. (2) Home shows hero card (jars / kg / \u00A3value), pricing prompt when unpriced jars exist, season summary, last harvest, equipment health line. Hidden when no data exists. Refreshes on every harvest / jar log.';
+var HIVEKEEPER_BUILD = '22:15 29 April 2026 BST · Phase 4bd — gate financial features (per-jar pricing, \u00A3 stock value) behind Pro+. Free tier still sees jars + kg on home, but \u00A3 value replaced with discreet "Pro feature" pill. Settings menu shows pricing button with lock icon for Free; tapping it opens upgrade prompt. Centralised hasFinancialFeatures() helper for future gates.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -23207,6 +23250,17 @@ function updatePlanBadge() {
 
   // Re-render header badges too
   try { renderFoundingBadge(); } catch(e) {}
+
+  // 29 April 2026 Phase 4bd — honey pricing button: lock icon for free tier
+  try {
+    var hpBtn = document.querySelector('button[onclick*="openHoneyPricingModal"]');
+    if (hpBtn) {
+      var paid = hasFinancialFeatures();
+      hpBtn.innerHTML = paid
+        ? '<span style="font-size:22px;">\uD83D\uDCB7</span><span>Honey pricing</span>'
+        : '<span style="font-size:22px;">\uD83D\uDD12</span><span>Honey pricing \u2014 Pro</span>';
+    }
+  } catch(e) {}
 }
 
 // ── PRICING / UPGRADE MODAL ───────────────────────────────
