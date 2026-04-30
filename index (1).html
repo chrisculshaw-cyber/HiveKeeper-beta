@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiveKeeper — The UK beekeeper's field companion</title>
+<meta name="description" content="AI-powered beekeeping app for UK keepers. Voice-recorded inspections, Asian hornet AI identifier, satellite apiary mapping, crop spraying alerts, UK nectar calendar. Built for British beekeepers.">
+
+<meta property="og:title" content="HiveKeeper — The UK beekeeper's field companion">
+<meta property="og:description" content="AI-powered beekeeping app built for the UK beekeeping year. By a Northamptonshire beekeeper.">
+<meta property="og:image" content="https://gethivekeeper.com/og-image.jpg">
+<meta property="og:url" content="https://gethivekeeper.com">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HiveKeeper">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="HiveKeeper — the UK beekeeper's field companion">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HiveKeeper — The UK beekeeper's field companion">
+<meta name="twitter:description" content="AI-powered beekeeping app built for the UK beekeeping year.">
+<meta name="twitter:image" content="https://gethivekeeper.com/og-image.jpg">
+
+<link rel="canonical" href="https://gethivekeeper.com/">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Chris Culshaw, Culshaw Consulting Ltd">
+<meta name="theme-color" content="#1F4E3A">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "HiveKeeper",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "iOS, Web, Android",
+  "description": "The UK beekeeper's field companion. AI-powered voice inspections, Asian Hornet AI identifier, satellite apiary mapping, crop spraying awareness, UK nectar calendar.",
+  "offers": [
+    {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "GBP"},
+    {"@type": "Offer", "name": "Pro", "price": "3.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"},
+    {"@type": "Offer", "name": "Commercial", "price": "19.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"}
+  ],
+  "author": {
+    "@type": "Organization",
+    "name": "Culshaw Consulting Ltd",
+    "url": "https://gethivekeeper.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "30 Stanion Road",
+      "addressLocality": "Brigstock",
+      "addressRegion": "Northamptonshire",
+      "postalCode": "NN14 3HW",
+      "addressCountry": "GB"
+    }
+  }
+}
+</script>
+
+<link rel="icon" type="image/png" href="hivekeeper-icon.png">
+<link rel="apple-touch-icon" href="hivekeeper-icon.png">
+
+<!-- Fonts: Syne (UI) — matches spec v25 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --forest: #1F4E3A;
+  --forest-deep: #163527;
+  --forest-light: #2a6448;
+  --honey: #C8730A;
+  --honey-bright: #e4a33a;
+  --honey-soft: #f4e2b6;
+  --cream: #faf5e9;
+  --cream-warm: #f5ecd8;
+  --bark: #4a3a28;
+  --ink: #1a1612;
+  --muted: #6b6050;
+  --rule: #d9c9a8;
+  --amber-burnt: #b45309;
+  --amber-urgent: #991b1b;
+
+  --display: 'Syne', 'Helvetica Neue', Arial, sans-serif;
+  --ui: 'Syne', 'Helvetica Neue', Arial, sans-serif;
+
+  --max: 1180px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+.eyebrow {
+  font-family: var(--ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--honey);
+}
+
+h1, h2, h3 { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+h1 { font-size: clamp(42px, 7vw, 92px); }
+h2 { font-size: clamp(32px, 4.5vw, 56px); }
+h3 { font-size: clamp(22px, 2.5vw, 32px); }
+p { font-size: 17px; line-height: 1.7; }
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 245, 233, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(217, 201, 168, 0.5);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--forest);
+}
+.brand img { width: 36px; height: 36px; border-radius: 8px; }
+.brand sup { font-size: 11px; color: var(--honey); margin-left: 2px; vertical-align: super; }
+.nav-links {
+  display: flex;
+  gap: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  align-items: center;
+}
+.nav-links a {
+  color: var(--forest);
+  transition: color 0.2s;
+  padding: 8px 0;
+}
+.nav-links a:hover { color: var(--honey); }
+.nav-links a.nav-cta {
+  background: var(--forest);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-size: 12px;
+  font-weight: 800;
+  transition: all 0.2s;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25);
+  animation: ctaPulse 2.6s ease-in-out infinite;
+}
+.nav-links a.nav-cta:hover {
+  background: var(--forest-deep);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(31, 78, 58, 0.35);
+  animation: none;
+}
+@keyframes ctaPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25),
+                0 0 0 0 rgba(200, 115, 10, 0);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25),
+                0 0 0 8px rgba(200, 115, 10, 0.18);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a.nav-cta { animation: none; }
+}
+@media (max-width: 720px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-inner { padding: 14px 18px; }
+  .nav-links a.nav-cta { padding: 10px 18px; font-size: 11px; letter-spacing: 0.06em; }
+  .brand { font-size: 18px; }
+  .brand img { width: 32px; height: 32px; }
+}
+
+.hero {
+  position: relative;
+  padding: 80px 0 120px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top right, rgba(228, 163, 58, 0.08), transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(31, 78, 58, 0.04), transparent 60%),
+    var(--cream);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'><path d='M30 0l26 15v22L30 52 4 37V15z' fill='none' stroke='%23C8730A' stroke-width='0.5' opacity='0.15'/></svg>");
+  background-size: 120px 104px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+}
+
+.hero-text .eyebrow { margin-bottom: 24px; }
+.hero-headline {
+  color: var(--forest);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+.hero-headline em {
+  font-style: italic;
+  color: var(--honey);
+  font-weight: 500;
+}
+.hero-sub {
+  font-size: 19px;
+  color: var(--bark);
+  margin-bottom: 40px;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.hero-ctas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.btn-primary {
+  background: var(--forest);
+  color: var(--cream);
+}
+.btn-primary:hover { background: var(--forest-deep); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(31, 78, 58, 0.25); }
+.btn-secondary {
+  background: transparent;
+  color: var(--forest);
+  border-color: var(--forest);
+}
+.btn-secondary:hover { background: var(--forest); color: var(--cream); }
+
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.hero-trust-item { display: flex; align-items: center; gap: 8px; }
+.hero-trust-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--honey);
+}
+
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 480px;
+}
+.phone-frame {
+  position: relative;
+  width: 280px;
+  height: 560px;
+  background: var(--forest-deep);
+  border-radius: 42px;
+  padding: 14px;
+  box-shadow:
+    0 40px 80px -20px rgba(31, 78, 58, 0.35),
+    0 20px 40px -10px rgba(31, 78, 58, 0.2),
+    inset 0 0 0 2px rgba(228, 163, 58, 0.15);
+  animation: phoneRise 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--forest);
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 20px;
+  color: var(--cream);
+  font-family: var(--ui);
+  font-size: 12px;
+}
+.phone-notch {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 24px;
+  background: var(--forest-deep);
+  border-radius: 14px;
+  z-index: 2;
+}
+.phone-content { padding-top: 32px; }
+.phone-greeting {
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+.phone-apiary {
+  font-size: 11px;
+  color: var(--honey-soft);
+  opacity: 0.7;
+  margin-bottom: 20px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.phone-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.phone-stat {
+  background: rgba(228, 163, 58, 0.1);
+  border: 1px solid rgba(228, 163, 58, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.phone-stat-num { font-family: var(--display); font-size: 24px; color: var(--honey-bright); font-weight: 600; }
+.phone-stat-lab { font-size: 9px; color: var(--honey-soft); opacity: 0.75; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+.phone-alert {
+  background: rgba(180, 83, 9, 0.2);
+  border-left: 3px solid var(--amber-burnt);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+.phone-alert-label { font-size: 9px; color: var(--honey-bright); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+.phone-alert-text { font-size: 11px; color: var(--cream); line-height: 1.4; }
+
+.phone-hive-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(228, 163, 58, 0.15);
+}
+.phone-hive-ring {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--honey-bright);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+  color: var(--honey-soft);
+}
+.phone-hive-ring.amber { border-color: #d89b3a; color: #d89b3a; }
+.phone-hive-name { font-size: 11px; color: var(--cream); flex: 1; }
+.phone-hive-meta { font-size: 9px; color: rgba(244, 226, 182, 0.5); }
+
+.bee-float {
+  position: absolute;
+  top: 8%;
+  right: -6%;
+  width: 90px;
+  height: 90px;
+  opacity: 0.85;
+  animation: beeFly 8s ease-in-out infinite;
+}
+.bee-phone-left {
+  position: absolute;
+  bottom: 12%;
+  left: -4%;
+  width: 56px;
+  height: 56px;
+  opacity: 0.8;
+  animation: beePhoneLeft 10s ease-in-out infinite;
+  z-index: 2;
+}
+.bee-phone-right {
+  position: absolute;
+  top: 42%;
+  right: -2%;
+  width: 42px;
+  height: 42px;
+  opacity: 0.75;
+  animation: beePhoneRight 12s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes beePhoneLeft {
+  0%, 100% { transform: translate(0, 0) rotate(15deg); }
+  30% { transform: translate(20px, -30px) rotate(-10deg); }
+  60% { transform: translate(40px, -15px) rotate(20deg); }
+  85% { transform: translate(15px, -40px) rotate(-5deg); }
+}
+@keyframes beePhoneRight {
+  0%, 100% { transform: translate(0, 0) rotate(-20deg); }
+  25% { transform: translate(-15px, 25px) rotate(10deg); }
+  50% { transform: translate(-40px, 10px) rotate(-15deg); }
+  75% { transform: translate(-20px, 35px) rotate(5deg); }
+}
+@media (max-width: 720px) {
+  .bee-phone-right { display: none; }
+  .bee-phone-left { width: 42px; height: 42px; }
+}
+@keyframes beeFly {
+  0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+  25% { transform: translate(-20px, -15px) rotate(5deg); }
+  50% { transform: translate(-10px, -25px) rotate(-3deg); }
+  75% { transform: translate(-25px, -10px) rotate(7deg); }
+}
+@keyframes phoneRise {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Extra bees — scattered across the page with distinct flight paths */
+.extra-bee {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.bee-why {
+  top: 40px;
+  right: 5%;
+  width: 48px;
+  height: 48px;
+  opacity: 0.75;
+  animation: beeDrift 11s ease-in-out infinite;
+}
+.bee-features {
+  top: 18%;
+  left: 7%;
+  width: 72px;
+  height: 72px;
+  opacity: 0.55;
+  animation: beeHover 9s ease-in-out infinite;
+}
+.bee-cta {
+  bottom: 20%;
+  right: 8%;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+  animation: beeCircle 13s linear infinite;
+}
+@keyframes beeDrift {
+  0%, 100% { transform: translate(0, 0) rotate(8deg); }
+  33% { transform: translate(-30px, 20px) rotate(-6deg); }
+  66% { transform: translate(-15px, 45px) rotate(12deg); }
+}
+@keyframes beeHover {
+  0%, 100% { transform: translate(0, 0) rotate(-12deg); }
+  20% { transform: translate(8px, -6px) rotate(-8deg); }
+  50% { transform: translate(-6px, 4px) rotate(-16deg); }
+  80% { transform: translate(4px, -2px) rotate(-10deg); }
+}
+@keyframes beeCircle {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-30px, -20px) rotate(-90deg); }
+  50%  { transform: translate(0, -40px) rotate(-180deg); }
+  75%  { transform: translate(30px, -20px) rotate(-270deg); }
+  100% { transform: translate(0, 0) rotate(-360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .extra-bee, .bee-float, .bee-phone-left, .bee-phone-right { animation: none; }
+}
+@media (max-width: 720px) {
+  .bee-features { display: none; }
+}
+
+.hex-deco {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.35;
+}
+.hex-deco-1 { top: 5%; left: 5%; width: 60px; }
+.hex-deco-2 { bottom: 10%; right: 5%; width: 80px; }
+
+.trust-bar {
+  padding: 36px 0;
+  background: var(--forest);
+  color: var(--cream);
+  border-top: 1px solid var(--forest-light);
+  border-bottom: 1px solid var(--forest-light);
+}
+.trust-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 40px;
+  flex-wrap: wrap;
+  font-family: var(--ui);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--honey-soft);
+  opacity: 0.9;
+}
+.trust-item { display: flex; align-items: center; gap: 10px; }
+.trust-item svg { width: 16px; height: 16px; stroke: var(--honey-bright); }
+
+.why {
+  padding: 120px 0;
+  background: var(--cream);
+  position: relative;
+}
+.section-head {
+  max-width: 720px;
+  margin-bottom: 72px;
+}
+.section-head .eyebrow { margin-bottom: 16px; display: block; }
+.section-head h2 {
+  color: var(--forest);
+  margin-bottom: 20px;
+}
+.section-head h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.section-head p {
+  color: var(--bark);
+  font-size: 19px;
+  max-width: 620px;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 48px;
+}
+@media (max-width: 740px) {
+  .why-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+
+.why-card {
+  position: relative;
+  padding: 40px 36px 36px;
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.why-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(74, 58, 40, 0.15);
+}
+.why-card-num {
+  position: absolute;
+  top: -18px;
+  left: 32px;
+  background: var(--forest);
+  color: var(--honey-bright);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  font-style: italic;
+}
+.why-card h3 {
+  font-family: var(--display);
+  color: var(--forest);
+  margin-bottom: 14px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+.why-card p {
+  color: var(--bark);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.why-card strong { color: var(--forest); font-weight: 600; }
+
+.features {
+  padding: 120px 0;
+  background: var(--forest);
+  color: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.features::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'><path d='M30 0l26 15v22L30 52 4 37V15z' fill='none' stroke='%23e4a33a' stroke-width='0.5' opacity='0.1'/></svg>");
+  background-size: 120px 104px;
+  pointer-events: none;
+}
+.features .section-head h2 { color: var(--honey-soft); }
+.features .section-head h2 em { color: var(--honey-bright); }
+.features .section-head p { color: rgba(244, 226, 182, 0.8); }
+.features .eyebrow { color: var(--honey-bright); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  position: relative;
+}
+@media (max-width: 920px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
+
+.feature-tile {
+  padding: 32px 28px;
+  background: rgba(228, 163, 58, 0.06);
+  border: 1px solid rgba(228, 163, 58, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+.feature-tile:hover {
+  background: rgba(228, 163, 58, 0.12);
+  border-color: rgba(228, 163, 58, 0.4);
+  transform: translateY(-4px);
+}
+.feature-tile.feature-tile-ai {
+  background: rgba(228, 163, 58, 0.14);
+  border-color: rgba(228, 163, 58, 0.45);
+}
+.feature-tile.feature-tile-ai:hover {
+  background: rgba(228, 163, 58, 0.22);
+  border-color: rgba(228, 163, 58, 0.65);
+}
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 20px;
+  color: var(--honey-bright);
+}
+.feature-tile h4 {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--honey-soft);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.feature-tile-ai h4::before {
+  content: 'AI';
+  display: inline-block;
+  background: var(--honey-bright);
+  color: var(--forest-deep);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+  font-family: var(--ui);
+}
+.feature-tile p {
+  font-size: 14px;
+  color: rgba(244, 226, 182, 0.75);
+  line-height: 1.6;
+}
+
+.pricing {
+  padding: 120px 0;
+  background: var(--cream);
+}
+.pricing .section-head h2 { color: var(--forest); }
+.pricing .section-head h2 em { color: var(--honey); }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+.price-card {
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 40px 32px;
+  position: relative;
+  transition: all 0.3s;
+}
+.price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(74, 58, 40, 0.15); }
+
+.price-card.featured {
+  background: var(--forest);
+  color: var(--cream);
+  border-color: var(--forest);
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+  transform: translateY(-8px);
+}
+@media (max-width: 900px) {
+  .price-card.featured { transform: none; }
+}
+
+.price-flag {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--honey);
+  color: var(--forest-deep);
+  font-family: var(--ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.price-name {
+  font-family: var(--display);
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: var(--forest);
+}
+.price-card.featured .price-name { color: var(--honey-soft); }
+.price-tagline {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+.price-card.featured .price-tagline { color: rgba(244, 226, 182, 0.7); }
+
+.price-amount {
+  font-family: var(--display);
+  font-size: 56px;
+  font-weight: 500;
+  color: var(--forest);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.price-card.featured .price-amount { color: var(--honey-bright); }
+.price-amount span {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 400;
+  font-family: var(--ui);
+}
+.price-card.featured .price-amount span { color: rgba(244, 226, 182, 0.6); }
+.price-annual {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.price-card.featured .price-annual { color: rgba(244, 226, 182, 0.7); }
+
+.price-features {
+  list-style: none;
+  margin-bottom: 32px;
+}
+.price-features li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  color: var(--bark);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.price-card.featured .price-features li {
+  color: var(--honey-soft);
+  border-bottom-color: rgba(228, 163, 58, 0.15);
+}
+.price-features li::before {
+  content: '\2713';
+  color: var(--honey);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.price-card.featured .price-features li::before { color: var(--honey-bright); }
+
+.price-cta {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  text-align: center;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  border: 2px solid var(--forest);
+  color: var(--forest);
+  background: transparent;
+}
+.price-cta:hover { background: var(--forest); color: var(--cream); }
+.price-card.featured .price-cta {
+  background: var(--honey);
+  color: var(--forest-deep);
+  border-color: var(--honey);
+}
+.price-card.featured .price-cta:hover { background: var(--honey-bright); border-color: var(--honey-bright); }
+
+.charter-banner {
+  margin-top: 56px;
+  padding: 32px 40px;
+  background: linear-gradient(135deg, var(--honey-soft) 0%, var(--cream-warm) 100%);
+  border: 1px solid var(--honey);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.charter-banner-text h4 {
+  font-family: var(--display);
+  font-size: 24px;
+  color: var(--forest);
+  margin-bottom: 6px;
+}
+.charter-banner-text p {
+  font-size: 14px;
+  color: var(--bark);
+  max-width: 560px;
+}
+.charter-banner-text p strong { color: var(--forest); font-weight: 600; }
+
+/* PHOTO BAND — 24 April 2026
+   Real-beekeeping photo + credibility copy between Features and Pricing.
+   Dark forest background so the photo can pop, honey accent on quote. */
+.photo-band {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #1F4E3A 0%, #2A4A2A 50%, #1F4E3A 100%);
+  color: white;
+  position: relative;
+}
+.photo-band-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .photo-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .photo-band { padding: 60px 0; }
+}
+.photo-band-image {
+  position: relative;
+}
+.photo-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px -15px rgba(0,0,0,0.5);
+}
+.photo-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+}
+.photo-band-text .eyebrow {
+  color: var(--honey);
+  display: block;
+  margin-bottom: 16px;
+}
+.photo-band-text h2 {
+  color: white;
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.photo-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.photo-band-text p {
+  color: rgba(255,255,255,0.88);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* FAMILY BAND — 24 April 2026
+   Smaller, warmer companion to .photo-band. Cream background to contrast with
+   the dark forest photo-band above, image on the RIGHT so the eye flows
+   differently. Used to show Tilly in a bee suit — the personal angle. */
+.family-band {
+  padding: 100px 0;
+  background: var(--cream-warm);
+  position: relative;
+}
+.family-band-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .family-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .family-band { padding: 60px 0; }
+  /* On mobile, put image above text for a natural read order */
+  .family-band-image { order: -1; }
+}
+.family-band-image {
+  position: relative;
+}
+.family-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+}
+.family-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.35;
+  z-index: -1;
+  pointer-events: none;
+}
+.family-band-text .eyebrow {
+  display: block;
+  margin-bottom: 16px;
+}
+.family-band-text h2 {
+  color: var(--forest);
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.family-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.family-band-text p {
+  color: var(--bark);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.about {
+  padding: 120px 0;
+  background: var(--cream-warm);
+  position: relative;
+  overflow: hidden;
+}
+.about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 80px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .about-inner { grid-template-columns: 1fr; gap: 40px; }
+}
+.about-portrait-col { position: relative; }
+.about-icon-frame {
+  position: relative;
+  aspect-ratio: 4/5;  /* portrait aspect — bee suit photo is vertical */
+  max-width: 360px;
+  margin: 0 auto;
+}
+.about-icon-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  object-fit: cover;  /* crop to fit the frame cleanly regardless of source aspect */
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+}
+.about-hex-behind {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  bottom: -20px;
+  left: -20px;
+  border: 2px solid var(--honey);
+  border-radius: 16px;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.about-text .eyebrow { display: block; margin-bottom: 16px; }
+.about-text h2 { color: var(--forest); margin-bottom: 24px; }
+.about-text h2 em { font-style: italic; color: var(--honey); }
+.about-text p {
+  color: var(--bark);
+  font-size: 17px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+.about-text p strong { color: var(--forest); font-weight: 600; }
+.about-signature {
+  margin-top: 32px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--forest);
+}
+
+.about-creds {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.about-cred { display: flex; align-items: flex-start; gap: 10px; }
+.about-cred strong {
+  color: var(--forest);
+  display: block;
+  font-family: var(--ui);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.final-cta {
+  padding: 120px 0;
+  background: var(--forest);
+  color: var(--cream);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.final-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(228, 163, 58, 0.08), transparent 60%);
+  pointer-events: none;
+}
+.final-cta-inner {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.final-cta h2 {
+  color: var(--honey-soft);
+  margin-bottom: 24px;
+}
+.final-cta h2 em { font-style: italic; color: var(--honey-bright); }
+.final-cta p {
+  color: rgba(244, 226, 182, 0.8);
+  font-size: 19px;
+  margin-bottom: 40px;
+}
+
+/* Store badges — 30 April 2026 Phase 4br
+   Updated to use official Apple App Store and Google Play SVG badges
+   per brand guidelines. App Store live, Google Play disabled (coming
+   soon), web app option as a small text link below. */
+.store-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.store-badges a, .store-badges span {
+  display: inline-block;
+  line-height: 0;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.store-badges a:hover {
+  transform: translateY(-2px);
+}
+.store-badges img {
+  height: 60px;
+  width: auto;
+  display: block;
+}
+.store-badge-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.store-webapp-link {
+  display: block;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--honey-soft);
+  opacity: 0.85;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.store-webapp-link:hover {
+  color: var(--honey-bright);
+  opacity: 1;
+}
+
+.final-cta-note {
+  font-size: 13px;
+  color: rgba(244, 226, 182, 0.6);
+  letter-spacing: 0.02em;
+  margin-top: 24px;
+}
+
+footer {
+  background: var(--forest-deep);
+  color: rgba(244, 226, 182, 0.5);
+  padding: 60px 0 32px;
+  font-size: 13px;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(228, 163, 58, 0.1);
+  margin-bottom: 32px;
+}
+@media (max-width: 720px) { .footer-top { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .footer-top { grid-template-columns: 1fr; } }
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--honey-soft);
+  margin-bottom: 16px;
+}
+.footer-brand img { width: 32px; height: 32px; border-radius: 6px; }
+.footer-about {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(244, 226, 182, 0.5);
+  max-width: 320px;
+}
+
+.footer-col h5 {
+  font-family: var(--ui);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--honey-bright);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a {
+  color: rgba(244, 226, 182, 0.65);
+  transition: color 0.2s;
+}
+.footer-col a:hover { color: var(--honey-bright); }
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 12px;
+  color: rgba(244, 226, 182, 0.4);
+}
+.footer-bottom a { color: inherit; }
+.footer-bottom a:hover { color: var(--honey-bright); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <img src="hivekeeper-icon.png" alt="">
+      HiveKeeper<sup>&trade;</sup>
+    </a>
+    <div class="nav-links">
+      <a href="#why">Why HiveKeeper</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+      <a href="/hivekeeper-beta1.html" class="nav-cta">Launch app</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="hero-text">
+      <span class="eyebrow animate-in">For UK beekeepers · AI-powered · Live on iOS &amp; Web</span>
+      <h1 class="hero-headline animate-in delay-1">
+        Built for the <em>UK beekeeping year.</em>
+      </h1>
+      <p class="hero-sub animate-in delay-2">
+        AI-powered voice inspections, an Asian Hornet identifier, satellite apiary mapping, crop spraying alerts, and the UK nectar calendar. Built for British beekeepers and the BBKA seasonal calendar &mdash; by a Northamptonshire beekeeper.
+      </p>
+      <div class="hero-ctas animate-in delay-3">
+        <a href="/hivekeeper-beta1.html" class="btn btn-primary">
+          Start free · 14-day Pro trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#why" class="btn btn-secondary">See how it works</a>
+      </div>
+      <div class="hero-trust animate-in delay-4">
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>No card for trial</div>
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>Offline-capable for notes</div>
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>Your data, delete anytime</div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <svg class="hex-deco hex-deco-1" viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg"><path d="M30 2l24 14v20L30 50 6 36V16z" fill="none" stroke="#C8730A" stroke-width="1.5"/></svg>
+      <svg class="hex-deco hex-deco-2" viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg"><path d="M30 2l24 14v20L30 50 6 36V16z" fill="#C8730A" opacity="0.2"/></svg>
+
+      <svg class="bee-float" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <svg class="bee-phone-left" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <svg class="bee-phone-right" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-content">
+            <div class="phone-greeting">Good morning, Chris</div>
+            <div class="phone-apiary">· Nene Valley Lavender Farm</div>
+
+            <div class="phone-stats">
+              <div class="phone-stat">
+                <div class="phone-stat-num">15</div>
+                <div class="phone-stat-lab">Active</div>
+              </div>
+              <div class="phone-stat">
+                <div class="phone-stat-num">2</div>
+                <div class="phone-stat-lab">Watch</div>
+              </div>
+            </div>
+
+            <div class="phone-alert">
+              <div class="phone-alert-label">⚠ Asian hornet · Critical</div>
+              <div class="phone-alert-text">Confirmed sighting: 13 miles, Sawtry</div>
+            </div>
+
+            <div class="phone-hive-row">
+              <div class="phone-hive-ring">92</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 4 · Queenright</div>
+                <div class="phone-hive-meta">8 frames brood · 3 stores</div>
+              </div>
+            </div>
+            <div class="phone-hive-row">
+              <div class="phone-hive-ring amber">74</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 7 · Needs super</div>
+                <div class="phone-hive-meta">Tight, inspected 2 days ago</div>
+              </div>
+            </div>
+            <div class="phone-hive-row" style="border-bottom:none">
+              <div class="phone-hive-ring">88</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 12 · Queenright</div>
+                <div class="phone-hive-meta">Good pattern, calm temper</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L4 7v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V7l-8-5z"/></svg>
+      Trade Mark Filed
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+      GDPR Compliant
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/></svg>
+      BeeBase Export
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Photosensitive Safety Audited
+    </div>
+  </div>
+</section>
+
+<section class="why" id="why">
+  <svg class="extra-bee bee-why" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Why HiveKeeper</span>
+      <h2>Four things that make it <em>specifically yours.</em></h2>
+      <p>There are plenty of beekeeping apps. Most were built for American or European operations. HiveKeeper was built for how British beekeepers actually keep bees.</p>
+    </div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-card-num">1</div>
+        <h3>Built around the UK beekeeping year</h3>
+        <p>Works with <strong>every UK hive type</strong> &mdash; National, Commercial, WBC, Smith, Top Bar, Warr&eacute;, Nuc. The <strong>BBKA seasonal calendar</strong> drives your alerts. UK varroa treatment windows. Export inspection data to <strong>BeeBase / NBU format</strong> in one tap.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">2</div>
+        <h3>Aware of your environment</h3>
+        <p>Integrated <strong>Asian Hornet Watch</strong> panel with live UK sightings map and in-app reporting. A <strong>Crop Spraying Tracker</strong> for pesticide exposure near your apiaries. The <strong>UK Nectar Calendar</strong> with 16 UK forage sources and monthly intensity. Forage conditions based on the weather at your apiary.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">3</div>
+        <h3>AI that understands beekeeping</h3>
+        <p>Voice notes at the hive that <strong>fill the form for you</strong>. A chat assistant trained on your apiary data, with UK-legal treatments only. An <strong>AI Asian Hornet identifier</strong> that confirms <em>Vespa velutina</em> from a photo before you submit to Asian Hornet Watch. Built by beekeepers, for beekeepers.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">4</div>
+        <h3>Made by a beekeeper, not a startup</h3>
+        <p>Built in Brigstock by <strong>Chris Culshaw</strong>, a BBKA Swarm Collector running multiple apiaries in Northamptonshire. Emails get answered personally. Still being shaped by the beekeepers using it. If something's wrong, tell Chris &mdash; he's the one reading.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <svg class="extra-bee bee-features" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What's actually in the app</span>
+      <h2>The things no other beekeeping app <em>actually ships.</em></h2>
+      <p>We didn't want to build another generic hive logger. These are the features that exist because UK beekeepers told us what they needed &mdash; and that, honestly, no one else is shipping.</p>
+    </div>
+
+    <div class="features-grid">
+      <!-- THREE AI FEATURES — the differentiators -->
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+        <h4>Voice Inspections</h4>
+        <p>Speak at the hive in plain English &mdash; queen status, brood, stores, varroa, temper, swarm risk &mdash; and the AI extracts the data and fills the form. No typing in gloves with bees in the air.</p>
+      </div>
+
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+          <path d="M9 9l6 6M15 9l-6 6"/>
+        </svg>
+        <h4>Asian Hornet Identifier</h4>
+        <p>Photo a suspect, get a Vespa velutina confidence score and the technical features the AI noticed (yellow tarsi, dark thorax, abdomen banding). Submit straight to Asian Hornet Watch with the photo attached.</p>
+      </div>
+
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <h4>HiveKeeper AI Chat</h4>
+        <p>A chat assistant trained on your apiary's data, with UK context throughout. Ask about strange brood patterns, photograph a frame for analysis, get direct practical advice. UK-legal treatments only.</p>
+      </div>
+
+      <!-- ENVIRONMENTAL AWARENESS -->
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M2 12h20"/>
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <h4>Crop Spraying Tracker</h4>
+        <p>Log and see pesticide events within 6 miles of your apiaries. Severity scaling. Know when to keep your bees inside for a day.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18M8 2v4M16 2v4M7 14h2M11 14h2M15 14h2M7 18h2M11 18h2"/>
+        </svg>
+        <h4>UK Nectar Calendar</h4>
+        <p>16 UK forage sources from willow to ivy, each with monthly intensity. Know what's active this week and when the peak is coming.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a10 10 0 1 0 10 10"/>
+          <path d="M22 2L12 12"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <h4>Satellite Apiary Map</h4>
+        <p>Drag hives to their exact position. Place landmarks &mdash; sheds, water, trees. Rotate to match reality. Map zoom syncs across your devices.</p>
+      </div>
+
+      <!-- PRACTICAL TOOLS -->
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="1"/>
+          <path d="M4 10h16M4 16h16M10 4v16M16 4v16"/>
+        </svg>
+        <h4>Inventory &amp; Refurb Pile</h4>
+        <p>Track every box, frame, jar and lid. Boxes coming off a hive go to a refurb pile because they're not deployable until cleaned. Bottle directly from a harvest with automatic stock decrement.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 18a5 5 0 0 0-10 0"/>
+          <circle cx="12" cy="11" r="4"/>
+          <path d="M20 22H4M12 2v3M5 5l2 2M19 5l-2 2"/>
+        </svg>
+        <h4>Lone Worker SOS</h4>
+        <p>One-tap emergency with live GPS. Texts your chosen contact with your exact location. For when you're at the out-apiary on your own.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
+        </svg>
+        <h4>Health Score 0&ndash;100</h4>
+        <p>One number per hive, combining queen, brood, stores, varroa, temper and swarm risk. See trouble coming before it arrives.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="7" r="3"/>
+          <circle cx="17" cy="9" r="3"/>
+          <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M14 18c.5-2.5 3-4 6-4"/>
+        </svg>
+        <h4>Share an Apiary</h4>
+        <p>Co-manage a hive with a mentor, a partner, or your local beekeeping association. Invite via link &mdash; they see what you see.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l-2 5h4l-2-5zM8 7c-2 3-3 6-3 9a7 7 0 0 0 14 0c0-3-1-6-3-9"/>
+          <circle cx="12" cy="14" r="3"/>
+        </svg>
+        <h4>Asian Hornet Watch</h4>
+        <p>Live UK sightings map in your hand. Severity alerts when sightings appear near your apiaries. Submit verified sightings in two taps.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHOTO BAND — 24 April 2026: real beekeeping credibility -->
+<section class="photo-band">
+  <div class="wrap photo-band-inner">
+    <div class="photo-band-image">
+      <img src="IMG-20250412-WA0006.jpg" alt="Chris Culshaw moving beehives on a trailer in Northamptonshire, demonstrating real beekeeping experience behind HiveKeeper">
+    </div>
+    <div class="photo-band-text">
+      <span class="eyebrow">Built in the field</span>
+      <h2>Not designed in a boardroom. <em>Designed on a trailer.</em></h2>
+      <p>
+        Every feature in HiveKeeper exists because I needed it at 6am, in a field, with multiple apiaries to get through. Voice notes because your hands are in the hive. Asian hornet AI because the threat is real. Crop-spraying alerts because losing a colony to drift is devastating. Lone-worker SOS because some apiaries have no signal and no one nearby.
+      </p>
+      <p>
+        This is beekeeping software written by someone who still drops the hive tool in the grass.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pricing</span>
+      <h2>Honest pricing, <em>no hidden tiers.</em></h2>
+      <p>Free if you've got a few hives. Pro if you're serious. Commercial if you're running a bee business. Every new account gets a 14-day Pro trial of the full thing, no card needed.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-tagline">For the first few hives</div>
+        <div class="price-amount">&pound;0<span> forever</span></div>
+        <div class="price-annual">14-day full Pro trial included with every account.</div>
+        <ul class="price-features">
+          <li>Up to 3 hives, 1 apiary</li>
+          <li>Full inspection workflow</li>
+          <li>Voice-recorded inspections</li>
+          <li>Asian Hornet Watch panel</li>
+          <li>Weather at your apiary</li>
+          <li>HiveKeeper AI (5 messages/month)</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Get started free</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="price-flag">Most popular</div>
+        <div class="price-name">Pro</div>
+        <div class="price-tagline">For ambitious hobbyists</div>
+        <div class="price-amount">&pound;3.99<span>/month</span></div>
+        <div class="price-annual">Or &pound;39.99/year (save &pound;7.89)</div>
+        <ul class="price-features">
+          <li>Up to 50 hives, 5 apiaries</li>
+          <li>Full inspection history</li>
+          <li>AI Asian Hornet identifier</li>
+          <li>HiveKeeper AI chat (unlimited)</li>
+          <li>Crop Spraying Tracker</li>
+          <li>UK Nectar Calendar</li>
+          <li>BeeBase / NBU export</li>
+          <li>Health trends &amp; reports</li>
+          <li>Inventory &amp; refurb pile</li>
+          <li>Apiary sharing</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-name">Commercial</div>
+        <div class="price-tagline">For bee farmers and associations</div>
+        <div class="price-amount">&pound;19.99<span>/month</span></div>
+        <div class="price-annual">Or &pound;199.99/year (save &pound;39.89)</div>
+        <ul class="price-features">
+          <li>Unlimited hives &amp; apiaries</li>
+          <li>Everything in Pro</li>
+          <li>Ad-free experience</li>
+          <li>Priority support</li>
+          <li>Advanced exports</li>
+          <li>Bulk marketplace listings</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
+      </div>
+    </div>
+
+    <div class="charter-banner">
+      <div class="charter-banner-text">
+        <h4>Charter Beekeepers — first 100 only</h4>
+        <p>The first 100 keepers to upgrade to Pro annual lock in <strong>&pound;24.99/year for life</strong> (a saving of &pound;15/year against the standard Pro annual price). Our thank-you to the beekeepers who back HiveKeeper at the start.</p>
+      </div>
+      <a href="/hivekeeper-beta1.html" class="btn btn-primary">Become a Charter Beekeeper</a>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap about-inner">
+    <div class="about-portrait-col">
+      <div class="about-icon-frame">
+        <img src="FB_IMG_1776981969106.jpg" alt="Chris Culshaw, beekeeper and founder of HiveKeeper, in bee suit at his apiary">
+        <div class="about-hex-behind"></div>
+      </div>
+    </div>
+
+    <div class="about-text">
+      <span class="eyebrow">About</span>
+      <h2>Built in Brigstock. <em>Shaped by British beekeepers.</em></h2>
+      <p>
+        I'm Chris. I'm a BBKA Swarm Collector running multiple apiaries in and around Brigstock, Northamptonshire. HiveKeeper is the app I built because I was tired of hauling a notebook around the apiary and trying to decipher my own handwriting on Sunday evenings.
+      </p>
+      <p>
+        Tired of American apps that didn't understand how UK beekeepers actually keep bees. Tired of ignoring the Asian hornet threat because no one had built the tools to track it alongside the actual work.
+      </p>
+      <p>
+        What started as a personal tool became something other beekeepers asked to try. Then test. Then rely on. Today it's being shaped by a dedicated beta testing group whose feedback runs the roadmap.
+      </p>
+      <p>If something's wrong, tell me &mdash; I'm the one reading. HiveKeeper is owned by <strong>Culshaw Consulting Ltd</strong>, the small consultancy I run.
+      </p>
+      <div class="about-signature">&mdash; Chris</div>
+
+      <div class="about-creds">
+        <div class="about-cred">
+          <div>
+            <strong>Culshaw Consulting Ltd</strong>
+            Company No. 16938477
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>Trade Mark Filed</strong>
+            UKIPO Classes 9, 35, 42
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>D-U-N-S Number</strong>
+            234452896
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>Based in</strong>
+            Brigstock, Northamptonshire
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAMILY BAND — 24 April 2026: the next generation of beekeepers -->
+<section class="family-band">
+  <div class="wrap family-band-inner">
+    <div class="family-band-text">
+      <span class="eyebrow">The next generation</span>
+      <h2>Beekeeping is <em>better shared.</em></h2>
+      <p>My daughter Tilly is already spotting the queens faster than me. HiveKeeper isn't just about making my beekeeping easier &mdash; it's about passing the knowledge on.</p>
+      <p>Apiary sharing lets you invite a partner, a mentor, or your local association to co-manage a hive. Everything you see, they see.</p>
+    </div>
+    <div class="family-band-image">
+      <img src="PXL_20260304_112319172.jpg" alt="Tilly Culshaw in a bee suit inspecting a hive — the next generation of UK beekeepers">
+    </div>
+  </div>
+</section>
+
+<section class="final-cta" id="download">
+  <svg class="extra-bee bee-cta" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
+  <div class="wrap final-cta-inner">
+    <h2>Start keeping better records <em>this week.</em></h2>
+    <p>14-day Pro trial of the full thing. No credit card needed.</p>
+
+    <!-- 30 April 2026 Phase 4br — official Apple App Store and Google Play
+         badges. App Store live, Google Play awaiting Play Console approval.
+         Web app option as a small text link below since the user can launch
+         it directly from this page. -->
+    <div class="store-badges">
+      <a href="https://apps.apple.com/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store">
+        <img src="badge-appstore.svg" alt="Download on the App Store">
+      </a>
+      <span class="store-badge-disabled" aria-label="Coming soon to Google Play" title="Coming soon to Google Play">
+        <img src="badge-googleplay.svg" alt="Get it on Google Play — coming soon">
+      </span>
+    </div>
+
+    <a href="/hivekeeper-beta1.html" class="store-webapp-link">Or launch the web app in your browser →</a>
+
+    <div class="final-cta-note">
+      Google Play approval imminent. Web app works on any device.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <img src="hivekeeper-icon.png" alt="">
+          HiveKeeper<sup>&trade;</sup>
+        </div>
+        <p class="footer-about">
+          The UK beekeeper's field companion. Built in Brigstock, Northamptonshire, by a BBKA Swarm Collector. Shaped by the community that uses it.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#why">Why HiveKeeper</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="/hivekeeper-beta1.html">Launch the app</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="mailto:privacy@gethivekeeper.com">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="/security-policy.html">Security Policy</a></li>
+          <li><a href="/terms-of-service.html">Terms of Service</a></li>
+          <li><a href="/delete-account.html">Delete my account</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>
+        &copy; 2026 Culshaw Consulting Ltd · Company No. 16938477 · Trade Mark Filed UKIPO
+      </div>
+      <div>
+        Built with care in the UK.
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
