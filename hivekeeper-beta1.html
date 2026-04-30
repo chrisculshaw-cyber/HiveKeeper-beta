@@ -21489,9 +21489,14 @@ function saveSwarmCatch() {
   } catch(e) { console.warn('saveSwarmCatch queue failed:', e); }
 
   // Log as an inspection note too
+  // 30 April 2026 Phase 4bn — was using 'insp_swarm_' + Date.now() which
+  // is a legacy app-id format. Inspections table id column is uuid in
+  // Supabase, so Postgres rejects with 22P02. Every other inspection
+  // creation path uses uid(); this one slipped through. Surfaced via
+  // Dave's beta sync-issues report.
   var inspections = loadInspections();
   inspections.push({
-    id: 'insp_swarm_' + Date.now(),
+    id: uid(),
     hiveId: hiveId,
     inspectedAt: new Date(date).getTime(),
     inspectedBy: 'HiveKeeper',
@@ -21819,7 +21824,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:30 30 April 2026 BST · Phase 4bm — three-state stock model. Equipment now tracks ready / refurb / unusable separately. Boxes coming off a hive go to refurb (need cleaning before redeploy). Frames \u201Creplaced (good)\u201D decrements ready (new frame on hive) and increments refurb (old frame waiting for new foundation). Frames \u201Cunusable\u201D decrements ready and increments unusable. Bottling and consumption read quantity_ready, not total. Equipment edit modal gains state breakdown panel + transition buttons (\u201CCleaned/repaired\u201D, \u201CDecided to burn\u201D etc). Recent activity log shows state transitions with arrow indicators. Reorder threshold compares against ready stock. Inventory list shows breakdown pills when non-ready stock exists. Off-book stock used in stack edits surfaces in a single combined toast.';
+var HIVEKEEPER_BUILD = '12:50 30 April 2026 BST · Phase 4bn — fix swarm-catch inspection ID. Was using legacy `insp_swarm_<timestamp>` format which Postgres rejected as non-UUID (22P02). Now uses uid() like every other inspection creation path. Surfaced via Dave\u2019s beta sync-issues report. Existing failed rows: dismiss them \u2014 the swarm itself is in swarm_catches table separately, only the duplicate inspection note is affected.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
