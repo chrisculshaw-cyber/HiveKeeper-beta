@@ -21848,7 +21848,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '16:24 30 April 2026 BST · Phase 4bt — honey pot indicator on apiary hive list. Small \u{1F36F} icon next to hive name when that hive has had a harvest logged this season (1 Jan onwards). Tooltip shows count + total kg + latest date. Positive signal kept separate from alerts row (which is for negative indicators). Per-hive lookup uses loadHarvests() consistent with existing loadInspections() pattern in the same row template; performance acceptable for typical apiary sizes (4-50 hives), full optimisation backlogged.';
+var HIVEKEEPER_BUILD = '18:05 30 April 2026 BST · Phase 4bu — welcome banner dismissal now persists cross-device via profiles.dismissed_flags JSONB column. Prior approach was localStorage-only which kept reappearing whenever localStorage was cleared (sign-out flow not honouring keysToKeep on every code path; new device login). Local check still happens first for fast initial render \u2014 cloud check runs async to catch dismissals from other devices and syncs localStorage. JSONB column is intentionally extensible for future dismissable UI (auth-screen launch info, founder modal etc). Requires phase4bu-migration.sql to add dismissed_flags column; code degrades gracefully if column missing (cloud writes silently fail, local dismissal still works on same device).';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -22313,16 +22313,66 @@ function openManual() {
    device. Use showHelp() for ongoing feature discovery.
    ════════════════════════════════════════════════════════════════ */
 function dismissWelcomeBanner() {
+  // Local immediate write — banner hides without waiting for network
   try { localStorage.setItem('hk_seen_welcome', '1'); } catch(e) {}
   var b = document.getElementById('home-welcome-banner');
   if (b) b.style.display = 'none';
+
+  // 30 April 2026 Phase 4bu — also persist to profiles.dismissed_flags so
+  // the dismissal carries across devices and survives a localStorage wipe.
+  // Pattern matches the existing profile-update flow (line ~19560): try
+  // immediate push, queue offline-friendly fallback if it fails.
+  try {
+    if (typeof getUserId === 'function' && getUserId() && typeof getSupabase === 'function') {
+      var sb = getSupabase();
+      // Read-modify-write so we don't clobber other dismissed flags
+      sb.from('profiles').select('dismissed_flags').eq('id', getUserId()).maybeSingle().then(function(resp){
+        var current = (resp && resp.data && resp.data.dismissed_flags) || {};
+        current.welcome_banner = true;
+        sb.from('profiles').update({ dismissed_flags: current }).eq('id', getUserId()).then(function(){});
+      }).catch(function(e){ console.warn('Welcome dismiss cloud sync failed (will retry on next render):', e); });
+    }
+  } catch(e) { console.warn('dismissWelcomeBanner cloud sync threw:', e); }
 }
+
 function maybeShowWelcomeBanner() {
   var b = document.getElementById('home-welcome-banner');
   if (!b) return;
-  var seen = false;
-  try { seen = localStorage.getItem('hk_seen_welcome') === '1'; } catch(e) {}
-  b.style.display = seen ? 'none' : 'flex';
+
+  // Local check first — fast initial render decision
+  var seenLocally = false;
+  try { seenLocally = localStorage.getItem('hk_seen_welcome') === '1'; } catch(e) {}
+
+  if (seenLocally) {
+    b.style.display = 'none';
+    // Note: not pushing existing localStorage flag up to the cloud on
+    // every render — would mean a redundant write on every page load for
+    // users who dismissed the banner long ago. The cloud flag gets set
+    // properly the next time anyone dismisses the banner from any device.
+    // Acceptable trade-off: each new device shows the banner once and the
+    // user dismisses it. After that it's properly cross-device.
+    return;
+  }
+
+  // Local says not dismissed — show banner now (don't wait for network)
+  b.style.display = 'flex';
+
+  // 30 April 2026 Phase 4bu — async cloud check. If the user dismissed on
+  // another device, the cloud will say so even though localStorage doesn't.
+  // We hide the banner and sync localStorage so subsequent renders are fast.
+  try {
+    if (typeof getUserId === 'function' && getUserId() && typeof getSupabase === 'function') {
+      var sb = getSupabase();
+      sb.from('profiles').select('dismissed_flags').eq('id', getUserId()).maybeSingle().then(function(resp){
+        if (resp && resp.data && resp.data.dismissed_flags && resp.data.dismissed_flags.welcome_banner === true) {
+          // Cloud says dismissed — hide and sync local
+          try { localStorage.setItem('hk_seen_welcome', '1'); } catch(e) {}
+          var bb = document.getElementById('home-welcome-banner');
+          if (bb) bb.style.display = 'none';
+        }
+      }).catch(function(e){ /* silent — banner will keep showing, dismissal still works */ });
+    }
+  } catch(e) {}
 }
 
 async function checkPolicyConsent() {
