@@ -1753,27 +1753,13 @@ input[type="checkbox"].hk-chk:checked::after {
     <span id="auth-build-stamp-text"></span>
   </div>
 
-  <!-- LAUNCH INFO BLOCK — first-visit-only.
-       Shown only when no prior sign-in detected AND not previously dismissed.
-       30 April 2026 Phase 4br — uses official Apple and Google Play badges
-       per brand guidelines. Web app gets a small text note since user is
-       already on the web app when they see this. Google Play disabled until
-       Play Console approval lands. -->
-  <div id="auth-beta-info" class="hk-auth-fadein-2" style="display:none;width:100%;max-width:360px;margin-bottom:18px;padding:14px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-size:12px;line-height:1.55;position:relative;z-index:1;">
-    <div onclick="dismissAuthLaunchInfo()" style="position:absolute;top:6px;right:8px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);font-size:16px;line-height:1;" title="Dismiss">&times;</div>
-    <div style="font-weight:800;color:var(--honey);letter-spacing:.08em;text-transform:uppercase;font-size:10px;margin-bottom:10px;">Also available on</div>
-    <div style="display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap;margin-bottom:8px;">
-      <!-- Official Apple App Store badge — links to live App Store page -->
-      <a href="https://apps.apple.com/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store" style="display:inline-block;height:40px;line-height:0;">
-        <img src="/badge-appstore.svg" alt="Download on the App Store" style="height:40px;width:auto;display:block;" onerror="this.style.display='none'">
-      </a>
-      <!-- Official Google Play badge — non-clickable, awaiting Play Console approval -->
-      <span aria-label="Coming soon to Google Play" style="display:inline-block;height:40px;line-height:0;opacity:.45;cursor:not-allowed;" title="Coming soon to Google Play">
-        <img src="/badge-googleplay.svg" alt="Get it on Google Play \u2014 coming soon" style="height:40px;width:auto;display:block;" onerror="this.style.display='none'">
-      </span>
-    </div>
-    <div style="font-size:10px;color:rgba(255,255,255,.55);font-style:italic;">Google Play coming soon \u2014 you&rsquo;re already using the web app.</div>
-  </div>
+  <!-- LAUNCH INFO BLOCK removed 30 April 2026 Phase 4bs.
+       Once users are on the auth screen they're committed to signing in
+       via the web app — advertising other platforms at that moment is
+       friction, not help. Platform badges live on gethivekeeper.com final
+       CTA where browsing visitors benefit from them. The
+       dismissAuthLaunchInfo() function is left orphaned but may be reused
+       later for an announcement banner (e.g. Android-launch). -->
 
   <!-- Glass form panel -->
   <div class="hk-auth-glass hk-auth-fadein-2" style="position:relative;width:100%;max-width:360px;border-radius:18px;padding:22px 22px 22px 22px;box-sizing:border-box;z-index:1;">
@@ -21838,7 +21824,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:25 30 April 2026 BST · Phase 4br — auth-screen launch info block now uses official Apple App Store and Google Play SVG badges per brand guidelines (replaced custom three-tile design with homemade icons). Badge images load from /badge-appstore.svg and /badge-googleplay.svg \u2014 needs both files uploaded to gethivekeeper.com root. Web app option becomes a small text note since user is already on the web app when they see the auth screen. Google Play badge greyed (opacity .45) until Play Console approval lands. App Store link active to apps.apple.com/app/hivekeeper/id6762303018.';
+var HIVEKEEPER_BUILD = '15:40 30 April 2026 BST · Phase 4bs — auth-screen launch info block removed entirely. Once a user is on the auth screen they\u2019re committed to signing in via the web app right now \u2014 advertising other platforms at that moment is friction not help. Platform badges (App Store live + Google Play coming soon) live on gethivekeeper.com final CTA where browsing visitors actually benefit. dismissAuthLaunchInfo() function left orphaned with safe null-checks; may be reused later for a launch announcement banner.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
