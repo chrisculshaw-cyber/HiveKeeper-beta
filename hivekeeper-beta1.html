@@ -13538,9 +13538,21 @@ function saveVarroa(d){
   }
 }
 function loadHarvests(){try{return JSON.parse(localStorage.getItem(HARVEST_KEY)||'[]');}catch(e){return[];}}
-function saveHarvests(d){localStorage.setItem(HARVEST_KEY,JSON.stringify(d)); if (getUserId()) pushHarvests().catch(function(){});}
+function saveHarvests(d){
+  localStorage.setItem(HARVEST_KEY,JSON.stringify(d));
+  // 30 April 2026 Phase 4bl — log push failures instead of swallowing them.
+  // Silent .catch hid a schema mismatch (supers_removed) for days.
+  if (getUserId()) pushHarvests().catch(function(e){
+    console.warn('[saveHarvests] push wrapper caught:', e && e.message);
+  });
+}
 function loadTreatments(){try{return JSON.parse(localStorage.getItem(TREATMENT_KEY)||'[]');}catch(e){return[];}}
-function saveTreatments(d){localStorage.setItem(TREATMENT_KEY,JSON.stringify(d)); if (getUserId()) pushTreatments().catch(function(){});}
+function saveTreatments(d){
+  localStorage.setItem(TREATMENT_KEY,JSON.stringify(d));
+  if (getUserId()) pushTreatments().catch(function(e){
+    console.warn('[saveTreatments] push wrapper caught:', e && e.message);
+  });
+}
 
 // ═══════════════════════════════════════════════
 // RECORD TAB SWITCHING
@@ -21481,7 +21493,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:35 30 April 2026 BST · Phase 4bk — Two fixes. (1) Founder & Beta tiers added to hasFinancialFeatures (were missing, so even Founder Chris saw the upgrade prompt when tapping the honey card on home). (2) Renamed "Knackered" \u2192 "Unusable" everywhere user-facing: the input label, helper text, and audit log reasons.';
+var HIVEKEEPER_BUILD = '09:50 30 April 2026 BST · Phase 4bl — HARVEST SYNC FIX. Root cause: code pushed column `supers_removed` which doesn\u2019t exist in Supabase (real column is `supers`). Postgres rejected every harvest insert with 42703. Silent .catch in saveHarvests swallowed it for days. Zero harvests ever reached the cloud for any account. Fixed: (1) push uses `supers`. (2) Pull reads `supers`, falls back from weight_kg to kg for legacy rows. (3) Both push functions wrapped in try/catch with explicit logging + offline-queue fallback. (4) saveHarvests/saveTreatments wrappers log instead of swallowing. SQL migration also drops NOT NULL on legacy `harvested_on`/`kg`/`apiary_id` columns so new-style inserts work.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
@@ -22360,14 +22372,21 @@ async function pushHarvests() {
       id: h.id, user_id: uid, hive_id: h.hiveId,
       harvested_at: new Date(h.date || h.createdAt || Date.now()).toISOString(),
       weight_kg: parseFloat(h.kg || h.weightKg || 0),
-      supers_removed: h.supers || 0,
+      // 30 April 2026 Phase 4bl — column is 'supers' in Supabase (not 'supers_removed')
+      supers: h.supers || 0,
       notes: h.notes || ''
     };
   });
-  var { error } = await sb.from('harvests').upsert(rows, { onConflict: 'id' });
-  if (error) {
-    console.warn('Harvest push error:', error.message);
-    // 27 April 2026 — Phase 1c
+  // 30 April 2026 Phase 4bl — wrap in try/catch so exceptions get queued
+  // not silently swallowed by the caller's .catch(()=>{}).
+  try {
+    var { error } = await sb.from('harvests').upsert(rows, { onConflict: 'id' });
+    if (error) {
+      console.warn('[pushHarvests] Supabase error — queueing:', error.message, '| code:', error.code);
+      rows.forEach(function(r){ try { queueOfflineSave('harvests', r); } catch(e) {} });
+    }
+  } catch(ex) {
+    console.warn('[pushHarvests] exception — queueing:', ex && ex.message);
     rows.forEach(function(r){ try { queueOfflineSave('harvests', r); } catch(e) {} });
   }
 }
@@ -22392,10 +22411,15 @@ async function pushTreatments() {
       notes: t.notes || ''
     };
   });
-  var { error } = await sb.from('treatments').upsert(rows, { onConflict: 'id' });
-  if (error) {
-    console.warn('Treatment push error:', error.message);
-    // 27 April 2026 — Phase 1c
+  // 30 April 2026 Phase 4bl — exception-safe push, queue on failure
+  try {
+    var { error } = await sb.from('treatments').upsert(rows, { onConflict: 'id' });
+    if (error) {
+      console.warn('[pushTreatments] Supabase error — queueing:', error.message, '| code:', error.code);
+      rows.forEach(function(r){ try { queueOfflineSave('treatments', r); } catch(e) {} });
+    }
+  } catch(ex) {
+    console.warn('[pushTreatments] exception — queueing:', ex && ex.message);
     rows.forEach(function(r){ try { queueOfflineSave('treatments', r); } catch(e) {} });
   }
 }
@@ -22753,7 +22777,10 @@ async function pullFromSupabase() {
         return {
           id: h.id, hiveId: h.hive_id,
           date: h.harvested_at.split('T')[0],
-          kg: h.weight_kg, supers: h.supers_removed,
+          // 30 April 2026 Phase 4bl — column is 'supers' not 'supers_removed'.
+          // Read weight_kg first, fall back to legacy 'kg' for any old rows.
+          kg: h.weight_kg !== null && h.weight_kg !== undefined ? h.weight_kg : h.kg,
+          supers: h.supers,
           notes: h.notes, createdAt: new Date(h.harvested_at).getTime()
         };
       });
@@ -23141,7 +23168,8 @@ if (typeof saveHarvest === 'function') {
           id: h.id, user_id: uid, hive_id: h.hiveId,
           harvested_at: new Date(h.date || h.createdAt || Date.now()).toISOString(),
           weight_kg: parseFloat(h.kg || h.weightKg || 0),
-          supers_removed: h.supers || 0,
+          // 30 April 2026 Phase 4bl — column is 'supers' not 'supers_removed'
+          supers: h.supers || 0,
           notes: h.notes || ''
         });
       });
