@@ -1754,11 +1754,25 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 
   <!-- LAUNCH INFO BLOCK — first-visit-only.
-       Shown only when no prior sign-in detected AND not previously dismissed. -->
-  <div id="auth-beta-info" class="hk-auth-fadein-2" style="display:none;width:100%;max-width:360px;margin-bottom:18px;padding:12px 14px 14px 14px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-size:12px;line-height:1.55;position:relative;z-index:1;">
-    <div onclick="dismissAuthLaunchInfo()" style="position:absolute;top:6px;right:8px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);font-size:16px;line-height:1;" title="Dismiss">×</div>
-    <div style="font-weight:800;color:var(--honey);letter-spacing:.08em;text-transform:uppercase;font-size:10px;margin-bottom:6px;">Now on the App Store</div>
-    <div><strong style="color:white;">iPhone:</strong> search "HiveKeeper" on the App Store. <strong style="color:white;">Android:</strong> coming soon — for now, add this page to your home screen for a native-like experience.</div>
+       Shown only when no prior sign-in detected AND not previously dismissed.
+       30 April 2026 Phase 4br — uses official Apple and Google Play badges
+       per brand guidelines. Web app gets a small text note since user is
+       already on the web app when they see this. Google Play disabled until
+       Play Console approval lands. -->
+  <div id="auth-beta-info" class="hk-auth-fadein-2" style="display:none;width:100%;max-width:360px;margin-bottom:18px;padding:14px;background:rgba(228,163,58,.08);border:1px solid rgba(228,163,58,.25);border-left:3px solid var(--honey);border-radius:var(--rs);color:rgba(255,255,255,.85);font-size:12px;line-height:1.55;position:relative;z-index:1;">
+    <div onclick="dismissAuthLaunchInfo()" style="position:absolute;top:6px;right:8px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.5);font-size:16px;line-height:1;" title="Dismiss">&times;</div>
+    <div style="font-weight:800;color:var(--honey);letter-spacing:.08em;text-transform:uppercase;font-size:10px;margin-bottom:10px;">Also available on</div>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:flex-start;flex-wrap:wrap;margin-bottom:8px;">
+      <!-- Official Apple App Store badge — links to live App Store page -->
+      <a href="https://apps.apple.com/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store" style="display:inline-block;height:40px;line-height:0;">
+        <img src="/badge-appstore.svg" alt="Download on the App Store" style="height:40px;width:auto;display:block;" onerror="this.style.display='none'">
+      </a>
+      <!-- Official Google Play badge — non-clickable, awaiting Play Console approval -->
+      <span aria-label="Coming soon to Google Play" style="display:inline-block;height:40px;line-height:0;opacity:.45;cursor:not-allowed;" title="Coming soon to Google Play">
+        <img src="/badge-googleplay.svg" alt="Get it on Google Play \u2014 coming soon" style="height:40px;width:auto;display:block;" onerror="this.style.display='none'">
+      </span>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,.55);font-style:italic;">Google Play coming soon \u2014 you&rsquo;re already using the web app.</div>
   </div>
 
   <!-- Glass form panel -->
@@ -21824,14 +21838,28 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:50 30 April 2026 BST · Phase 4bn — fix swarm-catch inspection ID. Was using legacy `insp_swarm_<timestamp>` format which Postgres rejected as non-UUID (22P02). Now uses uid() like every other inspection creation path. Surfaced via Dave\u2019s beta sync-issues report. Existing failed rows: dismiss them \u2014 the swarm itself is in swarm_catches table separately, only the duplicate inspection note is affected.';
+var HIVEKEEPER_BUILD = '15:25 30 April 2026 BST · Phase 4br — auth-screen launch info block now uses official Apple App Store and Google Play SVG badges per brand guidelines (replaced custom three-tile design with homemade icons). Badge images load from /badge-appstore.svg and /badge-googleplay.svg \u2014 needs both files uploaded to gethivekeeper.com root. Web app option becomes a small text note since user is already on the web app when they see the auth screen. Google Play badge greyed (opacity .45) until Play Console approval lands. App Store link active to apps.apple.com/app/hivekeeper/id6762303018.';
+
+// 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
+// number from the rich HIVEKEEPER_BUILD string. The full constant retains
+// its descriptive change-log for diagnostic exports; display sites use this
+// short form to keep the auth/settings UI calm.
+function shortBuildStamp() {
+  if (typeof HIVEKEEPER_BUILD !== 'undefined') {
+    // Match everything up to and including the phase identifier, e.g.
+    // "14:55 30 April 2026 BST \u00B7 Phase 4bp" \u2014 stop at the em dash.
+    var m = HIVEKEEPER_BUILD.match(/^([^\u2014]+?)(?:\s*\u2014.*)?$/);
+    return m ? m[1].trim() : HIVEKEEPER_BUILD;
+  }
+  return '';
+}
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
 document.addEventListener('DOMContentLoaded', function() {
   try {
     var stampText = document.getElementById('auth-build-stamp-text');
-    if (stampText) stampText.textContent = HIVEKEEPER_BUILD;
+    if (stampText) stampText.textContent = shortBuildStamp();
   } catch(e) {}
   // 28 April 2026 Phase 4k — show launch info block only to first-time
   // visitors. Returning users (including all Founders, who have signed in
@@ -21997,6 +22025,7 @@ var HK_MANUAL = [
       'Free plan: 3 voice inspections per month. Pro and Commercial: unlimited.\n\n' +
       'Got a question mid-inspection? Tap "Got a question? Ask At The Apiary" below the voice recorder — opens the WhatsApp channel for live help from other beekeepers.\n\n' +
       'Manual inspection: select your hive, fill in queen, brood, stores, temper, swarm risk, varroa. Use the Frame composition counter (with ? help icon) to log brood/stores/foundation/empty totals. Tap Save.\n\n' +
+      'Frame replacements (with ? help icon): when you replace frames during an inspection, mark each as either "Replaced (good)" or "Unusable". Good ones decrement your ready frame stock and add the old frame to the refurb pile (waiting for new foundation). Unusable ones decrement ready stock and add the old to the burn pile. See section 9 for inventory detail.\n\n' +
       'Treatments: from any hive\'s detail screen, tap Treatment. The Log treatment modal includes a ? icon explaining when to use each common UK treatment — Apivar, oxalic acid, formic acid (MAQS), Apiguard.\n\n' +
       'Frame photos and AI analysis: take photos during inspection. Pro and Commercial users can tap "🤖 Analyse frames with AI" to get composition estimates. The ? icon top-right of the analysis row explains what the AI checks (capped brood, open brood, honey, pollen, empty cells).\n\n' +
       'Next-inspection notes: HiveKeeper extracts forward-looking actions from your voice notes ("check for queen cells next week"). Shown as a pending badge on the hive until your next inspection. Edit or tick off individual notes from the hive detail screen.'
@@ -22007,6 +22036,7 @@ var HK_MANUAL = [
     body:
       'Health score (0–100) with trend. The ? at the top-right of the Inspection History section explains the composite score (queen status, brood pattern, varroa, stores, behaviour). Bands:\n• 80–100 strong colony, on track\n• 60–79 generally good, watch one or two areas\n• 40–59 needs attention, plan an action\n• 0–39 at risk, intervention needed\n\n' +
       'Queen status, box configuration (brood boxes + supers as chips). Last inspection summary and full history timeline.\n\n' +
+      'Stack edits and inventory: when you add or remove a brood box or super, your equipment inventory adjusts automatically. Boxes added are decremented from your ready stock; boxes removed go to the refurb pile (because they need cleaning before redeploy). See section 9 for inventory detail.\n\n' +
       'Above the timeline: "Reviewing a record? Ask At The Apiary" — direct link to live WhatsApp help.\n\n' +
       'Quick actions: Inspect, Varroa count, Treatment, Harvest, QR code.\n\n' +
       'Frame photos: tap the camera icon. Free: 3 total per hive. Pro: 10 per hive. Commercial: unlimited.\n\n' +
@@ -22014,8 +22044,58 @@ var HK_MANUAL = [
       'Hive status (with ? help icon): Active / Lost / Empty / Unclear. Drives map colours, summary counts on home, and which hives appear in inspection due lists. Status updates automatically when your inspection notes describe a state change ("no bees, plenty of stores" → flips to Lost).'
   },
   {
+    id: 'harvest',
+    title: '7. Recording a Harvest',
+    body:
+      'When you take honey off a hive, record it as a harvest so the data flows through the rest of the app.\n\n' +
+      'From a hive\'s detail screen, tap Harvest. Enter the date, the number of supers removed, and the total weight in kg. Add notes if useful (frame condition, capping percentage, supers left on for the next flow).\n\n' +
+      'What happens behind the scenes: the harvest is logged against this hive, contributes to your annual yield total, and becomes the source for any bottling you do from this honey.\n\n' +
+      'Year-on-year comparison: harvest history is preserved per hive. Useful for spotting which colonies consistently outperform.\n\n' +
+      'Limits — Free plan: harvest history capped at last 5 entries per hive. Pro / Commercial / Founder: unlimited harvest history.'
+  },
+  {
+    id: 'bottling',
+    title: '8. Bottling Honey',
+    body:
+      'Bottle directly from a harvest record so jar / lid / label stock decrements automatically and traceability is preserved.\n\n' +
+      'From the hive detail or harvest record, tap Bottle. Choose the jar size (1lb / 12oz / 8oz / 4oz). The app calculates how many jars you need, checks your inventory, and tells you if you\'re short on jars, lids, or labels.\n\n' +
+      'When you confirm: jars / lids / labels in your inventory drop by the bottling quantity, a honey stock record is created (with the source harvest linked for full traceability), and an audit entry is written to your inventory movement log.\n\n' +
+      'You can see your bottled stock value at a glance on the Equipment & Honey card on home (Pro feature). The card shows total jars in stock × your set jar price.\n\n' +
+      'Sales tracking: log a sale (Settings → Inventory → Honey Stock → Log sale) and the jar count drops accordingly. You\'ll see remaining stock value updated.'
+  },
+  {
+    id: 'inventory',
+    title: '9. Inventory and Equipment Tracking',
+    body:
+      'Manage your kit so the app knows what you have, what\'s deployed, and what needs work. Settings → Inventory.\n\n' +
+      'Add equipment by category (brood box, super, frame, jar, lid, label, queen excluder, feeder, other) and by hive system where it matters (National, Commercial, WBC, Smith, Langstroth, Dadant). Setting a reorder threshold gives you a low-stock alert on the home screen.\n\n' +
+      'Three states (with ? help on each):\n' +
+      '• Ready — usable now, available to deploy on a hive\n' +
+      '• Refurb — needs cleaning, repair, or new foundation before redeploy\n' +
+      '• Unusable — bound for the burn pile / scrap\n\n' +
+      'Stock breakdown: each equipment row shows the three quantities. The total is the sum.\n\n' +
+      'Automatic adjustments: when you edit a hive\'s stack and remove a brood box or super, the count goes to refurb (because boxes coming off a hive aren\'t ready to redeploy until cleaned). When you add a box, the count is taken from ready stock. Frame replacements during inspection: "Replaced (good)" sends the old frame to refurb (waiting for new foundation); "Unusable" sends it to the burn pile.\n\n' +
+      'State transitions: edit any equipment row. The Stock Breakdown panel shows the three counts and offers transition buttons:\n' +
+      '• → Cleaned/repaired (refurb back to ready)\n' +
+      '• → Decided to burn (refurb to unusable)\n' +
+      '• → Move to refurb pile (ready to refurb)\n' +
+      '• → Decided to repair after all (unusable to refurb)\n\n' +
+      'Off-book stock: if you add 3 supers to a hive but only have 2 in ready, the action goes through (the supers ARE on the hive) and you get a "off-book stock used" toast. Audit log records the discrepancy. You can reconcile by adding the missing stock to inventory.\n\n' +
+      'Recent activity: a log below the inventory list shows the last 20 stock movements — what changed, why, when. Each entry is auditable. Limits — Free plan: 3 hives only, no inventory tier gates by default. Pro / Commercial / Founder: full inventory tracking.'
+  },
+  {
+    id: 'hornet-id',
+    title: '10. Asian Hornet AI Identifier',
+    body:
+      'If you spot something that looks like a hornet, photograph it and let the AI vision model do the identification.\n\n' +
+      'From home, tap the Asian Hornet Watch card → "Identify a hornet I\'ve spotted". Take a photo (or pick from your library) and tap Analyse. The AI checks against Vespa velutina (Asian hornet) and the common UK lookalikes — European hornet (Vespa crabro), queen wasps, hover flies, large bumblebees.\n\n' +
+      'You\'ll get back a verdict and confidence level. If it is velutina, or you\'re unsure, the app links you straight to the official Asian Hornet Watch report form with your photo attached.\n\n' +
+      'The AI is a guidance tool, not authoritative ID. If you have any doubt, report it. Asian hornet eradication depends on early reports being acted on quickly — better one false alarm than a missed nest.\n\n' +
+      'No internet? The identifier needs an active connection (the AI runs server-side). The fallback is the manual report form, which queues offline and syncs when you\'re back in range.'
+  },
+  {
     id: 'ai',
-    title: '7. HiveKeeper AI',
+    title: '11. HiveKeeper AI',
     body:
       'HiveKeeper AI knows your real hive data and inspection history.\n\n' +
       'Example questions: Why did I lose so many colonies this winter? Which hives are at swarm risk right now? Should I split Dave now? How do I redistribute stores from the dead hives? What treatment should I use for varroa in April?\n\n' +
@@ -22025,14 +22105,14 @@ var HK_MANUAL = [
   },
   {
     id: 'calendar',
-    title: '8. Calendar',
+    title: '12. Calendar',
     body:
       'Monthly view showing inspection history. Dark green = inspected. Light green = inspection window. Gold dot = inspection recorded. Seasonal tips for the current month shown below the grid.\n\n' +
       'Pro and Commercial users can sync their inspection calendar to Apple Calendar, Google Calendar, or Outlook (Settings → Subscribe to calendar).'
   },
   {
     id: 'environment',
-    title: '9. Environment',
+    title: '13. Environment',
     body:
       'Shows the nectar flow and seasonal focus for your area — which plants are in flower, when the next main flow is expected, what to watch for in your colonies.\n\n' +
       'Includes a UK Nectar calendar (16 sources × 12 months) and a Crop spraying reports section where you can manually log spray events you observe nearby.\n\n' +
@@ -22040,13 +22120,13 @@ var HK_MANUAL = [
   },
   {
     id: 'marketplace',
-    title: '10. Marketplace',
+    title: '14. Marketplace',
     body:
       'Browse nucs, queens, equipment, and honey listed by other UK beekeepers. Pro and Commercial users can list items for sale.'
   },
   {
     id: 'community',
-    title: '11. HiveKeeper Community on WhatsApp',
+    title: '15. HiveKeeper Community on WhatsApp',
     body:
       'HiveKeeper has a friendly WhatsApp community. The dedicated card at the bottom of the home screen (deep forest, persistent on every visit) leads to the parent group; from there you can opt into specific channels.\n\n' +
       'Parent community group: Includes Announcements (founder updates from Chris) and a locked Founders channel for Founding Beekeepers. The home-screen Join community CTA opens this.\n\n' +
@@ -22058,14 +22138,14 @@ var HK_MANUAL = [
   },
   {
     id: 'sos',
-    title: '12. SOS Emergency Alert',
+    title: '16. SOS Emergency Alert',
     body:
       'Set up your emergency contact in Settings → Your details before you need it.\n\n' +
       'To use: tap SOS in the bottom navigation, confirm the alert. HiveKeeper sends your GPS location and a Google Maps link to your contact via SMS and WhatsApp simultaneously.'
   },
   {
     id: 'offline',
-    title: '13. Offline Use',
+    title: '17. Offline Use',
     body:
       'HiveKeeper is designed to work at the apiary even when you have no signal.\n\n' +
       '• An orange banner appears at the top when you\'re offline.\n' +
@@ -22077,10 +22157,11 @@ var HK_MANUAL = [
   },
   {
     id: 'settings',
-    title: '14. Settings',
+    title: '18. Settings',
     body:
       'Tap the ⚙ gear icon in any screen header to open Settings.\n\n' +
       'Tile grid (top of Settings): Your details / Reports / Preferences / Data + the full-width Apiary settings tile underneath.\n\n' +
+      'Inventory: Settings → Inventory opens your full equipment and honey stock view. Add, edit, transition between states, see audit log of recent activity. See section 9 for detail.\n\n' +
       'Tools: 🔄 Sync status / 🐝 Refer a beekeeper / 👥 Share this apiary / 📅 Subscribe to calendar (Pro+) / 🔍 Bee inspector contacts.\n\n' +
       'Plan and subscription: the current plan badge (Free / Trial / Pro / Commercial / Founder) appears at the top. Tap "View plans →" for the pricing matrix. Pro and Commercial subscribers see a "Manage or cancel subscription →" button — cancel, downgrade, update payment, or view invoices anytime, no questions asked.\n\n' +
       'Preferences:\n' +
@@ -22091,7 +22172,7 @@ var HK_MANUAL = [
   },
   {
     id: 'plans',
-    title: '15. Subscription Plans',
+    title: '19. Subscription Plans',
     body:
       'Everyone starts with a 14-day free trial giving full Pro access.\n\n' +
       'After the trial:\n' +
@@ -22104,7 +22185,7 @@ var HK_MANUAL = [
   },
   {
     id: 'founder',
-    title: '16. Founding Beekeeper Programme',
+    title: '20. Founding Beekeeper Programme',
     body:
       'Founding Beekeepers receive permanent Pro+ access at no cost — currently the most generous tier in the app, more capable than Commercial. The 🏅 Founder badge appears on the Home screen and in Settings. Tapping any Upgrade button as a Founder opens a celebration modal — you don\'t pay for a subscription you already have.\n\n' +
       'Founders accrue voucher rewards via referrals. Every paying subscriber you refer through your invite link earns you credit toward beekeeping vouchers redeemable with UK suppliers (Thorne\'s, National Bee Supplies, Maisemore). The mechanism is built into Settings → Refer a beekeeper.\n\n' +
@@ -22112,7 +22193,7 @@ var HK_MANUAL = [
   },
   {
     id: 'legal',
-    title: '17. Legal',
+    title: '21. Legal',
     body:
       'By using HiveKeeper you agree to the policies linked from signup and the website footer:\n' +
       '• Privacy Policy — gethivekeeper.com/privacy-policy.html\n' +
@@ -22123,7 +22204,7 @@ var HK_MANUAL = [
   },
   {
     id: 'support',
-    title: '18. Support and Contact',
+    title: '22. Support and Contact',
     body:
       'General: hello@gethivekeeper.com\n' +
       'Privacy and data protection: privacy@gethivekeeper.com\n' +
@@ -24346,7 +24427,7 @@ function addSignOutToSettings() { try { loadSettingsName(); } catch(e) {} try { 
   // Populate the build version chip from the canonical constant
   try {
     var ver = document.getElementById('settings-build-version-text');
-    if (ver && typeof HIVEKEEPER_BUILD !== 'undefined') ver.textContent = HIVEKEEPER_BUILD;
+    if (ver && typeof HIVEKEEPER_BUILD !== 'undefined') ver.textContent = shortBuildStamp();
   } catch(e) {}
   if (!btn) return;
   var name = '';
