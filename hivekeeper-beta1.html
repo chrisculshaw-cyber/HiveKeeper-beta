@@ -13177,6 +13177,62 @@ function closeToSettingsOnOverlay(event, subModalId) {
 
 // Only seed demo data if user is NOT signed in (new/anonymous session)
 if (!localStorage.getItem('hk_has_signed_in')) seedRealData();
+
+// 30 April 2026 Phase 4bv — one-shot Meadowbrook cleanup.
+// Users who logged in before the sync-filter fix have accumulated multiple
+// Meadowbrook apiaries on their device (the seeded `apiary_meadowbrook`
+// pushed to cloud, then re-pulled with collisions, repeating on every
+// new device session). This runs once per device, removes the seeded
+// Meadowbrook from local storage along with its hives and child records,
+// then sets a flag so it never runs again. Real apiaries (UUID IDs) and
+// real hives (non-demo-prefix IDs) are untouched.
+(function cleanupSeededMeadowbrook() {
+  try {
+    if (localStorage.getItem('hk_meadowbrook_cleanup_done') === '1') return;
+    var apiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
+    var hadMeadowbrook = apiaries.some(function(a){ return a.id === 'apiary_meadowbrook'; });
+    if (!hadMeadowbrook) {
+      // Nothing to clean — mark done and bail
+      localStorage.setItem('hk_meadowbrook_cleanup_done', '1');
+      return;
+    }
+    // Remove the Meadowbrook apiary record
+    var cleanedApiaries = apiaries.filter(function(a){ return a.id !== 'apiary_meadowbrook'; });
+    localStorage.setItem('hk_apiaries_v1', JSON.stringify(cleanedApiaries));
+    // Remove all hives in that apiary (the demo-XXXX seeded ones)
+    var hives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
+    var demoHiveIds = hives.filter(function(h){ return h.apiaryId === 'apiary_meadowbrook' || (h.id && h.id.toString().startsWith('demo-')); }).map(function(h){ return h.id; });
+    var cleanedHives = hives.filter(function(h){ return demoHiveIds.indexOf(h.id) === -1; });
+    localStorage.setItem('hk_hives_v2', JSON.stringify(cleanedHives));
+    // Remove child records (inspections / varroa / harvests / treatments) for those hives
+    var purgeChildren = function(key){
+      try {
+        var arr = JSON.parse(localStorage.getItem(key) || '[]');
+        var cleaned = arr.filter(function(r){
+          if (!r.hiveId) return true;
+          if (demoHiveIds.indexOf(r.hiveId) !== -1) return false;
+          if (r.id && r.id.toString().startsWith('demo-')) return false;
+          return true;
+        });
+        localStorage.setItem(key, JSON.stringify(cleaned));
+      } catch(e) {}
+    };
+    purgeChildren('hk_inspections_v2');
+    purgeChildren('hk_varroa_v1');
+    purgeChildren('hk_harvest_v1');
+    purgeChildren('hk_treatment_v1');
+    // If the user's "current apiary" was Meadowbrook, clear it so initCurrentApiary picks a real one
+    if (localStorage.getItem('hk_current_apiary') === 'apiary_meadowbrook') {
+      localStorage.removeItem('hk_current_apiary');
+    }
+    localStorage.setItem('hk_meadowbrook_cleanup_done', '1');
+    console.log('HiveKeeper: cleaned up seeded Meadowbrook apiary and ' + demoHiveIds.length + ' demo hives.');
+  } catch(e) {
+    console.warn('HiveKeeper: Meadowbrook cleanup failed:', e);
+    // Don't set the done flag — let it retry next session
+  }
+})();
+
 initCurrentApiary();
 applySettings();
 applyColourBlindMode();
@@ -21848,7 +21904,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:05 30 April 2026 BST · Phase 4bu — welcome banner dismissal now persists cross-device via profiles.dismissed_flags JSONB column. Prior approach was localStorage-only which kept reappearing whenever localStorage was cleared (sign-out flow not honouring keysToKeep on every code path; new device login). Local check still happens first for fast initial render \u2014 cloud check runs async to catch dismissals from other devices and syncs localStorage. JSONB column is intentionally extensible for future dismissable UI (auth-screen launch info, founder modal etc). Requires phase4bu-migration.sql to add dismissed_flags column; code degrades gracefully if column missing (cloud writes silently fail, local dismissal still works on same device).';
+var HIVEKEEPER_BUILD = '18:10 30 April 2026 BST · Phase 4bv — fix multiple-Meadowbrook bug. The seeded demo apiary used ID `apiary_meadowbrook` (no `demo-` prefix), so the sync push filter missed it; apiary pushed to cloud and re-pulled on every device login, accumulating duplicates over time. THREE changes: (1) push filter now explicitly excludes `apiary_meadowbrook` ID. (2) one-shot client cleanup runs on every device boot, removes Meadowbrook + demo hives + child records from localStorage; gated by hk_meadowbrook_cleanup_done flag (added to keysToKeep). (3) phase4bv-cleanup.sql DELETE statements remove existing Meadowbrook records from cloud across all users so they cannot re-pull. Run SQL FIRST then push code, otherwise pull races client cleanup.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -22647,9 +22703,19 @@ async function pushApiaries() {
   var uid = getUserId(); if (!uid) return;
   var apiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
   if (!apiaries.length) return;
-  // Never push demo data or shared apiaries (not owned by this user)
+  // Never push demo data, shared apiaries, or the seeded Meadowbrook.
+  // 30 April 2026 Phase 4bv — added explicit Meadowbrook exclusion. The
+  // demo seed in seedRealData() used ID `apiary_meadowbrook` rather than
+  // a `demo-` prefix, so this filter was missing it. The apiary then
+  // pushed to cloud, re-pulled on every device login, and accumulated
+  // (Chris's hive list grew "more and more Meadowbrook apiaries").
+  // Exclude by ID for surgical match; the seeded location is also a
+  // safety net but ID is the primary guard.
   apiaries = apiaries.filter(function(a) {
-    return a.id && !a.id.toString().startsWith('demo-') && !a.sharedWith;
+    if (!a.id || a.sharedWith) return false;
+    if (a.id.toString().startsWith('demo-')) return false;
+    if (a.id === 'apiary_meadowbrook') return false;
+    return true;
   });
   if (!apiaries.length) return;
   // 27 April 2026 Phase 2b — enforce only one is_default=true. Supabase has
@@ -23035,6 +23101,10 @@ async function pullFromSupabase() {
         // 28 April 2026 — Phase 4s: welcome banner dismissal flag. Once
         // dismissed, the home-screen welcome banner stays hidden permanently.
         'hk_seen_welcome',
+        // 30 April 2026 — Phase 4bv: Meadowbrook cleanup gate. Once the
+        // one-shot demo-apiary cleanup has run on this device, never run
+        // it again — protect the flag from sign-out wipe.
+        'hk_meadowbrook_cleanup_done',
         // 28 April 2026 — Phase 4ab: CRITICAL data-loss class fix.
         // hk_inspections_v2 was claimed protected in v32 spec but was
         // actually missing — same bug class as 25 April inspection-loss
