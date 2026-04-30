@@ -3885,6 +3885,15 @@ input[type="checkbox"].hk-chk:checked::after {
       <input type="number" id="eq-cost" min="0" step="0.01" placeholder="£" style="width:100%;padding:12px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;box-sizing:border-box;">
     </div>
 
+    <!-- 30 April 2026 Phase 4bm — state breakdown panel. Shows ready/refurb/
+         unusable counts and quick actions to move stock between states.
+         Populated dynamically by editEquipment() based on the current item. -->
+    <div id="eq-state-panel" style="display:none;margin-bottom:14px;padding:12px;background:white;border:1.5px solid var(--wax);border-radius:var(--rs);">
+      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Stock breakdown</div>
+      <div id="eq-state-totals" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;"></div>
+      <div id="eq-state-actions" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
     <!-- 29 April 2026 Phase 4bf — quick stock adjustment with audit log.
          Hidden on add (no equipment to adjust yet). On edit, lets the keeper
          consume / restock with a reason recorded to inventory_movements. -->
@@ -5923,12 +5932,22 @@ function saveEquipment(items) {
 }
 
 function equipmentToRow(it, uid) {
+  // 30 April 2026 Phase 4bm — three-state stock model. Existing rows that
+  // don't have the new fields default to all-ready (legacy behaviour).
+  // Trigger on Supabase keeps quantity = sum of the three sub-fields.
+  var qReady = (typeof it.quantityReady === 'number') ? it.quantityReady
+             : (typeof it.quantity === 'number' ? it.quantity : 0);
+  var qRefurb = (typeof it.quantityRefurb === 'number') ? it.quantityRefurb : 0;
+  var qUnusable = (typeof it.quantityUnusable === 'number') ? it.quantityUnusable : 0;
   return {
     id: it.id,
     user_id: uid,
     category: it.category || 'other',
     name: it.name || null,
-    quantity: typeof it.quantity === 'number' ? it.quantity : 0,
+    quantity: qReady + qRefurb + qUnusable,
+    quantity_ready: qReady,
+    quantity_refurb: qRefurb,
+    quantity_unusable: qUnusable,
     location: it.location || null,
     unit_cost: it.unitCost != null ? it.unitCost : null,
     reorder_at: it.reorderAt != null ? it.reorderAt : null,
@@ -5963,11 +5982,21 @@ async function pullEquipment() {
   if (error) { console.warn('[pullEquipment]', error.message); return; }
   if (!data) return;
   var local = data.map(function(r) {
+    // 30 April 2026 Phase 4bm — read three-state quantities, with legacy
+    // fallback (old rows: all goes to ready). The Supabase trigger ensures
+    // quantity = sum of the three; we trust it.
+    var qReady = (typeof r.quantity_ready === 'number') ? r.quantity_ready
+               : (typeof r.quantity === 'number' ? r.quantity : 0);
+    var qRefurb = (typeof r.quantity_refurb === 'number') ? r.quantity_refurb : 0;
+    var qUnusable = (typeof r.quantity_unusable === 'number') ? r.quantity_unusable : 0;
     return {
       id: r.id,
       category: r.category || 'other',
       name: r.name || null,
-      quantity: typeof r.quantity === 'number' ? r.quantity : 0,
+      quantity: qReady + qRefurb + qUnusable,
+      quantityReady: qReady,
+      quantityRefurb: qRefurb,
+      quantityUnusable: qUnusable,
       location: r.location || null,
       unitCost: r.unit_cost != null ? r.unit_cost : null,
       reorderAt: r.reorder_at != null ? r.reorder_at : null,
@@ -5986,6 +6015,16 @@ function addEquipment(item) {
   var items = loadEquipment();
   item.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('eq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
   item.createdAt = new Date().toISOString();
+  // 30 April 2026 Phase 4bm — default new items to ready-state for the
+  // total quantity. Callers that don't yet know about the three-state model
+  // ("user added 5 supers") get the legacy behaviour (all 5 go to ready).
+  if (typeof item.quantityReady !== 'number'
+      && typeof item.quantityRefurb !== 'number'
+      && typeof item.quantityUnusable !== 'number') {
+    item.quantityReady = (typeof item.quantity === 'number') ? item.quantity : 0;
+    item.quantityRefurb = 0;
+    item.quantityUnusable = 0;
+  }
   items.push(item);
   saveEquipment(items);
   return item;
@@ -6053,6 +6092,9 @@ function movementToRow(m, uid) {
     reason: m.reason || null,
     action_type: m.actionType || 'manual',
     related_id: m.relatedId || null,
+    // 30 April 2026 Phase 4bm — three-state stock transitions
+    state_from: m.stateFrom || null,
+    state_to: m.stateTo || null,
     created_at: m.createdAt || new Date().toISOString()
   };
 }
@@ -6084,6 +6126,9 @@ async function pullMovementsLog() {
       reason: r.reason || null,
       actionType: r.action_type || 'manual',
       relatedId: r.related_id || null,
+      // 30 April 2026 Phase 4bm — state transitions
+      stateFrom: r.state_from || null,
+      stateTo: r.state_to || null,
       createdAt: r.created_at
     };
   });
@@ -6095,43 +6140,123 @@ async function pullMovementsLog() {
 //   equipmentId: equipment row id
 //   delta: signed integer; negative = consumption
 //   opts: { reason, actionType, relatedId }
+// 30 April 2026 Phase 4bm — three-state stock model.
+//   opts.state: 'ready' (default) | 'refurb' | 'unusable'
+//   opts.transition: { from: 'refurb', to: 'ready', amount: 5 } — moves stock
+//     between states, audit-logged with state_from + state_to. Mutually
+//     exclusive with delta-style movement.
+//   opts.allowPartial: when true and state has insufficient stock for a
+//     negative delta, consumes what's there and audit-logs the shortfall
+//     instead of returning null.
+// Returns the new quantity for the affected state, or null on validation fail.
 function applyEquipmentMovement(equipmentId, delta, opts) {
   opts = opts || {};
-  if (!equipmentId || typeof delta !== 'number' || delta === 0) return null;
+  if (!equipmentId) return null;
   var items = loadEquipment();
   var idx = items.findIndex(function(it) { return it.id === equipmentId; });
   if (idx < 0) return null;
-  var current = items[idx].quantity || 0;
-  var next = current + delta;
-  if (next < 0) {
-    // Don't allow negative stock — caller should validate first
+  var item = items[idx];
+
+  // Ensure all three sub-quantities exist (legacy items may not have them)
+  if (typeof item.quantityReady !== 'number') item.quantityReady = item.quantity || 0;
+  if (typeof item.quantityRefurb !== 'number') item.quantityRefurb = 0;
+  if (typeof item.quantityUnusable !== 'number') item.quantityUnusable = 0;
+
+  // Helper: column key in the local item for a state name
+  var stateKey = function(s) {
+    if (s === 'ready') return 'quantityReady';
+    if (s === 'refurb') return 'quantityRefurb';
+    if (s === 'unusable') return 'quantityUnusable';
     return null;
-  }
-  // Write movement row first
-  var movement = {
+  };
+
+  var movements = loadMovements();
+  var newMovement = {
     id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
     equipmentId: equipmentId,
-    delta: delta,
     reason: opts.reason || null,
     actionType: opts.actionType || 'manual',
     relatedId: opts.relatedId || null,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    delta: 0,
+    stateFrom: null,
+    stateTo: null
   };
-  var movements = loadMovements();
-  movements.unshift(movement);  // newest first for cheap reads
-  // Cap local cache at 500 — Supabase has the full history
+
+  // ── Branch 1: state transition (move N from one state to another) ──
+  if (opts.transition) {
+    var fromKey = stateKey(opts.transition.from);
+    var toKey = stateKey(opts.transition.to);
+    var amount = opts.transition.amount;
+    if (!fromKey || !toKey || typeof amount !== 'number' || amount <= 0) return null;
+    if (item[fromKey] < amount) {
+      if (!opts.allowPartial) return null;
+      amount = item[fromKey];  // take what's there
+      if (amount <= 0) return null;
+    }
+    item[fromKey] -= amount;
+    item[toKey] += amount;
+    newMovement.delta = 0;
+    newMovement.stateFrom = opts.transition.from;
+    newMovement.stateTo = opts.transition.to;
+    newMovement.reason = opts.reason || ('Moved ' + amount + ' from ' + opts.transition.from + ' to ' + opts.transition.to);
+    // Custom property to remember the transition amount for audit
+    newMovement.transitionAmount = amount;
+  }
+  // ── Branch 2: delta on a specific state (default ready) ──
+  else {
+    if (typeof delta !== 'number' || delta === 0) return null;
+    var state = opts.state || 'ready';
+    var key = stateKey(state);
+    if (!key) return null;
+    var nextStateQty = item[key] + delta;
+    if (nextStateQty < 0) {
+      if (!opts.allowPartial) {
+        return null;  // caller should validate first
+      }
+      // Partial: consume only what's available, log the shortfall
+      var available = item[key];
+      var requested = -delta;
+      var shortfall = requested - available;
+      if (available > 0) {
+        item[key] = 0;
+        newMovement.delta = -available;
+        newMovement.stateTo = state;
+        newMovement.reason = (opts.reason || 'Consumed') + ' (partial \u2014 short by ' + shortfall + ')';
+      } else {
+        return null;  // nothing to consume
+      }
+    } else {
+      item[key] = nextStateQty;
+      newMovement.delta = delta;
+      newMovement.stateTo = state;
+    }
+  }
+
+  // Recompute total quantity from the three sub-quantities
+  item.quantity = item.quantityReady + item.quantityRefurb + item.quantityUnusable;
+
+  // Persist movement first (audit-first ordering)
+  movements.unshift(newMovement);
   if (movements.length > 500) movements.length = 500;
   saveMovementsLocal(movements);
   if (getUserId()) {
     if (isOnline()) {
       pushMovements().catch(function(){});
     } else {
-      queueOfflineSave('inventory_movements', movementToRow(movement, getUserId()));
+      queueOfflineSave('inventory_movements', movementToRow(newMovement, getUserId()));
     }
   }
-  // Then update equipment quantity using existing updateEquipment so push fires
-  updateEquipment(equipmentId, { quantity: next });
-  return next;
+
+  // Persist equipment row using updateEquipment so push fires for the cloud
+  updateEquipment(equipmentId, {
+    quantity: item.quantity,
+    quantityReady: item.quantityReady,
+    quantityRefurb: item.quantityRefurb,
+    quantityUnusable: item.quantityUnusable
+  });
+
+  return item.quantity;
 }
 
 function getRecentMovements(limit) {
@@ -6643,10 +6768,14 @@ function computeBottlingReadiness(harvestId, jarSizeG) {
   // surface that as a known limitation in the UI. Future enhancement could
   // add a size attribute to jar_empty rows.
   var equipment = loadEquipment();
+  // 30 April 2026 Phase 4bm — read quantity_ready, not total. Jars/lids/labels
+  // in refurb (or unusable) state aren't deployable for bottling.
   var sumByCategory = function(cat) {
     return equipment
       .filter(function(it) { return it.category === cat; })
-      .reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+      .reduce(function(s, it){
+        return s + (typeof it.quantityReady === 'number' ? it.quantityReady : (it.quantity || 0));
+      }, 0);
   };
   var jarsInStock = sumByCategory('jar_empty');
   var lidsInStock = sumByCategory('jar_lid');
@@ -7278,18 +7407,34 @@ function renderInventory() {
     var totalQty = catItems.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
 
     var rows = catItems.map(function(it) {
-      var lowStock = (typeof it.reorderAt === 'number' && it.reorderAt > 0 && it.quantity <= it.reorderAt);
+      var qReady = (typeof it.quantityReady === 'number') ? it.quantityReady : (it.quantity || 0);
+      var qRefurb = it.quantityRefurb || 0;
+      var qUnusable = it.quantityUnusable || 0;
+      // Reorder threshold compares against READY stock — refurb-pile items
+      // are not deployable so they shouldn't count toward "I have enough."
+      var lowStock = (typeof it.reorderAt === 'number' && it.reorderAt > 0 && qReady <= it.reorderAt);
       var border = lowStock ? '3px solid #C8730A' : '3px solid var(--forest)';
       // 29 April 2026 Phase 4ax — display hive type alongside category label
       // when present (e.g. "National brood box" instead of just "Brood box")
       var nameBase = it.name ? esc(it.name) : esc(catLabel);
       var displayName = (it.hiveType && !it.name) ? esc(it.hiveType) + ' ' + nameBase.toLowerCase() : nameBase;
       var locLabel = _equipLocationLabel(it.location);
+      // 30 April 2026 Phase 4bm — three-state breakdown line. Only shown
+      // when non-ready stock exists, to avoid noise on all-ready items.
+      var stateBreakdown = '';
+      if (qRefurb > 0 || qUnusable > 0) {
+        var pills = [];
+        pills.push('<span style="background:#E8F5E8;color:#2A6448;padding:2px 6px;border-radius:6px;font-weight:700;">' + qReady + ' ready</span>');
+        if (qRefurb > 0) pills.push('<span style="background:#FFF3E0;color:#854F0B;padding:2px 6px;border-radius:6px;font-weight:700;">' + qRefurb + ' refurb</span>');
+        if (qUnusable > 0) pills.push('<span style="background:#FCEAE8;color:#B83228;padding:2px 6px;border-radius:6px;font-weight:700;">' + qUnusable + ' unusable</span>');
+        stateBreakdown = '<div style="font-size:10px;margin-top:4px;display:flex;gap:4px;flex-wrap:wrap;">' + pills.join('') + '</div>';
+      }
       return '<div data-equipid="' + esc(it.id) + '" onclick="editEquipment(\'' + esc(it.id) + '\')" '
         + 'style="background:white;border-left:' + border + ';border-radius:6px;padding:10px 12px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:12px;">'
         + '<div style="flex:1;min-width:0;">'
           + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + displayName + (lowStock ? ' <span style="font-size:10px;color:#C8730A;font-weight:800;">LOW</span>' : '') + '</div>'
           + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + esc(locLabel) + (typeof it.reorderAt === 'number' && it.reorderAt > 0 ? ' \u00B7 reorder at ' + it.reorderAt : '') + '</div>'
+          + stateBreakdown
         + '</div>'
         + '<div style="font-size:18px;font-weight:800;color:var(--text);font-family:Syne,sans-serif;">' + (it.quantity || 0) + '</div>'
       + '</div>';
@@ -7332,8 +7477,26 @@ function renderRecentMovements() {
     } else {
       label = '(deleted item)';
     }
-    var deltaText = (m.delta > 0 ? '+' : '') + m.delta;
-    var deltaColour = m.delta < 0 ? '#B83228' : '#2a6448';
+    // 30 April 2026 Phase 4bm — distinguish state transitions visually.
+    // For transitions: show "refurb → ready · N items" with a teal accent.
+    // For deltas: keep the existing red/green delta display, plus a small
+    // state badge if state_to is set.
+    var isTransition = m.stateFrom && m.stateTo && m.stateFrom !== m.stateTo;
+    var rightSide, accentColour, stateBadge = '';
+    if (isTransition) {
+      var amount = m.transitionAmount || 0;
+      rightSide = '<div style="font-size:11px;font-weight:800;color:#0E6A6A;font-family:Syne,sans-serif;flex-shrink:0;">' + (amount || 'N') + ' \u2192</div>';
+      accentColour = '#0E6A6A';
+      stateBadge = ' \u00B7 <span style="color:#854F0B;font-weight:700;">' + m.stateFrom + '</span> \u2192 <span style="color:#2a6448;font-weight:700;">' + m.stateTo + '</span>';
+    } else {
+      var deltaText = (m.delta > 0 ? '+' : '') + m.delta;
+      accentColour = m.delta < 0 ? '#B83228' : '#2a6448';
+      rightSide = '<div style="font-size:14px;font-weight:800;color:' + accentColour + ';font-family:Syne,sans-serif;flex-shrink:0;">' + deltaText + '</div>';
+      if (m.stateTo && m.stateTo !== 'ready') {
+        var badgeColour = m.stateTo === 'refurb' ? '#854F0B' : (m.stateTo === 'unusable' ? '#B83228' : 'var(--text-l)');
+        stateBadge = ' \u00B7 <span style="color:' + badgeColour + ';font-weight:700;">' + m.stateTo + '</span>';
+      }
+    }
     var when = '';
     try {
       var d = new Date(m.createdAt);
@@ -7343,12 +7506,12 @@ function renderRecentMovements() {
       else if (hrs < 24) when = Math.round(hrs) + 'h ago';
       else when = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     } catch(e) {}
-    return '<div style="background:white;border-left:3px solid ' + deltaColour + ';border-radius:6px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;gap:10px;">'
+    return '<div style="background:white;border-left:3px solid ' + accentColour + ';border-radius:6px;padding:8px 10px;margin-bottom:4px;display:flex;align-items:center;gap:10px;">'
       + '<div style="flex:1;min-width:0;">'
         + '<div style="font-size:12px;font-weight:700;color:var(--text);">' + esc(label) + '</div>'
-        + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + esc(m.reason || 'Adjustment') + ' \u00B7 ' + when + '</div>'
+        + '<div style="font-size:10px;color:var(--text-l);margin-top:1px;">' + esc(m.reason || 'Adjustment') + stateBadge + ' \u00B7 ' + when + '</div>'
       + '</div>'
-      + '<div style="font-size:14px;font-weight:800;color:' + deltaColour + ';font-family:Syne,sans-serif;flex-shrink:0;">' + deltaText + '</div>'
+      + rightSide
     + '</div>';
   }).join('');
 
@@ -7432,6 +7595,9 @@ function openAddEquipmentModal() {
   // 29 April 2026 Phase 4bf — hide use-panel on add (no row to adjust yet)
   var usePanel = document.getElementById('eq-use-panel');
   if (usePanel) usePanel.style.display = 'none';
+  // 30 April 2026 Phase 4bm — hide state panel on add too
+  var statePanel = document.getElementById('eq-state-panel');
+  if (statePanel) statePanel.style.display = 'none';
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
 }
@@ -7460,6 +7626,8 @@ function editEquipment(id) {
   if (amt) amt.value = '';
   var rsn = document.getElementById('eq-adjust-reason');
   if (rsn) rsn.value = 'Used in apiary';
+  // 30 April 2026 Phase 4bm — render state breakdown + transition actions
+  try { renderEquipmentStatePanel(it); } catch(e) {}
   _onEquipCategoryChange();
   openModalEl('modal-equipment-edit');
 }
@@ -7553,6 +7721,112 @@ function quickAdjust(delta) {
   var qtyEl = document.getElementById('eq-quantity');
   if (qtyEl) qtyEl.value = newQty;
   showToast(delta < 0 ? 'Used 1 \u2713' : 'Added 1 \u2713');
+  try { renderInventory(); } catch(e) {}
+  try { renderHomeDashboard(); } catch(e) {}
+  try { renderHomeLowStockBanner(); } catch(e) {}
+}
+
+// 30 April 2026 Phase 4bm — Equipment state breakdown + transition UI.
+// Shows ready / refurb / unusable counts on edit, and offers quick actions
+// to move stock between states (e.g. "I cleaned 5" moves 5 from refurb to
+// ready; "Send 3 to burn" moves 3 from refurb to unusable).
+function renderEquipmentStatePanel(it) {
+  var panel = document.getElementById('eq-state-panel');
+  var totals = document.getElementById('eq-state-totals');
+  var actions = document.getElementById('eq-state-actions');
+  if (!panel || !totals || !actions) return;
+  panel.style.display = 'block';
+
+  var qReady = (typeof it.quantityReady === 'number') ? it.quantityReady : (it.quantity || 0);
+  var qRefurb = it.quantityRefurb || 0;
+  var qUnusable = it.quantityUnusable || 0;
+
+  totals.innerHTML =
+      '<div style="background:#E8F5E8;color:#2A6448;padding:10px 8px;border-radius:6px;text-align:center;">'
+    +   '<div style="font-size:18px;font-weight:800;font-family:Syne,sans-serif;">' + qReady + '</div>'
+    +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Ready</div>'
+    + '</div>'
+    + '<div style="background:#FFF3E0;color:#854F0B;padding:10px 8px;border-radius:6px;text-align:center;">'
+    +   '<div style="font-size:18px;font-weight:800;font-family:Syne,sans-serif;">' + qRefurb + '</div>'
+    +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Refurb</div>'
+    + '</div>'
+    + '<div style="background:#FCEAE8;color:#B83228;padding:10px 8px;border-radius:6px;text-align:center;">'
+    +   '<div style="font-size:18px;font-weight:800;font-family:Syne,sans-serif;">' + qUnusable + '</div>'
+    +   '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;">Unusable</div>'
+    + '</div>';
+
+  var actionRows = [];
+  if (qRefurb > 0) {
+    actionRows.push(
+      '<div style="display:flex;gap:6px;align-items:center;background:#FFF3E0;padding:8px;border-radius:6px;">'
+      + '<input type="number" id="eq-trans-refurb-to-ready" min="1" max="' + qRefurb + '" placeholder="N" style="width:60px;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;text-align:center;box-sizing:border-box;">'
+      + '<button onclick="transitionStock(\'refurb\',\'ready\')" style="flex:1;padding:8px;background:#2a6448;color:white;border:none;border-radius:5px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">\u2192 Cleaned / repaired (back to ready)</button>'
+      + '</div>'
+    );
+    actionRows.push(
+      '<div style="display:flex;gap:6px;align-items:center;background:#FFF3E0;padding:8px;border-radius:6px;">'
+      + '<input type="number" id="eq-trans-refurb-to-unusable" min="1" max="' + qRefurb + '" placeholder="N" style="width:60px;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;text-align:center;box-sizing:border-box;">'
+      + '<button onclick="transitionStock(\'refurb\',\'unusable\')" style="flex:1;padding:8px;background:#B83228;color:white;border:none;border-radius:5px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">\u2192 Decided to burn</button>'
+      + '</div>'
+    );
+  }
+  if (qReady > 0) {
+    actionRows.push(
+      '<div style="display:flex;gap:6px;align-items:center;background:#E8F5E8;padding:8px;border-radius:6px;">'
+      + '<input type="number" id="eq-trans-ready-to-refurb" min="1" max="' + qReady + '" placeholder="N" style="width:60px;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;text-align:center;box-sizing:border-box;">'
+      + '<button onclick="transitionStock(\'ready\',\'refurb\')" style="flex:1;padding:8px;background:#854F0B;color:white;border:none;border-radius:5px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">\u2192 Move to refurb pile</button>'
+      + '</div>'
+    );
+  }
+  if (qUnusable > 0) {
+    actionRows.push(
+      '<div style="display:flex;gap:6px;align-items:center;background:#FCEAE8;padding:8px;border-radius:6px;">'
+      + '<input type="number" id="eq-trans-unusable-to-refurb" min="1" max="' + qUnusable + '" placeholder="N" style="width:60px;padding:6px;border:1.5px solid var(--wax);border-radius:5px;font-size:12px;font-family:Syne,sans-serif;text-align:center;box-sizing:border-box;">'
+      + '<button onclick="transitionStock(\'unusable\',\'refurb\')" style="flex:1;padding:8px;background:#854F0B;color:white;border:none;border-radius:5px;font-size:12px;font-weight:700;font-family:Syne,sans-serif;cursor:pointer;">\u2192 Decided to repair after all</button>'
+      + '</div>'
+    );
+  }
+
+  if (!actionRows.length) {
+    actions.innerHTML = '<div style="font-size:11px;color:var(--text-l);text-align:center;padding:8px;line-height:1.4;">No stock to transition. Use the Adjust panel below to add or remove stock.</div>';
+  } else {
+    actions.innerHTML = actionRows.join('');
+  }
+}
+
+// Apply a state transition (called from the buttons rendered above).
+function transitionStock(from, to) {
+  if (!_equipmentEditingId) return;
+  var inputId = 'eq-trans-' + from + '-to-' + to;
+  var inp = document.getElementById(inputId);
+  if (!inp) return;
+  var amount = parseInt(inp.value, 10);
+  if (!amount || amount <= 0) { showToast('Enter a number'); return; }
+
+  var reasons = {
+    'refurb-ready':    'Refurb completed \u2014 back to ready',
+    'refurb-unusable': 'Decided to burn',
+    'ready-refurb':    'Moved to refurb pile',
+    'unusable-refurb': 'Decided to repair after all'
+  };
+  var reasonKey = from + '-' + to;
+  var reason = reasons[reasonKey] || ('Moved from ' + from + ' to ' + to);
+
+  var result = applyEquipmentMovement(_equipmentEditingId, 0, {
+    transition: { from: from, to: to, amount: amount },
+    reason: reason,
+    actionType: 'manual'
+  });
+
+  if (result === null) {
+    showToast('Not enough in ' + from + ' (or amount invalid)');
+    return;
+  }
+
+  showToast('Moved ' + amount + ' \u2713');
+
+  var fresh = loadEquipment().find(function(x){ return x.id === _equipmentEditingId; });
+  if (fresh) renderEquipmentStatePanel(fresh);
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
@@ -7891,9 +8165,11 @@ function completeBottlingNow() {
       return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
     });
     for (var i = 0; i < items.length && remaining > 0; i++) {
-      var take = Math.min(items[i].quantity || 0, remaining);
+      var availHere = (typeof items[i].quantityReady === 'number') ? items[i].quantityReady : (items[i].quantity || 0);
+      var take = Math.min(availHere, remaining);
       if (take > 0) {
         applyEquipmentMovement(items[i].id, -take, {
+          state: 'ready',
           reason: 'Bottled honey',
           actionType: 'bottling',
           relatedId: relatedId
@@ -9905,6 +10181,9 @@ function saveHiveEditor() {
     };
     var canonHiveType = canonicaliseBoxType(hive.boxType);
 
+    // 30 April 2026 Phase 4bm — collect shortfalls across the save for one toast
+    var shortfalls = [];
+
     Object.keys(deltas).forEach(function(boxType) {
       var delta = deltas[boxType];
       if (delta === 0) return;
@@ -9919,56 +10198,78 @@ function saveHiveEditor() {
       var matches = preferred.length ? preferred : fallback;
 
       if (delta < 0) {
-        // Removed boxes — return to inventory
+        // Removed boxes — go to REFURB state (not ready). Boxes coming off
+        // a hive need cleaning before they can be redeployed.
         var amount = -delta;
         if (matches.length && typeof applyEquipmentMovement === 'function') {
           applyEquipmentMovement(matches[0].id, amount, {
-            reason: 'Returned from hive',
+            state: 'refurb',
+            reason: 'Returned from hive (needs clean / refurb)',
             actionType: 'manual',
             relatedId: hive.id
           });
         } else if (typeof addEquipment === 'function') {
           addEquipment({
-            category: category, name: null, quantity: amount,
+            category: category, name: null,
+            quantityReady: 0, quantityRefurb: amount, quantityUnusable: 0,
             location: 'store', reorderAt: null, unitCost: null,
-            notes: 'Returned from hive — auto-created',
+            notes: 'Returned from hive — auto-created, needs refurb',
             hiveType: canonHiveType || null
           });
         }
       } else {
-        // Added boxes — consume from inventory
-        var available = matches.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
-        if (available >= delta && typeof applyEquipmentMovement === 'function') {
+        // Added boxes — consume from READY state only. Refurb-pile stock
+        // isn't deployable so it doesn't count toward "do I have enough."
+        var availableReady = matches.reduce(function(s, it){
+          return s + (typeof it.quantityReady === 'number' ? it.quantityReady : (it.quantity || 0));
+        }, 0);
+        if (availableReady >= delta && typeof applyEquipmentMovement === 'function') {
           matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
           var remaining = delta;
           for (var i = 0; i < matches.length && remaining > 0; i++) {
-            var take = Math.min(matches[i].quantity || 0, remaining);
+            var availHere = (typeof matches[i].quantityReady === 'number') ? matches[i].quantityReady : (matches[i].quantity || 0);
+            var take = Math.min(availHere, remaining);
             if (take > 0) {
               applyEquipmentMovement(matches[i].id, -take, {
+                state: 'ready',
                 reason: 'Added to hive', actionType: 'manual', relatedId: hive.id
               });
               remaining -= take;
             }
           }
-        } else if (available > 0 && typeof applyEquipmentMovement === 'function') {
-          // Partial: consume what we have, no auto-prompt to keep this save fast
+        } else if (typeof applyEquipmentMovement === 'function') {
+          // Partial: consume what's in ready, audit-log the shortfall.
+          // Keeper sees a single combined toast at the end.
           matches.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
-          var rem2 = available;
+          var rem2 = delta;
           for (var j = 0; j < matches.length && rem2 > 0; j++) {
-            var t2 = Math.min(matches[j].quantity || 0, rem2);
-            if (t2 > 0) {
+            var availHere2 = (typeof matches[j].quantityReady === 'number') ? matches[j].quantityReady : (matches[j].quantity || 0);
+            if (availHere2 > 0) {
+              var t2 = Math.min(availHere2, rem2);
               applyEquipmentMovement(matches[j].id, -t2, {
-                reason: 'Added to hive (partial — short by ' + (delta - available) + ')',
-                actionType: 'manual', relatedId: hive.id
+                state: 'ready',
+                reason: 'Added to hive', actionType: 'manual', relatedId: hive.id
               });
               rem2 -= t2;
             }
+          }
+          if (rem2 > 0) {
+            // 30 April 2026 Phase 4bm — record shortfall in keeper-visible
+            // toast. Cloud audit of "off-book" consumption is a future concern;
+            // for now the keeper sees it on save and can reconcile manually.
+            var label = (typeof getEquipmentCategoryLabel === 'function') ? getEquipmentCategoryLabel(category) : category;
+            shortfalls.push(rem2 + ' ' + label.toLowerCase() + (rem2 > 1 ? 's' : ''));
           }
         }
       }
     });
 
-    // Frames-used consumption
+    // ── Frames used in hive ──
+    // 'Replaced (good)': the old frame came off the hive and went to refurb
+    //   (needs a wax sheet); the new frame went on. Net: ready decremented
+    //   (new frame deployed), refurb incremented (old frame waiting for wax).
+    // 'Unusable': old frame removed and binned. ready decremented, unusable
+    //   incremented. No new frame went on (or one came from outside inventory).
     var framesGood = d._framesGood || 0;
     var framesBad = d._framesBad || 0;
     if ((framesGood > 0 || framesBad > 0) && typeof applyEquipmentMovement === 'function') {
@@ -9982,12 +10283,14 @@ function saveHiveEditor() {
       var fm = fPref.length ? fPref : fFall;
       fm.sort(function(a, b){ return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime(); });
 
-      var consumeFrames = function(amount, reason) {
+      var consumeReady = function(amount, reason) {
         var rem = amount;
         for (var i = 0; i < fm.length && rem > 0; i++) {
-          var take = Math.min(fm[i].quantity || 0, rem);
+          var availHere = (typeof fm[i].quantityReady === 'number') ? fm[i].quantityReady : (fm[i].quantity || 0);
+          var take = Math.min(availHere, rem);
           if (take > 0) {
             applyEquipmentMovement(fm[i].id, -take, {
+              state: 'ready',
               reason: reason, actionType: 'manual', relatedId: hive.id
             });
             rem -= take;
@@ -9996,26 +10299,49 @@ function saveHiveEditor() {
         return amount - rem;
       };
 
-      var availFrames = fm.reduce(function(s, it){ return s + (it.quantity || 0); }, 0);
+      var availReady = fm.reduce(function(s, it){
+        return s + (typeof it.quantityReady === 'number' ? it.quantityReady : (it.quantity || 0));
+      }, 0);
       var needed = framesGood + framesBad;
 
-      if (availFrames >= needed) {
+      if (availReady >= needed) {
         if (framesGood > 0) {
-          consumeFrames(framesGood, 'Frame replaced (good \u2014 refurbished)');
+          // Decrement ready (new frame went on hive)...
+          consumeReady(framesGood, 'Frame replaced — new one deployed');
+          // ...and increment refurb (old frame waiting for new foundation)
           if (fm.length) {
             applyEquipmentMovement(fm[0].id, framesGood, {
-              reason: 'Returned with new foundation',
+              state: 'refurb',
+              reason: 'Old frame returned — awaiting new foundation',
               actionType: 'manual', relatedId: hive.id
             });
           }
         }
         if (framesBad > 0) {
-          consumeFrames(framesBad, 'Frame unusable \u2014 burn pile');
+          // Decrement ready (frame went on hive replacing the unusable one)...
+          consumeReady(framesBad, 'Frame replaced — new one deployed');
+          // ...and increment unusable (old frame for burn pile)
+          if (fm.length) {
+            applyEquipmentMovement(fm[0].id, framesBad, {
+              state: 'unusable',
+              reason: 'Old frame removed — unusable / burn pile',
+              actionType: 'manual', relatedId: hive.id
+            });
+          }
         }
-      } else if (availFrames > 0) {
-        consumeFrames(availFrames, 'Frame used in hive (partial \u2014 short by ' + (needed - availFrames) + ')');
-        if (typeof showToast === 'function') showToast('Only ' + availFrames + ' frames in stock \u2014 shortfall not tracked');
+      } else if (availReady > 0) {
+        consumeReady(availReady, 'Frame used in hive');
+        shortfalls.push((needed - availReady) + ' frame' + (needed - availReady > 1 ? 's' : ''));
+      } else {
+        shortfalls.push(needed + ' frame' + (needed > 1 ? 's' : ''));
       }
+    }
+
+    // ── Combined shortfall toast ──
+    if (shortfalls.length && typeof showToast === 'function') {
+      setTimeout(function() {
+        showToast('Off-book stock used: ' + shortfalls.join(' + ') + '. Audit log recorded.');
+      }, 600);
     }
   } catch(e) {
     console.warn('[saveHiveEditor] inventory hooks error:', e);
@@ -21493,7 +21819,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '09:50 30 April 2026 BST · Phase 4bl — HARVEST SYNC FIX. Root cause: code pushed column `supers_removed` which doesn\u2019t exist in Supabase (real column is `supers`). Postgres rejected every harvest insert with 42703. Silent .catch in saveHarvests swallowed it for days. Zero harvests ever reached the cloud for any account. Fixed: (1) push uses `supers`. (2) Pull reads `supers`, falls back from weight_kg to kg for legacy rows. (3) Both push functions wrapped in try/catch with explicit logging + offline-queue fallback. (4) saveHarvests/saveTreatments wrappers log instead of swallowing. SQL migration also drops NOT NULL on legacy `harvested_on`/`kg`/`apiary_id` columns so new-style inserts work.';
+var HIVEKEEPER_BUILD = '10:30 30 April 2026 BST · Phase 4bm — three-state stock model. Equipment now tracks ready / refurb / unusable separately. Boxes coming off a hive go to refurb (need cleaning before redeploy). Frames \u201Creplaced (good)\u201D decrements ready (new frame on hive) and increments refurb (old frame waiting for new foundation). Frames \u201Cunusable\u201D decrements ready and increments unusable. Bottling and consumption read quantity_ready, not total. Equipment edit modal gains state breakdown panel + transition buttons (\u201CCleaned/repaired\u201D, \u201CDecided to burn\u201D etc). Recent activity log shows state transitions with arrow indicators. Reorder threshold compares against ready stock. Inventory list shows breakdown pills when non-ready stock exists. Off-book stock used in stack edits surfaces in a single combined toast.';
 
 // Sync the auth-screen stamp from the constant on load so the constant is
 // the authoritative source even if the stamp HTML drifts.
