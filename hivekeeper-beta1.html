@@ -8715,6 +8715,30 @@ function renderApiary(){
     else if (h.status === 'dead') statusMeta = '💀 Colony lost';
     else if (h.status === 'unclear') statusMeta = '❓ Status unclear';
     var metaText = statusMeta || (h.row ? h.row : (h.notes ? h.notes.substring(0,50) + (h.notes.length > 50 ? '…' : '') : ''));
+    // 30 April 2026 Phase 4bt — honey pot indicator next to hive name when
+    // the hive has had a harvest logged this season (1 Jan onwards). Positive
+    // signal — kept separate from the alerts row which is for problems.
+    var honeyBadge = '';
+    try {
+      var hiveHarvests = loadHarvests().filter(function(rec){ return rec.hiveId === h.id; });
+      if (hiveHarvests.length) {
+        var seasonStart = new Date(new Date().getFullYear(), 0, 1).getTime();
+        var thisSeason = hiveHarvests.filter(function(rec){
+          var t = rec.createdAt || (rec.date ? new Date(rec.date).getTime() : 0);
+          return t >= seasonStart;
+        });
+        if (thisSeason.length) {
+          // Most recent harvest for the tooltip
+          thisSeason.sort(function(a, b){ return (b.createdAt || 0) - (a.createdAt || 0); });
+          var latest = thisSeason[0];
+          var totalKg = thisSeason.reduce(function(s, r){ return s + (parseFloat(r.kg || r.weightKg || 0) || 0); }, 0);
+          var dateStr = '';
+          try { dateStr = new Date(latest.date || latest.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); } catch(e) {}
+          var tip = thisSeason.length + ' harvest' + (thisSeason.length === 1 ? '' : 's') + ' this season \u2014 ' + totalKg.toFixed(1) + 'kg total \u2014 latest ' + dateStr;
+          honeyBadge = ' <span title="' + tip.replace(/"/g, '&quot;') + '" style="font-size:14px;vertical-align:middle;line-height:1;display:inline-block;margin-left:4px;" aria-label="Honey harvested this season">🍯</span>';
+        }
+      }
+    } catch(e) {}
     return `
       <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
         ${dragHandle}
@@ -8723,7 +8747,7 @@ function renderApiary(){
           <div onclick="event.stopPropagation();handleHivePhotoTap('${h.id}')" title="Hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
         </div>
         <div class="hive-list-info">
-          <div class="hive-list-name" style="${isDead?'color:#9E9E9E;':''}">${h.name}</div>
+          <div class="hive-list-name" style="${isDead?'color:#9E9E9E;':''}">${h.name}${honeyBadge}</div>
           <div class="hive-list-meta">${metaText}</div>
           ${alertsHTML}
         </div>
@@ -21824,7 +21848,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:40 30 April 2026 BST · Phase 4bs — auth-screen launch info block removed entirely. Once a user is on the auth screen they\u2019re committed to signing in via the web app right now \u2014 advertising other platforms at that moment is friction not help. Platform badges (App Store live + Google Play coming soon) live on gethivekeeper.com final CTA where browsing visitors actually benefit. dismissAuthLaunchInfo() function left orphaned with safe null-checks; may be reused later for a launch announcement banner.';
+var HIVEKEEPER_BUILD = '16:24 30 April 2026 BST · Phase 4bt — honey pot indicator on apiary hive list. Small \u{1F36F} icon next to hive name when that hive has had a harvest logged this season (1 Jan onwards). Tooltip shows count + total kg + latest date. Positive signal kept separate from alerts row (which is for negative indicators). Per-hive lookup uses loadHarvests() consistent with existing loadInspections() pattern in the same row template; performance acceptable for typical apiary sizes (4-50 hives), full optimisation backlogged.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
