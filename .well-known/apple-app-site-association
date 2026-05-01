@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "8AFB8FA7FJ.com.culshawconsulting.hivekeeper",
+        "paths": [
+          "/h",
+          "/h/*",
+          "/hivekeeper-beta1.html"
+        ]
+      }
+    ]
+  }
+}
