@@ -1703,6 +1703,10 @@ input[type="checkbox"].hk-chk:checked::after {
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- 1 May 2026 Phase 4ca — jsQR for in-app QR scanning. Used by the
+       "Scan QR code" path on the Inspect screen empty state, lets users
+       scan a hive sticker without leaving the app (avoids Safari bounce). -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
@@ -2458,8 +2462,15 @@ input[type="checkbox"].hk-chk:checked::after {
     <div id="inspect-empty-state" style="display:none;padding:40px 24px 20px;text-align:center;">
       <div style="font-size:72px;line-height:1;margin-bottom:16px;">&#x1F41D;</div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">Select a hive to begin</div>
-      <p style="font-size:14px;color:var(--text-l);line-height:1.6;margin:0 auto 20px;max-width:320px;">Tap the <b>Select a hive…</b> dropdown above to choose which hive you're inspecting. You can change the apiary via 🍯 Switch.</p>
-      <button onclick="toggleHiveList()" style="background:var(--honey);border:none;border-radius:var(--rs);padding:14px 24px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Choose a hive</button>
+      <p style="font-size:14px;color:var(--text-l);line-height:1.6;margin:0 auto 20px;max-width:320px;">Tap <b>Choose a hive</b> to pick from your apiary, or <b>Scan QR</b> if your hive has a HiveKeeper sticker.</p>
+      <!-- 1 May 2026 Phase 4ca — two paths into inspection. Choose-a-hive
+           opens the dropdown picker. Scan QR opens the camera viewfinder
+           and jumps straight into inspecting the scanned hive. Stacked
+           on narrow screens, side-by-side on wider. -->
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:340px;margin:0 auto;">
+        <button onclick="toggleHiveList()" style="flex:1;min-width:140px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px 24px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">Choose a hive</button>
+        <button onclick="openInspectQRScanner()" style="flex:1;min-width:140px;background:transparent;border:2px solid var(--honey);border-radius:var(--rs);padding:12px 24px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--honey);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;">&#x1F4F7; Scan QR</button>
+      </div>
       <!-- SOS always available, even before a hive is selected. Separated from
            normal actions by a divider + label so it reads as emergency, not a
            primary flow button. -->
@@ -3563,6 +3574,31 @@ input[type="checkbox"].hk-chk:checked::after {
         <button onclick="resetQRModal()" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;color:var(--text-l);cursor:pointer;">Choose different hive</button>
       </div>
       <button onclick="closeModalEl('modal-qr-nfc')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL: QR SCANNER (Phase 4ca, 1 May 2026)
+       In-app QR scanner for the Inspect screen empty state. Opens camera
+       via getUserMedia, runs jsQR on each frame, jumps into inspecting the
+       scanned hive. Avoids Safari bounce when QR has the gethivekeeper.com/h
+       URL — keeps the user inside the app. -->
+  <div class="modal-overlay" id="modal-qr-scanner" onclick="closeQRScanner(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="modal-title">Scan hive QR</div>
+        <div onclick="closeQRScanner()" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div id="qr-scanner-status" style="font-size:13px;color:var(--text-l);margin-bottom:12px;text-align:center;line-height:1.5;">Point the camera at the QR code on your hive sticker.</div>
+      <div style="position:relative;background:#000;border-radius:var(--rs);overflow:hidden;aspect-ratio:1;max-width:360px;margin:0 auto;">
+        <video id="qr-scanner-video" playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video>
+        <canvas id="qr-scanner-canvas" style="display:none;"></canvas>
+        <!-- Viewfinder overlay -->
+        <div style="position:absolute;inset:15%;border:3px solid rgba(228,163,58,.85);border-radius:12px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.4);"></div>
+      </div>
+      <div id="qr-scanner-error" style="display:none;background:rgba(198,40,40,.1);border:1px solid #C62828;border-radius:var(--rs);padding:12px;font-size:13px;color:#C62828;margin-top:12px;line-height:1.5;"></div>
+      <button onclick="closeQRScanner()" style="width:100%;margin-top:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>
+      <button onclick="closeQRScannerAndOpenList()" style="width:100%;margin-top:8px;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;">Pick from list instead</button>
     </div>
   </div>
 
@@ -17910,12 +17946,46 @@ function saveQRImage() {
   var canvas = document.getElementById('qr-canvas');
   if (!canvas) return;
   var hive = _qrCurrentHiveId ? loadHives().find(function(h) { return h.id === _qrCurrentHiveId; }) : null;
-  var name = hive ? hive.name.replace(/\s+/g, '-') : 'hive';
+  var hiveName = hive ? hive.name : 'Hive';
+  // 1 May 2026 Phase 4ca — generate a sticker-ready PNG with a HiveKeeper
+  // wordmark on top and the hive name on the bottom. Stops users sticking
+  // the wrong code to the wrong hive — the visual name on the sticker is
+  // a safety net before scanning. On-screen canvas stays clean (QR only)
+  // because that's what the user is meant to look at when generating.
+  var W = 360, H = 460;
+  var stickerCanvas = document.createElement('canvas');
+  stickerCanvas.width = W; stickerCanvas.height = H;
+  var sctx = stickerCanvas.getContext('2d');
+  // White background
+  sctx.fillStyle = '#FFFFFF';
+  sctx.fillRect(0, 0, W, H);
+  // HiveKeeper wordmark (top)
+  sctx.fillStyle = '#162B1F';
+  sctx.font = 'bold 22px "Helvetica Neue", Helvetica, Arial, sans-serif';
+  sctx.textAlign = 'center';
+  sctx.textBaseline = 'middle';
+  sctx.fillText('HiveKeeper', W/2, 40);
+  sctx.font = '11px "Helvetica Neue", Helvetica, Arial, sans-serif';
+  sctx.fillStyle = '#6E7572';
+  sctx.fillText('UK BEEKEEPING APP', W/2, 64);
+  // QR code centred
+  var qrSize = 280;
+  var qrX = (W - qrSize) / 2;
+  var qrY = 90;
+  sctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
+  // Hive name (bottom) — wrap if long
+  sctx.fillStyle = '#162B1F';
+  sctx.font = 'bold 18px "Helvetica Neue", Helvetica, Arial, sans-serif';
+  // Truncate ridiculously long names with ellipsis
+  var displayName = hiveName.length > 28 ? hiveName.substring(0, 26) + '…' : hiveName;
+  sctx.fillText(displayName, W/2, qrY + qrSize + 30);
+  // Trigger download
+  var safeName = hiveName.replace(/\s+/g, '-').replace(/[^A-Za-z0-9_-]/g, '');
   var a = document.createElement('a');
-  a.download = name + '-HiveKeeper-QR.png';
-  a.href = canvas.toDataURL('image/png');
+  a.download = (safeName || 'hive') + '-HiveKeeper-QR.png';
+  a.href = stickerCanvas.toDataURL('image/png');
   a.click();
-  showToast('QR code saved');
+  showToast('Sticker saved \u2014 ready to print');
 }
 
 // ── QR Code drawing using qrcodejs (client-side, no external API) ──
@@ -17969,6 +18039,178 @@ function _drawQRFallback(canvas, size) {
   ctx.fillStyle = '#555';
   ctx.fillText('Copy the link above', size/2, size/2+2);
   ctx.fillText('and share directly', size/2, size/2+18);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IN-APP QR SCANNER — 1 May 2026 Phase 4ca
+// Lets users scan a hive QR sticker without leaving the app (no Safari
+// bounce). Camera permission is requested on first use; denial falls
+// back to the dropdown picker. Live-scans frames using jsQR; on a
+// successful decode, extracts the hive ID and jumps into inspecting.
+// ═══════════════════════════════════════════════════════════════
+
+var _qrScannerStream = null;
+var _qrScannerActive = false;
+var _qrScannerRafId = null;
+
+function openInspectQRScanner() {
+  if (typeof jsQR === 'undefined') {
+    showToast('Scanner library failed to load — please use Choose a hive');
+    return;
+  }
+  openModalEl('modal-qr-scanner');
+  var statusEl = document.getElementById('qr-scanner-status');
+  var errorEl = document.getElementById('qr-scanner-error');
+  if (statusEl) statusEl.textContent = 'Starting camera…';
+  if (errorEl) errorEl.style.display = 'none';
+  _startQRScanner();
+}
+
+function _startQRScanner() {
+  var video = document.getElementById('qr-scanner-video');
+  if (!video) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    _qrScannerError('Your browser doesn\u2019t support camera access. Use Pick from list instead.');
+    return;
+  }
+  // Request rear-facing camera explicitly (the one pointed at the hive,
+  // not the selfie camera). `facingMode: 'environment'` does this on
+  // mobile; desktop browsers ignore it and use the default camera.
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: { ideal: 'environment' } },
+    audio: false
+  }).then(function(stream) {
+    _qrScannerStream = stream;
+    video.srcObject = stream;
+    video.setAttribute('playsinline', true); // iOS Safari requirement
+    video.play().then(function(){
+      var statusEl = document.getElementById('qr-scanner-status');
+      if (statusEl) statusEl.textContent = 'Hold steady — scanning for QR code…';
+      _qrScannerActive = true;
+      _qrScannerLoop();
+    }).catch(function(e){
+      console.warn('QR scanner video.play failed:', e);
+      _qrScannerError('Camera couldn\u2019t start. Use Pick from list instead.');
+    });
+  }).catch(function(err) {
+    console.warn('QR scanner getUserMedia rejected:', err);
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      _qrScannerError('Camera access denied. Tap Pick from list, or allow camera in your phone settings to scan.');
+    } else if (err && err.name === 'NotFoundError') {
+      _qrScannerError('No camera found on this device. Use Pick from list instead.');
+    } else {
+      _qrScannerError('Camera couldn\u2019t start. Use Pick from list instead.');
+    }
+  });
+}
+
+function _qrScannerLoop() {
+  if (!_qrScannerActive) return;
+  var video = document.getElementById('qr-scanner-video');
+  var canvas = document.getElementById('qr-scanner-canvas');
+  if (!video || !canvas || video.readyState !== video.HAVE_ENOUGH_DATA) {
+    _qrScannerRafId = requestAnimationFrame(_qrScannerLoop);
+    return;
+  }
+  // Sample at the video's native resolution for best decode rate.
+  // jsQR works on raw RGBA; we copy the current frame into the
+  // hidden canvas, then ImageData → jsQR.
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  try {
+    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: 'dontInvert' });
+    if (code && code.data) {
+      _qrScannerHandleResult(code.data);
+      return; // stop the loop on first hit
+    }
+  } catch(e) {
+    console.warn('QR scanner frame decode threw:', e);
+  }
+  _qrScannerRafId = requestAnimationFrame(_qrScannerLoop);
+}
+
+function _qrScannerHandleResult(scanned) {
+  // Extract hive ID from the scanned URL. Accepts both shapes:
+  //   - gethivekeeper.com/h?hive=<id>           (Phase 4bx new shape)
+  //   - gethivekeeper.com/hivekeeper-beta1.html?hive=<id>   (legacy)
+  // Anything else is ignored (the scan loop continues).
+  var hiveId = null;
+  try {
+    var url = new URL(scanned);
+    hiveId = url.searchParams.get('hive');
+  } catch(e) {
+    // Not a URL — ignore and keep scanning
+    _qrScannerRafId = requestAnimationFrame(_qrScannerLoop);
+    return;
+  }
+  if (!hiveId) {
+    // URL but no hive param — keep scanning
+    _qrScannerRafId = requestAnimationFrame(_qrScannerLoop);
+    return;
+  }
+  var hive = loadHives().find(function(h){ return h.id === hiveId; });
+  if (!hive) {
+    var statusEl = document.getElementById('qr-scanner-status');
+    if (statusEl) statusEl.textContent = 'QR is not for any hive in your account. Keep scanning…';
+    _qrScannerRafId = requestAnimationFrame(_qrScannerLoop);
+    return;
+  }
+  // Got it. Stop the loop, close modal, jump into inspecting this hive.
+  closeQRScanner();
+  // Switch apiary if the scanned hive belongs to a different one.
+  if (hive.apiaryId && hive.apiaryId !== currentApiaryId) {
+    try { if (typeof switchApiary === 'function') switchApiary(hive.apiaryId); } catch(e) {}
+  }
+  currentHiveId = hiveId;
+  // Re-wire inspect screen state — same flow handleDeepLink uses.
+  setTimeout(function() {
+    try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
+    try { if (typeof updateInspectGate === 'function') updateInspectGate(); } catch(e) {}
+    try { if (typeof renderInspectHeader === 'function') renderInspectHeader(); } catch(e) {}
+  }, 100);
+  showToast('Inspecting ' + hive.name);
+}
+
+function _qrScannerError(msg) {
+  _qrScannerActive = false;
+  var statusEl = document.getElementById('qr-scanner-status');
+  var errorEl = document.getElementById('qr-scanner-error');
+  if (statusEl) statusEl.textContent = '';
+  if (errorEl) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = msg;
+  }
+  _stopQRScannerStream();
+}
+
+function _stopQRScannerStream() {
+  if (_qrScannerStream) {
+    try { _qrScannerStream.getTracks().forEach(function(t){ t.stop(); }); } catch(e) {}
+    _qrScannerStream = null;
+  }
+  if (_qrScannerRafId) {
+    try { cancelAnimationFrame(_qrScannerRafId); } catch(e) {}
+    _qrScannerRafId = null;
+  }
+}
+
+function closeQRScanner(evt) {
+  // Allow closeQRScanner to be called both as click-outside (event) and
+  // direct (no event). Match the pattern used by closeModal().
+  if (evt && evt.target && evt.currentTarget && evt.target !== evt.currentTarget) return;
+  _qrScannerActive = false;
+  _stopQRScannerStream();
+  try { closeModalEl('modal-qr-scanner'); } catch(e) {}
+}
+
+function closeQRScannerAndOpenList() {
+  closeQRScanner();
+  setTimeout(function(){
+    try { if (typeof toggleHiveList === 'function') toggleHiveList(); } catch(e) {}
+  }, 250); // wait for scanner modal to finish closing
 }
 
 // ── Deep link handler: open specific hive on load ──
@@ -22185,7 +22427,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:30 1 May 2026 BST · Phase 4bz — scan-to-inspect + QR on inspect screen. Two changes addressing Chris\u2019s stated workflow "walk up, scan, log inspection". (1) handleDeepLink now lands users straight in inspect mode with the hive pre-selected and form ready, rather than dropping them at hive detail which required an extra tap. Cross-apiary case handled: if the scanned hive belongs to a different apiary than active, switches apiary first. Calls populateHiveSelector + updateInspectGate to fully wire up the inspect form just as if the user had picked from the dropdown. (2) Added a "QR for this hive" button on the inspect screen header context row, visible only when a hive is selected (toggled by updateInspectGate). Lets users grab a QR for printing/sharing without navigating to hive detail. Reuses (and fixes) the previously-dead openQRModalFromInspect function \u2014 now uses currentHiveId as source of truth instead of reading the displayed name back from DOM.';
+var HIVEKEEPER_BUILD = '11:35 1 May 2026 BST · Phase 4ca — in-app QR scanner + sticker-ready saved image. Two changes: (1) new "Scan QR" button on the inspect screen empty state alongside "Choose a hive". Opens a camera viewfinder modal (jsQR via CDN), live-scans frames, and on a successful HiveKeeper QR decode jumps straight into inspecting that hive (switches apiary if needed). Avoids the Safari bounce when scanning with the native camera \u2014 keeps users inside the app, which Universal Links would also fix but that is a multi-day separate task. Camera permission denial shows a friendly message with "Pick from list instead" fallback. (2) saveQRImage now generates a sticker-ready 360x460 PNG with HiveKeeper wordmark on top and hive name on bottom. The on-screen modal canvas stays clean (just the QR). Stops users sticking the wrong code to the wrong hive \u2014 visual name on the sticker is a safety net before scanning.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
