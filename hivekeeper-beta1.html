@@ -2439,6 +2439,13 @@ input[type="checkbox"].hk-chk:checked::after {
           </div>
           <div id="inspect-hive-list" style="display:none;background:var(--white);border-radius:var(--rs);margin-top:4px;border:1px solid var(--wax);box-shadow:var(--shadow-l);max-height:280px;overflow-y:auto;position:relative;z-index:50;"></div>
         </div>
+        <!-- 1 May 2026 Phase 4bz — quick action row. Shows only when a hive
+             is selected (toggled by updateInspectGate). Currently hosts
+             the QR button so users can grab a code for printing/sharing
+             without navigating to hive detail. -->
+        <div id="inspect-action-row" style="display:none;margin-top:8px;gap:6px;align-items:center;flex-wrap:wrap;">
+          <button onclick="openQRModalFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR for this hive</button>
+        </div>
         <div class="screen-sub" id="inspect-meta" style="margin-top:6px;color:rgba(255,255,255,.7);"></div>
       </div>
     </div>
@@ -5447,6 +5454,11 @@ function updateInspectGate() {
   var hasHive = !!currentHiveId && !!loadHives().find(function(h){ return h.id === currentHiveId; });
   if (empty) empty.style.display = hasHive ? 'none' : 'block';
   if (form) form.style.display = hasHive ? 'block' : 'none';
+  // 1 May 2026 Phase 4bz — toggle the inspect quick-action row (QR button)
+  // so it only appears when a hive is selected. Otherwise the QR button
+  // makes no sense (no hive to encode).
+  var actionRow = document.getElementById('inspect-action-row');
+  if (actionRow) actionRow.style.display = hasHive ? 'flex' : 'none';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -17960,19 +17972,46 @@ function _drawQRFallback(canvas, size) {
 }
 
 // ── Deep link handler: open specific hive on load ──
+// 1 May 2026 Phase 4bz — scan QR → land in inspect mode (was: hive detail).
+// Matches Chris's stated workflow: walk up to hive, scan, log. The previous
+// behaviour required an extra tap from hive detail to start inspecting.
+// Also handles the cross-apiary case: if the scanned hive belongs to an
+// apiary that isn't currently active, we switch to that apiary first so
+// the hive appears in the inspect dropdown and apiary-scoped views match.
 function handleDeepLink() {
   var params = new URLSearchParams(window.location.search);
   var hiveId = params.get('hive');
   if (!hiveId) return;
   setTimeout(function() {
     var hive = loadHives().find(function(h) { return h.id === hiveId; });
-    if (hive) {
-      currentHiveId = hiveId;
-      goTo('s-hive');
-      showToast('Opening ' + hive.name);
-    } else {
+    if (!hive) {
       showToast('Hive not found');
+      return;
     }
+    // Switch apiary if the hive belongs to a different one than active
+    if (hive.apiaryId && hive.apiaryId !== currentApiaryId) {
+      try {
+        if (typeof switchApiary === 'function') {
+          switchApiary(hive.apiaryId);
+        } else {
+          // Fallback: set the key directly
+          localStorage.setItem(CURRENT_APIARY_KEY, hive.apiaryId);
+          currentApiaryId = hive.apiaryId;
+        }
+      } catch(e) { console.warn('handleDeepLink apiary switch failed:', e); }
+    }
+    // Set the inspect screen's selected hive
+    currentHiveId = hiveId;
+    // Navigate to inspect screen (was s-hive — Phase 4bz lands users in
+    // logging mode by default since they almost always scanned the QR
+    // because they're about to inspect)
+    goTo('s-inspect');
+    // Wire up the inspect screen as if the user had picked from dropdown
+    setTimeout(function() {
+      try { if (typeof populateHiveSelector === 'function') populateHiveSelector(); } catch(e) {}
+      try { if (typeof updateInspectGate === 'function') updateInspectGate(); } catch(e) {}
+    }, 100);
+    showToast('Ready to inspect ' + hive.name);
   }, 600);
 }
 
@@ -18518,7 +18557,13 @@ function showMarketDetail(id) {
 
 
 function openQRModalFromInspect() {
-  var hiveId = getCurrentInspectHiveId();
+  // 1 May 2026 Phase 4bz — wired to the new inspect-screen QR button.
+  // Uses currentHiveId as source of truth (more reliable than reading
+  // the displayed name back from DOM and matching to a hive — names
+  // can have edge cases that break that lookup).
+  var hiveId = (typeof currentHiveId !== 'undefined' && currentHiveId)
+    ? currentHiveId
+    : (typeof getCurrentInspectHiveId === 'function' ? getCurrentInspectHiveId() : null);
   if (!hiveId) { showToast('Select a hive first'); return; }
   openQRModal();
   setTimeout(function(){ renderQRForHive(hiveId); }, 100);
@@ -22140,7 +22185,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:25 1 May 2026 BST · Phase 4by — header redesign across all 8 screens. Replaces 8 hand-rolled per-screen header layouts with a single canonical hk-hdr pattern. Each screen retains its accent colour (4px band + gradient background) but the structure inside is uniform: row 1 = apiary switcher pill (left, tappable, opens switcher) + settings cog (right). Row 2 = screen title + screen-specific help. Optional row 3 (hk-hdr-context) for screen-specific actions like the inspect hive picker, hive detail QR/Move/Inspect, etc. Drops the "Good morning" greeting from non-home screens, drops the Founding Beekeeper badge from headers (still visible elsewhere), drops the duplicate help icon. Single source of truth for apiary name across screens (apiary-name-text → all *-apiary-label pills via updateScreenChrome). NOTE: this build also fixes the inventory screen which the prior session missed (still using the old app-header pattern); now matches the canonical hk-hdr structure used by the other 7 screens.';
+var HIVEKEEPER_BUILD = '11:30 1 May 2026 BST · Phase 4bz — scan-to-inspect + QR on inspect screen. Two changes addressing Chris\u2019s stated workflow "walk up, scan, log inspection". (1) handleDeepLink now lands users straight in inspect mode with the hive pre-selected and form ready, rather than dropping them at hive detail which required an extra tap. Cross-apiary case handled: if the scanned hive belongs to a different apiary than active, switches apiary first. Calls populateHiveSelector + updateInspectGate to fully wire up the inspect form just as if the user had picked from the dropdown. (2) Added a "QR for this hive" button on the inspect screen header context row, visible only when a hive is selected (toggled by updateInspectGate). Lets users grab a QR for printing/sharing without navigating to hive detail. Reuses (and fixes) the previously-dead openQRModalFromInspect function \u2014 now uses currentHiveId as source of truth instead of reading the displayed name back from DOM.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
