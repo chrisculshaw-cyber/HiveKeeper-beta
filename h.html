@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=hivekeeper-beta1.html">
+<title>Opening HiveKeeper&hellip;</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<style>
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #1F4E3A;
+    color: #faf5e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    text-align: center;
+  }
+  .wrap { padding: 40px 24px; }
+  h1 { font-size: 22px; margin: 0 0 12px; font-weight: 500; }
+  p { font-size: 14px; opacity: 0.7; margin: 0; }
+  a { color: #e4a33a; text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Opening HiveKeeper&hellip;</h1>
+    <p>If nothing happens, <a id="manual" href="hivekeeper-beta1.html">tap here</a>.</p>
+  </div>
+  <script>
+    // Stable QR redirect — Phase 4bx, 1 May 2026
+    // Forwards /h?hive=<id> (and any future query params) to the current
+    // app HTML preserving the full query string. This file is intentionally
+    // minimal so it loads instantly even on poor field signal.
+    //
+    // Why this exists: physical QR stickers printed for hives need a URL
+    // that doesn't break when the app HTML gets renamed in future. The
+    // QR code embeds gethivekeeper.com/h?hive=<id>; this file is the
+    // forwarding hop. To change the app's file location, only this one
+    // file needs updating — printed stickers keep working.
+    (function() {
+      var qs = window.location.search || '';
+      var target = 'hivekeeper-beta1.html' + qs;
+      // Update the manual fallback link too so it carries the hive param
+      try {
+        var link = document.getElementById('manual');
+        if (link) link.href = target;
+      } catch(e) {}
+      // Use replace() not href= so the redirect doesn't pollute browser history
+      window.location.replace(target);
+    })();
+  </script>
+</body>
+</html>

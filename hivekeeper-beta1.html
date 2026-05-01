@@ -17659,7 +17659,13 @@ function updateDashTipTeaser() {
 var _qrCurrentHiveId = null;
 
 function getHiveDeepLink(hiveId) {
-  return window.location.href.split('?')[0] + '?hive=' + encodeURIComponent(hiveId);
+  // 1 May 2026 Phase 4bx — stable QR URL shape. Previously embedded the
+  // literal HTML filename which would orphan all printed QR stickers if the
+  // app file ever gets renamed (e.g. to /app.html or /index.html for
+  // production). New form is /h?hive=<id> served from a tiny redirect page
+  // (h.html) at the website root which forwards to the current app file
+  // preserving the query string. Survives file renames and path changes.
+  return 'https://gethivekeeper.com/h?hive=' + encodeURIComponent(hiveId);
 }
 
 function openQRModal() {
@@ -17737,23 +17743,23 @@ function drawQR(canvasId, url) {
     tmp.style.display = 'none';
     document.body.appendChild(tmp);
     try {
+      // 1 May 2026 Phase 4bx — error correction H (30% recovery). Higher
+      // than M (15%) makes the code visibly denser but much more reliable
+      // when printed stickers get rained on, scuffed, or partly obscured
+      // by the hive itself. Per Apple/Google guidance for outdoor QR.
+      // Bee centre logo dropped: it ate into error correction headroom,
+      // rendered inconsistently across emoji systems when printed, and
+      // gave no scanning value. Brand goes on the sticker around the QR.
       new QRCode(tmp, {
         text: url, width: size, height: size,
         colorDark: '#162B1F', colorLight: '#FFFFFF',
-        correctLevel: QRCode.CorrectLevel.M
+        correctLevel: QRCode.CorrectLevel.H
       });
       setTimeout(function() {
         var qrCanvas = tmp.querySelector('canvas');
         if (qrCanvas) {
           var ctx = canvas.getContext('2d');
           ctx.drawImage(qrCanvas, 0, 0, size, size);
-          // Bee in centre
-          var cx = size/2, cy = size/2, r = 16;
-          ctx.fillStyle = 'white';
-          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
-          ctx.font = '20px sans-serif';
-          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('\uD83D\uDC1D', cx, cy);
         }
         tmp.remove();
       }, 100);
@@ -21959,7 +21965,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:25 1 May 2026 BST · Phase 4bw — calendar inspection window fix. Calendar was using a hardcoded LAST_APIARY_INSP = 31 March 2026 placeholder dating from when the calendar feature was first built; never wired to real data. So the inspection window had been stuck showing 7-14 April 2026 for a month. Five fixes in one phase: (1) compute real last-inspection date per current apiary, (2) scope calendar inspection dots to current apiary not global, (3) drop fake "Apiary inspection (31 Mar)" hardcoded entry, (4) renderDueHives scoped to apiary + drops fake fallback for never-inspected hives (now shows "Never inspected" sorted to top), (5) switchApiary triggers calendar re-render if user is on calendar screen. LAST_APIARY_INSP constant deleted.';
+var HIVEKEEPER_BUILD = '10:30 1 May 2026 BST · Phase 4bx — QR URL stabilisation. Three changes before any physical QR stickers get ordered: (1) getHiveDeepLink now returns the stable shape gethivekeeper.com/h?hive=<id> instead of embedding the literal hivekeeper-beta1.html filename. Survives any future file rename or production-launch path change. (2) QR error correction bumped from M (15%) to H (30%) — visibly denser code but much more reliable when printed stickers get rained on, scuffed, or partly obscured. (3) Centre bee logo overlay dropped: ate into error correction headroom, rendered inconsistently across emoji systems when printed, gave no scanning value. Brand goes ON the sticker around the QR. Companion file h.html lives at site root and forwards /h?hive=<id> traffic to the current app HTML preserving the query string. Optional Cloudflare Page Rule (gethivekeeper.com/h* → /hivekeeper-beta1.html$1) drops the .html for cleanest URL but is not required.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
