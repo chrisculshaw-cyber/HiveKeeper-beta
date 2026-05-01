@@ -1707,6 +1707,11 @@ input[type="checkbox"].hk-chk:checked::after {
        "Scan QR code" path on the Inspect screen empty state, lets users
        scan a hive sticker without leaving the app (avoids Safari bounce). -->
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <!-- 1 May 2026 Phase 4cc — jsPDF for direct PDF download of QR sticker
+       sheet. Replaces the print-preview window flow with a one-tap PDF
+       download. No new tab, no print dialog by default — user gets a
+       file in their Downloads folder. -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
@@ -3614,7 +3619,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <div class="modal-title">Print hive QR stickers</div>
         <div onclick="closeModalEl('modal-qr-print-picker')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
       </div>
-      <div style="font-size:13px;color:var(--text-l);margin-bottom:12px;line-height:1.5;">Select which hives to print. The sheet that opens has 6 stickers per A4 page \u2014 print on plain or sticker paper, cut along the dashed lines.</div>
+      <div style="font-size:13px;color:var(--text-l);margin-bottom:12px;line-height:1.5;">Select which hives to include. A PDF will download with 6 stickers per A4 page \u2014 print on plain or sticker paper, cut along the dashed lines.</div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
         <button onclick="qrPrintSelectAll()" style="flex:1;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">All apiaries</button>
         <button onclick="qrPrintSelectCurrentApiary()" style="flex:1;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">This apiary only</button>
@@ -3622,7 +3627,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div id="qr-print-list" style="max-height:50vh;overflow-y:auto;border:1px solid var(--wax);border-radius:var(--rs);"></div>
       <div id="qr-print-count" style="font-size:12px;color:var(--text-l);margin:10px 0 6px;text-align:center;">0 hives selected</div>
-      <button id="qr-print-go" onclick="generateQRPrintSheet()" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;" disabled>Generate sticker sheet</button>
+      <button id="qr-print-go" onclick="generateQRPrintSheet()" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;" disabled>Download sticker PDF</button>
     </div>
   </div>
 
@@ -18315,9 +18320,9 @@ function _qrPrintUpdateCount() {
     btn.disabled = (n === 0);
     btn.style.opacity = (n === 0) ? '0.5' : '1';
     btn.style.cursor = (n === 0) ? 'not-allowed' : 'pointer';
-    btn.textContent = (n === 0) ? 'Generate sticker sheet' :
-                      (n === 1) ? 'Generate 1 sticker' :
-                      'Generate ' + n + ' stickers';
+    btn.textContent = (n === 0) ? 'Download sticker PDF' :
+                      (n === 1) ? 'Download 1 sticker' :
+                      'Download ' + n + ' stickers';
   }
 }
 
@@ -18344,6 +18349,10 @@ function generateQRPrintSheet() {
     showToast('QR library not loaded');
     return;
   }
+  if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
+    showToast('PDF library not loaded \u2014 please refresh and try again');
+    return;
+  }
   var checks = document.querySelectorAll('.qr-print-check:checked');
   var ids = Array.prototype.map.call(checks, function(c){ return c.getAttribute('data-hid'); });
   if (!ids.length) return;
@@ -18356,7 +18365,6 @@ function generateQRPrintSheet() {
   // then read the canvas's data URL. Doing all renders in series keeps
   // memory reasonable and avoids racing the qrcodejs internal setTimeouts.
   var stickers = [];
-  var stickerHTML = '';
 
   function renderNext(i, done) {
     if (i >= selectedHives.length) { done(); return; }
@@ -18387,62 +18395,86 @@ function generateQRPrintSheet() {
   showToast('Generating ' + selectedHives.length + ' QR sticker' + (selectedHives.length === 1 ? '' : 's') + '\u2026');
 
   renderNext(0, function() {
-    // Build the print sheet HTML. 6 stickers per A4 page (2 columns × 3 rows).
-    // Each sticker ~85mm wide × 90mm tall, with HiveKeeper header + QR + hive name.
-    var stickerCells = stickers.map(function(s){
-      return '<div class="sticker">'
-        + '<div class="brand">HiveKeeper</div>'
-        + '<div class="brand-sub">UK BEEKEEPING APP</div>'
-        + (s.dataUrl ? '<img src="' + s.dataUrl + '" alt="QR">' : '<div class="qr-placeholder">QR failed</div>')
-        + '<div class="hive-name">' + _escapeHtml(s.name) + '</div>'
-        + '</div>';
-    }).join('');
+    // 1 May 2026 Phase 4cc — direct PDF download via jsPDF. A4 portrait,
+    // 6 stickers per page (2 columns x 3 rows). Each sticker shows the
+    // HiveKeeper wordmark, subline, the QR code, and the hive name.
+    // Layout maths (mm):
+    //   page width = 210, height = 297
+    //   margin = 10 each side -> usable 190 x 277
+    //   2 cols x 3 rows -> each cell ~95mm wide x ~92mm tall
+    //   QR sized to ~70mm square within each cell, centred
+    try {
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
-    var sheetHTML = '<!doctype html><html><head><meta charset="utf-8"><title>HiveKeeper QR stickers</title>'
-      + '<style>'
-      + '@page { size: A4 portrait; margin: 8mm; }'
-      + 'body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #162B1F; }'
-      + '.sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; padding: 0; }'
-      + '.sticker { border: 1px dashed #999; padding: 4mm; text-align: center; page-break-inside: avoid; aspect-ratio: 1 / 1.05; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; }'
-      + '.brand { font-size: 16px; font-weight: bold; letter-spacing: 0.02em; }'
-      + '.brand-sub { font-size: 8px; color: #6E7572; letter-spacing: 0.08em; margin-top: 2px; margin-bottom: 4px; }'
-      + '.sticker img { width: 75%; height: auto; aspect-ratio: 1; display: block; margin: 0 auto; }'
-      + '.qr-placeholder { width: 75%; aspect-ratio: 1; border: 1px solid #c00; color: #c00; display: flex; align-items: center; justify-content: center; font-size: 11px; }'
-      + '.hive-name { font-size: 14px; font-weight: bold; margin-top: 4px; word-break: break-word; }'
-      + '.cover { padding: 14mm 12mm; }'
-      + '.cover h1 { font-size: 22px; margin: 0 0 8px; }'
-      + '.cover p { font-size: 12px; color: #555; margin: 4px 0; }'
-      + '.cover .meta { margin-top: 12mm; font-size: 11px; color: #777; }'
-      + '@media print { .no-print { display: none !important; } }'
-      + '.no-print { padding: 12mm; text-align: center; background: #f9f5e9; border-bottom: 2px solid #C8730A; }'
-      + '.no-print button { padding: 10px 24px; background: #C8730A; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; }'
-      + '.no-print h2 { margin: 0 0 8px; font-size: 18px; }'
-      + '.no-print p { margin: 4px 0; font-size: 13px; color: #555; }'
-      + '</style></head><body>'
-      + '<div class="no-print">'
-      + '<h2>HiveKeeper QR stickers ready</h2>'
-      + '<p>' + stickers.length + ' sticker' + (stickers.length === 1 ? '' : 's') + ' to print. Use plain paper or sticker paper. Cut along the dashed lines.</p>'
-      + '<button onclick="window.print()">Print</button>'
-      + '</div>'
-      + '<div class="cover">'
-      + '<h1>HiveKeeper QR stickers</h1>'
-      + '<p>Stick one on each hive in the position shown on this sheet.</p>'
-      + '<p>Scanning a sticker with your phone camera (or the in-app scanner) takes you straight into inspecting that hive.</p>'
-      + '<p class="meta">Generated ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' \u00b7 ' + stickers.length + ' sticker' + (stickers.length === 1 ? '' : 's') + '</p>'
-      + '</div>'
-      + '<div class="sheet">' + stickerCells + '</div>'
-      + '</body></html>';
+      var pageW = 210, pageH = 297;
+      var marginX = 10, marginY = 10;
+      var cols = 2, rows = 3;
+      var perPage = cols * rows;
+      var cellW = (pageW - marginX * 2) / cols;        // ~95mm
+      var cellH = (pageH - marginY * 2) / rows;        // ~92mm
 
-    var win = window.open('', '_blank');
-    if (!win) {
-      showToast('Pop-up blocked. Allow pop-ups for HiveKeeper to print stickers.');
-      return;
+      stickers.forEach(function(s, i) {
+        if (i > 0 && i % perPage === 0) doc.addPage();
+        var posInPage = i % perPage;
+        var col = posInPage % cols;
+        var row = Math.floor(posInPage / cols);
+        var x = marginX + col * cellW;
+        var y = marginY + row * cellH;
+        var pad = 4;
+
+        // Dashed cut border
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.setLineWidth(0.2);
+        doc.rect(x + pad/2, y + pad/2, cellW - pad, cellH - pad);
+        doc.setLineDashPattern([], 0);
+
+        // HiveKeeper wordmark (top, centred)
+        doc.setTextColor(22, 43, 31);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text('HiveKeeper', x + cellW/2, y + pad + 5, { align: 'center' });
+        // Subline
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(110, 117, 114);
+        doc.text('UK BEEKEEPING APP', x + cellW/2, y + pad + 9, { align: 'center' });
+
+        // QR centred in the cell, leaving room for the hive name below
+        if (s.dataUrl) {
+          var qrSize = Math.min(cellW - pad * 2 - 8, cellH - pad * 2 - 24);
+          var qrX = x + (cellW - qrSize) / 2;
+          var qrY = y + pad + 12;
+          try {
+            doc.addImage(s.dataUrl, 'PNG', qrX, qrY, qrSize, qrSize, undefined, 'FAST');
+          } catch(e) {
+            console.warn('addImage failed for', s.name, e);
+          }
+        }
+
+        // Hive name (bottom, bold)
+        doc.setTextColor(22, 43, 31);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        // Truncate ridiculous names so they don't run off the sticker
+        var displayName = s.name.length > 28 ? s.name.substring(0, 26) + '\u2026' : s.name;
+        doc.text(displayName, x + cellW/2, y + cellH - pad - 3, { align: 'center', maxWidth: cellW - pad * 2 });
+      });
+
+      // Filename. Date + count for uniqueness, sensible for downloads.
+      var d = new Date();
+      var pad2 = function(n){ return n < 10 ? '0' + n : '' + n; };
+      var dateStr = d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+      var fileName = 'HiveKeeper-QR-stickers-' + dateStr + '-' + stickers.length + '.pdf';
+
+      doc.save(fileName);
+      closeModalEl('modal-qr-print-picker');
+      showToast('Downloaded ' + fileName);
+    } catch(err) {
+      console.error('PDF generation failed:', err);
+      showToast('PDF generation failed \u2014 see console for details');
     }
-    win.document.open();
-    win.document.write(sheetHTML);
-    win.document.close();
-    closeModalEl('modal-qr-print-picker');
-    showToast('Sticker sheet ready \u2014 tap Print');
   });
 }
 
@@ -22666,7 +22698,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:38 1 May 2026 BST · Phase 4cb — bulk QR sticker printing in Settings, replacing per-hive QR display buttons. THREE changes: (1) New Settings entry "Print hive QR stickers" opens a picker modal listing all active hives grouped by apiary. Bulk-select buttons (All apiaries / This apiary only / None). Tap Generate sticker sheet \u2192 print preview window opens with 6 stickers per A4 page laid out for cutting (HiveKeeper wordmark + QR + hive name). User taps Print \u2192 OS print dialog. Scales to 24+ hives without per-hive friction \u2014 the original ask. (2) Removed the "QR for this hive" button from inspect screen (was Phase 4bz/4ca). (3) Removed the "QR" button from hive detail screen header. Both replaced by Settings as the single QR-generation path. Inspect screen still has "Scan QR" (different action: read, not write). The dead openQRForCurrentHive / openQRModal / openQRModalFromInspect functions are kept in place because their cost is zero and they make potential future "reprint just this one" features trivial to add.';
+var HIVEKEEPER_BUILD = '11:48 1 May 2026 BST · Phase 4cc — direct PDF download for QR sticker sheet (replaces print-preview window). Uses jsPDF (CDN) to generate a multi-page A4 PDF with 6 stickers per page (2 columns x 3 rows). Each sticker renders the HiveKeeper wordmark, UK BEEKEEPING APP subline, the QR, and the hive name in a dashed cut border. File downloads to the user\'s Downloads folder with name HiveKeeper-QR-stickers-YYYYMMDD-N.pdf; toast confirms with the filename so the user knows it landed. Picker modal copy + button labels updated from "Generate" to "Download" to match the action. No new tab, no print dialog \u2014 user gets a file. Pop-up blocker complications gone (jsPDF triggers a normal anchor download not a window.open). Implementation note: jsPDF\'s addImage uses FAST mode for the QR PNGs which is acceptable since the QRs are already rendered at 300px square \u2014 PDF rendering looks sharp at A4 cell sizes (~70mm).';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
