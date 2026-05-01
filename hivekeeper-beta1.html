@@ -2443,13 +2443,12 @@ input[type="checkbox"].hk-chk:checked::after {
           </div>
           <div id="inspect-hive-list" style="display:none;background:var(--white);border-radius:var(--rs);margin-top:4px;border:1px solid var(--wax);box-shadow:var(--shadow-l);max-height:280px;overflow-y:auto;position:relative;z-index:50;"></div>
         </div>
-        <!-- 1 May 2026 Phase 4bz — quick action row. Shows only when a hive
-             is selected (toggled by updateInspectGate). Currently hosts
-             the QR button so users can grab a code for printing/sharing
-             without navigating to hive detail. -->
-        <div id="inspect-action-row" style="display:none;margin-top:8px;gap:6px;align-items:center;flex-wrap:wrap;">
-          <button onclick="openQRModalFromInspect()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR for this hive</button>
-        </div>
+        <!-- 1 May 2026 Phase 4cb — QR-display button removed. Per-hive QR
+             generation/printing has consolidated to Settings (single + bulk).
+             The action-row div is preserved (empty) so updateInspectGate's
+             show/hide call doesn't error, and so future per-hive quick
+             actions on inspect have a place to land. -->
+        <div id="inspect-action-row" style="display:none;margin-top:8px;gap:6px;align-items:center;flex-wrap:wrap;"></div>
         <div class="screen-sub" id="inspect-meta" style="margin-top:6px;color:rgba(255,255,255,.7);"></div>
       </div>
     </div>
@@ -2693,7 +2692,8 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
       <div class="hk-hdr-context" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-        <button onclick="openQRForCurrentHive()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">&#x1F4F1; QR</button>
+        <!-- 1 May 2026 Phase 4cb — QR button removed. Per-hive QR generation
+             now lives in Settings → Print hive QR stickers (bulk + individual). -->
         <button onclick="openMoveHiveModal()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">🚚 Move</button>
         <button onclick="startInspectionFromHive()" style="background:var(--honey);border:none;border-radius:20px;padding:6px 12px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:Syne,sans-serif;">+ Inspect</button>
       </div>
@@ -3602,6 +3602,30 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
+  <!-- MODAL: QR PRINT PICKER (Phase 4cb, 1 May 2026)
+       Settings → Print hive QR stickers. Lets users pick one hive or many,
+       then opens a print preview window with stickers laid out for cutting.
+       Replaces the per-hive QR display buttons that used to live on the
+       inspect screen and hive detail screen. -->
+  <div class="modal-overlay" id="modal-qr-print-picker" onclick="closeModal(event,'modal-qr-print-picker')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="modal-title">Print hive QR stickers</div>
+        <div onclick="closeModalEl('modal-qr-print-picker')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-l);margin-bottom:12px;line-height:1.5;">Select which hives to print. The sheet that opens has 6 stickers per A4 page \u2014 print on plain or sticker paper, cut along the dashed lines.</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+        <button onclick="qrPrintSelectAll()" style="flex:1;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">All apiaries</button>
+        <button onclick="qrPrintSelectCurrentApiary()" style="flex:1;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;">This apiary only</button>
+        <button onclick="qrPrintSelectNone()" style="flex:1;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:8px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;">None</button>
+      </div>
+      <div id="qr-print-list" style="max-height:50vh;overflow-y:auto;border:1px solid var(--wax);border-radius:var(--rs);"></div>
+      <div id="qr-print-count" style="font-size:12px;color:var(--text-l);margin:10px 0 6px;text-align:center;">0 hives selected</div>
+      <button id="qr-print-go" onclick="generateQRPrintSheet()" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;" disabled>Generate sticker sheet</button>
+    </div>
+  </div>
+
   <!-- MODAL: SETTINGS -->
   <div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
@@ -3692,6 +3716,10 @@ input[type="checkbox"].hk-chk:checked::after {
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openShareApiary()},200)" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">👥 Share this apiary</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
+      <!-- 1 May 2026 Phase 4cb — Print hive QR stickers. Single + bulk in
+           one flow. Replaces the per-hive QR display buttons that used to
+           live on the inspect screen and hive detail screen. -->
+      <button onclick="closeModalEl('modal-settings');setTimeout(openQRPrintPicker,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📱 Print hive QR stickers</button>
       <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;">🔍 Bee inspector contacts</button>
 
       <!-- SUPPORT — inline, as they were before -->
@@ -18213,6 +18241,217 @@ function closeQRScannerAndOpenList() {
   }, 250); // wait for scanner modal to finish closing
 }
 
+// ═══════════════════════════════════════════════════════════════
+// QR PRINT PICKER + SHEET GENERATOR — 1 May 2026 Phase 4cb
+// Settings → Print hive QR stickers. Lets users pick one hive or many,
+// then opens a print sheet with stickers laid out for cutting. Replaces
+// the per-hive QR display buttons that used to live on inspect and
+// hive detail screens.
+// ═══════════════════════════════════════════════════════════════
+
+function openQRPrintPicker() {
+  if (typeof QRCode === 'undefined') {
+    showToast('QR library not loaded — please refresh the app');
+    return;
+  }
+  _qrPrintBuildList();
+  openModalEl('modal-qr-print-picker');
+}
+
+function _qrPrintBuildList() {
+  var listEl = document.getElementById('qr-print-list');
+  if (!listEl) return;
+  var apiaries = (typeof loadApiaries === 'function') ? loadApiaries() : [];
+  var hives = loadHives().filter(function(h){ return !h.isHidden && h.status !== 'dead'; });
+  if (!hives.length) {
+    listEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-l);font-size:13px;">No active hives in your account yet.</div>';
+    var btn = document.getElementById('qr-print-go');
+    if (btn) btn.disabled = true;
+    return;
+  }
+  // Group by apiary
+  var byApiary = {};
+  hives.forEach(function(h){
+    var key = h.apiaryId || 'unassigned';
+    if (!byApiary[key]) byApiary[key] = [];
+    byApiary[key].push(h);
+  });
+  var html = '';
+  apiaries.forEach(function(a){
+    var inApiary = byApiary[a.id] || [];
+    if (!inApiary.length) return;
+    var checkedDefault = (a.id === currentApiaryId) ? ' checked' : '';
+    html += '<div style="padding:8px 12px;font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;background:var(--honey-pale);border-bottom:1px solid var(--wax);">' + (a.name || 'Apiary') + '</div>';
+    inApiary.forEach(function(h){
+      html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:13px;color:var(--text);">'
+        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '"' + checkedDefault + ' onchange="_qrPrintUpdateCount()" style="width:18px;height:18px;accent-color:var(--honey);flex-shrink:0;">'
+        + '<span style="flex:1;">' + (h.name || 'Hive') + '</span>'
+        + '<span style="font-size:11px;color:var(--text-l);">' + (h.row || '') + '</span>'
+        + '</label>';
+    });
+  });
+  // Unassigned hives (no apiaryId) — surface so they're not orphaned
+  var unassigned = byApiary['unassigned'] || [];
+  if (unassigned.length) {
+    html += '<div style="padding:8px 12px;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;background:#f5f5f5;border-bottom:1px solid var(--wax);">Not in an apiary</div>';
+    unassigned.forEach(function(h){
+      html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:13px;color:var(--text);">'
+        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '" onchange="_qrPrintUpdateCount()" style="width:18px;height:18px;accent-color:var(--honey);flex-shrink:0;">'
+        + '<span style="flex:1;">' + (h.name || 'Hive') + '</span>'
+        + '</label>';
+    });
+  }
+  listEl.innerHTML = html;
+  _qrPrintUpdateCount();
+}
+
+function _qrPrintUpdateCount() {
+  var checks = document.querySelectorAll('.qr-print-check:checked');
+  var n = checks.length;
+  var countEl = document.getElementById('qr-print-count');
+  var btn = document.getElementById('qr-print-go');
+  if (countEl) countEl.textContent = n + ' hive' + (n === 1 ? '' : 's') + ' selected';
+  if (btn) {
+    btn.disabled = (n === 0);
+    btn.style.opacity = (n === 0) ? '0.5' : '1';
+    btn.style.cursor = (n === 0) ? 'not-allowed' : 'pointer';
+    btn.textContent = (n === 0) ? 'Generate sticker sheet' :
+                      (n === 1) ? 'Generate 1 sticker' :
+                      'Generate ' + n + ' stickers';
+  }
+}
+
+function qrPrintSelectAll() {
+  document.querySelectorAll('.qr-print-check').forEach(function(c){ c.checked = true; });
+  _qrPrintUpdateCount();
+}
+function qrPrintSelectCurrentApiary() {
+  var hives = loadHives();
+  document.querySelectorAll('.qr-print-check').forEach(function(c){
+    var hid = c.getAttribute('data-hid');
+    var h = hives.find(function(x){ return x.id === hid; });
+    c.checked = !!(h && h.apiaryId === currentApiaryId);
+  });
+  _qrPrintUpdateCount();
+}
+function qrPrintSelectNone() {
+  document.querySelectorAll('.qr-print-check').forEach(function(c){ c.checked = false; });
+  _qrPrintUpdateCount();
+}
+
+function generateQRPrintSheet() {
+  if (typeof QRCode === 'undefined') {
+    showToast('QR library not loaded');
+    return;
+  }
+  var checks = document.querySelectorAll('.qr-print-check:checked');
+  var ids = Array.prototype.map.call(checks, function(c){ return c.getAttribute('data-hid'); });
+  if (!ids.length) return;
+  var allHives = loadHives();
+  var selectedHives = ids.map(function(id){ return allHives.find(function(h){ return h.id === id; }); }).filter(Boolean);
+  if (!selectedHives.length) return;
+
+  // Render each hive's QR to a data URL synchronously-ish via a temp DOM
+  // node. qrcodejs renders to a child canvas; we wait one tick per code
+  // then read the canvas's data URL. Doing all renders in series keeps
+  // memory reasonable and avoids racing the qrcodejs internal setTimeouts.
+  var stickers = [];
+  var stickerHTML = '';
+
+  function renderNext(i, done) {
+    if (i >= selectedHives.length) { done(); return; }
+    var hive = selectedHives[i];
+    var url = (typeof getHiveDeepLink === 'function')
+      ? getHiveDeepLink(hive.id)
+      : ('https://gethivekeeper.com/h?hive=' + encodeURIComponent(hive.id));
+    var tmp = document.createElement('div');
+    tmp.style.display = 'none';
+    document.body.appendChild(tmp);
+    try {
+      new QRCode(tmp, { text: url, width: 300, height: 300, colorDark: '#162B1F', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.H });
+    } catch(e) {
+      console.warn('Print QR generation failed for', hive.name, e);
+      tmp.remove();
+      renderNext(i + 1, done);
+      return;
+    }
+    setTimeout(function() {
+      var qrCanvas = tmp.querySelector('canvas');
+      var dataUrl = qrCanvas ? qrCanvas.toDataURL('image/png') : '';
+      tmp.remove();
+      stickers.push({ name: hive.name || 'Hive', dataUrl: dataUrl });
+      renderNext(i + 1, done);
+    }, 80);
+  }
+
+  showToast('Generating ' + selectedHives.length + ' QR sticker' + (selectedHives.length === 1 ? '' : 's') + '\u2026');
+
+  renderNext(0, function() {
+    // Build the print sheet HTML. 6 stickers per A4 page (2 columns × 3 rows).
+    // Each sticker ~85mm wide × 90mm tall, with HiveKeeper header + QR + hive name.
+    var stickerCells = stickers.map(function(s){
+      return '<div class="sticker">'
+        + '<div class="brand">HiveKeeper</div>'
+        + '<div class="brand-sub">UK BEEKEEPING APP</div>'
+        + (s.dataUrl ? '<img src="' + s.dataUrl + '" alt="QR">' : '<div class="qr-placeholder">QR failed</div>')
+        + '<div class="hive-name">' + _escapeHtml(s.name) + '</div>'
+        + '</div>';
+    }).join('');
+
+    var sheetHTML = '<!doctype html><html><head><meta charset="utf-8"><title>HiveKeeper QR stickers</title>'
+      + '<style>'
+      + '@page { size: A4 portrait; margin: 8mm; }'
+      + 'body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #162B1F; }'
+      + '.sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; padding: 0; }'
+      + '.sticker { border: 1px dashed #999; padding: 4mm; text-align: center; page-break-inside: avoid; aspect-ratio: 1 / 1.05; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-sizing: border-box; }'
+      + '.brand { font-size: 16px; font-weight: bold; letter-spacing: 0.02em; }'
+      + '.brand-sub { font-size: 8px; color: #6E7572; letter-spacing: 0.08em; margin-top: 2px; margin-bottom: 4px; }'
+      + '.sticker img { width: 75%; height: auto; aspect-ratio: 1; display: block; margin: 0 auto; }'
+      + '.qr-placeholder { width: 75%; aspect-ratio: 1; border: 1px solid #c00; color: #c00; display: flex; align-items: center; justify-content: center; font-size: 11px; }'
+      + '.hive-name { font-size: 14px; font-weight: bold; margin-top: 4px; word-break: break-word; }'
+      + '.cover { padding: 14mm 12mm; }'
+      + '.cover h1 { font-size: 22px; margin: 0 0 8px; }'
+      + '.cover p { font-size: 12px; color: #555; margin: 4px 0; }'
+      + '.cover .meta { margin-top: 12mm; font-size: 11px; color: #777; }'
+      + '@media print { .no-print { display: none !important; } }'
+      + '.no-print { padding: 12mm; text-align: center; background: #f9f5e9; border-bottom: 2px solid #C8730A; }'
+      + '.no-print button { padding: 10px 24px; background: #C8730A; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: bold; cursor: pointer; }'
+      + '.no-print h2 { margin: 0 0 8px; font-size: 18px; }'
+      + '.no-print p { margin: 4px 0; font-size: 13px; color: #555; }'
+      + '</style></head><body>'
+      + '<div class="no-print">'
+      + '<h2>HiveKeeper QR stickers ready</h2>'
+      + '<p>' + stickers.length + ' sticker' + (stickers.length === 1 ? '' : 's') + ' to print. Use plain paper or sticker paper. Cut along the dashed lines.</p>'
+      + '<button onclick="window.print()">Print</button>'
+      + '</div>'
+      + '<div class="cover">'
+      + '<h1>HiveKeeper QR stickers</h1>'
+      + '<p>Stick one on each hive in the position shown on this sheet.</p>'
+      + '<p>Scanning a sticker with your phone camera (or the in-app scanner) takes you straight into inspecting that hive.</p>'
+      + '<p class="meta">Generated ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' \u00b7 ' + stickers.length + ' sticker' + (stickers.length === 1 ? '' : 's') + '</p>'
+      + '</div>'
+      + '<div class="sheet">' + stickerCells + '</div>'
+      + '</body></html>';
+
+    var win = window.open('', '_blank');
+    if (!win) {
+      showToast('Pop-up blocked. Allow pop-ups for HiveKeeper to print stickers.');
+      return;
+    }
+    win.document.open();
+    win.document.write(sheetHTML);
+    win.document.close();
+    closeModalEl('modal-qr-print-picker');
+    showToast('Sticker sheet ready \u2014 tap Print');
+  });
+}
+
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c){
+    return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+  });
+}
+
 // ── Deep link handler: open specific hive on load ──
 // 1 May 2026 Phase 4bz — scan QR → land in inspect mode (was: hive detail).
 // Matches Chris's stated workflow: walk up to hive, scan, log. The previous
@@ -22427,7 +22666,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:35 1 May 2026 BST · Phase 4ca — in-app QR scanner + sticker-ready saved image. Two changes: (1) new "Scan QR" button on the inspect screen empty state alongside "Choose a hive". Opens a camera viewfinder modal (jsQR via CDN), live-scans frames, and on a successful HiveKeeper QR decode jumps straight into inspecting that hive (switches apiary if needed). Avoids the Safari bounce when scanning with the native camera \u2014 keeps users inside the app, which Universal Links would also fix but that is a multi-day separate task. Camera permission denial shows a friendly message with "Pick from list instead" fallback. (2) saveQRImage now generates a sticker-ready 360x460 PNG with HiveKeeper wordmark on top and hive name on bottom. The on-screen modal canvas stays clean (just the QR). Stops users sticking the wrong code to the wrong hive \u2014 visual name on the sticker is a safety net before scanning.';
+var HIVEKEEPER_BUILD = '11:38 1 May 2026 BST · Phase 4cb — bulk QR sticker printing in Settings, replacing per-hive QR display buttons. THREE changes: (1) New Settings entry "Print hive QR stickers" opens a picker modal listing all active hives grouped by apiary. Bulk-select buttons (All apiaries / This apiary only / None). Tap Generate sticker sheet \u2192 print preview window opens with 6 stickers per A4 page laid out for cutting (HiveKeeper wordmark + QR + hive name). User taps Print \u2192 OS print dialog. Scales to 24+ hives without per-hive friction \u2014 the original ask. (2) Removed the "QR for this hive" button from inspect screen (was Phase 4bz/4ca). (3) Removed the "QR" button from hive detail screen header. Both replaced by Settings as the single QR-generation path. Inspect screen still has "Scan QR" (different action: read, not write). The dead openQRForCurrentHive / openQRModal / openQRModalFromInspect functions are kept in place because their cost is zero and they make potential future "reprint just this one" features trivial to add.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
