@@ -13562,8 +13562,10 @@ renderDashboard = function() {
 var calYear = new Date().getFullYear();
 var calMonth = new Date().getMonth(); // 0-indexed
 
-// Seed last inspection as 31 March 2026
-const LAST_APIARY_INSP = new Date(2026, 2, 31); // month is 0-indexed
+// 1 May 2026 Phase 4bw — removed hardcoded LAST_APIARY_INSP = 31 March 2026
+// placeholder. Calendar now computes the real most-recent inspection date
+// per apiary from loadInspections(). Window calculation, due-hives list,
+// and last-inspection summary all use the computed value.
 
 function calPrevMonth() {
   calMonth--;
@@ -13582,7 +13584,26 @@ function renderCalendar() {
   document.getElementById('cal-year').textContent = calYear;
 
   const today = new Date();
-  const inspections = loadInspections();
+  // 1 May 2026 Phase 4bw — calendar now scopes to current apiary. Previously
+  // showed all inspections globally regardless of which apiary the user was
+  // viewing, so switching apiary had no visible effect on the calendar.
+  const allInspections = loadInspections();
+  const currentApiaryHives = loadHives().filter(function(h){ return h.apiaryId === currentApiaryId; });
+  const currentApiaryHiveIds = currentApiaryHives.map(function(h){ return h.id; });
+  const inspections = allInspections.filter(function(i){ return currentApiaryHiveIds.indexOf(i.hiveId) !== -1; });
+
+  // Compute the real last inspection date for THIS apiary. Phase 4bw —
+  // replaced the hardcoded LAST_APIARY_INSP = 31 March 2026 placeholder
+  // which had been frozen since the calendar was first built and was
+  // making the inspection window forever sit in early April.
+  var apiaryLastInsp = null;
+  if (inspections.length) {
+    var latestTs = inspections.reduce(function(max, i){
+      var t = i.inspectedAt || (i.date ? new Date(i.date).getTime() : 0);
+      return t > max ? t : max;
+    }, 0);
+    if (latestTs) apiaryLastInsp = new Date(latestTs);
+  }
 
   // Build set of inspection dates: "YYYY-MM-DD"
   const inspDates = {};
@@ -13590,11 +13611,9 @@ function renderCalendar() {
     const d = new Date(insp.inspectedAt);
     const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     if (!inspDates[key]) inspDates[key] = [];
-    const hive = loadHives().find(h => h.id === insp.hiveId);
+    const hive = currentApiaryHives.find(h => h.id === insp.hiveId);
     inspDates[key].push(hive ? hive.name : 'Unknown hive');
   });
-  // Also mark the real last inspection 31 March
-  inspDates['2026-03-31'] = inspDates['2026-03-31'] || ['Apiary inspection (31 Mar)'];
 
   // First day of month (adjust so Monday = 0)
   const firstDay = new Date(calYear, calMonth, 1);
@@ -13647,12 +13666,17 @@ function renderCalendar() {
     if (hasInsp) cls += ' has-inspection';
     var dots = '';
     if (!hasInsp) {
-      // Inspection window: 7-10 days after last inspection
-      var windowStart = new Date(LAST_APIARY_INSP);
-      windowStart.setDate(windowStart.getDate() + 7);
-      var windowEnd = new Date(LAST_APIARY_INSP);
-      windowEnd.setDate(windowEnd.getDate() + 10);
-      var inWindow = (thisDate >= windowStart && thisDate <= windowEnd);
+      // Inspection window: 7-10 days after last inspection in THIS apiary.
+      // Phase 4bw — only show the window if there's a real last inspection;
+      // skip entirely for new apiaries with no history.
+      var inWindow = false;
+      if (apiaryLastInsp) {
+        var windowStart = new Date(apiaryLastInsp);
+        windowStart.setDate(windowStart.getDate() + 7);
+        var windowEnd = new Date(apiaryLastInsp);
+        windowEnd.setDate(windowEnd.getDate() + 10);
+        inWindow = (thisDate >= windowStart && thisDate <= windowEnd);
+      }
       if (inWindow) {
         cls += ' inspect-window';
       } else if (isFuture && inSeason) {
@@ -13675,11 +13699,18 @@ function renderCalendar() {
   // Render due hives list
   renderDueHives();
 
-  // Render last inspection summary
-  const daysSince = Math.floor((today - LAST_APIARY_INSP) / 86400000);
+  // Render last inspection summary — Phase 4bw uses the real date for this
+  // apiary instead of the frozen 31-March hardcoded text.
   const lastInspEl = document.getElementById('last-insp-summary');
   if (lastInspEl) {
-    lastInspEl.textContent = '31 March 2026 (' + daysSince + ' days ago). ' + (daysSince > 10 ? 'Inspections are overdue for most active colonies.' : 'Within the 10-day recommended window.');
+    if (apiaryLastInsp) {
+      var daysSince = Math.floor((today - apiaryLastInsp) / 86400000);
+      var dateText = apiaryLastInsp.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      var status = daysSince > 10 ? 'Inspections are overdue for this apiary.' : (daysSince >= 7 ? 'Within the recommended 7\u201310 day window.' : 'Recently inspected.');
+      lastInspEl.textContent = dateText + ' (' + daysSince + ' day' + (daysSince === 1 ? '' : 's') + ' ago). ' + status;
+    } else {
+      lastInspEl.textContent = 'No inspections logged for this apiary yet.';
+    }
   }
 }
 
@@ -13835,7 +13866,11 @@ function buildMarch31Cards() {
 }
 
 function renderDueHives() {
-  var hives = loadHives().filter(h => h.status === 'active');
+  // 1 May 2026 Phase 4bw — scope to current apiary (was global). Drop the
+  // fake "31 March 2026" fallback for hives with no inspection history;
+  // those hives now show "Never inspected" rather than getting an
+  // invented date that polluted the sort order.
+  var hives = loadHives().filter(function(h){ return h.status === 'active' && h.apiaryId === currentApiaryId; });
   const inspections = loadInspections();
   const today = new Date();
   const month = today.getMonth() + 1;
@@ -13843,16 +13878,30 @@ function renderDueHives() {
 
   const dueList = hives.map(h => {
     const latest = inspections.filter(i => i.hiveId === h.id).sort((a,b) => b.inspectedAt - a.inspectedAt)[0];
-    // Use 31 March as last inspection if no newer one exists
-    const lastDate = latest ? new Date(latest.inspectedAt) : LAST_APIARY_INSP;
+    if (!latest) return { hive: h, days: null, overdue: false, neverInspected: true };
+    const lastDate = new Date(latest.inspectedAt);
     const days = Math.floor((today - lastDate) / 86400000);
-    return { hive: h, days, overdue: days > threshold };
-  }).sort((a,b) => b.days - a.days);
+    return { hive: h, days, overdue: days > threshold, neverInspected: false };
+  }).sort(function(a, b){
+    // Never-inspected sort to the top (most needing attention)
+    if (a.neverInspected && !b.neverInspected) return -1;
+    if (!a.neverInspected && b.neverInspected) return 1;
+    if (a.neverInspected && b.neverInspected) return 0;
+    return b.days - a.days;
+  });
 
   const container = document.getElementById('due-hives-list');
   if (!container) return;
 
+  if (!dueList.length) {
+    container.innerHTML = '<div style="padding:12px;color:var(--text-l);font-size:13px;font-style:italic;">No active hives in this apiary.</div>';
+    return;
+  }
+
   container.innerHTML = dueList.map(item => {
+    if (item.neverInspected) {
+      return '<div class="due-hive-row"><div class="due-hive-name">' + item.hive.name + '</div><div class="due-days overdue">Never inspected</div></div>';
+    }
     const cls = item.days > threshold * 1.5 ? 'overdue' : item.days > threshold ? 'due-soon' : 'on-track';
     const label = item.days > threshold ? item.days + 'd overdue' : item.days + 'd ago';
     return '<div class="due-hive-row"><div class="due-hive-name">' + item.hive.name + '</div><div class="due-days ' + cls + '">' + label + '</div></div>';
@@ -18826,6 +18875,12 @@ function switchApiary(id) {
   renderDashboard();
   renderApiary();
   renderMap();
+  // 1 May 2026 Phase 4bw — calendar is now apiary-scoped, so it must
+  // re-render when apiary switches. Without this, switching apiary while
+  // viewing the calendar leaves it showing the previous apiary's data.
+  if (currentScreen === 's-calendar') {
+    try { renderCalendar(); renderSeasonalTips(); } catch(e) { console.warn('Calendar re-render after apiary switch failed:', e); }
+  }
   // Leaflet map needs a FULL rebuild for the new apiary: different GPS origin,
   // different saved centre/zoom, potentially different bearing. Rather than try
   // to patch the existing map, we re-run initLeafletMap which cleanly disposes
@@ -21904,7 +21959,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:10 30 April 2026 BST · Phase 4bv — fix multiple-Meadowbrook bug. The seeded demo apiary used ID `apiary_meadowbrook` (no `demo-` prefix), so the sync push filter missed it; apiary pushed to cloud and re-pulled on every device login, accumulating duplicates over time. THREE changes: (1) push filter now explicitly excludes `apiary_meadowbrook` ID. (2) one-shot client cleanup runs on every device boot, removes Meadowbrook + demo hives + child records from localStorage; gated by hk_meadowbrook_cleanup_done flag (added to keysToKeep). (3) phase4bv-cleanup.sql DELETE statements remove existing Meadowbrook records from cloud across all users so they cannot re-pull. Run SQL FIRST then push code, otherwise pull races client cleanup.';
+var HIVEKEEPER_BUILD = '10:25 1 May 2026 BST · Phase 4bw — calendar inspection window fix. Calendar was using a hardcoded LAST_APIARY_INSP = 31 March 2026 placeholder dating from when the calendar feature was first built; never wired to real data. So the inspection window had been stuck showing 7-14 April 2026 for a month. Five fixes in one phase: (1) compute real last-inspection date per current apiary, (2) scope calendar inspection dots to current apiary not global, (3) drop fake "Apiary inspection (31 Mar)" hardcoded entry, (4) renderDueHives scoped to apiary + drops fake fallback for never-inspected hives (now shows "Never inspected" sorted to top), (5) switchApiary triggers calendar re-render if user is on calendar screen. LAST_APIARY_INSP constant deleted.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
