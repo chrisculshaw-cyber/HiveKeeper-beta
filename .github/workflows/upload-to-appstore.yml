@@ -19,6 +19,6 @@ jobs:
         run: |
           xcrun altool --upload-app \
             --type ios \
-            --file "App (1).ipa" \
+            --file "App (2).ipa" \
             --apiKey "${{ secrets.APP_STORE_KEY_ID }}" \
             --apiIssuer "${{ secrets.APP_STORE_ISSUER_ID }}"
