@@ -3796,18 +3796,14 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- DIAGNOSTIC LOG — export for troubleshooting (23 April 2026) -->
       <button onclick="downloadHkLog()" id="hk-log-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">📋 Download diagnostic log</button>
 
-      <!-- DATA EXPORT (3 May 2026 Phase 4ce) — your data, downloadable as JSON.
-           Pulls from Supabase (canonical copy) across all tables. -->
-      <button onclick="exportMyData()" id="export-data-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">⬇ Export my data (JSON)</button>
+      <!-- 3 May 2026 Phase 4ce — Export my data and Delete account moved to
+           the Data modal (Settings → Data pill). Export sits in the Export
+           section; Delete sits in Danger zone alongside Start fresh. Keeps
+           irreversible/data-related actions grouped consistently rather than
+           scattered across Settings root. -->
 
       <!-- SIGN OUT (kept visible — one tap always) -->
       <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
-
-      <!-- DELETE ACCOUNT (3 May 2026 Phase 4ce) — soft-delete with 30-day grace.
-           Worker endpoint /delete-account marks the profile; a separate cron
-           hard-deletes after 30 days (next phase). User signs back in within
-           grace period to restore. -->
-      <button onclick="openDeleteAccountModal()" id="delete-account-btn" style="width:100%;background:transparent;border:1px solid #888;border-radius:var(--rs);padding:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:#888;cursor:pointer;margin-bottom:8px;">Delete account</button>
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
 
@@ -20423,7 +20419,7 @@ function openAccountModal() {
     + '<div style="font-size:11px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Danger zone</div>'
     + '<button onclick="closeModalEl(\'modal-account\');setTimeout(openDeleteAccountModal,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDDD1\uFE0F</span>'
-      + '<span style="flex:1;">Delete my account<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Permanently erase your account and all data</div></span>'
+      + '<span style="flex:1;">Delete my account<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Saved for 30 days then permanently deleted. Sign back in within 30 days to restore.</div></span>'
     + '</button>'
 
     + '<button onclick="closeToSettings(\'modal-account\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>';
@@ -20825,9 +20821,16 @@ function openDataModal() {
       + '<span style="font-size:20px;">\uD83D\uDCCB</span>'
       + '<span style="flex:1;">Export all data to CSV<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Full CSV of everything — inspections, hives, apiaries</div></span>'
     + '</button>'
-    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:20px;text-align:left;display:flex;align-items:center;gap:10px;">'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportBeeBase,200);" style="width:100%;background:transparent;border:1px solid var(--honey);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDCD1</span>'
       + '<span style="flex:1;">Export to BeeBase / NBU format<div style="font-size:10px;font-weight:400;color:#B6821F;margin-top:2px;">For Regional Bee Inspector compliance</div></span>'
+    + '</button>'
+    // 3 May 2026 Phase 4ce — moved from Settings root to the Data modal
+    // Export section. Pulls the canonical copy from Supabase across 18 tables
+    // (not the localStorage cache), bundles into a single timestamped JSON.
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(exportMyData,200);" id="export-data-btn" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:20px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\u2B07\uFE0F</span>'
+      + '<span style="flex:1;">Export everything as JSON<div style="font-size:10px;font-weight:400;color:var(--text-l);margin-top:2px;">Full account export pulled live from the cloud — your data, in one file</div></span>'
     + '</button>'
 
     // === RECOVERY ===
@@ -20839,9 +20842,16 @@ function openDataModal() {
 
     // === DANGER ZONE ===
     + '<div style="font-size:11px;font-weight:800;color:#B83228;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Danger zone</div>'
-    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openConfirmWipe,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openConfirmWipe,200);" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">'
       + '<span style="font-size:20px;">\uD83D\uDD04</span>'
       + '<span style="flex:1;">Start fresh — clear all data<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Requires typed confirmation. Cannot be undone.</div></span>'
+    + '</button>'
+    // 3 May 2026 Phase 4ce — moved from Settings root to Data modal Danger zone
+    // alongside other irreversible actions. Soft-delete with 30-day grace period
+    // — the modal makes the recovery window explicit so users don't panic.
+    + '<button onclick="closeModalEl(\'modal-data\');setTimeout(openDeleteAccountModal,200);" id="delete-account-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:16px;text-align:left;display:flex;align-items:center;gap:10px;">'
+      + '<span style="font-size:20px;">\uD83D\uDDD1\uFE0F</span>'
+      + '<span style="flex:1;">Delete my account<div style="font-size:10px;font-weight:400;color:#B83228;opacity:.8;margin-top:2px;">Saved for 30 days then permanently deleted. Sign back in within 30 days to restore.</div></span>'
     + '</button>'
 
     + '<button onclick="closeToSettings(\'modal-data\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
@@ -23057,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:45 3 May 2026 BST · Phase 4ce — first post-launch consolidation release. Stripe upgrade flow disabled and replaced with trial-aware messaging (upgrades reopen via App Store / Google Play once IAP / Play Billing ship in Phase 3d) — protects against App Store / Play Store policy violation while paid users don\'t exist yet. Account deletion added: soft-delete with 30-day grace period via worker /delete-account endpoint, restore prompt on sign-in if account is in grace, modal in Settings with clear "your data will be saved for 30 days" wording. Worker side adds /delete-account, /restore-account, /check-account-status, /admin-stats endpoints (deploy phase4ce-worker-additions.js); Supabase migration adds profiles.deleted_at column (run phase4ce-soft-delete-migration.sql first). Data export added: Settings → Export my data (JSON) pulls from 18 Supabase tables filtered by user_id, downloads as hivekeeper-export-YYYYMMDD.json. Trial benefits block on auth screen lists what new users get for 14 days — 6 grouped categories sourced from canonical pricing comparison table; SOS deliberately listed under Always Free (lone working with bees has real risks — paywalling SOS would be wrong). Admin dashboard (Settings ×3 tap, Chris-only) now calls worker /admin-stats for ground-truth auth.users counts: Total / Confirmed / Last 24h / Last 5d / Last 30d / Soft-deleted, plus 5-day daily breakdown table with confirmation rate per day, profile/auth gap warning if signup trigger drops rows. Admin endpoint authenticated server-side via email allowlist — client-side gating is UI only, security boundary is in the worker. QR sticker picker now highlights selected rows with honey-tinted background and green tick. Asian Hornet sightings list has a bottom Close button. Help icon added to hive detail screen. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '23:25 3 May 2026 BST · Phase 4ce-3 — post-deploy hotfix. CORS preflight Allow-Headers now includes Authorization (was Content-Type, Stripe-Signature only). Without this, browsers silently rejected the POST for /admin-stats, /delete-account, /restore-account, /check-account-status — all four send Authorization: Bearer. Symptom in admin dashboard was "Auth ground-truth unavailable (worker /admin-stats not reachable)" with falling-back-to-profiles legacy view. Same root cause would have caused soft-delete and account-status check to fail silently for all users. Apiary name on s-apiary header now updates when switching apiary — function updateApiaryNameDisplays previously referenced apiary-screen-title which doesn\'t exist; the actual elements are apiary-hdr-name (the pill) and apiary-screen-title-hdr (the larger title). isAdminUser allowlist tightened: chris@culshaw.consulting removed from both server-side ADMIN_EMAILS and client-side isAdminUser so the trial account experiences the app as a normal user. Export my data moved from Settings root to Data modal Export section (alongside CSV and BeeBase exports). Delete account moved from Settings root to Data modal Danger zone (alongside Start fresh — clear all data). Settings root now cleaner — diagnostic log + sign out only. Phase 4ce baseline shipped: Stripe disabled, soft-delete with 30-day grace, /admin-stats endpoint, trial benefits panel on auth screen, QR picker visual selection, AH sightings close button. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26127,6 +26137,18 @@ function updateApiaryNameDisplays() {
     if (textSpan) textSpan.textContent = name;
     else if (nameDisplay.childNodes[0]) nameDisplay.childNodes[0].textContent = name;
   }
+  // 3 May 2026 Phase 4ce-3 — fix apiary-screen title not updating on switch.
+  // The s-apiary header has TWO name elements: apiary-hdr-name (the pill at
+  // the top) and apiary-screen-title-hdr (the bigger title beneath). Neither
+  // was in this function previously, so switching apiary while ON the apiary
+  // screen left both showing the old name. The legacy 'apiary-screen-title'
+  // and 'apiary-switcher-name' references are kept defensively in case some
+  // other screen still uses those IDs.
+  var hdrName = document.getElementById('apiary-hdr-name');
+  if (hdrName) hdrName.textContent = name;
+  var hdrTitle = document.getElementById('apiary-screen-title-hdr');
+  if (hdrTitle) hdrTitle.textContent = name;
+
   var screenTitle = document.getElementById('apiary-screen-title');
   if (screenTitle) screenTitle.textContent = name;
   var switcherName = document.getElementById('apiary-switcher-name');
@@ -26212,9 +26234,11 @@ var _adminTargetEmail = null;
 var _adminSnapshot = null; // snapshot of own data before entering admin mode
 
 function isAdminUser() {
+  // 3 May 2026 Phase 4ce — chris@culshaw.consulting deliberately removed
+  // from this list so the trial account experiences the app as a normal
+  // user does. Server-side allowlist in worker /admin-stats matches.
   return _currentUser && (
     _currentUser.email === 'chris.culshaw@gethivekeeper.com' ||
-    _currentUser.email === 'chris@culshaw.consulting' ||
     _currentUser.email === 'chris.culshaw@gmail.com'
   );
 }
