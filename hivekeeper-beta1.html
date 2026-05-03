@@ -1951,6 +1951,39 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
+  <!-- TRIAL BENEFITS — 3 May 2026 Phase 4ce.
+       Visible under the auth form on both Sign in and Create account tabs.
+       Tells new users what they actually get during the 14-day Pro trial.
+       Grouped categories with concrete numbers — pulled from the canonical
+       pricing comparison table (line ~30463) so it stays in sync. Listing
+       genuinely-existing features only — nothing aspirational. -->
+  <div class="hk-auth-fadein-3" style="position:relative;width:100%;max-width:360px;margin-top:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:16px 18px;z-index:1;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <div style="font-size:20px;line-height:1;">🐝</div>
+      <div style="font-size:14px;font-weight:800;color:white;letter-spacing:.02em;">Try Pro free for 14 days</div>
+    </div>
+    <div style="font-size:11.5px;color:rgba(255,255,255,.92);line-height:1.65;">
+      <div style="margin-bottom:8px;"><span style="color:#F4D03F;font-weight:800;">Scale</span> &middot; up to 5 apiaries, 50 hives, full inspection history</div>
+      <div style="margin-bottom:8px;"><span style="color:#F4D03F;font-weight:800;">AI</span> &middot; 100 chats/day, unlimited frame photo analysis, Asian Hornet identifier</div>
+      <div style="margin-bottom:8px;"><span style="color:#F4D03F;font-weight:800;">Field</span> &middot; unlimited voice inspections, expanded photo storage (10 per hive)</div>
+      <div style="margin-bottom:8px;"><span style="color:#F4D03F;font-weight:800;">Share</span> &middot; let mentors and partners help inspect your apiaries</div>
+      <div style="margin-bottom:8px;"><span style="color:#F4D03F;font-weight:800;">Reports</span> &middot; CSV exports, NBU/BeeBase return, calendar sync, hive health trends</div>
+      <div><span style="color:#F4D03F;font-weight:800;">Tools</span> &middot; bulk QR sticker printing, in-app scanner, marketplace buy &amp; sell, no ads</div>
+    </div>
+    <!-- ALWAYS FREE — 3 May 2026 Phase 4ce.
+         Balances the Pro trial pitch by listing what users keep forever
+         after their 14 days expire. Concrete numbers (3 voice/3 AI photo
+         per month, 5 AI chat/day) match FREE_LIMITS in code. Asian Hornet
+         alerts, SOS, and offline use are not tier-gated — listed here so
+         users know they keep these regardless. Visual separator (top border)
+         distinguishes from the trial benefits without competing for
+         attention. -->
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.78);line-height:1.6;">
+      <span style="color:#A8D5A8;font-weight:800;">Always free</span> &middot; 3 hives, 1 apiary, 3 voice + 3 AI photo analyses per month, 5 AI chats per day, Asian Hornet alerts, lone-worker SOS, full offline use
+    </div>
+    <div style="font-size:10.5px;color:rgba(255,255,255,.55);margin-top:12px;line-height:1.5;">No card needed. After 14 days, keep using Free forever &mdash; or upgrade via the App Store or Google Play.</div>
+  </div>
+
   <!-- Error / status message -->
   <div id="auth-error" style="margin-top:14px;font-size:13px;font-weight:700;color:white;text-align:center;max-width:360px;line-height:1.5;background:rgba(183,28,28,.5);border-radius:10px;padding:10px 14px;display:none;border:1px solid rgba(255,100,100,.4);position:relative;z-index:1;"></div>
 
@@ -2695,6 +2728,7 @@ input[type="checkbox"].hk-chk:checked::after {
           <div class="hk-hdr-title" id="hive-detail-name">Hive</div>
           <div class="hk-hdr-title-sub" id="hive-detail-meta">Loading...</div>
         </div>
+        <div class="hk-hdr-help" onclick="showHelp('hive-detail')" title="What's on the hive detail screen?">?</div>
       </div>
       <div class="hk-hdr-context" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <!-- 1 May 2026 Phase 4cb — QR button removed. Per-hive QR generation
@@ -3762,8 +3796,18 @@ input[type="checkbox"].hk-chk:checked::after {
       <!-- DIAGNOSTIC LOG — export for troubleshooting (23 April 2026) -->
       <button onclick="downloadHkLog()" id="hk-log-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">📋 Download diagnostic log</button>
 
+      <!-- DATA EXPORT (3 May 2026 Phase 4ce) — your data, downloadable as JSON.
+           Pulls from Supabase (canonical copy) across all tables. -->
+      <button onclick="exportMyData()" id="export-data-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">⬇ Export my data (JSON)</button>
+
       <!-- SIGN OUT (kept visible — one tap always) -->
       <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
+
+      <!-- DELETE ACCOUNT (3 May 2026 Phase 4ce) — soft-delete with 30-day grace.
+           Worker endpoint /delete-account marks the profile; a separate cron
+           hard-deletes after 30 days (next phase). User signs back in within
+           grace period to restore. -->
+      <button onclick="openDeleteAccountModal()" id="delete-account-btn" style="width:100%;background:transparent;border:1px solid #888;border-radius:var(--rs);padding:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:#888;cursor:pointer;margin-bottom:8px;">Delete account</button>
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
 
@@ -3774,6 +3818,40 @@ input[type="checkbox"].hk-chk:checked::after {
         <span style="font-size:9px;font-weight:800;letter-spacing:.08em;color:var(--text-l);opacity:0.7;">BUILD</span>
         <span id="settings-build-version-text" style="display:block;margin-top:3px;color:var(--text);font-size:12px;font-weight:700;"></span>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DELETE ACCOUNT (3 May 2026 Phase 4ce) -->
+  <!-- Soft-delete with 30-day grace. Worker call /delete-account, then sign user out. -->
+  <div class="modal-overlay" id="modal-delete-account" onclick="closeModal(event,'modal-delete-account')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="modal-title" style="color:#B83228;">Delete your account?</div>
+        <div onclick="closeModalEl('modal-delete-account')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div style="background:#FBEFE8;border:1px solid #E8C0B8;border-radius:var(--rs);padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6;color:#412402;">
+        <div style="font-weight:700;margin-bottom:8px;">Your data will be saved for 30 days.</div>
+        <div>If you change your mind, sign in again within 30 days and you'll be able to restore everything in one tap. After 30 days, your account, hives, inspections, photos and all related data are permanently deleted.</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-l);margin-bottom:14px;line-height:1.5;">We'll email you a confirmation with the exact restore deadline.</div>
+      <button onclick="confirmDeleteAccount()" id="delete-account-confirm-btn" style="width:100%;background:#B83228;border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Yes, delete my account</button>
+      <button onclick="closeModalEl('modal-delete-account')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel — keep my account</button>
+    </div>
+  </div>
+
+  <!-- MODAL: RESTORE ACCOUNT (3 May 2026 Phase 4ce) -->
+  <!-- Shown automatically on sign-in if account is in soft-delete grace period. -->
+  <div class="modal-overlay" id="modal-restore-account">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div class="modal-title" style="color:var(--forest);margin-bottom:8px;">Welcome back</div>
+      <div style="background:#FAEEDA;border:1px solid #E4A33A;border-radius:var(--rs);padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6;color:#412402;">
+        <div style="font-weight:700;margin-bottom:8px;">Your account is scheduled for deletion.</div>
+        <div id="restore-account-details">Your account will be permanently deleted in <span id="restore-days-remaining">—</span> days. Restore now to keep your hives, inspections and everything else.</div>
+      </div>
+      <button onclick="confirmRestoreAccount()" id="restore-account-confirm-btn" style="width:100%;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">Restore my account</button>
+      <button onclick="signOutFromRestoreModal()" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:Syne,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Not now — sign out</button>
     </div>
   </div>
 
@@ -17508,6 +17586,15 @@ function renderAsianHornetWatch(lat, lng) {
       +(AH_LIVE_FETCHED
         ? 'Data: <a href="https://www.google.com/maps/d/viewer?mid=1BGAdYHaIszxPKWrjX8dASHpU8mN-_2HV" target="_blank" rel="noopener noreferrer">Community-curated Asian Hornet Map UK</a>, sourced from BBKA / National Bee Unit rolling updates. Live \u2014 refreshed hourly. Peak risk: August\u2013October.'
         : 'Data: NBU confirmed sightings (cached). Live data will load when online. Peak risk: August\u2013October.')
+    +'</div>'
+    // 3 May 2026 Phase 4ce — bottom Close button. Weekend feedback:
+    // "When you open the list of Asian hornet sightings, there is no way
+    // to minimise it." The toggle arrow at the top of the card disappears
+    // off-screen once the user has scrolled through sightings. A close
+    // button at the bottom matches mobile-app convention and keeps the
+    // collapse action discoverable wherever the user is in the list.
+    +'<div style="padding:14px 16px 16px;text-align:center;border-top:1px solid var(--wax);background:var(--cream);">'
+      +'<button onclick="toggleAHPanel();window.scrollTo({top:document.getElementById(\'ah-banner\').offsetTop-20,behavior:\'smooth\'});" style="background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px 24px;font-family:Syne,sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">&#x25B2; Close sightings list</button>'
     +'</div>';
 
   var ahContent = document.getElementById('ah-content');
@@ -18281,6 +18368,13 @@ function _qrPrintBuildList() {
     if (!byApiary[key]) byApiary[key] = [];
     byApiary[key].push(h);
   });
+  // 3 May 2026 Phase 4ce — visual row highlight for selected hives.
+  // Native checkboxes render subtly on iOS WKWebView (Median wrapper);
+  // user feedback over the weekend was "no indication that you've
+  // selected an option and you don't get any ticks when selecting 1
+  // hive." Adding a row-level honey background + bold text for
+  // selected rows + a green tick character makes the state obvious
+  // even when the small native checkbox glyph is hard to see.
   var html = '';
   apiaries.forEach(function(a){
     var inApiary = byApiary[a.id] || [];
@@ -18288,10 +18382,12 @@ function _qrPrintBuildList() {
     var checkedDefault = (a.id === currentApiaryId) ? ' checked' : '';
     html += '<div style="padding:8px 12px;font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;background:var(--honey-pale);border-bottom:1px solid var(--wax);">' + (a.name || 'Apiary') + '</div>';
     inApiary.forEach(function(h){
-      html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:13px;color:var(--text);">'
-        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '"' + checkedDefault + ' onchange="_qrPrintUpdateCount()" style="width:18px;height:18px;accent-color:var(--honey);flex-shrink:0;">'
-        + '<span style="flex:1;">' + (h.name || 'Hive') + '</span>'
+      var selectedClass = checkedDefault ? ' qr-print-row-selected' : '';
+      html += '<label class="qr-print-row' + selectedClass + '" data-row-hid="' + h.id + '" style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:14px;color:var(--text);transition:background .15s;">'
+        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '"' + checkedDefault + ' onchange="_qrPrintUpdateCount();_qrPrintRowState(this)" style="width:22px;height:22px;accent-color:var(--honey);flex-shrink:0;">'
+        + '<span class="qr-print-row-name" style="flex:1;font-weight:600;">' + (h.name || 'Hive') + '</span>'
         + '<span style="font-size:11px;color:var(--text-l);">' + (h.row || '') + '</span>'
+        + '<span class="qr-print-row-tick" style="font-size:18px;color:var(--forest);font-weight:800;display:' + (checkedDefault ? 'inline' : 'none') + ';">&#x2713;</span>'
         + '</label>';
     });
   });
@@ -18300,14 +18396,33 @@ function _qrPrintBuildList() {
   if (unassigned.length) {
     html += '<div style="padding:8px 12px;font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;background:#f5f5f5;border-bottom:1px solid var(--wax);">Not in an apiary</div>';
     unassigned.forEach(function(h){
-      html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:13px;color:var(--text);">'
-        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '" onchange="_qrPrintUpdateCount()" style="width:18px;height:18px;accent-color:var(--honey);flex-shrink:0;">'
-        + '<span style="flex:1;">' + (h.name || 'Hive') + '</span>'
+      html += '<label class="qr-print-row" data-row-hid="' + h.id + '" style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--wax);cursor:pointer;font-size:14px;color:var(--text);transition:background .15s;">'
+        + '<input type="checkbox" class="qr-print-check" data-hid="' + h.id + '" onchange="_qrPrintUpdateCount();_qrPrintRowState(this)" style="width:22px;height:22px;accent-color:var(--honey);flex-shrink:0;">'
+        + '<span class="qr-print-row-name" style="flex:1;font-weight:600;">' + (h.name || 'Hive') + '</span>'
+        + '<span class="qr-print-row-tick" style="font-size:18px;color:var(--forest);font-weight:800;display:none;">&#x2713;</span>'
         + '</label>';
     });
   }
   listEl.innerHTML = html;
   _qrPrintUpdateCount();
+}
+
+// 3 May 2026 Phase 4ce — toggle row-selected styling and tick visibility.
+// Called from each checkbox's onchange so visual state matches the input
+// state even if the user uses keyboard space-bar or some other path.
+function _qrPrintRowState(checkbox) {
+  var label = checkbox.closest('.qr-print-row');
+  if (!label) return;
+  var tick = label.querySelector('.qr-print-row-tick');
+  if (checkbox.checked) {
+    label.style.background = 'var(--honey-pale, #FAEEDA)';
+    label.classList.add('qr-print-row-selected');
+    if (tick) tick.style.display = 'inline';
+  } else {
+    label.style.background = '';
+    label.classList.remove('qr-print-row-selected');
+    if (tick) tick.style.display = 'none';
+  }
 }
 
 function _qrPrintUpdateCount() {
@@ -18327,7 +18442,10 @@ function _qrPrintUpdateCount() {
 }
 
 function qrPrintSelectAll() {
-  document.querySelectorAll('.qr-print-check').forEach(function(c){ c.checked = true; });
+  document.querySelectorAll('.qr-print-check').forEach(function(c){
+    c.checked = true;
+    _qrPrintRowState(c);
+  });
   _qrPrintUpdateCount();
 }
 function qrPrintSelectCurrentApiary() {
@@ -18336,11 +18454,15 @@ function qrPrintSelectCurrentApiary() {
     var hid = c.getAttribute('data-hid');
     var h = hives.find(function(x){ return x.id === hid; });
     c.checked = !!(h && h.apiaryId === currentApiaryId);
+    _qrPrintRowState(c);
   });
   _qrPrintUpdateCount();
 }
 function qrPrintSelectNone() {
-  document.querySelectorAll('.qr-print-check').forEach(function(c){ c.checked = false; });
+  document.querySelectorAll('.qr-print-check').forEach(function(c){
+    c.checked = false;
+    _qrPrintRowState(c);
+  });
   _qrPrintUpdateCount();
 }
 
@@ -20914,7 +21036,28 @@ function executeWipe() {
 // This matches the scope required: "user data associated with that app account"
 // per Google Support policy — not just the auth row.
 // ═══════════════════════════════════════════════════════════════
-function openDeleteAccountModal() {
+// ═══════════════════════════════════════════════════════════════════
+// LEGACY HARD-DELETE FLOW — superseded by Phase 4ce soft-delete (3 May 2026).
+//
+// Originally this opened the Delete Account modal with a "type DELETE to
+// confirm" friction step and immediately hard-deleted the user's data
+// (calling a Supabase Edge Function `delete-user-account` that may not
+// even exist on the deployed project — note the catch-and-warn at
+// line ~21108). No grace period meant accidental taps were unrecoverable.
+//
+// Phase 4ce replaces this with a soft-delete + 30-day grace period via
+// a worker endpoint /delete-account that sets profiles.deleted_at. The
+// new flow is at the bottom of this script (~line 21815) under the
+// canonical name openDeleteAccountModal. The Settings button calls THAT.
+// This _legacy version is renamed so it doesn't shadow the new one
+// (JavaScript would otherwise use whichever was defined later).
+//
+// Helpers updateDeleteAccountButton and executeDeleteAccount are also
+// dead — only referenced from this _legacy modal renderer. Kept in
+// place rather than deleted to keep the change footprint small for the
+// 3 May 2026 release. Remove in a future cleanup phase.
+// ═══════════════════════════════════════════════════════════════════
+function openDeleteAccountModal_legacy() {
   var sheet = document.querySelector('#modal-delete-account .modal-sheet');
   if (!sheet) return;
   var userEmail = (typeof _currentUser !== 'undefined' && _currentUser) ? _currentUser.email || '' : 'your account';
@@ -21368,6 +21511,11 @@ async function onAuthSuccess() {
   // Now initCurrentApiary with fresh cloud data
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
 
+  // 3 May 2026 Phase 4ce — quietly check whether this account is in a
+  // soft-delete grace period. If yes, the function pops the restore modal.
+  // Fire-and-forget so it doesn't block the sign-in render.
+  try { _checkAccountStatusOnSignIn(); } catch(e) {}
+
   // Render with cloud data — but respect any saved screen from before the reload.
   var _savedScreen = null;
   try { _savedScreen = localStorage.getItem('hk_last_screen'); } catch(e) {}
@@ -21683,6 +21831,217 @@ async function authSignOut() {
     _currentSession = null;
     // Force clean reload
     window.location.replace(window.location.href.split('?')[0].split('#')[0]);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHASE 4ce — ACCOUNT DELETION (soft, 30-day grace) + DATA EXPORT
+// ═══════════════════════════════════════════════════════════════════
+// Three flows wired up to the worker endpoints in flat-bird-f269:
+//   1. Delete account     POST /delete-account     (Settings → Delete account)
+//   2. Restore account    POST /restore-account    (sign-in if grace period active)
+//   3. Check status       POST /check-account-status (called on every sign-in)
+// Plus data export: pulls from 18 Supabase tables, builds a JSON, downloads.
+
+var WORKER_BASE = 'https://flat-bird-f269.chris-culshaw.workers.dev';
+
+function openDeleteAccountModal() {
+  closeModalEl('modal-settings');
+  setTimeout(function(){ openModalEl('modal-delete-account'); }, 200);
+}
+
+async function confirmDeleteAccount() {
+  if (!_currentSession || !_currentSession.access_token) {
+    showToast('Please sign in again to delete your account');
+    return;
+  }
+  var btn = document.getElementById('delete-account-confirm-btn');
+  if (btn) { btn.innerHTML = 'Deleting...'; btn.disabled = true; btn.style.opacity = '0.7'; }
+  try {
+    var resp = await fetch(WORKER_BASE + '/delete-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + _currentSession.access_token
+      },
+      body: JSON.stringify({})
+    });
+    var data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error || 'Could not delete account');
+    }
+    closeModalEl('modal-delete-account');
+    alert('Your account is scheduled for deletion.\n\nWe\'ve emailed you a confirmation. Your data will be saved for 30 days — sign in again before then to restore everything.\n\nSigning you out now.');
+    // Sign out without the unsynced-data warning — the user has just chosen to delete
+    try {
+      var sb = getSupabase();
+      await sb.auth.signOut();
+    } catch(e) { console.warn('signOut after delete failed:', e); }
+    _currentUser = null;
+    _currentSession = null;
+    window.location.replace(window.location.href.split('?')[0].split('#')[0]);
+  } catch(err) {
+    console.error('confirmDeleteAccount error:', err);
+    if (btn) { btn.innerHTML = 'Yes, delete my account'; btn.disabled = false; btn.style.opacity = '1'; }
+    showToast('Could not delete account — please try again or email support@gethivekeeper.com');
+  }
+}
+
+async function confirmRestoreAccount() {
+  if (!_currentSession || !_currentSession.access_token) {
+    showToast('Please sign in again to restore your account');
+    return;
+  }
+  var btn = document.getElementById('restore-account-confirm-btn');
+  if (btn) { btn.innerHTML = 'Restoring...'; btn.disabled = true; btn.style.opacity = '0.7'; }
+  try {
+    var resp = await fetch(WORKER_BASE + '/restore-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + _currentSession.access_token
+      },
+      body: JSON.stringify({})
+    });
+    var data = await resp.json();
+    if (!resp.ok) {
+      throw new Error(data.error || 'Could not restore account');
+    }
+    closeModalEl('modal-restore-account');
+    showToast('Welcome back — your account has been restored ✓');
+  } catch(err) {
+    console.error('confirmRestoreAccount error:', err);
+    if (btn) { btn.innerHTML = 'Restore my account'; btn.disabled = false; btn.style.opacity = '1'; }
+    showToast('Could not restore — please try again or email support@gethivekeeper.com');
+  }
+}
+
+async function signOutFromRestoreModal() {
+  closeModalEl('modal-restore-account');
+  try {
+    var sb = getSupabase();
+    await sb.auth.signOut();
+  } catch(e) {}
+  _currentUser = null;
+  _currentSession = null;
+  window.location.replace(window.location.href.split('?')[0].split('#')[0]);
+}
+
+// Called from onAuthSuccess after a successful sign-in. Quietly checks
+// whether this account is in a soft-delete grace period; if so, shows
+// the restore modal. Failures fail open (assume active account).
+async function _checkAccountStatusOnSignIn() {
+  if (!_currentSession || !_currentSession.access_token) return;
+  try {
+    var resp = await fetch(WORKER_BASE + '/check-account-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + _currentSession.access_token
+      },
+      body: JSON.stringify({})
+    });
+    if (!resp.ok) return;
+    var data = await resp.json();
+    if (data && data.active === false && data.daysRemaining != null) {
+      var daysEl = document.getElementById('restore-days-remaining');
+      if (daysEl) daysEl.textContent = data.daysRemaining;
+      setTimeout(function(){ openModalEl('modal-restore-account'); }, 600);
+    }
+  } catch (e) {
+    console.warn('_checkAccountStatusOnSignIn failed (non-fatal):', e);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// DATA EXPORT — pull all user data from Supabase as JSON
+// 18 tables: apiaries, hives, inspections, treatments, varroa_counts,
+// harvests, honey_stock, equipment, inventory_movements, swarm_catches,
+// hive_movements, sprays, landmarks, rows, apiary_shares, referrals,
+// analytics_events, profiles
+// ─────────────────────────────────────────────────────────────
+async function exportMyData() {
+  if (!_currentUser || !_currentSession || !_currentSession.access_token) {
+    showToast('Please sign in to export your data');
+    return;
+  }
+  var btn = document.getElementById('export-data-btn');
+  var originalText = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = 'Exporting...'; btn.disabled = true; btn.style.opacity = '0.7'; }
+
+  try {
+    var sb = getSupabase();
+    var userId = _currentUser.id;
+    // Tables filtered by user_id (most rows). profiles uses id; analytics_events
+    // and apiary_shares need different filters.
+    var tablesByUserId = [
+      'apiaries', 'hives', 'inspections', 'treatments', 'varroa_counts',
+      'harvests', 'honey_stock', 'equipment', 'inventory_movements',
+      'swarm_catches', 'hive_movements', 'sprays', 'landmarks', 'rows',
+      'referrals', 'analytics_events'
+    ];
+
+    var data = {
+      _meta: {
+        exportedAt: new Date().toISOString(),
+        userId: userId,
+        userEmail: _currentUser.email || null,
+        appVersion: (typeof HIVEKEEPER_BUILD !== 'undefined') ? HIVEKEEPER_BUILD : 'unknown',
+        note: 'This is a complete export of your data held by HiveKeeper. You can re-import or archive this file as you wish.'
+      }
+    };
+
+    // profiles uses id (the user's UUID)
+    try {
+      var profileRes = await sb.from('profiles').select('*').eq('id', userId).single();
+      data.profile = profileRes.data || null;
+    } catch (e) {
+      data.profile = { _error: e.message };
+    }
+
+    // Standard tables filtered by user_id
+    for (var i = 0; i < tablesByUserId.length; i++) {
+      var t = tablesByUserId[i];
+      try {
+        var res = await sb.from(t).select('*').eq('user_id', userId);
+        data[t] = res.data || [];
+      } catch (e) {
+        data[t] = { _error: e.message };
+      }
+    }
+
+    // apiary_shares — apiaries the user shares OR is shared with
+    try {
+      var sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_user_id', userId);
+      var sharesAsShared = await sb.from('apiary_shares').select('*').eq('shared_with_user_id', userId);
+      data.apiary_shares = {
+        owned: sharesAsOwner.data || [],
+        shared_with_me: sharesAsShared.data || []
+      };
+    } catch (e) {
+      data.apiary_shares = { _error: e.message };
+    }
+
+    // Build the file
+    var json = JSON.stringify(data, null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    var fileName = 'hivekeeper-export-' + dateStr + '.json';
+
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+
+    if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = '1'; }
+    showToast('Downloaded ' + fileName);
+  } catch (err) {
+    console.error('exportMyData error:', err);
+    if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = '1'; }
+    showToast('Could not export data — please try again or email support@gethivekeeper.com');
   }
 }
 
@@ -22698,7 +23057,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:48 1 May 2026 BST · Phase 4cc — direct PDF download for QR sticker sheet (replaces print-preview window). Uses jsPDF (CDN) to generate a multi-page A4 PDF with 6 stickers per page (2 columns x 3 rows). Each sticker renders the HiveKeeper wordmark, UK BEEKEEPING APP subline, the QR, and the hive name in a dashed cut border. File downloads to the user\'s Downloads folder with name HiveKeeper-QR-stickers-YYYYMMDD-N.pdf; toast confirms with the filename so the user knows it landed. Picker modal copy + button labels updated from "Generate" to "Download" to match the action. No new tab, no print dialog \u2014 user gets a file. Pop-up blocker complications gone (jsPDF triggers a normal anchor download not a window.open). Implementation note: jsPDF\'s addImage uses FAST mode for the QR PNGs which is acceptable since the QRs are already rendered at 300px square \u2014 PDF rendering looks sharp at A4 cell sizes (~70mm).';
+var HIVEKEEPER_BUILD = '12:45 3 May 2026 BST · Phase 4ce — first post-launch consolidation release. Stripe upgrade flow disabled and replaced with trial-aware messaging (upgrades reopen via App Store / Google Play once IAP / Play Billing ship in Phase 3d) — protects against App Store / Play Store policy violation while paid users don\'t exist yet. Account deletion added: soft-delete with 30-day grace period via worker /delete-account endpoint, restore prompt on sign-in if account is in grace, modal in Settings with clear "your data will be saved for 30 days" wording. Worker side adds /delete-account, /restore-account, /check-account-status, /admin-stats endpoints (deploy phase4ce-worker-additions.js); Supabase migration adds profiles.deleted_at column (run phase4ce-soft-delete-migration.sql first). Data export added: Settings → Export my data (JSON) pulls from 18 Supabase tables filtered by user_id, downloads as hivekeeper-export-YYYYMMDD.json. Trial benefits block on auth screen lists what new users get for 14 days — 6 grouped categories sourced from canonical pricing comparison table; SOS deliberately listed under Always Free (lone working with bees has real risks — paywalling SOS would be wrong). Admin dashboard (Settings ×3 tap, Chris-only) now calls worker /admin-stats for ground-truth auth.users counts: Total / Confirmed / Last 24h / Last 5d / Last 30d / Soft-deleted, plus 5-day daily breakdown table with confirmation rate per day, profile/auth gap warning if signup trigger drops rows. Admin endpoint authenticated server-side via email allowlist — client-side gating is UI only, security boundary is in the worker. QR sticker picker now highlights selected rows with honey-tinted background and green tick. Asian Hornet sightings list has a bottom Close button. Help icon added to hive detail screen. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25611,11 +25970,23 @@ function _promptAnnualUpsell(targetTier) {
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
-  // 27 April 2026 Phase 3b — replaces the temporary alert() with the
-  // proper Founder celebration modal (modal-founder). Discoverable,
-  // on-brand, surfaces the voucher reward mechanism (the actual Founder
-  // perk per project memory). Falls back to alert() if modal element
-  // or openModalEl is missing — defensive belt-and-braces.
+  // 3 May 2026 Phase 4ce — Stripe upgrade flow disabled until Apple IAP
+  // and Google Play Billing ship (Phase 3d). Apple's App Store guidelines
+  // and Google Play's payments policy require native in-app purchase
+  // for digital subscriptions; routing users to Stripe in the webview
+  // risked app removal. Replaced with friendly "coming soon" messaging
+  // that respects users currently on trial.
+  //
+  // Founder users keep their celebration modal — they don't pay anyway.
+  // Trial users see how many days remain.
+  // Post-trial Free users see "Upgrade coming soon" with a generous tone.
+  // The function signature is preserved so existing callers (pricing modal
+  // buttons, paywall prompts) continue to work without code changes.
+  // FIXME(phase-3d): when IAP/Play Billing ship, restore the original
+  // checkout flow from restore-point prephase4ce. STRIPE_PRICES,
+  // _promptAnnualUpsell, _resetUpgradeButtons, and openCustomerPortal
+  // remain in place ready for that re-enable.
+
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
     var founderModal = document.getElementById('modal-founder');
     if (founderModal && typeof openModalEl === 'function') {
@@ -25626,105 +25997,25 @@ async function handleUpgrade(targetTier) {
     return;
   }
 
-  // Must be signed in
   if (!_currentUser) {
     showToast('Please sign in to upgrade');
     return;
   }
 
-  // 27 April 2026 Phase 3a-fix — Median (native app wrapper) used to early-
-  // return here with "Use the App Store or Play Store" toast. But Apple IAP
-  // and Google Play Billing aren't built yet (Phase 3d). Blocking Stripe
-  // meant upgrade was IMPOSSIBLE in the app. For beta we let Stripe
-  // checkout proceed in the webview — works fine. For production App
-  // Store / Play Store releases (Phase 3d) this branch will route to
-  // native billing per platform rules. Marker comment so we don't forget.
-  // FIXME(phase-3d): when IAP/Play Billing ship, route Median users to
-  // native billing instead of Stripe.
-
-  var priceId = STRIPE_PRICES[targetTier] && STRIPE_PRICES[targetTier][_billingPeriod];
-  if (!priceId) {
-    showToast('Plan not configured — contact support@gethivekeeper.com');
-    console.error('[upgrade] No price ID for', targetTier, _billingPeriod, 'in', STRIPE_PRICES);
+  // Trial in progress — surface the days remaining as a positive message
+  if (typeof isInTrial === 'function' && isInTrial()) {
+    var dLeft = (typeof trialDaysLeft === 'function') ? trialDaysLeft() : null;
+    var trialMsg = (dLeft === 1)
+      ? 'You\'ve got 1 day of Pro trial left — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.'
+      : (dLeft != null)
+        ? 'You\'ve got ' + dLeft + ' days of Pro trial left — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.'
+        : 'Your Pro trial is in progress — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.';
+    alert(trialMsg);
     return;
   }
 
-  // 27 April 2026 Phase 3c — annual upsell intercept. When user taps
-  // Upgrade with monthly selected, ask if they'd like to save by switching
-  // to annual. Annual savings: Pro £7.89/yr, Commercial £39.89/yr — real
-  // money worth highlighting. Skips the prompt if user already chose
-  // yearly via the toggle (no need to convince them again).
-  // 27 April 2026 Phase 3c-iosfix — uses custom modal (_promptAnnualUpsell)
-  // instead of native confirm(). iOS WKWebView (Median wrapper) hangs JS
-  // execution after confirm() dismisses on iPhone — Chris's wife's iPhone
-  // got stuck. Custom modal works reliably on both platforms.
-  if (_billingPeriod === 'monthly' && (targetTier === 'pro' || targetTier === 'commercial')) {
-    var choice = await _promptAnnualUpsell(targetTier);
-    if (choice === 'yearly') {
-      _billingPeriod = 'yearly';
-      // Refresh the toggle UI so if the user returns from a cancelled
-      // checkout, the pricing modal shows yearly as selected.
-      if (typeof setBillingPeriod === 'function') setBillingPeriod('yearly');
-      // Re-fetch the price ID for the new period
-      priceId = STRIPE_PRICES[targetTier] && STRIPE_PRICES[targetTier][_billingPeriod];
-      if (!priceId) {
-        showToast('Plan not configured — contact support@gethivekeeper.com');
-        return;
-      }
-    }
-    // If choice === 'monthly' (or anything else): stay with monthly,
-    // priceId already set above.
-  }
-
-  // Show loading state on button
-  var btnId = 'btn-upgrade-' + targetTier;
-  var btn = document.getElementById(btnId);
-  var originalText = btn ? btn.innerHTML : '';
-  if (btn) { btn.innerHTML = 'Opening checkout... ⏳'; btn.disabled = true; btn.style.opacity = '0.7'; }
-
-  showToast('Opening checkout...');
-  try {
-    var resp = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        priceId: priceId,
-        userId: _currentUser.id,
-        userEmail: _currentUser.email,
-        successUrl: 'https://gethivekeeper.com/hivekeeper-beta1.html?upgrade=success',
-        cancelUrl:  'https://gethivekeeper.com/hivekeeper-beta1.html?upgrade=cancelled'
-      })
-    });
-    var data = await resp.json();
-    if (data && data.url) {
-      // 27 April 2026 Phase 3c — arm reset triggers BEFORE navigation.
-      // Median's webview keeps the app DOM in memory behind the Stripe
-      // overlay; when user cancels, they return to a stuck "Opening
-      // checkout..." button. Two recovery paths (whichever fires first):
-      //   (a) visibilitychange — fires when document.visibilityState
-      //       returns to 'visible' after Stripe overlay is dismissed.
-      //   (b) 30s setTimeout — failsafe in case Median doesn't fire
-      //       visibility events reliably in webview.
-      var resetHandler = function() {
-        if (document.visibilityState === 'visible') {
-          _resetUpgradeButtons();
-          document.removeEventListener('visibilitychange', resetHandler);
-        }
-      };
-      document.addEventListener('visibilitychange', resetHandler);
-      setTimeout(function() {
-        _resetUpgradeButtons();
-        document.removeEventListener('visibilitychange', resetHandler);
-      }, 30000);
-      window.location.href = data.url;
-    } else {
-      throw new Error(data.error || 'No checkout URL returned');
-    }
-  } catch(err) {
-    console.error('Stripe checkout error:', err);
-    if (btn) { btn.innerHTML = originalText; btn.disabled = false; btn.style.opacity = '1'; }
-    showToast('Could not start checkout — please try again or contact billing@gethivekeeper.com');
-  }
+  // Trial ended (or never started) — generous "coming soon" message
+  alert('Upgrade coming soon!\n\nWe\'re finishing the App Store and Google Play billing integration. Until then, keep using HiveKeeper for free — your account, hives and inspections stay exactly as they are.\n\nWe\'ll email you the moment paid plans go live.');
 }
 
 async function openCustomerPortal() {
@@ -25940,6 +26231,31 @@ async function loadAdminDashboard() {
   var el = document.getElementById('admin-dashboard-content');
   if (el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-l);font-size:13px;">Loading dashboard...</div>';
 
+  // 3 May 2026 Phase 4ce-2 — call /admin-stats worker endpoint first.
+  // This is the ground-truth read from auth.users (service-role only).
+  // Falls back to the legacy profiles-only path if worker is unreachable
+  // or returns 403 (admin email not in worker allowlist).
+  var authStats = null;
+  if (_currentSession && _currentSession.access_token) {
+    try {
+      var statsResp = await fetch(WORKER_BASE + '/admin-stats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + _currentSession.access_token
+        },
+        body: JSON.stringify({})
+      });
+      if (statsResp.ok) {
+        authStats = await statsResp.json();
+      } else {
+        console.warn('admin-stats returned', statsResp.status, '— falling back to profiles-only view');
+      }
+    } catch (e) {
+      console.warn('admin-stats fetch failed:', e.message);
+    }
+  }
+
   try {
     // Fetch all profiles
     var { data: profiles } = await sb.from('profiles').select('id, email, tier, is_founding_beekeeper, policies_accepted_at, referral_code, created_at');
@@ -25971,8 +26287,57 @@ async function loadAdminDashboard() {
     var totalReferrals = referrals ? referrals.length : 0;
     var convertedReferrals = referrals ? referrals.filter(function(r){ return r.status === 'converted'; }).length : 0;
 
-    var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
-      + statCard('Total users', totalUsers, 'var(--forest)')
+    var html = '';
+
+    // GROUND TRUTH from auth.users (if worker call succeeded)
+    if (authStats && authStats.ok) {
+      // Profile/auth gap warning banner
+      if (authStats.profileSyncWarning) {
+        html += '<div style="background:#FFF6E1;border:1px solid #E4A33A;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#633806;line-height:1.5;">'
+          + '⚠️ ' + authStats.profileSyncWarning + '. Check your Supabase signup trigger.'
+          + '</div>';
+      }
+
+      html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Auth (ground truth)</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'
+        + statCard('Total users', authStats.totalUsers, 'var(--forest)')
+        + statCard('Confirmed', authStats.confirmedUsers + ' (' + authStats.confirmationRate + '%)', 'var(--forest)')
+        + statCard('Last 24h', authStats.last24h, 'var(--honey)')
+        + statCard('Last 5 days', authStats.last5d, 'var(--honey)')
+        + '</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+        + statCard('Last 30 days', authStats.last30d, '#185FA5')
+        + statCard('Soft-deleted', authStats.softDeleted, '#888')
+        + '</div>';
+
+      // Daily breakdown table
+      if (authStats.dailyBreakdown && authStats.dailyBreakdown.length) {
+        html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Last 5 days</div>'
+          + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);overflow:hidden;margin-bottom:16px;">'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:8px 12px;background:#F0E9DC;font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">'
+            + '<div>Date</div><div style="text-align:center;">Signups</div><div style="text-align:right;">Confirmed</div>'
+          + '</div>';
+        authStats.dailyBreakdown.forEach(function(row){
+          var pct = row.signups > 0 ? Math.round((row.confirmed/row.signups)*100) : 0;
+          html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:8px 12px;border-top:1px solid var(--wax);font-size:12px;color:var(--text);">'
+            + '<div>' + row.date + '</div>'
+            + '<div style="text-align:center;font-weight:700;">' + row.signups + '</div>'
+            + '<div style="text-align:right;">' + row.confirmed + (row.signups > 0 ? ' <span style="color:var(--text-l);">(' + pct + '%)</span>' : '') + '</div>'
+            + '</div>';
+        });
+        html += '</div>';
+      }
+    } else {
+      // Worker unreachable — show profiles-only legacy view with explanation
+      html += '<div style="background:#FBEFE8;border:1px solid #E8C0B8;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#633806;line-height:1.5;">'
+        + 'Auth ground-truth unavailable (worker /admin-stats not reachable). Showing profiles-table figures only — may understate if signup trigger is dropping rows.'
+        + '</div>';
+    }
+
+    // Profiles-derived block (always shown, fallback or supplementary)
+    html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Profiles &amp; engagement</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+      + statCard('Profiles', totalUsers, 'var(--forest)')
       + statCard('Active (30d)', activeUsers30, 'var(--forest)')
       + statCard('New (30d)', newUsers30, 'var(--honey)')
       + statCard('Consented', consentedUsers, '#185FA5')
@@ -26010,6 +26375,11 @@ async function loadAdminDashboard() {
       + '<button onclick="loadTesterData()" style="background:var(--forest);border:none;border-radius:var(--rs);padding:10px 14px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">Load</button>'
       + '</div>'
       + (_adminMode ? '<button onclick="exitAdminMode()" style="width:100%;background:transparent;border:2px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">Exit tester view</button>' : '');
+
+    // Generated-at timestamp
+    if (authStats && authStats.generatedAt) {
+      html += '<div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:8px;font-family:DM Mono,monospace;">Generated ' + new Date(authStats.generatedAt).toLocaleString('en-GB') + '</div>';
+    }
 
     if (el) el.innerHTML = html;
   } catch(err) {
