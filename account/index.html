@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your account — HiveKeeper</title>
+<meta name="description" content="Manage your HiveKeeper account, subscription, and data.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/hivekeeper-icon.png">
+<link rel="apple-touch-icon" href="/hivekeeper-icon.png">
+<meta name="theme-color" content="#1F4E3A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/assets/account-shared.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <img src="/hivekeeper-icon.png" alt="HiveKeeper">
+      HiveKeeper<sup>™</sup>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="#" id="signout-link">Sign out</a>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="wrap">
+
+    <div id="loading" class="loading">Loading your account...</div>
+
+    <div id="content" style="display:none;">
+
+      <!-- Page header with greeting + tier badge -->
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+        <div>
+          <span class="eyebrow">Your account</span>
+          <h1 id="greeting">Welcome <em>back</em></h1>
+          <p id="account-summary">Manage your subscription, password, and data.</p>
+        </div>
+        <div id="tier-badge-wrap"></div>
+      </div>
+
+      <!-- Upgrade success banner (after Stripe return) -->
+      <div id="upgrade-banner" class="alert alert-success" style="display:none;">
+        🎉 Welcome to Pro! Your subscription is active. Open the HiveKeeper app to enjoy your unlocked features.
+      </div>
+
+      <!-- Past-due banner (urgent) -->
+      <div id="pastdue-banner" class="alert alert-warning" style="display:none;">
+        ⚠️ Your last payment didn't go through. Tap "Manage subscription" below to update your card before access is interrupted.
+      </div>
+
+      <!-- Account info card -->
+      <div class="card">
+        <h2>Account</h2>
+        <p class="card-subtitle">Your sign-in details.</p>
+
+        <div class="card-row">
+          <span class="card-row-label">Email</span>
+          <span class="card-row-value" id="account-email">—</span>
+        </div>
+        <div class="card-row">
+          <span class="card-row-label">Member since</span>
+          <span class="card-row-value" id="account-created">—</span>
+        </div>
+        <div class="card-row">
+          <span class="card-row-label">Account ID</span>
+          <span class="card-row-value" id="account-id" style="font-family:monospace;font-size:11px;color:var(--muted);">—</span>
+        </div>
+
+        <div style="margin-top:24px;">
+          <button class="btn btn-secondary btn-small" onclick="openChangePasswordModal()">Change password</button>
+        </div>
+      </div>
+
+      <!-- Subscription card -->
+      <div class="card" id="subscription-card">
+        <h2>Subscription</h2>
+        <p class="card-subtitle" id="subscription-subtitle">Loading subscription details...</p>
+
+        <div id="subscription-rows"></div>
+
+        <div id="subscription-actions" style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Data card -->
+      <div class="card">
+        <h2>Your data</h2>
+        <p class="card-subtitle">Download a complete copy of your HiveKeeper data, or delete your account if you'd like to leave.</p>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-small" onclick="handleExportData()" id="export-btn">⬇ Export everything (JSON)</button>
+          <button class="btn btn-danger btn-small" onclick="openDeleteModal()">Delete account</button>
+        </div>
+      </div>
+
+      <!-- Sign out -->
+      <div style="text-align:center;margin-top:32px;">
+        <button class="btn btn-ghost" onclick="signOut()">Sign out</button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Change password modal -->
+<div class="modal-overlay" id="modal-password">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('modal-password')">&times;</span>
+    <h2>Change password</h2>
+    <p class="card-subtitle">Choose a new password — at least 6 characters.</p>
+
+    <div id="password-error" class="alert alert-error" style="display:none;"></div>
+
+    <div class="field">
+      <label class="field-label" for="new-password">New password</label>
+      <input type="password" id="new-password" class="field-input" autocomplete="new-password" minlength="6">
+    </div>
+    <div class="field">
+      <label class="field-label" for="confirm-password">Confirm new password</label>
+      <input type="password" id="confirm-password" class="field-input" autocomplete="new-password" minlength="6">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-password')">Cancel</button>
+      <button class="btn btn-primary" onclick="handleChangePassword()" id="change-password-btn">Change password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete account modal -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal">
+    <span class="modal-close" onclick="closeModal('modal-delete')">&times;</span>
+    <h2 style="color:var(--amber-urgent);">Delete your account?</h2>
+    <div class="alert alert-warning" style="margin-top:8px;">
+      <strong>Your data will be saved for 30 days.</strong><br>
+      If you change your mind, sign in again within 30 days and you'll be able to restore everything in one tap. After 30 days, your account, hives, inspections, photos and all related data are permanently deleted.
+    </div>
+    <p class="card-subtitle" style="margin-top:8px;">We'll email you a confirmation with the exact restore deadline.</p>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modal-delete')">Cancel — keep my account</button>
+      <button class="btn btn-danger" onclick="handleDeleteAccount()" id="delete-confirm-btn">Yes, delete my account</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy-policy.html">Privacy</a>
+      <a href="mailto:support@gethivekeeper.com">Support</a>
+    </div>
+    <div>&copy; 2026 Culshaw Consulting Ltd · Brigstock, Northamptonshire</div>
+  </div>
+</footer>
+
+<!-- Supabase JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/account-shared.js"></script>
+<script>
+let _profile = null;
+let _session = null;
+
+// ── Bootstrap ──────────────────────────────────────────────
+async function bootstrap() {
+  const session = await requireAuth('/signin');
+  if (!session) return;
+  _session = session;
+
+  // Show upgrade success banner if we just came back from Stripe
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('upgrade') === 'success') {
+    document.getElementById('upgrade-banner').style.display = 'block';
+    // Clean URL
+    window.history.replaceState({}, '', '/account');
+  }
+
+  _profile = await getProfile(session.user.id);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+
+  renderProfile();
+  renderSubscription();
+}
+
+// ── Render profile section ─────────────────────────────────
+function renderProfile() {
+  const userEmail = _session.user.email;
+  const profileName = _profile && _profile.name ? _profile.name : null;
+
+  document.getElementById('greeting').innerHTML = profileName
+    ? 'Welcome <em>back</em>, ' + escapeHtml(profileName)
+    : 'Welcome <em>back</em>';
+
+  document.getElementById('account-email').textContent = userEmail;
+  document.getElementById('account-created').textContent = formatDate(_session.user.created_at);
+  document.getElementById('account-id').textContent = _session.user.id;
+
+  // Tier badge
+  const tier = formatTier(_profile);
+  document.getElementById('tier-badge-wrap').innerHTML =
+    '<div class="tier-badge ' + tier.class + '">' + tier.label + '</div>';
+
+  // Past-due banner if subscription_status is past_due
+  if (_profile && _profile.subscription_status === 'past_due') {
+    document.getElementById('pastdue-banner').style.display = 'block';
+  }
+}
+
+// ── Render subscription section ────────────────────────────
+function renderSubscription() {
+  const card = document.getElementById('subscription-card');
+  const subtitle = document.getElementById('subscription-subtitle');
+  const rows = document.getElementById('subscription-rows');
+  const actions = document.getElementById('subscription-actions');
+
+  rows.innerHTML = '';
+  actions.innerHTML = '';
+
+  if (!_profile) {
+    subtitle.textContent = 'Could not load subscription info. Please refresh or contact support@gethivekeeper.com.';
+    return;
+  }
+
+  // Founding Beekeeper — special case, no subscription needed
+  if (_profile.is_founding_beekeeper) {
+    subtitle.textContent = 'You\'re a Founding Beekeeper — Pro features are yours forever, no subscription needed.';
+    rows.innerHTML = `
+      <div class="card-row">
+        <span class="card-row-label">Status</span>
+        <span class="card-row-value">🐝 Founding Beekeeper</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Access level</span>
+        <span class="card-row-value">Pro features (all)</span>
+      </div>
+    `;
+    return;
+  }
+
+  const tier = _profile.tier || 'free';
+
+  if (tier === 'pro' || tier === 'commercial') {
+    // Active paid subscription
+    const tierLabel = tier === 'pro' ? 'Pro' : 'Commercial';
+    const status = _profile.subscription_status || 'active';
+    const renewalAt = _profile.subscription_renewal_at;
+
+    subtitle.textContent = 'Your ' + tierLabel + ' subscription is ' + (status === 'active' ? 'active' : status) + '.';
+
+    rows.innerHTML = `
+      <div class="card-row">
+        <span class="card-row-label">Plan</span>
+        <span class="card-row-value">HiveKeeper ${tierLabel}</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Status</span>
+        <span class="card-row-value">${escapeHtml(status.charAt(0).toUpperCase() + status.slice(1))}</span>
+      </div>
+      ${renewalAt ? `
+      <div class="card-row">
+        <span class="card-row-label">Next renewal</span>
+        <span class="card-row-value">${formatDate(renewalAt)}</span>
+      </div>` : ''}
+    `;
+
+    actions.innerHTML = `
+      <button class="btn btn-primary btn-small" onclick="openCustomerPortal()">Manage subscription</button>
+    `;
+  } else if (isInTrial(_profile)) {
+    // 14-day trial in progress
+    const daysLeft = trialDaysLeft(_profile);
+    subtitle.textContent = 'You\'re on a Pro trial — every Pro feature is unlocked.';
+
+    rows.innerHTML = `
+      <div class="card-row">
+        <span class="card-row-label">Plan</span>
+        <span class="card-row-value">14-day Pro trial</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Days remaining</span>
+        <span class="card-row-value">${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Trial ends</span>
+        <span class="card-row-value">${formatDate(new Date(Date.now() + daysLeft * 24 * 60 * 60 * 1000))}</span>
+      </div>
+    `;
+
+    actions.innerHTML = `
+      <a class="btn btn-honey btn-small" href="/subscribe">Continue with Pro after trial →</a>
+    `;
+  } else {
+    // Free tier (post-trial, or never trialled)
+    subtitle.textContent = 'You\'re on the Free tier. Upgrade to unlock unlimited voice inspections, AI photo analysis, and more.';
+
+    rows.innerHTML = `
+      <div class="card-row">
+        <span class="card-row-label">Plan</span>
+        <span class="card-row-value">Free</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Hives</span>
+        <span class="card-row-value">Up to 3</span>
+      </div>
+      <div class="card-row">
+        <span class="card-row-label">Apiaries</span>
+        <span class="card-row-value">1</span>
+      </div>
+    `;
+
+    actions.innerHTML = `
+      <a class="btn btn-honey btn-small" href="/subscribe">Upgrade to Pro →</a>
+    `;
+  }
+}
+
+// ── Modal helpers ──────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openChangePasswordModal() {
+  document.getElementById('new-password').value = '';
+  document.getElementById('confirm-password').value = '';
+  document.getElementById('password-error').style.display = 'none';
+  openModal('modal-password');
+}
+
+function openDeleteModal() { openModal('modal-delete'); }
+
+// ── Change password ───────────────────────────────────────
+async function handleChangePassword() {
+  const newPw = document.getElementById('new-password').value;
+  const confirmPw = document.getElementById('confirm-password').value;
+  const errorEl = document.getElementById('password-error');
+  const btn = document.getElementById('change-password-btn');
+
+  errorEl.style.display = 'none';
+
+  if (newPw.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (newPw !== confirmPw) {
+    errorEl.textContent = 'Passwords don\'t match.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Changing...';
+
+  try {
+    await changePassword(newPw);
+    closeModal('modal-password');
+    showToast('Password changed successfully', 'success');
+  } catch (err) {
+    errorEl.textContent = err.message || 'Could not change password.';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Change password';
+  }
+}
+
+// ── Export data ───────────────────────────────────────────
+async function handleExportData() {
+  const btn = document.getElementById('export-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Exporting...';
+
+  try {
+    const fileName = await exportData();
+    showToast('Downloaded ' + fileName, 'success');
+  } catch (err) {
+    console.error('export error:', err);
+    showToast('Could not export data — please try again or email support@gethivekeeper.com', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+// ── Delete account ────────────────────────────────────────
+async function handleDeleteAccount() {
+  const btn = document.getElementById('delete-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Deleting...';
+
+  try {
+    await deleteAccount();
+    closeModal('modal-delete');
+    alert('Your account is scheduled for deletion.\n\nWe\'ve emailed you a confirmation. Your data will be saved for 30 days — sign in again within 30 days to restore everything.\n\nSigning you out now.');
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  } catch (err) {
+    console.error('delete error:', err);
+    btn.disabled = false;
+    btn.textContent = 'Yes, delete my account';
+    showToast('Could not delete account — please try again or email support@gethivekeeper.com', 'error');
+  }
+}
+
+// ── Sign out ──────────────────────────────────────────────
+document.getElementById('signout-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  signOut();
+});
+
+// ── Helpers ───────────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+// Boot
+bootstrap();
+</script>
+
+</body>
+</html>
