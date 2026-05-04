@@ -23066,7 +23066,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20:10 4 May 2026 BST · Phase 4ce-5f — UX refinement on the upgrade flow (correcting earlier 4ce-5d). (1) /subscribe page: restored per-card upgrade buttons (Pro primary honey CTA, Commercial secondary forest CTA) — single unified CTA pattern was confusing because the action button was separated from the tier card the user was reading. Removed the "Need more capacity? Upgrade to Commercial instead" link and the unified primary CTA section. "← Back to your account" link at the bottom preserved. (2) In-app pricing modal: collapsed the two per-tier buttons (Upgrade to Pro / Upgrade) into a single "Upgrade now →" button below the disclosure. Tapping opens /subscribe via SSO where users pick a tier with the per-card pills. Comparison content stays in-app to inform; final tier choice happens on web. setBillingPeriod price-display logic preserved; dead button-label-update code removed. _resetUpgradeButtons function left in place (defensive, guarded) for cleanup later. Phase 4ce-5e (removed duplicate bottom trial banner), Phase 4ce-5d (now superseded by this), Phase 4ce-5c (handleUpgrade redirects via SSO), Phase 4ce-5b (admin dashboard reads breakdowns via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred), and Phase 4ce-3 (CORS + soft-delete) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20:30 4 May 2026 BST · Phase 4ce-5g — partial fix for iOS upgrade-link issue. When user taps "Upgrade now" on iPhone, the magic-link popup approach hits iOS WKWebView quirks and the SSO falls back. Previously the fallback dropped users at /signin, losing the /subscribe context. Now fallbacks target the original requested URL (/subscribe or /account), so iPhone users at minimum land on the right page where they can sign in if needed. Proper iOS fix (pre-fetch magic link at modal-open time so the popup is synchronous from user gesture, dodging WKWebView popup blocking) deferred to tomorrow morning. Phase 4ce-5f (per-card pills on /subscribe + single Upgrade-now button in modal), Phase 4ce-5e (removed duplicate trial banner), Phase 4ce-5d (now superseded by 4ce-5f), Phase 4ce-5c (handleUpgrade redirects via SSO), Phase 4ce-5b (admin dashboard reads breakdowns via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred), and Phase 4ce-3 (CORS + soft-delete) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26253,17 +26253,23 @@ async function openWebAccountSSO(path) {
   // 4 May 2026 Phase 4ce-5d — accepts an optional path (defaults to /account)
   // so handleUpgrade can land users on /subscribe (pricing page) while the
   // admin pill stays on /account.
+  // 4 May 2026 Phase 4ce-5g — fallbacks now target the original requested
+  // page (targetUrl) rather than /signin. Particularly important on iOS
+  // WKWebView where popups behave unreliably; if the SSO flow fails, the
+  // user lands on /subscribe (or /account) which detects unauthenticated
+  // state and offers sign-in. Better than dumping them at /signin which
+  // loses the original intent.
   var targetPath = path || '/account';
   var targetUrl = 'https://gethivekeeper.com' + targetPath;
 
   // Open a new tab IMMEDIATELY — browsers block window.open() that
   // happens after an async network call (popup blocker treats it as
   // unprompted). We open a placeholder, then either redirect it to
-  // the magic link or to /signin as fallback.
+  // the magic link or to the target URL as fallback.
   var popup = window.open('about:blank', '_blank');
   if (!popup) {
-    // Popup blocked — fall back to same-window redirect to /signin
-    window.location.href = 'https://gethivekeeper.com/signin';
+    // Popup blocked — fall back to same-window redirect to the target
+    window.location.href = targetUrl;
     return;
   }
   popup.document.write('<!DOCTYPE html><html><head><title>Signing you in to HiveKeeper...</title><style>body{font-family:system-ui,sans-serif;background:#faf5e9;color:#1F4E3A;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}</style></head><body><div style="text-align:center;"><div style="font-size:18px;font-weight:600;">Signing you in to HiveKeeper...</div><div style="margin-top:8px;color:#6b6050;font-size:13px;">This should only take a moment.</div></div></body></html>');
@@ -26273,8 +26279,8 @@ async function openWebAccountSSO(path) {
     var sessRes = await sb.auth.getSession();
     var session = sessRes && sessRes.data && sessRes.data.session;
     if (!session || !session.access_token) {
-      // No session — send to /signin
-      popup.location.href = 'https://gethivekeeper.com/signin';
+      // No session — send to target URL (which will offer sign-in)
+      popup.location.href = targetUrl;
       return;
     }
     var resp = await fetch(WORKER_BASE + '/generate-web-signin-link', {
@@ -26287,19 +26293,19 @@ async function openWebAccountSSO(path) {
     });
     if (!resp.ok) {
       console.warn('SSO link generation failed:', resp.status);
-      popup.location.href = 'https://gethivekeeper.com/signin';
+      popup.location.href = targetUrl;
       return;
     }
     var data = await resp.json();
     if (!data || !data.url) {
       console.warn('SSO link missing url in response');
-      popup.location.href = 'https://gethivekeeper.com/signin';
+      popup.location.href = targetUrl;
       return;
     }
     popup.location.href = data.url;
   } catch (e) {
     console.warn('openWebAccountSSO error:', e && e.message);
-    try { popup.location.href = 'https://gethivekeeper.com/signin'; } catch (e2) {}
+    try { popup.location.href = targetUrl; } catch (e2) {}
   }
 }
 
