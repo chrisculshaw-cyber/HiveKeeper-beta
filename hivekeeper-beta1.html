@@ -23067,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:55 4 May 2026 BST · Phase 4ce-5a — bugfix on apiary_shares queries. The data export and web /account apiary sharing list both used wrong column names (owner_user_id and shared_with_user_id) instead of the actual schema columns (owner_id and user_id). Fixed in both places. Surfaced in browser console when /account loaded for a real user. Phase 4ce-5 baseline (magic-link SSO via /generate-web-signin-link, profile creation trigger, 44-row backfill, founders correctly flagged) unchanged. Phase 4ce-4 baseline (auth-screen wording correction, Stripe IAP indefinitely deferred, web-first model) unchanged. Phase 4ce-3 baseline still in effect: CORS preflight Authorization fix, soft-delete with 30-day grace, /admin-stats endpoint, Data modal placement. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '17:50 4 May 2026 BST · Phase 4ce-5b — admin dashboard now reads tier breakdowns and engagement counts from /admin-stats (worker, service-role) instead of querying profiles/analytics_events/referrals directly under RLS. Fixes the "Profiles: 1" issue where the dashboard saw only Chris\'s own row because of row-level security on the profiles table. Worker /admin-stats response extended with: freeUsers, proUsers, commercialUsers, foundingUsers, consentedUsers, newUsers30d, activeUsers30d, referralsTotal, referralsConverted, eventCounts. Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26334,35 +26334,23 @@ async function loadAdminDashboard() {
   }
 
   try {
-    // Fetch all profiles
-    var { data: profiles } = await sb.from('profiles').select('id, email, tier, is_founding_beekeeper, policies_accepted_at, referral_code, created_at');
-    var totalUsers = profiles ? profiles.length : 0;
-    var freeUsers = profiles ? profiles.filter(function(p){ return !p.tier || p.tier === 'free'; }).length : 0;
-    var proUsers = profiles ? profiles.filter(function(p){ return p.tier === 'pro'; }).length : 0;
-    var commercialUsers = profiles ? profiles.filter(function(p){ return p.tier === 'commercial'; }).length : 0;
-    var foundingUsers = profiles ? profiles.filter(function(p){ return p.is_founding_beekeeper; }).length : 0;
-    var consentedUsers = profiles ? profiles.filter(function(p){ return p.policies_accepted_at; }).length : 0;
-
-    // Last 30 days signups
-    var thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
-    var newUsers30 = profiles ? profiles.filter(function(p){ return p.created_at > thirtyDaysAgo; }).length : 0;
-
-    // Analytics events
-    var { data: events } = await sb.from('analytics_events').select('event, created_at, user_id').gte('created_at', thirtyDaysAgo);
-    var eventCounts = {};
-    var activeUserIds = new Set();
-    if (events) {
-      events.forEach(function(e) {
-        eventCounts[e.event] = (eventCounts[e.event] || 0) + 1;
-        activeUserIds.add(e.user_id);
-      });
-    }
-    var activeUsers30 = activeUserIds.size;
-
-    // Referrals
-    var { data: referrals } = await sb.from('referrals').select('status, created_at');
-    var totalReferrals = referrals ? referrals.length : 0;
-    var convertedReferrals = referrals ? referrals.filter(function(r){ return r.status === 'converted'; }).length : 0;
+    // Phase 4ce-5b: read profile/events/referral breakdowns from authStats
+    // (which fetches via service-role, bypassing RLS that would otherwise
+    // restrict our direct sb queries to just the caller's row).
+    // Fall back to zeros if authStats unreachable — the existing "ground-truth
+    // unavailable" banner already warns the user in that case.
+    var s = (authStats && authStats.ok) ? authStats : {};
+    var totalUsers = s.profilesCount || 0;
+    var freeUsers = s.freeUsers || 0;
+    var proUsers = s.proUsers || 0;
+    var commercialUsers = s.commercialUsers || 0;
+    var foundingUsers = s.foundingUsers || 0;
+    var consentedUsers = s.consentedUsers || 0;
+    var newUsers30 = s.newUsers30d || 0;
+    var activeUsers30 = s.activeUsers30d || 0;
+    var totalReferrals = s.referralsTotal || 0;
+    var convertedReferrals = s.referralsConverted || 0;
+    var eventCounts = s.eventCounts || {};
 
     var html = '';
 
