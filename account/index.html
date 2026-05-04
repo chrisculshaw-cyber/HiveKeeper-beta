@@ -91,6 +91,84 @@
         <div id="subscription-actions" style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;"></div>
       </div>
 
+      <!-- Your Details card (editable profile) -->
+      <div class="card">
+        <h2>Your details</h2>
+        <p class="card-subtitle">Used in greetings, inspection records, and SOS messages.</p>
+
+        <div class="field">
+          <label class="field-label" for="profile-display-name">Display name</label>
+          <input type="text" id="profile-display-name" class="field-input" placeholder="What you'd like to be called">
+          <div class="field-help">Shown in greetings and inspection records.</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="profile-phone">Mobile number</label>
+          <input type="tel" id="profile-phone" class="field-input" placeholder="07700 900000" autocomplete="tel" inputmode="tel">
+          <div class="field-help">Included in SOS messages so your contact can call you back.</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="profile-address">Home address <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:normal;">(optional)</span></label>
+          <textarea id="profile-address" class="field-input" rows="3" placeholder="Number, Street&#10;Town&#10;Postcode" autocomplete="street-address" style="resize:vertical;font-family:var(--ui);"></textarea>
+          <div class="field-help">Used only as a fallback in SOS messages if GPS isn't available. Never shared.</div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-small" onclick="handleSaveDetails()" id="save-details-btn">Save details</button>
+          <span id="save-details-status" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <!-- Emergency Contact card -->
+      <div class="card">
+        <h2>Emergency contact</h2>
+        <p class="card-subtitle">When you tap the red SOS button in the app, a message is sent instantly to this contact with your GPS location. Set up one or both methods below.</p>
+
+        <div class="field">
+          <label class="field-label" for="profile-sos-name">Contact name</label>
+          <input type="text" id="profile-sos-name" class="field-input" placeholder="e.g. Daren">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="profile-sos-sms">SMS number</label>
+          <input type="tel" id="profile-sos-sms" class="field-input" placeholder="07700 900000" inputmode="tel">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="profile-sos-whatsapp">WhatsApp number <span style="color:var(--muted);font-weight:400;text-transform:none;letter-spacing:normal;">(optional)</span></label>
+          <input type="tel" id="profile-sos-whatsapp" class="field-input" placeholder="07700 900000" inputmode="tel">
+          <div class="field-help">If set, SOS sends both SMS and WhatsApp at the same time.</div>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:8px;font-size:12px;line-height:1.5;">
+          <strong>Sync note:</strong> after saving here, please open the HiveKeeper app once on your phone so it can pick up the new emergency contact. The app caches these details locally so SOS still works without a signal — but that means it needs to refresh from the server next time you open it.
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn btn-primary btn-small" onclick="handleSaveEmergencyContact()" id="save-sos-btn">Save emergency contact</button>
+          <span id="save-sos-status" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+      </div>
+
+      <!-- Apiary Sharing card -->
+      <div class="card">
+        <h2>Apiary sharing</h2>
+        <p class="card-subtitle">A list of who you've shared your apiaries with, and apiaries others have shared with you. Manage invitations or revoke access.</p>
+
+        <div id="sharing-loading" class="loading" style="padding:20px;">Loading sharing details...</div>
+
+        <div id="sharing-content" style="display:none;">
+
+          <h3 style="margin-top:8px;font-size:16px;color:var(--forest);">People you've shared with</h3>
+          <div id="shares-out-list"></div>
+
+          <h3 style="margin-top:24px;font-size:16px;color:var(--forest);">Apiaries shared with you</h3>
+          <div id="shares-in-list"></div>
+
+        </div>
+      </div>
+
       <!-- Data card -->
       <div class="card">
         <h2>Your data</h2>
@@ -193,6 +271,8 @@ async function bootstrap() {
 
   renderProfile();
   renderSubscription();
+  prefillProfileForm();
+  loadAndRenderApiarySharing();
 }
 
 // ── Render profile section ─────────────────────────────────
@@ -324,6 +404,176 @@ function renderSubscription() {
     actions.innerHTML = `
       <a class="btn btn-honey btn-small" href="/subscribe">Upgrade to Pro →</a>
     `;
+  }
+}
+
+// ── Prefill the editable forms from current profile ────────
+function prefillProfileForm() {
+  if (!_profile) return;
+  // Display name: prefer display_name, fallback to name
+  const dn = _profile.display_name || _profile.name || '';
+  document.getElementById('profile-display-name').value = dn;
+  document.getElementById('profile-phone').value = _profile.phone || '';
+  document.getElementById('profile-address').value = _profile.address || '';
+  document.getElementById('profile-sos-name').value = _profile.sos_contact_name || '';
+  document.getElementById('profile-sos-sms').value = _profile.sos_sms || '';
+  document.getElementById('profile-sos-whatsapp').value = _profile.sos_whatsapp || '';
+}
+
+// ── Save Your Details ──────────────────────────────────────
+async function handleSaveDetails() {
+  const btn = document.getElementById('save-details-btn');
+  const status = document.getElementById('save-details-status');
+
+  const dn = document.getElementById('profile-display-name').value.trim();
+  const phone = document.getElementById('profile-phone').value.trim();
+  const address = document.getElementById('profile-address').value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  status.textContent = '';
+  status.style.color = 'var(--muted)';
+
+  try {
+    await updateProfile(_session.user.id, {
+      display_name: dn,
+      phone: phone,
+      address: address
+    });
+    // Refresh local profile cache so other parts of the page reflect the change
+    _profile = await getProfile(_session.user.id);
+    // Re-render the greeting in case display name changed
+    renderProfile();
+    status.textContent = '✓ Saved';
+    status.style.color = 'var(--success)';
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  } catch (err) {
+    console.error('handleSaveDetails error:', err);
+    status.textContent = err.message || 'Could not save. Please try again.';
+    status.style.color = 'var(--amber-urgent)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save details';
+  }
+}
+
+// ── Save Emergency Contact ─────────────────────────────────
+async function handleSaveEmergencyContact() {
+  const btn = document.getElementById('save-sos-btn');
+  const status = document.getElementById('save-sos-status');
+
+  const sosName = document.getElementById('profile-sos-name').value.trim();
+  const sosSms = document.getElementById('profile-sos-sms').value.trim();
+  const sosWa = document.getElementById('profile-sos-whatsapp').value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  status.textContent = '';
+  status.style.color = 'var(--muted)';
+
+  try {
+    await updateProfile(_session.user.id, {
+      sos_contact_name: sosName,
+      sos_sms: sosSms,
+      sos_whatsapp: sosWa
+    });
+    _profile = await getProfile(_session.user.id);
+    status.textContent = '✓ Saved — open the app once to sync to your phone';
+    status.style.color = 'var(--success)';
+    setTimeout(() => { status.textContent = ''; }, 6000);
+  } catch (err) {
+    console.error('handleSaveEmergencyContact error:', err);
+    status.textContent = err.message || 'Could not save. Please try again.';
+    status.style.color = 'var(--amber-urgent)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save emergency contact';
+  }
+}
+
+// ── Apiary sharing — load + render ─────────────────────────
+async function loadAndRenderApiarySharing() {
+  const loading = document.getElementById('sharing-loading');
+  const content = document.getElementById('sharing-content');
+  const outList = document.getElementById('shares-out-list');
+  const inList = document.getElementById('shares-in-list');
+
+  try {
+    const { mySharesOut, sharesIn } = await loadApiarySharingData(_session.user.id, _session.user.email);
+
+    // Render outbound (people I've shared with)
+    if (!mySharesOut.length) {
+      outList.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0;">You haven\'t shared any apiaries yet. To share an apiary, open it in the HiveKeeper app and tap the share icon.</div>';
+    } else {
+      outList.innerHTML = mySharesOut.map(s => renderShareOutRow(s)).join('');
+    }
+
+    // Render inbound (apiaries shared WITH me)
+    if (!sharesIn.length) {
+      inList.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:12px 0;">No one has shared an apiary with you.</div>';
+    } else {
+      inList.innerHTML = sharesIn.map(s => renderShareInRow(s)).join('');
+    }
+  } catch (err) {
+    console.error('loadAndRenderApiarySharing error:', err);
+    outList.innerHTML = '<div class="alert alert-error">Could not load sharing details. Please refresh.</div>';
+    inList.innerHTML = '';
+  } finally {
+    loading.style.display = 'none';
+    content.style.display = 'block';
+  }
+}
+
+function renderShareOutRow(s) {
+  const inviteeName = s.invited_name ? escapeHtml(s.invited_name) : escapeHtml(s.invited_email || '(no email)');
+  const inviteeEmail = s.invited_email ? escapeHtml(s.invited_email) : '';
+  const apiaryName = escapeHtml(s.apiary_name || '(unknown apiary)');
+  const role = s.role === 'inspect' ? 'Can inspect' : (s.role === 'view' ? 'View only' : escapeHtml(s.role || ''));
+  const statusLabel = s.status === 'accepted'
+    ? '<span style="color:var(--success);font-weight:600;">Accepted</span>'
+    : (s.status === 'pending'
+       ? '<span style="color:var(--amber-burnt);font-weight:600;">Pending</span>'
+       : '<span style="color:var(--muted);">' + escapeHtml(s.status || '') + '</span>');
+  return `
+    <div class="card-row" style="flex-direction:column;align-items:stretch;gap:6px;border-bottom:1px solid var(--rule);padding:14px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;color:var(--ink);font-size:14px;">${inviteeName}</div>
+          ${inviteeEmail && s.invited_name ? '<div style="font-size:12px;color:var(--muted);">' + inviteeEmail + '</div>' : ''}
+          <div style="font-size:12px;color:var(--muted);margin-top:4px;">Apiary: <strong>${apiaryName}</strong> · ${role} · ${statusLabel}</div>
+        </div>
+        <button class="btn btn-danger btn-small" onclick="handleRevokeShare('${escapeHtml(s.id)}')" style="flex-shrink:0;">Revoke</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderShareInRow(s) {
+  const apiaryName = escapeHtml(s.apiary_name || '(unknown apiary)');
+  const role = s.role === 'inspect' ? 'Can inspect' : (s.role === 'view' ? 'View only' : escapeHtml(s.role || ''));
+  const statusLabel = s.status === 'accepted'
+    ? '<span style="color:var(--success);font-weight:600;">Accepted</span>'
+    : '<span style="color:var(--amber-burnt);font-weight:600;">Pending — open the app to accept</span>';
+  return `
+    <div class="card-row" style="flex-direction:column;align-items:stretch;gap:6px;border-bottom:1px solid var(--rule);padding:14px 0;">
+      <div>
+        <div style="font-weight:600;color:var(--ink);font-size:14px;">${apiaryName}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;">${role} · ${statusLabel}</div>
+      </div>
+    </div>
+  `;
+}
+
+async function handleRevokeShare(shareId) {
+  if (!confirm('Revoke this share? The other beekeeper will lose access to this apiary immediately.')) return;
+  try {
+    await revokeApiaryShare(shareId);
+    showToast('Share revoked', 'success');
+    // Reload the list
+    await loadAndRenderApiarySharing();
+  } catch (err) {
+    console.error('handleRevokeShare error:', err);
+    showToast('Could not revoke share — please try again', 'error');
   }
 }
 
