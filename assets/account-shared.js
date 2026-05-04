@@ -64,6 +64,9 @@ async function signOut() {
 // ─── PROFILE ────────────────────────────────────────────────
 
 async function getProfile(userId) {
+  // Pull all columns we need: tier/subscription bits AND the editable profile bits
+  // for the /account form. Mirror the column list used by the app's loadProfileFromSupabase()
+  // for consistency.
   const { data, error } = await sb
     .from('profiles')
     .select('*')
@@ -74,6 +77,104 @@ async function getProfile(userId) {
     return null;
   }
   return data;
+}
+
+// Write profile changes. Mirrors the app's save behaviour:
+// `name` and `display_name` are both written for backward compatibility.
+// Phase 4ce note: community sharing prefs (share_sprays_enabled etc) are
+// NOT included — those are localStorage-only until Phase 4an adds the
+// columns to profiles. Sending unknown columns would reject the whole update.
+async function updateProfile(userId, fields) {
+  const allowed = ['name', 'display_name', 'phone', 'address',
+                   'sos_contact_name', 'sos_sms', 'sos_whatsapp'];
+  const payload = {};
+  for (const k of allowed) {
+    if (Object.prototype.hasOwnProperty.call(fields, k)) {
+      // Empty strings → null (matches app behaviour and avoids storing whitespace)
+      const v = fields[k];
+      payload[k] = (v === '' || v == null) ? null : v;
+    }
+  }
+  // If "name" is being set, also set display_name (and vice versa) for
+  // backward compatibility with the app's two-column legacy.
+  if (Object.prototype.hasOwnProperty.call(fields, 'display_name')) {
+    payload.name = payload.display_name;
+  }
+  const { error } = await sb.from('profiles').update(payload).eq('id', userId);
+  if (error) throw error;
+  return payload;
+}
+
+// Apiary sharing: load both directions
+//   - apiaries owned by this user that have shares (with the people we shared with)
+//   - apiaries owned by others that they've shared with us (where we're the sharee)
+async function loadApiarySharingData(userId, userEmail) {
+  // First: apiaries this user owns
+  const { data: ownedApiaries, error: e1 } = await sb
+    .from('apiaries')
+    .select('id, name')
+    .eq('user_id', userId);
+  if (e1) console.warn('loadApiarySharingData ownedApiaries error:', e1.message);
+
+  // Shares of those apiaries (people we've shared WITH)
+  let mySharesOut = [];
+  if (ownedApiaries && ownedApiaries.length) {
+    const ownedIds = ownedApiaries.map(a => a.id);
+    const { data: outShares, error: e2 } = await sb
+      .from('apiary_shares')
+      .select('id, apiary_id, invited_email, invited_name, role, status, created_at')
+      .in('apiary_id', ownedIds)
+      .order('created_at', { ascending: false });
+    if (e2) console.warn('loadApiarySharingData outShares error:', e2.message);
+    if (outShares) {
+      mySharesOut = outShares.map(s => {
+        const apiary = ownedApiaries.find(a => a.id === s.apiary_id);
+        return Object.assign({}, s, { apiary_name: apiary ? apiary.name : '(unknown apiary)' });
+      });
+    }
+  }
+
+  // Apiaries shared WITH us (where we're the sharee)
+  // Two queries because PostgREST can't OR by user_id and email cleanly
+  let sharesIn = [];
+  const { data: inByUid, error: e3 } = await sb
+    .from('apiary_shares')
+    .select('id, apiary_id, owner_user_id, role, status, created_at')
+    .eq('user_id', userId);
+  if (e3) console.warn('loadApiarySharingData inByUid error:', e3.message);
+  const { data: inByEmail, error: e4 } = await sb
+    .from('apiary_shares')
+    .select('id, apiary_id, owner_user_id, role, status, created_at')
+    .eq('invited_email', userEmail)
+    .neq('status', 'accepted'); // pending invitations not yet accepted
+  if (e4) console.warn('loadApiarySharingData inByEmail error:', e4.message);
+
+  const inMap = new Map();
+  for (const r of (inByUid || [])) inMap.set(r.id, r);
+  for (const r of (inByEmail || [])) if (!inMap.has(r.id)) inMap.set(r.id, r);
+  const inShares = Array.from(inMap.values());
+
+  // Hydrate apiary names + owner email for the inbound list
+  for (const s of inShares) {
+    if (s.apiary_id) {
+      const { data: apiary } = await sb
+        .from('apiaries')
+        .select('id, name')
+        .eq('id', s.apiary_id)
+        .single();
+      s.apiary_name = (apiary && apiary.name) ? apiary.name : '(unknown apiary)';
+    } else {
+      s.apiary_name = '(unknown apiary)';
+    }
+  }
+
+  return { mySharesOut, sharesIn };
+}
+
+async function revokeApiaryShare(shareId) {
+  const { error } = await sb.from('apiary_shares').delete().eq('id', shareId);
+  if (error) throw error;
+  return true;
 }
 
 // ─── STRIPE CHECKOUT ────────────────────────────────────────
