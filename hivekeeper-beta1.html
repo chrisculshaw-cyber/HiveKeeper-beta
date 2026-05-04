@@ -23067,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:25 4 May 2026 BST · Phase 4ce-5c — upgrade flow now redirects to gethivekeeper.com/account via magic-link SSO instead of showing "coming soon" messaging. Trial AND post-trial users both go to /account where they can upgrade if they want; founder users still see the celebration modal. Reuses openWebAccountSSO() so users land signed in. Apple anti-steering risk acknowledged and accepted by Chris (decision logged in code FIXME) — will revisit if Apple flags during a future iOS review. Phase 4ce-5b (admin dashboard reads breakdowns from /admin-stats via service-role, fixes RLS-induced "Profiles: 1"), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '18:55 4 May 2026 BST · Phase 4ce-5d — refinements to the upgrade flow. (1) handleUpgrade now lands users on gethivekeeper.com/subscribe instead of /account because /subscribe shows clear tier comparison with current plan highlighted — better for upgrade intent. (2) openWebAccountSSO accepts an optional path argument; admin "Your account" pill still defaults to /account, handleUpgrade passes /subscribe. (3) /subscribe page redesigned: removed the two per-tier "Upgrade to Pro" / "Upgrade to Commercial" buttons inside each card; replaced with a single primary "Upgrade to Pro →" CTA below the grid plus a small secondary "Need more capacity? Upgrade to Commercial instead" link. (4) Added a "← Back to your account" link at the very bottom of /subscribe for clean navigation. Phase 4ce-5c (handleUpgrade redirects to web /account, replaces "coming soon"), Phase 4ce-5b (admin dashboard reads breakdowns from /admin-stats via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26010,17 +26010,18 @@ async function handleUpgrade(targetTier) {
     return;
   }
 
-  // Anyone signed in (trial or post-trial) — open /account on the web
-  // via magic-link SSO. Reuses the same function the admin "Your account"
-  // pill uses, so the user lands at /account signed in, no password typed.
-  // Toast on the original tab gives a hint about what just happened.
-  showToast('Opening your account on the web...');
+  // Anyone signed in (trial or post-trial) — open /subscribe on the web
+  // via magic-link SSO. /subscribe shows the tier comparison with the user's
+  // current tier highlighted, which is more useful for upgrade intent than
+  // the more general /account page. Reuses the same SSO function the admin
+  // "Your account" pill uses, so the user lands signed in, no password typed.
+  showToast('Opening subscription options...');
   if (typeof openWebAccountSSO === 'function') {
-    openWebAccountSSO();
+    openWebAccountSSO('/subscribe');
   } else {
     // Fallback if the SSO function isn't available for any reason —
     // should never happen post Phase 4ce-5, but defensive.
-    window.open('https://gethivekeeper.com/account', '_blank');
+    window.open('https://gethivekeeper.com/subscribe', '_blank');
   }
 }
 
@@ -26250,7 +26251,13 @@ function openAdminPanel() {
 // in a new tab. User lands on /account already signed in, no typing.
 // Falls back to /signin (typed login) if anything goes wrong so the
 // user is never stranded.
-async function openWebAccountSSO() {
+async function openWebAccountSSO(path) {
+  // 4 May 2026 Phase 4ce-5d — accepts an optional path (defaults to /account)
+  // so handleUpgrade can land users on /subscribe (pricing page) while the
+  // admin pill stays on /account.
+  var targetPath = path || '/account';
+  var targetUrl = 'https://gethivekeeper.com' + targetPath;
+
   // Open a new tab IMMEDIATELY — browsers block window.open() that
   // happens after an async network call (popup blocker treats it as
   // unprompted). We open a placeholder, then either redirect it to
@@ -26278,7 +26285,7 @@ async function openWebAccountSSO() {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + session.access_token
       },
-      body: JSON.stringify({ redirectTo: 'https://gethivekeeper.com/account' })
+      body: JSON.stringify({ redirectTo: targetUrl })
     });
     if (!resp.ok) {
       console.warn('SSO link generation failed:', resp.status);
