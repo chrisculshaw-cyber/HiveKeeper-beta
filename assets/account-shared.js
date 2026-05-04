@@ -2,7 +2,7 @@
 // Used by /signin, /account, /subscribe
 // ──────────────────────────────────────────────────────────
 
-const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.sb.co';
+const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const WORKER_BASE = 'https://flat-bird-f269.chris-culshaw.workers.dev';
 
