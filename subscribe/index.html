@@ -252,7 +252,6 @@
           <li class="price-feat"><span class="price-feat-icon">✓</span><div>NBU/BeeBase exports, calendar sync</div></li>
           <li class="price-feat"><span class="price-feat-icon">✓</span><div>Bulk QR sticker printing</div></li>
         </ul>
-        <button class="btn btn-honey price-cta" onclick="handleUpgrade('pro')" id="pro-cta">Upgrade to Pro →</button>
       </div>
 
       <!-- COMMERCIAL -->
@@ -266,15 +265,27 @@
           <li class="price-feat"><span class="price-feat-icon">✓</span><div>All Pro features included</div></li>
           <li class="price-feat"><span class="price-feat-icon">✓</span><div>Priority email support</div></li>
         </ul>
-        <button class="btn btn-secondary price-cta" onclick="handleUpgrade('commercial')" id="commercial-cta">Upgrade to Commercial →</button>
       </div>
 
+    </div>
+
+    <!-- Unified upgrade CTA — single primary action, secondary link for Commercial -->
+    <div id="upgrade-cta-section" style="margin-top:32px;text-align:center;">
+      <button class="btn btn-honey" id="primary-upgrade-cta" onclick="handleUpgrade('pro')" style="font-size:16px;padding:14px 32px;min-width:240px;">Upgrade to Pro →</button>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted);">
+        Need more capacity? <a href="#" onclick="event.preventDefault();handleUpgrade('commercial');return false;" style="color:var(--forest);font-weight:600;text-decoration:underline;">Upgrade to Commercial instead →</a>
+      </div>
     </div>
 
     <p class="disclosure">
       Subscriptions auto-renew unless cancelled. Cancel any time from <a href="/account">your account</a>. Secure payment via Stripe. Prices include VAT where applicable.<br>
       Questions? Email <a href="mailto:support@gethivekeeper.com">support@gethivekeeper.com</a>
     </p>
+
+    <!-- Back-to-account navigation — clean exit point -->
+    <div style="margin-top:24px;text-align:center;padding-top:24px;border-top:1px solid var(--rule);">
+      <a href="/account" style="font-size:14px;color:var(--forest);font-weight:600;text-decoration:none;">← Back to your account</a>
+    </div>
 
   </div>
 </main>
@@ -329,19 +340,21 @@ async function bootstrap() {
       document.getElementById('already-pro-banner').innerHTML =
         'You\'re a <strong>Founding Beekeeper</strong> — you have Pro features forever, no subscription needed. <a href="/account">View your account →</a>';
       document.getElementById('already-pro-banner').style.display = 'block';
-      // Disable upgrade buttons
-      document.getElementById('pro-cta').disabled = true;
-      document.getElementById('commercial-cta').disabled = true;
-      document.getElementById('pro-cta').textContent = 'You\'re a Founder';
-      document.getElementById('commercial-cta').textContent = 'You\'re a Founder';
+      // Hide the upgrade CTA section entirely — founders don't upgrade
+      var ctaSection = document.getElementById('upgrade-cta-section');
+      if (ctaSection) ctaSection.style.display = 'none';
       return;
     }
 
-    // If already on Pro/Commercial, surface the manage-subscription banner
+    // If already on Pro/Commercial, surface the manage-subscription banner.
+    // Hide the upgrade CTA — they can manage from /account, and "upgrade"
+    // doesn't quite fit when they're already paying.
     const tier = _profile && _profile.tier;
     if (tier === 'pro' || tier === 'commercial') {
       document.getElementById('already-pro-tier').textContent = tier === 'pro' ? 'Pro' : 'Commercial';
       document.getElementById('already-pro-banner').style.display = 'block';
+      var ctaSection = document.getElementById('upgrade-cta-section');
+      if (ctaSection) ctaSection.style.display = 'none';
     }
   } else {
     document.getElementById('signin-banner').style.display = 'block';
@@ -376,6 +389,8 @@ function handleFreeClick() {
 }
 
 // ── Handle Upgrade buttons ────────────────────────────────
+// Single primary CTA pattern — both Pro and Commercial route through here.
+// The button reflects the loading state for whichever tier was clicked.
 async function handleUpgrade(tier) {
   if (!_signedIn) {
     window.location.href = '/signin?return=/subscribe';
@@ -392,19 +407,23 @@ async function handleUpgrade(tier) {
     return;
   }
 
-  const ctaId = tier === 'pro' ? 'pro-cta' : 'commercial-cta';
-  const btn = document.getElementById(ctaId);
-  const originalText = btn.innerHTML;
-  btn.disabled = true;
-  btn.textContent = 'Opening checkout...';
+  // Manipulate the unified primary CTA — loading state reflects target tier
+  const btn = document.getElementById('primary-upgrade-cta');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = tier === 'pro' ? 'Opening Pro checkout...' : 'Opening Commercial checkout...';
+  }
 
   try {
     await startCheckout(tier, _billingPeriod);
     // startCheckout redirects on success — if we reach here, something unusual happened
   } catch (err) {
     console.error('upgrade error:', err);
-    btn.disabled = false;
-    btn.innerHTML = originalText;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
   }
 }
 
