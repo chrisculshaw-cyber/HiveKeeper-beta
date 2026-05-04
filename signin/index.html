@@ -115,7 +115,7 @@ form.addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       showError(error.message || 'Could not sign in. Check your email and password.');
       submitBtn.disabled = false;
@@ -144,7 +144,7 @@ document.getElementById('forgot-link').addEventListener('click', async (e) => {
     return;
   }
   try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
       redirectTo: 'https://gethivekeeper.com/account'
     });
     if (error) {
