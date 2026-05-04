@@ -336,7 +336,7 @@ function renderSubscription() {
     // Active paid subscription
     const tierLabel = tier === 'pro' ? 'Pro' : 'Commercial';
     const status = _profile.subscription_status || 'active';
-    const renewalAt = _profile.subscription_renewal_at;
+    const renewalAt = _profile.current_period_end;
 
     subtitle.textContent = 'Your ' + tierLabel + ' subscription is ' + (status === 'active' ? 'active' : status) + '.';
 
