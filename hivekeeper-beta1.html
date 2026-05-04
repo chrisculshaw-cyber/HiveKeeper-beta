@@ -22022,8 +22022,8 @@ async function exportMyData() {
 
     // apiary_shares — apiaries the user shares OR is shared with
     try {
-      var sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_user_id', userId);
-      var sharesAsShared = await sb.from('apiary_shares').select('*').eq('shared_with_user_id', userId);
+      var sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_id', userId);
+      var sharesAsShared = await sb.from('apiary_shares').select('*').eq('user_id', userId);
       data.apiary_shares = {
         owned: sharesAsOwner.data || [],
         shared_with_me: sharesAsShared.data || []
@@ -23067,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '15:30 4 May 2026 BST · Phase 4ce-5 — magic-link SSO from app to web /account. Admin panel "Your account" pill now calls a new worker endpoint /generate-web-signin-link which validates the user\'s existing app session and returns a one-time Supabase magic link; the app opens that link in a new tab and the user lands on gethivekeeper.com/account already signed in. No password typing. Falls back gracefully to /signin if anything fails. Service-role key stays in worker env vars, never exposed. Companion fix (run separately in Supabase SQL Editor, not in this file): added on_auth_user_created trigger on auth.users → public.handle_new_user() that creates a profiles row for every new signup, plus backfilled 44 profiles for existing users who had no row due to the missing trigger. Result: admin dashboard now shows 45 profiles for 45 auth.users (gap=0). Phase 4ce-4 baseline (auth-screen wording correction, Stripe IAP indefinitely deferred, web-first model) unchanged. Phase 4ce-3 hotfix baseline still in effect: CORS preflight Authorization fix, soft-delete with 30-day grace, /admin-stats endpoint, Data modal placement, apiary name updates, allowlist tightened. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '15:55 4 May 2026 BST · Phase 4ce-5a — bugfix on apiary_shares queries. The data export and web /account apiary sharing list both used wrong column names (owner_user_id and shared_with_user_id) instead of the actual schema columns (owner_id and user_id). Fixed in both places. Surfaced in browser console when /account loaded for a real user. Phase 4ce-5 baseline (magic-link SSO via /generate-web-signin-link, profile creation trigger, 44-row backfill, founders correctly flagged) unchanged. Phase 4ce-4 baseline (auth-screen wording correction, Stripe IAP indefinitely deferred, web-first model) unchanged. Phase 4ce-3 baseline still in effect: CORS preflight Authorization fix, soft-delete with 30-day grace, /admin-stats endpoint, Data modal placement. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
