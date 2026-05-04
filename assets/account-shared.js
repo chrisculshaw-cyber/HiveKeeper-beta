@@ -134,17 +134,18 @@ async function loadApiarySharingData(userId, userEmail) {
     }
   }
 
-  // Apiaries shared WITH us (where we're the sharee)
-  // Two queries because PostgREST can't OR by user_id and email cleanly
+  // Apiaries shared WITH us. The schema uses `user_id` for the sharee
+  // (set when they accept) and `invited_email` (set at invite time).
+  // Two queries because PostgREST can't OR across these cleanly.
   let sharesIn = [];
   const { data: inByUid, error: e3 } = await sb
     .from('apiary_shares')
-    .select('id, apiary_id, owner_user_id, role, status, created_at')
+    .select('id, apiary_id, owner_id, role, status, created_at')
     .eq('user_id', userId);
   if (e3) console.warn('loadApiarySharingData inByUid error:', e3.message);
   const { data: inByEmail, error: e4 } = await sb
     .from('apiary_shares')
-    .select('id, apiary_id, owner_user_id, role, status, created_at')
+    .select('id, apiary_id, owner_id, role, status, created_at')
     .eq('invited_email', userEmail)
     .neq('status', 'accepted'); // pending invitations not yet accepted
   if (e4) console.warn('loadApiarySharingData inByEmail error:', e4.message);
@@ -301,8 +302,8 @@ async function exportData() {
   }
 
   // apiary_shares — owner OR shared-with
-  const sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_user_id', userId);
-  const sharesAsShared = await sb.from('apiary_shares').select('*').eq('shared_with_user_id', userId);
+  const sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_id', userId);
+  const sharesAsShared = await sb.from('apiary_shares').select('*').eq('user_id', userId);
   data.apiary_shares = {
     owned: sharesAsOwner.data || [],
     shared_with_me: sharesAsShared.data || []
