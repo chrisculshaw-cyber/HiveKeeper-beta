@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — HiveKeeper</title>
+<meta name="description" content="Sign in to your HiveKeeper account.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="/hivekeeper-icon.png">
+<link rel="apple-touch-icon" href="/hivekeeper-icon.png">
+<meta name="theme-color" content="#1F4E3A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/assets/account-shared.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <img src="/hivekeeper-icon.png" alt="HiveKeeper">
+      HiveKeeper<sup>™</sup>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="wrap-narrow">
+
+    <div class="page-header" style="text-align:center;">
+      <span class="eyebrow">Account</span>
+      <h1>Sign <em>in</em></h1>
+      <p style="margin: 0 auto;">Welcome back. Sign in to manage your account.</p>
+    </div>
+
+    <div class="card card-narrow">
+      <div id="signin-error" class="alert alert-error" style="display:none;"></div>
+      <div id="signin-success" class="alert alert-success" style="display:none;"></div>
+
+      <form id="signin-form" autocomplete="on">
+        <div class="field">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" class="field-input" required autocomplete="email" inputmode="email" placeholder="you@example.com">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="password">Password</label>
+          <input type="password" id="password" class="field-input" required autocomplete="current-password" placeholder="Your password">
+          <div class="field-help"><a href="#" id="forgot-link">Forgot your password?</a></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="signin-submit">Sign in</button>
+      </form>
+    </div>
+
+    <div style="text-align:center;font-size:13px;color:var(--muted);line-height:1.7;">
+      Don't have an account yet?<br>
+      Get the HiveKeeper app on the <a href="https://apps.apple.com/gb/app/hivekeeper/id6743797961" target="_blank" rel="noopener">App Store</a>, <a href="https://play.google.com/store/apps/details?id=com.culshawconsulting.hivekeeper" target="_blank" rel="noopener">Google Play</a>, or <a href="/">use the web app</a>.
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy-policy.html">Privacy</a>
+      <a href="mailto:support@gethivekeeper.com">Support</a>
+    </div>
+    <div>&copy; 2026 Culshaw Consulting Ltd · Brigstock, Northamptonshire</div>
+  </div>
+</footer>
+
+<!-- Supabase JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/account-shared.js"></script>
+<script>
+// If already authenticated, send straight to /account
+redirectIfAuth('/account');
+
+const form = document.getElementById('signin-form');
+const errorEl = document.getElementById('signin-error');
+const successEl = document.getElementById('signin-success');
+const submitBtn = document.getElementById('signin-submit');
+
+function showError(msg) {
+  errorEl.textContent = msg;
+  errorEl.style.display = 'block';
+  successEl.style.display = 'none';
+}
+function showSuccess(msg) {
+  successEl.textContent = msg;
+  successEl.style.display = 'block';
+  errorEl.style.display = 'none';
+}
+function clearMessages() {
+  errorEl.style.display = 'none';
+  successEl.style.display = 'none';
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessages();
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing in...';
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      showError(error.message || 'Could not sign in. Check your email and password.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+      return;
+    }
+    // Success — redirect to return URL or /account
+    const params = new URLSearchParams(window.location.search);
+    const ret = params.get('return');
+    window.location.href = ret || '/account';
+  } catch (err) {
+    console.error('signin error:', err);
+    showError('Something went wrong. Please try again or email support@gethivekeeper.com.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+  }
+});
+
+// Forgot password — Supabase reset
+document.getElementById('forgot-link').addEventListener('click', async (e) => {
+  e.preventDefault();
+  clearMessages();
+  const email = document.getElementById('email').value.trim();
+  if (!email) {
+    showError('Enter your email address first, then tap "Forgot your password?"');
+    return;
+  }
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://gethivekeeper.com/account'
+    });
+    if (error) {
+      showError(error.message || 'Could not send reset email.');
+      return;
+    }
+    showSuccess('Password reset email sent — check your inbox (and your spam folder if you don\'t see it).');
+  } catch (err) {
+    console.error('reset password error:', err);
+    showError('Could not send reset email. Please try again or email support@gethivekeeper.com.');
+  }
+});
+</script>
+
+</body>
+</html>
