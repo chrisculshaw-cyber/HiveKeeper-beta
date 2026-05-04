@@ -2,7 +2,7 @@
 // Used by /signin, /account, /subscribe
 // ──────────────────────────────────────────────────────────
 
-const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
+const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.sb.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const WORKER_BASE = 'https://flat-bird-f269.chris-culshaw.workers.dev';
 
@@ -12,13 +12,18 @@ const STRIPE_PRICES = {
   commercial: { monthly: 'price_1TND0jAh8P0KJ902RfPHztx5', yearly: 'price_1TND15Ah8P0KJ902AsaDBIAS' }
 };
 
-// Initialise Supabase client (loaded from CDN in HTML)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialise Supabase client (loaded from CDN in HTML).
+// IMPORTANT: the CDN library exposes itself as `window.supabase`. We must NOT
+// redeclare a top-level `supabase` here — that would shadow / collide with
+// the library namespace and break the page. Use `sb` for the client instance
+// instead, and expose it on window so inline page scripts can reach it.
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.sb = sb;
 
 // ─── AUTH STATE ─────────────────────────────────────────────
 
 async function getSession() {
-  const { data, error } = await supabase.auth.getSession();
+  const { data, error } = await sb.auth.getSession();
   if (error) {
     console.warn('getSession error:', error.message);
     return null;
@@ -52,14 +57,14 @@ async function redirectIfAuth(target = '/account') {
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   window.location.href = '/signin';
 }
 
 // ─── PROFILE ────────────────────────────────────────────────
 
 async function getProfile(userId) {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('profiles')
     .select('*')
     .eq('id', userId)
@@ -144,7 +149,7 @@ async function openCustomerPortal() {
 // ─── ACCOUNT ACTIONS ────────────────────────────────────────
 
 async function changePassword(newPassword) {
-  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  const { error } = await sb.auth.updateUser({ password: newPassword });
   if (error) throw error;
 }
 
@@ -186,17 +191,17 @@ async function exportData() {
     }
   };
 
-  const profileRes = await supabase.from('profiles').select('*').eq('id', userId).single();
+  const profileRes = await sb.from('profiles').select('*').eq('id', userId).single();
   data.profile = profileRes.data || null;
 
   for (const t of tablesByUserId) {
-    const res = await supabase.from(t).select('*').eq('user_id', userId);
+    const res = await sb.from(t).select('*').eq('user_id', userId);
     data[t] = res.data || [];
   }
 
   // apiary_shares — owner OR shared-with
-  const sharesAsOwner = await supabase.from('apiary_shares').select('*').eq('owner_user_id', userId);
-  const sharesAsShared = await supabase.from('apiary_shares').select('*').eq('shared_with_user_id', userId);
+  const sharesAsOwner = await sb.from('apiary_shares').select('*').eq('owner_user_id', userId);
+  const sharesAsShared = await sb.from('apiary_shares').select('*').eq('shared_with_user_id', userId);
   data.apiary_shares = {
     owned: sharesAsOwner.data || [],
     shared_with_me: sharesAsShared.data || []
