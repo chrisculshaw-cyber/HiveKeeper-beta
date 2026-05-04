@@ -5461,7 +5461,6 @@ function goTo(id){
   } else {
     diagLog('goTo skipped write (unsafe screen: ' + id + ')');
   }
-  try { renderTrialBanners(); } catch(e) {}
   // Screen-scoped wake lock — keep phone awake for the whole Inspect screen,
   // not just while recording. Field feedback Apr 21: beekeepers wanted their
   // phone to stay on during the full inspection workflow (glove-friendly).
@@ -21651,7 +21650,7 @@ async function loadUserProfile() {
     }
     updatePlanBadge();
     // Re-render tier-dependent UI so upgrades reflect immediately
-    try { renderTrialBanners(); } catch(e) {}
+    try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
   }
   if (data && data.name) {
     // Update any name displays
@@ -23067,7 +23066,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '18:55 4 May 2026 BST · Phase 4ce-5d — refinements to the upgrade flow. (1) handleUpgrade now lands users on gethivekeeper.com/subscribe instead of /account because /subscribe shows clear tier comparison with current plan highlighted — better for upgrade intent. (2) openWebAccountSSO accepts an optional path argument; admin "Your account" pill still defaults to /account, handleUpgrade passes /subscribe. (3) /subscribe page redesigned: removed the two per-tier "Upgrade to Pro" / "Upgrade to Commercial" buttons inside each card; replaced with a single primary "Upgrade to Pro →" CTA below the grid plus a small secondary "Need more capacity? Upgrade to Commercial instead" link. (4) Added a "← Back to your account" link at the very bottom of /subscribe for clean navigation. Phase 4ce-5c (handleUpgrade redirects to web /account, replaces "coming soon"), Phase 4ce-5b (admin dashboard reads breakdowns from /admin-stats via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20:10 4 May 2026 BST · Phase 4ce-5f — UX refinement on the upgrade flow (correcting earlier 4ce-5d). (1) /subscribe page: restored per-card upgrade buttons (Pro primary honey CTA, Commercial secondary forest CTA) — single unified CTA pattern was confusing because the action button was separated from the tier card the user was reading. Removed the "Need more capacity? Upgrade to Commercial instead" link and the unified primary CTA section. "← Back to your account" link at the bottom preserved. (2) In-app pricing modal: collapsed the two per-tier buttons (Upgrade to Pro / Upgrade) into a single "Upgrade now →" button below the disclosure. Tapping opens /subscribe via SSO where users pick a tier with the per-card pills. Comparison content stays in-app to inform; final tier choice happens on web. setBillingPeriod price-display logic preserved; dead button-label-update code removed. _resetUpgradeButtons function left in place (defensive, guarded) for cleanup later. Phase 4ce-5e (removed duplicate bottom trial banner), Phase 4ce-5d (now superseded by this), Phase 4ce-5c (handleUpgrade redirects via SSO), Phase 4ce-5b (admin dashboard reads breakdowns via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred), and Phase 4ce-3 (CORS + soft-delete) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25893,11 +25892,10 @@ function setBillingPeriod(period) {
   if (comPrice) comPrice.innerHTML = period === 'monthly' ? '&#xa3;19.99<span style="font-size:13px;">/mo</span>' : '&#xa3;199.99<span style="font-size:13px;">/yr</span>';
   if (proSub)   proSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;7.89</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;7.89 vs monthly</strong> &nbsp;(≈ &#xa3;3.33/mo)';
   if (comSub)   comSub.innerHTML   = period === 'monthly' ? '<span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;39.89</strong>' : '<strong style="color:#2E7D32;">Save &#xa3;39.89 vs monthly</strong> &nbsp;(≈ &#xa3;16.67/mo)';
-  // Update monthly per-month equivalent
-  var proBtnEl = document.getElementById('btn-upgrade-pro');
-  var comBtnEl = document.getElementById('btn-upgrade-commercial');
-  if (proBtnEl) proBtnEl.innerHTML = period === 'monthly' ? 'Upgrade to Pro &#x2192;' : 'Upgrade to Pro &#x2192;';
-  if (comBtnEl) comBtnEl.innerHTML = period === 'monthly' ? 'Upgrade &#x2192;' : 'Upgrade &#x2192;';
+  // Phase 4ce-5f: per-tier upgrade buttons removed from modal — single
+  // "Upgrade now →" button at the bottom now opens /subscribe via SSO
+  // where the actual tier choice happens. setBillingPeriod still updates
+  // the price displays in the comparison cards above.
 }
 
 // 27 April 2026 Phase 3c — reset all upgrade buttons to default state.
@@ -29741,15 +29739,13 @@ async function checkFoundingBadge() {
     }
     // Mark founding status as verified so trial banner can safely render
     localStorage.setItem('hk_founding_checked', '1');
-    try { renderTrialBanners(); } catch(e) {}
-    // 27 April 2026 Phase 4b-fix — also re-render home top trial banner
-    // post-check. Without this, the anti-flash guard would keep it hidden
-    // forever for actual trial users.
+    // 27 April 2026 Phase 4b-fix — re-render home top trial banner post-check.
+    // Without this, the anti-flash guard would keep it hidden forever for
+    // actual trial users.
     try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
   } catch(e) {
     // Even on error, mark as checked so banner doesn't stay hidden forever
     localStorage.setItem('hk_founding_checked', '1');
-    try { renderTrialBanners(); } catch(e) {}
     try { if (typeof renderTrialBanner === 'function') renderTrialBanner(); } catch(e) {}
   }
 }
@@ -30345,8 +30341,6 @@ function goToApiaryAlerts() {
 }
 
 </script>
-  <div id="trial-footer-banner" style="position:fixed;bottom:var(--nav-h,80px);left:0;right:0;z-index:150;pointer-events:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-align:center;letter-spacing:.01em;padding:9px 20px;background:#C8730A;color:white;display:none;cursor:pointer;line-height:1.3;"></div>
-
   <!-- MODAL: HEALTH BREAKDOWN -->
   <div class="modal-overlay" id="modal-health" onclick="closeModal(event,'modal-health')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
@@ -30679,8 +30673,6 @@ function goToApiaryAlerts() {
           <div id="pricing-pro-price" style="font-size:26px;font-weight:800;color:#185FA5;line-height:1;">&#xa3;3.99<span style="font-size:13px;">/mo</span></div>
           <div id="pricing-pro-sub" style="font-size:12px;color:#185FA5;opacity:0.9;margin:6px 0;min-height:16px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;47.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;7.89</strong></div>
           <div style="font-size:12px;color:#185FA5;opacity:0.7;margin-bottom:12px;">Billed monthly · cancel any time</div>
-          <div style="flex:1;"></div>
-          <button onclick="handleUpgrade('pro')" id="btn-upgrade-pro" style="width:100%;background:#185FA5;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade to Pro &#x2192;</button>
         </div>
         <!-- Commercial -->
         <div style="flex:1;border:2px solid #3B6D11;border-radius:14px;padding:18px 12px;text-align:center;background:#F2F9EA;display:flex;flex-direction:column;">
@@ -30690,12 +30682,11 @@ function goToApiaryAlerts() {
           <div id="pricing-com-price" style="font-size:26px;font-weight:800;color:#3B6D11;line-height:1;">&#xa3;19.99<span style="font-size:13px;">/mo</span></div>
           <div id="pricing-com-sub" style="font-size:12px;color:#3B6D11;opacity:0.9;margin:6px 0;min-height:16px;line-height:1.4;"><span style="text-decoration:line-through;opacity:0.55;">&#xa3;239.88/yr</span> &nbsp;<strong style="color:#2E7D32;">Annual saves &#xa3;39.89</strong></div>
           <div style="font-size:12px;color:#3B6D11;opacity:0.7;margin-bottom:12px;">Billed monthly · cancel any time</div>
-          <div style="flex:1;"></div>
-          <button onclick="handleUpgrade('commercial')" id="btn-upgrade-commercial" style="width:100%;background:#3B6D11;color:white;border:none;border-radius:10px;padding:14px 8px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px;">Upgrade &#x2192;</button>
         </div>
       </div>
 
       <div style="font-size:12px;color:var(--text-l);text-align:center;line-height:1.6;padding-bottom:4px;">Cancel anytime &middot; Secure payment via Stripe &middot; Prices inc. VAT</div>
+      <button onclick="handleUpgrade('pro')" id="btn-upgrade-now" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);color:white;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-top:10px;">Upgrade now &#x2192;</button>
       <button onclick="closeModalEl('modal-pricing')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Maybe later</button>
     </div>
   </div>
@@ -31893,11 +31884,11 @@ function renderTrialBanner() {
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   var isPaid = tier === 'pro' || tier === 'commercial';
   if (isFounder || isPaid) { banner.style.display = 'none'; return; }
-  // 27 April 2026 Phase 4b-fix — anti-flash guard, copied from
-  // renderTrialBanners (footer). Without this, Founders briefly see the
-  // trial chip before Supabase confirms their status, then watch it
-  // disappear when the sync finishes. checkFoundingBadge sets
-  // hk_founding_checked=1 once the Supabase profile check completes.
+  // Anti-flash guard: don't show the banner until Supabase has confirmed
+  // founder status. Without this, Founders briefly see the trial chip
+  // before Supabase confirms their status, then watch it disappear when
+  // the sync finishes. checkFoundingBadge sets hk_founding_checked=1
+  // once the Supabase profile check completes.
   var foundingChecked = localStorage.getItem('hk_founding_checked') === '1';
   if (!foundingChecked && typeof getUserId === 'function' && getUserId()) {
     banner.style.display = 'none';
@@ -31931,52 +31922,9 @@ function renderTrialBanner() {
     banner.style.color = '#FFFFFF';
     banner.innerHTML = '<span style="flex:1;font-size:12px;">&#x26A0;&#xFE0F; Your Pro trial has ended &mdash; some features are restricted</span>'
       + '<span onclick="openPricingModal(\'trial_expired\')" style="background:#FFFFFF;color:#8B0000;border-radius:12px;padding:3px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;">Get Pro</span>';
-  }
-}
-
-
-function renderTrialBanners() {
-  var isFounder = typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper();
-  var tier = localStorage.getItem('hk_tier') || _userTier || '';
-  var isPaid = tier === 'pro' || tier === 'commercial';
-  var b = document.getElementById('trial-footer-banner');
-  if (!b) return;
-  if (isFounder || isPaid) { b.style.display = 'none'; return; }
-  // Don't flash the banner while founding status is still being verified
-  // checkFoundingBadge sets hk_founding_checked=1 once the Supabase check completes
-  var foundingChecked = localStorage.getItem('hk_founding_checked') === '1';
-  if (!foundingChecked && getUserId()) { b.style.display = 'none'; return; }
-  var inTrial = typeof isInTrial === 'function' && isInTrial();
-  if (inTrial) {
-    var dLeft = typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14;
-    b.style.display = 'block';
-    b.style.padding = '9px 20px';
-    b.style.cursor = 'pointer';
-    b.style.pointerEvents = 'all';
-    // 4-band colour progression (23 April 2026):
-    // 14-8 days: green — welcoming, relaxed
-    // 7-4 days: amber — halfway point, start nudging
-    // 3-1 days: red — urgent
-    // 0 days (edge case, trial technically expired same day): dark red
-    if (dLeft >= 8) {
-      b.style.background = '#2D5016';                    // forest green
-      b.textContent = 'HiveKeeper Pro on us — ' + dLeft + ' days remaining';
-    } else if (dLeft >= 4) {
-      b.style.background = '#BA7517';                    // amber
-      b.textContent = dLeft + ' days of Pro left — tap to choose a plan';
-    } else if (dLeft >= 1) {
-      b.style.background = '#C62828';                    // red
-      b.textContent = 'Only ' + dLeft + ' day' + (dLeft !== 1 ? 's' : '') + ' of Pro left — your bees need you! Tap to keep Pro';
-    } else {
-      b.style.background = '#8B0000';                    // dark red
-      b.textContent = 'Last day of Pro trial — tap to choose a plan';
-    }
-    b.onclick = function(){ try{ openPricingModal('trial_banner'); }catch(e){} };
-  } else {
-    b.style.display = 'block';
-    b.style.background = '#8B0000';                       // dark red for expired
-    b.textContent = 'Your Pro trial has ended — tap to keep your hives on Pro';
-    b.onclick = function(){ try{ openPricingModal('trial_expired'); }catch(e){} };
+    // Auto-open pricing modal once when trial first expires (moved from
+    // the deleted footer banner — same hk_trial_expired_shown flag means
+    // it still fires only once per user).
     if (!localStorage.getItem('hk_trial_expired_shown')) {
       localStorage.setItem('hk_trial_expired_shown', '1');
       setTimeout(function(){ try { openPricingModal('trial_expired'); } catch(e) {} }, 1500);
