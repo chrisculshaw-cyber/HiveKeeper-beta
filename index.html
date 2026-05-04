@@ -844,31 +844,6 @@ p { font-size: 17px; line-height: 1.7; }
 }
 .price-card.featured .price-cta:hover { background: var(--honey-bright); border-color: var(--honey-bright); }
 
-.charter-banner {
-  margin-top: 56px;
-  padding: 32px 40px;
-  background: linear-gradient(135deg, var(--honey-soft) 0%, var(--cream-warm) 100%);
-  border: 1px solid var(--honey);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  flex-wrap: wrap;
-}
-.charter-banner-text h4 {
-  font-family: var(--display);
-  font-size: 24px;
-  color: var(--forest);
-  margin-bottom: 6px;
-}
-.charter-banner-text p {
-  font-size: 14px;
-  color: var(--bark);
-  max-width: 560px;
-}
-.charter-banner-text p strong { color: var(--forest); font-weight: 600; }
-
 /* PHOTO BAND — 24 April 2026
    Real-beekeeping photo + credibility copy between Features and Pricing.
    Dark forest background so the photo can pop, honey accent on quote. */
@@ -1128,10 +1103,6 @@ p { font-size: 17px; line-height: 1.7; }
   width: auto;
   display: block;
 }
-.store-badge-disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
 .store-webapp-link {
   display: block;
   margin-top: 16px;
@@ -1215,6 +1186,22 @@ footer {
 }
 .footer-bottom a { color: inherit; }
 .footer-bottom a:hover { color: var(--honey-bright); }
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.footer-social a {
+  color: rgba(244, 226, 182, 0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+.footer-social a:hover {
+  color: var(--honey-bright);
+}
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
@@ -1671,14 +1658,6 @@ footer {
         <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
       </div>
     </div>
-
-    <div class="charter-banner">
-      <div class="charter-banner-text">
-        <h4>Charter Beekeepers — first 100 only</h4>
-        <p>The first 100 keepers to upgrade to Pro annual lock in <strong>&pound;24.99/year for life</strong> (a saving of &pound;15/year against the standard Pro annual price). Our thank-you to the beekeepers who back HiveKeeper at the start.</p>
-      </div>
-      <a href="/hivekeeper-beta1.html" class="btn btn-primary">Become a Charter Beekeeper</a>
-    </div>
   </div>
 </section>
 
@@ -1773,23 +1752,23 @@ footer {
     <h2>Start keeping better records <em>this week.</em></h2>
     <p>14-day Pro trial of the full thing. No credit card needed.</p>
 
-    <!-- 30 April 2026 Phase 4br — official Apple App Store and Google Play
-         badges. App Store live, Google Play awaiting Play Console approval.
-         Web app option as a small text link below since the user can launch
-         it directly from this page. -->
+    <!-- 4 May 2026 Phase 4ce-5h — Google Play link is now live following
+         Play Console approval. Both store badges link directly to their
+         respective listings. Web app option as a small text link below
+         since the user can launch it directly from this page. -->
     <div class="store-badges">
-      <a href="https://apps.apple.com/gb/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store">
+      <a href="https://apps.apple.com/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store">
         <img src="badge-appstore.svg" alt="Download on the App Store">
       </a>
-      <span class="store-badge-disabled" aria-label="Coming soon to Google Play" title="Coming soon to Google Play">
-        <img src="badge-googleplay.svg" alt="Get it on Google Play — coming soon">
-      </span>
+      <a href="https://play.google.com/store/apps/details?id=com.culshawconsulting.hivekeeper" target="_blank" rel="noopener" aria-label="Get HiveKeeper on Google Play">
+        <img src="badge-googleplay.svg" alt="Get it on Google Play">
+      </a>
     </div>
 
     <a href="/hivekeeper-beta1.html" class="store-webapp-link">Or launch the web app in your browser →</a>
 
     <div class="final-cta-note">
-      Google Play approval imminent. Web app works on any device.
+      Available on iOS, Android and the web. Sync across all your devices.
     </div>
   </div>
 </section>
@@ -1839,6 +1818,17 @@ footer {
     <div class="footer-bottom">
       <div>
         &copy; 2026 Culshaw Consulting Ltd · Company No. 16938477 · Trade Mark Filed UKIPO
+      </div>
+      <div class="footer-social">
+        <a href="https://instagram.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="https://facebook.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/hivekeeper-app/" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on LinkedIn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg>
+        </a>
       </div>
       <div>
         Built with care in the UK.

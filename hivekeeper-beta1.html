@@ -3807,6 +3807,25 @@ input[type="checkbox"].hk-chk:checked::after {
 
       <button onclick="closeModalEl('modal-settings')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>
 
+      <!-- 4 May 2026 Phase 4ce-5h — social links. Added in Settings as
+           the most discoverable place users look for "about" / "find us
+           elsewhere" actions. Compact icon row, subtle styling so it
+           doesn't compete with primary settings. -->
+      <div style="margin-top:14px;text-align:center;font-size:11px;color:var(--text-l);">
+        <div style="margin-bottom:8px;letter-spacing:.04em;font-weight:600;text-transform:uppercase;font-size:10px;">Follow HiveKeeper</div>
+        <div style="display:flex;justify-content:center;gap:18px;">
+          <a href="https://instagram.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Instagram" style="color:var(--text-l);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          </a>
+          <a href="https://facebook.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Facebook" style="color:var(--text-l);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/company/hivekeeper-app/" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on LinkedIn" style="color:var(--text-l);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg>
+          </a>
+        </div>
+      </div>
+
       <!-- BUILD VERSION CHIP (27 April 2026 — Phase 1c) — populated by
            updateBuildVersionInSettings() so the auth-screen stamp is the
            single source of truth. -->
@@ -3894,7 +3913,7 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="market-tab" onclick="filterMarket('honey')">&#x1F36F; Honey</div>
       <div class="market-tab" onclick="filterMarket('other')">&#x2699;&#xFE0F; Other</div>
     </div>
-    <button class="market-list-btn" onclick="showToast('Listing feature coming in full release')">+ List something for sale</button>
+    <button class="market-list-btn" onclick="openMarketListingEmail()">+ List something for sale</button>
     <div id="market-listings"></div>
     <div style="height:20px;"></div>
   </div>
@@ -23066,7 +23085,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20:30 4 May 2026 BST · Phase 4ce-5g — partial fix for iOS upgrade-link issue. When user taps "Upgrade now" on iPhone, the magic-link popup approach hits iOS WKWebView quirks and the SSO falls back. Previously the fallback dropped users at /signin, losing the /subscribe context. Now fallbacks target the original requested URL (/subscribe or /account), so iPhone users at minimum land on the right page where they can sign in if needed. Proper iOS fix (pre-fetch magic link at modal-open time so the popup is synchronous from user gesture, dodging WKWebView popup blocking) deferred to tomorrow morning. Phase 4ce-5f (per-card pills on /subscribe + single Upgrade-now button in modal), Phase 4ce-5e (removed duplicate trial banner), Phase 4ce-5d (now superseded by 4ce-5f), Phase 4ce-5c (handleUpgrade redirects via SSO), Phase 4ce-5b (admin dashboard reads breakdowns via service-role), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred), and Phase 4ce-3 (CORS + soft-delete) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '21:00 4 May 2026 BST · Phase 4ce-5h — last tasks of the day. (1) Social media icons added to Settings (Instagram, Facebook, LinkedIn) — three SVG icons in a row at the bottom of the settings modal, between Close and Build chip. (2) Marketplace "+ List something for sale" button now opens an email composer to info@gethivekeeper.com with a body template asking for type/title/description/price/location/contact. Listings are FREE during launch — decision: build inventory first, monetise later. (3) Backlog: BACKLOG-008 logged as P1 for generalised tier-limit-visibility (apiary, hive, photo, AI, voice counts must be visible BEFORE user invests effort, not after). Companion homepage changes (separate file): Charter Beekeeper offer removed; Google Play badge now live (linking to com.culshawconsulting.hivekeeper); orphaned charter and store-badge-disabled CSS cleaned up; social media icons added to footer-bottom row. Phase 4ce-5g (iOS upgrade fallback fix), Phase 4ce-5f (per-card pills + single Upgrade-now button), Phase 4ce-5e (removed duplicate trial banner), Phase 4ce-5b (admin dashboard reads via service-role), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25645,6 +25664,31 @@ function marketBannerClick() {
   if (_currentMarketAd && _currentMarketAd.url) {
     window.open(_currentMarketAd.url, '_blank');
   }
+}
+
+// 4 May 2026 Phase 4ce-5h — Marketplace listing flow.
+// Until self-service listing creation ships, all listings come in by
+// email so a human can review, format and add them. Listings are FREE
+// for now (decision: build inventory first, monetise later when there's
+// genuine demand). Routes to info@gethivekeeper.com.
+function openMarketListingEmail() {
+  var subject = 'New marketplace listing — HiveKeeper';
+  var body = ''
+    + 'Hi,\n\n'
+    + 'I would like to list the following on the HiveKeeper marketplace:\n\n'
+    + '— TYPE (Nuc / Queen / Equipment / Honey / Other): \n'
+    + '— TITLE (short, e.g. "Buckfast nuc, ready for collection"): \n'
+    + '— DESCRIPTION (a few lines about what you are selling): \n'
+    + '— PRICE: \n'
+    + '— LOCATION (town/postcode area): \n'
+    + '— CONTACT (how should buyers reach you?): \n\n'
+    + 'You can attach photos to this email if you have them.\n\n'
+    + 'Listings are free during launch. We will email you when your listing is live.\n\n'
+    + 'Thanks!';
+  var mailto = 'mailto:info@gethivekeeper.com'
+    + '?subject=' + encodeURIComponent(subject)
+    + '&body=' + encodeURIComponent(body);
+  window.location.href = mailto;
 }
 
 // ── SUBSCRIPTION TIERS ───────────────────────────────────
