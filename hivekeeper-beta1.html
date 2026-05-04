@@ -23067,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '14:55 4 May 2026 BST · Phase 4ce-4a — small addition: admin dashboard now has a "Your Account" pill at the top that opens https://gethivekeeper.com/account in a new tab (with ↗ external-link indicator). Mirrors Settings → Your details pill styling exactly. No behaviour changes elsewhere — Phase 4ce-4 baseline (auth-screen wording correction, Stripe IAP indefinitely deferred, web-first account management direction) unchanged. Phase 4ce-3 hotfix baseline still in effect: CORS preflight Authorization fix, account deletion soft-delete with 30-day grace, /admin-stats endpoint, Export and Delete in Data modal sections, apiary name updates on switch, allowlist tightened. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '15:30 4 May 2026 BST · Phase 4ce-5 — magic-link SSO from app to web /account. Admin panel "Your account" pill now calls a new worker endpoint /generate-web-signin-link which validates the user\'s existing app session and returns a one-time Supabase magic link; the app opens that link in a new tab and the user lands on gethivekeeper.com/account already signed in. No password typing. Falls back gracefully to /signin if anything fails. Service-role key stays in worker env vars, never exposed. Companion fix (run separately in Supabase SQL Editor, not in this file): added on_auth_user_created trigger on auth.users → public.handle_new_user() that creates a profiles row for every new signup, plus backfilled 44 profiles for existing users who had no row due to the missing trigger. Result: admin dashboard now shows 45 profiles for 45 auth.users (gap=0). Phase 4ce-4 baseline (auth-screen wording correction, Stripe IAP indefinitely deferred, web-first model) unchanged. Phase 4ce-3 hotfix baseline still in effect: CORS preflight Authorization fix, soft-delete with 30-day grace, /admin-stats endpoint, Data modal placement, apiary name updates, allowlist tightened. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26249,6 +26249,59 @@ function openAdminPanel() {
   loadAdminDashboard();
 }
 
+// 4 May 2026 Phase 4ce-5 — SSO entry to web account.
+// Generates a one-time Supabase magic link via the worker, opens it
+// in a new tab. User lands on /account already signed in, no typing.
+// Falls back to /signin (typed login) if anything goes wrong so the
+// user is never stranded.
+async function openWebAccountSSO() {
+  // Open a new tab IMMEDIATELY — browsers block window.open() that
+  // happens after an async network call (popup blocker treats it as
+  // unprompted). We open a placeholder, then either redirect it to
+  // the magic link or to /signin as fallback.
+  var popup = window.open('about:blank', '_blank');
+  if (!popup) {
+    // Popup blocked — fall back to same-window redirect to /signin
+    window.location.href = 'https://gethivekeeper.com/signin';
+    return;
+  }
+  popup.document.write('<!DOCTYPE html><html><head><title>Signing you in to HiveKeeper...</title><style>body{font-family:system-ui,sans-serif;background:#faf5e9;color:#1F4E3A;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;}</style></head><body><div style="text-align:center;"><div style="font-size:18px;font-weight:600;">Signing you in to HiveKeeper...</div><div style="margin-top:8px;color:#6b6050;font-size:13px;">This should only take a moment.</div></div></body></html>');
+
+  try {
+    var sb = getSupabase();
+    var sessRes = await sb.auth.getSession();
+    var session = sessRes && sessRes.data && sessRes.data.session;
+    if (!session || !session.access_token) {
+      // No session — send to /signin
+      popup.location.href = 'https://gethivekeeper.com/signin';
+      return;
+    }
+    var resp = await fetch(WORKER_BASE + '/generate-web-signin-link', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify({ redirectTo: 'https://gethivekeeper.com/account' })
+    });
+    if (!resp.ok) {
+      console.warn('SSO link generation failed:', resp.status);
+      popup.location.href = 'https://gethivekeeper.com/signin';
+      return;
+    }
+    var data = await resp.json();
+    if (!data || !data.url) {
+      console.warn('SSO link missing url in response');
+      popup.location.href = 'https://gethivekeeper.com/signin';
+      return;
+    }
+    popup.location.href = data.url;
+  } catch (e) {
+    console.warn('openWebAccountSSO error:', e && e.message);
+    try { popup.location.href = 'https://gethivekeeper.com/signin'; } catch (e2) {}
+  }
+}
+
 async function loadAdminDashboard() {
   if (!isAdminUser()) return;
   var sb = getSupabase();
@@ -26313,21 +26366,21 @@ async function loadAdminDashboard() {
 
     var html = '';
 
-    // 4 May 2026 Phase 4ce-5 — quick link to web /account page.
+    // 4 May 2026 Phase 4ce-5 — quick SSO link to web /account page.
     // Mirrors the Settings → Your details pill style. The ↗ glyph in the
     // top-right indicates this opens externally (new tab), matching the
-    // Spotify convention for off-app links. /account is hosted at
-    // gethivekeeper.com and provides full account management including
-    // editable profile, emergency contact, subscription, and apiary
-    // sharing — Spotify-style web-first model.
-    html += '<a href="https://gethivekeeper.com/account" target="_blank" rel="noopener noreferrer" '
+    // Spotify convention for off-app links. Tapping calls a worker
+    // endpoint that issues a one-time magic link, then opens that link
+    // in a new tab — user is auto-signed-in on /account, no password
+    // typing required. Falls back gracefully to /signin if SSO fails.
+    html += '<button type="button" onclick="openWebAccountSSO()" '
       + 'style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--forest),#2a6448);'
       + 'border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:13px;'
-      + 'font-weight:700;color:white;cursor:pointer;text-decoration:none;margin-bottom:14px;position:relative;">'
+      + 'font-weight:700;color:white;cursor:pointer;text-decoration:none;margin-bottom:14px;position:relative;width:100%;">'
         + '<span style="font-size:22px;">👤</span>'
-        + '<span style="flex:1;">Your account</span>'
+        + '<span style="flex:1;text-align:left;">Your account</span>'
         + '<span style="font-size:14px;opacity:0.85;" aria-label="Opens in a new tab">&#x2197;</span>'
-      + '</a>';
+      + '</button>';
 
     // GROUND TRUTH from auth.users (if worker call succeeded)
     if (authStats && authStats.ok) {
