@@ -3702,11 +3702,20 @@ input[type="checkbox"].hk-chk:checked::after {
         <div style="font-size:10px;color:var(--text-l);text-align:center;margin-top:6px;line-height:1.4;padding:0 4px;">Cancel, downgrade, update payment, or view invoices — anytime, no questions asked.</div>
       </div>
 
-      <!-- 4-TILE GRID: Your details, Reports, Preferences, Data -->
+      <!-- 4-TILE GRID: Your account, Reports, Preferences, Data -->
+      <!-- 4 May 2026 Phase 4ce-5i — "Your details" tile replaced with
+           "Your account" — opens web /account via magic-link SSO. Web
+           page is the canonical source for profile management, subscription,
+           apiary sharing etc. ↗ glyph in top-right indicates external.
+           Profile data (name, phone, address, SOS contact) stays cached
+           in localStorage so SOS works offline regardless of signal.
+           openAccountModal function preserved in code but unreachable
+           from UI for safe revert. -->
       <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button onclick="closeModalEl('modal-settings');setTimeout(openAccountModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){openWebAccountSSO('/account');},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;">
+          <span style="position:absolute;top:6px;right:8px;font-size:11px;opacity:0.85;" aria-label="Opens in a new tab">&#x2197;</span>
           <span style="font-size:24px;">👤</span>
-          <span>Your details</span>
+          <span>Your account</span>
         </button>
         <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReportsModal();},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
           <span style="font-size:24px;">📊</span>
@@ -23085,7 +23094,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '21:00 4 May 2026 BST · Phase 4ce-5h — last tasks of the day. (1) Social media icons added to Settings (Instagram, Facebook, LinkedIn) — three SVG icons in a row at the bottom of the settings modal, between Close and Build chip. (2) Marketplace "+ List something for sale" button now opens an email composer to info@gethivekeeper.com with a body template asking for type/title/description/price/location/contact. Listings are FREE during launch — decision: build inventory first, monetise later. (3) Backlog: BACKLOG-008 logged as P1 for generalised tier-limit-visibility (apiary, hive, photo, AI, voice counts must be visible BEFORE user invests effort, not after). Companion homepage changes (separate file): Charter Beekeeper offer removed; Google Play badge now live (linking to com.culshawconsulting.hivekeeper); orphaned charter and store-badge-disabled CSS cleaned up; social media icons added to footer-bottom row. Phase 4ce-5g (iOS upgrade fallback fix), Phase 4ce-5f (per-card pills + single Upgrade-now button), Phase 4ce-5e (removed duplicate trial banner), Phase 4ce-5b (admin dashboard reads via service-role), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '21:55 4 May 2026 BST · Phase 4ce-5j — Live activity panel added to top of admin dashboard. Shows distinct active users (analytics_events with user_id) across four windows: last 5 min / last hour / last 24h / last 30d. Green pulsing dot if 5min count > 0 (someone is around), grey dot if zero (safe to deploy). Operational use case: see at a glance whether to push an update now or wait. Worker /admin-stats response extended with activeUsers5min, activeUsers1h, activeUsers24h fields (existing activeUsers30d unchanged). Single Supabase fetch (30 days of events) covers all four windows by post-processing timestamps in the worker. Phase 4ce-5i (Settings tile rename to "Your account" + web SSO), 4ce-5h (social media + marketplace email + Charter offer removal + Google Play live + BACKLOG-008 logged), 4ce-5g (iOS upgrade fallback fix), 4ce-5f (per-card pills + single Upgrade-now button), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard reads via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -23387,7 +23396,7 @@ var HK_MANUAL = [
     id: 'sos',
     title: '16. SOS Emergency Alert',
     body:
-      'Set up your emergency contact in Settings → Your details before you need it.\n\n' +
+      'Set up your emergency contact in Settings → Your account before you need it. (Opens gethivekeeper.com/account in your browser.)\n\n' +
       'To use: tap SOS in the bottom navigation, confirm the alert. HiveKeeper sends your GPS location and a Google Maps link to your contact via SMS and WhatsApp simultaneously.'
   },
   {
@@ -23407,7 +23416,7 @@ var HK_MANUAL = [
     title: '18. Settings',
     body:
       'Tap the ⚙ gear icon in any screen header to open Settings.\n\n' +
-      'Tile grid (top of Settings): Your details / Reports / Preferences / Data + the full-width Apiary settings tile underneath.\n\n' +
+      'Tile grid (top of Settings): Your account / Reports / Preferences / Data + the full-width Apiary settings tile underneath. "Your account" opens gethivekeeper.com/account in your browser, where you can edit your profile, emergency contact, manage your subscription, and view who your apiaries are shared with.\n\n' +
       'Inventory: Settings → Inventory opens your full equipment and honey stock view. Add, edit, transition between states, see audit log of recent activity. See section 9 for detail.\n\n' +
       'Tools: 🔄 Sync status / 🐝 Refer a beekeeper / 👥 Share this apiary / 📅 Subscribe to calendar (Pro+) / 🔍 Bee inspector contacts.\n\n' +
       'Plan and subscription: the current plan badge (Free / Trial / Pro / Commercial / Founder) appears at the top. Tap "View plans →" for the pricing matrix. Pro and Commercial subscribers see a "Manage or cancel subscription →" button — cancel, downgrade, update payment, or view invoices anytime, no questions asked.\n\n' +
@@ -26406,7 +26415,7 @@ async function loadAdminDashboard() {
     var html = '';
 
     // 4 May 2026 Phase 4ce-5 — quick SSO link to web /account page.
-    // Mirrors the Settings → Your details pill style. The ↗ glyph in the
+    // Mirrors the Settings → Your account pill style. The ↗ glyph in the
     // top-right indicates this opens externally (new tab), matching the
     // Spotify convention for off-app links. Tapping calls a worker
     // endpoint that issues a one-time magic link, then opens that link
@@ -26429,6 +26438,28 @@ async function loadAdminDashboard() {
           + '⚠️ ' + authStats.profileSyncWarning + '. Check your Supabase signup trigger.'
           + '</div>';
       }
+
+      // LIVE ACTIVITY — Phase 4ce-5j. Shows distinct active users across
+      // four windows. Top use case: "is anyone using the app right now?
+      // Safe to push an update?" Green pulsing dot if last-5min count > 0,
+      // grey dot if zero.
+      var nowCount = authStats.activeUsers5min || 0;
+      var nowDotColor = nowCount > 0 ? '#2D7A2D' : '#999';
+      var nowDotPulse = nowCount > 0 ? 'animation:pulse 2s ease-in-out infinite;' : '';
+      html += '<style>@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}</style>'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Live activity</div>'
+        + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:16px;">'
+        + '<div style="background:rgba(45,122,45,0.08);border:1px solid rgba(45,122,45,0.2);border-radius:8px;padding:10px 6px;text-align:center;">'
+        +   '<div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:18px;font-weight:800;color:' + nowDotColor + ';line-height:1;margin-bottom:4px;">'
+        +     '<span style="width:8px;height:8px;border-radius:50%;background:' + nowDotColor + ';display:inline-block;' + nowDotPulse + '"></span>'
+        +     nowCount
+        +   '</div>'
+        +   '<div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">5 min</div>'
+        + '</div>'
+        + statCardSmall((authStats.activeUsers1h || 0), 'last hour')
+        + statCardSmall((authStats.activeUsers24h || 0), 'last 24h')
+        + statCardSmall((authStats.activeUsers30d || 0), 'last 30d')
+        + '</div>';
 
       html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Auth (ground truth)</div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'
@@ -26529,6 +26560,13 @@ function miniStat(label, value) {
   return '<div style="background:var(--cream);border-radius:var(--rs);padding:8px;text-align:center;border:1px solid var(--wax);">'
     + '<div style="font-size:18px;font-weight:800;color:var(--forest);font-family:\'Cormorant Garamond\',serif;">' + value + '</div>'
     + '<div style="font-size:9px;font-weight:700;color:var(--text-l);margin-top:2px;">' + label + '</div>'
+    + '</div>';
+}
+// Phase 4ce-5j — compact stat for the Live activity panel (4-up grid).
+function statCardSmall(value, label) {
+  return '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:8px;padding:10px 6px;text-align:center;">'
+    + '<div style="font-size:18px;font-weight:800;color:var(--forest);font-family:\'Cormorant Garamond\',serif;line-height:1;margin-bottom:4px;">' + value + '</div>'
+    + '<div style="font-size:9px;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">' + label + '</div>'
     + '</div>';
 }
 
