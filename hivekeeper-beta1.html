@@ -23067,7 +23067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '17:50 4 May 2026 BST · Phase 4ce-5b — admin dashboard now reads tier breakdowns and engagement counts from /admin-stats (worker, service-role) instead of querying profiles/analytics_events/referrals directly under RLS. Fixes the "Profiles: 1" issue where the dashboard saw only Chris\'s own row because of row-level security on the profiles table. Worker /admin-stats response extended with: freeUsers, proUsers, commercialUsers, foundingUsers, consentedUsers, newUsers30d, activeUsers30d, referralsTotal, referralsConverted, eventCounts. Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '18:25 4 May 2026 BST · Phase 4ce-5c — upgrade flow now redirects to gethivekeeper.com/account via magic-link SSO instead of showing "coming soon" messaging. Trial AND post-trial users both go to /account where they can upgrade if they want; founder users still see the celebration modal. Reuses openWebAccountSSO() so users land signed in. Apple anti-steering risk acknowledged and accepted by Chris (decision logged in code FIXME) — will revisit if Apple flags during a future iOS review. Phase 4ce-5b (admin dashboard reads breakdowns from /admin-stats via service-role, fixes RLS-induced "Profiles: 1"), Phase 4ce-5a (apiary_shares column-name bugfix), Phase 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), Phase 4ce-4 (auth-screen wording, IAP deferred, web-first model), and Phase 4ce-3 (CORS + soft-delete + Data modal + allowlist) baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25980,22 +25980,20 @@ function _promptAnnualUpsell(targetTier) {
 async function handleUpgrade(targetTier) {
   trackEvent('upgrade_intent', { target_tier: targetTier, current_tier: getUserTier() });
 
-  // 3 May 2026 Phase 4ce — Stripe upgrade flow disabled until Apple IAP
-  // and Google Play Billing ship (Phase 3d). Apple's App Store guidelines
-  // and Google Play's payments policy require native in-app purchase
-  // for digital subscriptions; routing users to Stripe in the webview
-  // risked app removal. Replaced with friendly "coming soon" messaging
-  // that respects users currently on trial.
+  // 4 May 2026 Phase 4ce-5c — upgrade now redirects to gethivekeeper.com/account
+  // via magic-link SSO. Web /account has the full subscription experience
+  // (Stripe Checkout, Customer Portal, plan comparison) so app stays out of
+  // the payments pipeline entirely. Avoids Apple IAP / Google Play Billing
+  // requirements that would be triggered by in-app payment flow.
   //
-  // Founder users keep their celebration modal — they don't pay anyway.
-  // Trial users see how many days remain.
-  // Post-trial Free users see "Upgrade coming soon" with a generous tone.
-  // The function signature is preserved so existing callers (pricing modal
-  // buttons, paywall prompts) continue to work without code changes.
-  // FIXME(phase-3d): when IAP/Play Billing ship, restore the original
-  // checkout flow from restore-point prephase4ce. STRIPE_PRICES,
-  // _promptAnnualUpsell, _resetUpgradeButtons, and openCustomerPortal
-  // remain in place ready for that re-enable.
+  // Founder users still see the celebration modal — they don't need /account.
+  // Users not signed in still get the sign-in toast.
+  // Trial users AND post-trial users both go to /account where they can
+  // upgrade if they want to. Trial users aren't pushed — they just get
+  // the option.
+  // FIXME(future): if Apple flags this for anti-steering, gate the
+  // redirect behind detectPlatform().isMedian && detectPlatform().isIOS
+  // and restore "coming soon" for that branch.
 
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) {
     var founderModal = document.getElementById('modal-founder');
@@ -26012,20 +26010,18 @@ async function handleUpgrade(targetTier) {
     return;
   }
 
-  // Trial in progress — surface the days remaining as a positive message
-  if (typeof isInTrial === 'function' && isInTrial()) {
-    var dLeft = (typeof trialDaysLeft === 'function') ? trialDaysLeft() : null;
-    var trialMsg = (dLeft === 1)
-      ? 'You\'ve got 1 day of Pro trial left — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.'
-      : (dLeft != null)
-        ? 'You\'ve got ' + dLeft + ' days of Pro trial left — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.'
-        : 'Your Pro trial is in progress — enjoy it.\n\nUpgrades will reopen shortly via App Store and Google Play. We\'ll let you know.';
-    alert(trialMsg);
-    return;
+  // Anyone signed in (trial or post-trial) — open /account on the web
+  // via magic-link SSO. Reuses the same function the admin "Your account"
+  // pill uses, so the user lands at /account signed in, no password typed.
+  // Toast on the original tab gives a hint about what just happened.
+  showToast('Opening your account on the web...');
+  if (typeof openWebAccountSSO === 'function') {
+    openWebAccountSSO();
+  } else {
+    // Fallback if the SSO function isn't available for any reason —
+    // should never happen post Phase 4ce-5, but defensive.
+    window.open('https://gethivekeeper.com/account', '_blank');
   }
-
-  // Trial ended (or never started) — generous "coming soon" message
-  alert('Upgrade coming soon!\n\nWe\'re finishing the App Store and Google Play billing integration. Until then, keep using HiveKeeper for free — your account, hives and inspections stay exactly as they are.\n\nWe\'ll email you the moment paid plans go live.');
 }
 
 async function openCustomerPortal() {
