@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose your plan — HiveKeeper</title>
+<meta name="description" content="HiveKeeper subscription plans — Free, Pro, and Commercial. Built for UK beekeepers.">
+<link rel="icon" type="image/png" href="/hivekeeper-icon.png">
+<link rel="apple-touch-icon" href="/hivekeeper-icon.png">
+<meta name="theme-color" content="#1F4E3A">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/assets/account-shared.css">
+
+<style>
+/* /subscribe-specific styles — pricing grid */
+.wrap-wide { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+.toggle-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0 48px;
+}
+.toggle {
+  display: inline-flex;
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 4px;
+  position: relative;
+}
+.toggle-option {
+  padding: 10px 28px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+}
+.toggle-option.active { background: var(--forest); color: var(--cream); }
+.save-badge {
+  display: inline-block;
+  background: var(--honey);
+  color: var(--cream);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+@media (max-width: 900px) {
+  .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin-left: auto; margin-right: auto; }
+}
+
+.price-card {
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 36px 28px;
+  position: relative;
+  transition: all 0.3s;
+}
+.price-card.featured {
+  background: var(--forest);
+  color: var(--cream);
+  border-color: var(--forest);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -12px rgba(31, 78, 58, 0.3);
+}
+.price-card.featured h3 { color: var(--honey-bright); }
+.price-card.featured .price-amount { color: var(--honey-bright); }
+.price-card.featured .price-feat { color: rgba(244, 226, 182, 0.85); border-bottom-color: rgba(228, 163, 58, 0.15); }
+.price-card.featured .price-feat strong { color: var(--cream); }
+.price-card.featured .price-feat-icon { color: var(--honey-bright); }
+.price-card.featured .price-meta { color: rgba(244, 226, 182, 0.7); }
+
+.price-popular {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--honey);
+  color: var(--cream);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.price-card h3 {
+  font-family: var(--display);
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--forest);
+}
+.price-amount {
+  font-family: var(--display);
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.price-amount-suffix { font-size: 16px; font-weight: 400; color: var(--muted); }
+.price-meta { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.5; min-height: 38px; }
+
+.price-feat-list { list-style: none; padding: 0; margin: 0 0 28px; }
+.price-feat {
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--bark);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.price-feat:last-child { border-bottom: none; }
+.price-feat strong { color: var(--ink); font-weight: 600; }
+.price-feat-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--honey);
+  margin-top: 1px;
+}
+.price-feat-icon.minus { color: var(--muted); opacity: 0.5; }
+
+.price-cta { width: 100%; padding: 14px 24px; font-size: 14px; }
+
+.disclosure {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin: 32px auto 0;
+  max-width: 720px;
+  line-height: 1.7;
+}
+
+.signed-out-banner {
+  text-align: center;
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  font-size: 13px;
+  color: var(--bark);
+}
+.signed-out-banner a { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <img src="/hivekeeper-icon.png" alt="HiveKeeper">
+      HiveKeeper<sup>™</sup>
+    </a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/account" id="account-link">Sign in</a>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+  <div class="wrap-wide">
+
+    <div class="page-header" style="text-align:center;">
+      <span class="eyebrow">Plans &amp; pricing</span>
+      <h1>Choose your <em>plan</em></h1>
+      <p style="margin: 0 auto;">Start with our generous Free tier. Upgrade any time to unlock more.</p>
+    </div>
+
+    <!-- Cancelled banner if returning from cancelled checkout -->
+    <div id="cancelled-banner" class="alert alert-info" style="display:none;text-align:center;">
+      No problem — checkout cancelled. You can come back any time.
+    </div>
+
+    <!-- Already-Pro banner -->
+    <div id="already-pro-banner" class="alert alert-success" style="display:none;text-align:center;">
+      You're already on <strong id="already-pro-tier">Pro</strong>. <a href="/account">Manage your subscription →</a>
+    </div>
+
+    <!-- Sign-in prompt for unauthenticated users -->
+    <div id="signin-banner" class="signed-out-banner" style="display:none;">
+      Already have an account? <a href="/signin?return=/subscribe">Sign in</a> to subscribe. New here? <a href="/">Get the app first</a> to create your account.
+    </div>
+
+    <!-- Monthly / Annual toggle -->
+    <div class="toggle-wrap">
+      <div class="toggle">
+        <div class="toggle-option active" id="toggle-monthly" onclick="setBillingPeriod('monthly')">Monthly</div>
+        <div class="toggle-option" id="toggle-yearly" onclick="setBillingPeriod('yearly')">
+          Annual <span class="save-badge">Save 17%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pricing grid -->
+    <div class="pricing-grid">
+
+      <!-- FREE -->
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price-amount">£0<span class="price-amount-suffix">/forever</span></div>
+        <div class="price-meta">Generous limits. No card needed.</div>
+        <ul class="price-feat-list">
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div><strong>3 hives, 1 apiary</strong></div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>3 voice inspections / month</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>3 AI photo analyses / month</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>5 AI chats / day</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Asian Hornet alerts</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Lone-worker SOS</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Last 5 inspections per hive</div></li>
+        </ul>
+        <button class="btn btn-secondary price-cta" onclick="handleFreeClick()">You're already on Free</button>
+      </div>
+
+      <!-- PRO (featured) -->
+      <div class="price-card featured">
+        <span class="price-popular">Most popular</span>
+        <h3>Pro</h3>
+        <div class="price-amount" id="pro-price">£3.99<span class="price-amount-suffix">/month</span></div>
+        <div class="price-meta" id="pro-meta">Billed monthly. Cancel any time.</div>
+        <ul class="price-feat-list">
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div><strong>5 apiaries, 50 hives</strong></div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div><strong>Unlimited</strong> voice inspections</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div><strong>Unlimited</strong> AI photo analysis</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>100 AI chats / day</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Full inspection history</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Hive sharing &amp; team access</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>NBU/BeeBase exports, calendar sync</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Bulk QR sticker printing</div></li>
+        </ul>
+        <button class="btn btn-honey price-cta" onclick="handleUpgrade('pro')" id="pro-cta">Upgrade to Pro →</button>
+      </div>
+
+      <!-- COMMERCIAL -->
+      <div class="price-card">
+        <h3>Commercial</h3>
+        <div class="price-amount" id="commercial-price">£19.99<span class="price-amount-suffix">/month</span></div>
+        <div class="price-meta" id="commercial-meta">For larger operations. Cancel any time.</div>
+        <ul class="price-feat-list">
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div><strong>Unlimited</strong> apiaries &amp; hives</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>500 AI chats / day</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>All Pro features included</div></li>
+          <li class="price-feat"><span class="price-feat-icon">✓</span><div>Priority email support</div></li>
+        </ul>
+        <button class="btn btn-secondary price-cta" onclick="handleUpgrade('commercial')" id="commercial-cta">Upgrade to Commercial →</button>
+      </div>
+
+    </div>
+
+    <p class="disclosure">
+      Subscriptions auto-renew unless cancelled. Cancel any time from <a href="/account">your account</a>. Secure payment via Stripe. Prices include VAT where applicable.<br>
+      Questions? Email <a href="mailto:support@gethivekeeper.com">support@gethivekeeper.com</a>
+    </p>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/privacy-policy.html">Privacy</a>
+      <a href="mailto:support@gethivekeeper.com">Support</a>
+    </div>
+    <div>&copy; 2026 Culshaw Consulting Ltd · Brigstock, Northamptonshire</div>
+  </div>
+</footer>
+
+<!-- Supabase JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/assets/account-shared.js"></script>
+<script>
+let _billingPeriod = 'monthly';
+let _profile = null;
+let _signedIn = false;
+
+// Pricing (from worker STRIPE_PRICES — keep in sync)
+const PRICES = {
+  pro:        { monthly: { display: '£3.99', meta: 'Billed monthly. Cancel any time.' },
+                yearly:  { display: '£39.99', meta: 'Billed yearly — saves £7.89 vs monthly.' } },
+  commercial: { monthly: { display: '£19.99', meta: 'For larger operations. Cancel any time.' },
+                yearly:  { display: '£199.99', meta: 'Billed yearly — saves £39.89 vs monthly.' } }
+};
+
+// ── Bootstrap ──────────────────────────────────────────────
+async function bootstrap() {
+  // Check cancelled query param
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('cancelled') === '1') {
+    document.getElementById('cancelled-banner').style.display = 'block';
+    window.history.replaceState({}, '', '/subscribe');
+  }
+
+  // Check auth state
+  const session = await getSession();
+  _signedIn = !!session;
+
+  if (_signedIn) {
+    document.getElementById('account-link').textContent = 'Account';
+    document.getElementById('account-link').href = '/account';
+    _profile = await getProfile(session.user.id);
+
+    // Founding Beekeepers can't / shouldn't subscribe — redirect
+    if (_profile && _profile.is_founding_beekeeper) {
+      document.getElementById('already-pro-banner').innerHTML =
+        'You\'re a <strong>Founding Beekeeper</strong> — you have Pro features forever, no subscription needed. <a href="/account">View your account →</a>';
+      document.getElementById('already-pro-banner').style.display = 'block';
+      // Disable upgrade buttons
+      document.getElementById('pro-cta').disabled = true;
+      document.getElementById('commercial-cta').disabled = true;
+      document.getElementById('pro-cta').textContent = 'You\'re a Founder';
+      document.getElementById('commercial-cta').textContent = 'You\'re a Founder';
+      return;
+    }
+
+    // If already on Pro/Commercial, surface the manage-subscription banner
+    const tier = _profile && _profile.tier;
+    if (tier === 'pro' || tier === 'commercial') {
+      document.getElementById('already-pro-tier').textContent = tier === 'pro' ? 'Pro' : 'Commercial';
+      document.getElementById('already-pro-banner').style.display = 'block';
+    }
+  } else {
+    document.getElementById('signin-banner').style.display = 'block';
+  }
+}
+
+// ── Toggle billing period ─────────────────────────────────
+function setBillingPeriod(period) {
+  _billingPeriod = period;
+  document.getElementById('toggle-monthly').classList.toggle('active', period === 'monthly');
+  document.getElementById('toggle-yearly').classList.toggle('active', period === 'yearly');
+
+  const pro = PRICES.pro[period];
+  const commercial = PRICES.commercial[period];
+
+  document.getElementById('pro-price').innerHTML =
+    pro.display + '<span class="price-amount-suffix">/' + (period === 'monthly' ? 'month' : 'year') + '</span>';
+  document.getElementById('pro-meta').textContent = pro.meta;
+
+  document.getElementById('commercial-price').innerHTML =
+    commercial.display + '<span class="price-amount-suffix">/' + (period === 'monthly' ? 'month' : 'year') + '</span>';
+  document.getElementById('commercial-meta').textContent = commercial.meta;
+}
+
+// ── Handle Free button ────────────────────────────────────
+function handleFreeClick() {
+  if (_signedIn) {
+    window.location.href = '/account';
+  } else {
+    window.location.href = '/';
+  }
+}
+
+// ── Handle Upgrade buttons ────────────────────────────────
+async function handleUpgrade(tier) {
+  if (!_signedIn) {
+    window.location.href = '/signin?return=/subscribe';
+    return;
+  }
+  // Founding Beekeeper guard (already disabled above, but defensive)
+  if (_profile && _profile.is_founding_beekeeper) {
+    showToast('You\'re a Founding Beekeeper — Pro features are yours forever, no subscription needed.', 'info');
+    return;
+  }
+  // Already on this tier — just go to /account
+  if (_profile && _profile.tier === tier) {
+    window.location.href = '/account';
+    return;
+  }
+
+  const ctaId = tier === 'pro' ? 'pro-cta' : 'commercial-cta';
+  const btn = document.getElementById(ctaId);
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Opening checkout...';
+
+  try {
+    await startCheckout(tier, _billingPeriod);
+    // startCheckout redirects on success — if we reach here, something unusual happened
+  } catch (err) {
+    console.error('upgrade error:', err);
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+
+// Boot
+bootstrap();
+</script>
+
+</body>
+</html>
