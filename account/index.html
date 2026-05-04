@@ -405,7 +405,7 @@ async function handleDeleteAccount() {
     await deleteAccount();
     closeModal('modal-delete');
     alert('Your account is scheduled for deletion.\n\nWe\'ve emailed you a confirmation. Your data will be saved for 30 days — sign in again within 30 days to restore everything.\n\nSigning you out now.');
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     window.location.href = '/';
   } catch (err) {
     console.error('delete error:', err);
