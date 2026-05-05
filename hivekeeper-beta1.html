@@ -21998,7 +21998,8 @@ async function onAuthSuccess() {
     // (separate from migrateLegacyIds which has a one-time guard). Heals
     // hive_swarm_<ts> / hive_import_<ts> / etc. IDs that get created
     // post-migration on builds before the 4ce-11 source fixes. Idempotent.
-    try { sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
+    var _sweepChangedWarm = false;
+    try { _sweepChangedWarm = sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
 
     // initCurrentApiary uses cached data
     if (typeof initCurrentApiary === 'function') initCurrentApiary();
@@ -22018,8 +22019,20 @@ async function onAuthSuccess() {
 
     // Sync from Supabase silently in the background.
     // Don't await — the user is already looking at a working screen.
+    // 5 May 2026 Phase 4ce-11 — if sweepBrokenIds healed local data, push
+    // BEFORE pull so the healed records reach Supabase before pullFromSupabase
+    // wipes hk_hives_v2 / hk_apiaries_v1. If push fails, skip the pull this
+    // cycle so localStorage preserves the healed records.
     (async function backgroundSync() {
       try {
+        if (_sweepChangedWarm) {
+          try {
+            await pushAllToSupabase();
+          } catch(e) {
+            console.warn('[4ce-11 warm] post-sweep push failed; skipping pull to preserve healed local data', e);
+            return;
+          }
+        }
         if (typeof loadSettingsFromCloud === 'function') {
           await loadSettingsFromCloud().catch(function(){});
         }
@@ -22056,7 +22069,27 @@ async function onAuthSuccess() {
     // 29 April 2026 Phase 4at — migrate legacy waxMoth boolean to pests array
     try { migratePestsArray(); } catch(e) { console.warn('migratePestsArray failed:', e); }
     // 5 May 2026 Phase 4ce-11 — every-sign-in sweep for non-UUID IDs.
-    try { sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
+    // Returns true if anything was healed.
+    var _sweepChanged = false;
+    try { _sweepChanged = sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
+
+    // 5 May 2026 Phase 4ce-11 — CRITICAL ORDER. If sweepBrokenIds healed
+    // any local data (e.g. broken-UUID hives), we MUST push to Supabase
+    // BEFORE pullFromSupabase wipes hk_hives_v2 and hk_apiaries_v1.
+    // Without this, the healed local data is wiped before it ever reaches
+    // the cloud and the user loses the records the sweep was meant to save.
+    // Same failure class as the 25 April inspection-loss incident.
+    if (_sweepChanged) {
+      try {
+        await pushAllToSupabase();
+      } catch(e) {
+        // Push failed — DO NOT proceed to pull, which would wipe the
+        // healed local data. Bail out of the cloud-sync block entirely;
+        // localStorage retains the healed records for next sign-in.
+        console.warn('[4ce-11] post-sweep push failed; skipping pull to preserve healed local data', e);
+        throw e;
+      }
+    }
 
     // Pull from Supabase first — before any rendering
     if (typeof loadSettingsFromCloud === 'function') {
@@ -23690,7 +23723,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-11 — root-cause fix for the broken-UUID sync class. Surfaced from Dave Townend\'s diagnostic 5 May: two swarm-catch hives stuck in failed_syncs with "invalid input syntax for type uuid: hive_swarm_1778008954625" — Postgres uuid column rejecting the legacy hive_swarm_<timestamp> ID format. Two associated inspections and 11 queued hives blocked behind. (1) SOURCE FIXES — every place that was generating non-UUID IDs now uses uid(): swarm-catch flow (was hive_swarm_<ts>), bulk import flow (was hive_import_<ts>_<rand>), inspection import (was insp_import_<ts>_<rand>), swarm catch records (was swarm_<ts>), landmarks (was lm_<ts>). The migrateLegacyIds function had a one-time idempotency guard so post-migration broken-ID creation went unhealed. (2) NEW FUNCTION sweepBrokenIds — runs on every sign-in (separate from migrateLegacyIds) — walks hk_apiaries_v1, hk_hives_v2, hk_inspections_v2, hk_harvest_v1, hk_treatment_v1, hk_varroa_v1, hk_movements_v1, hk_landmarks_v1, hk_swarm_catches, hk_equipment_v1, hk_honey_stock_v1; assigns valid UUIDs to any record with a non-UUID id and updates hiveId/apiaryId FK references via mapping. Then walks hk_offline_queue and rewrites data.id/hive_id/apiary_id from the same maps; any queue items with non-UUID ids that aren\'t in the map get fresh UUIDs. Finally drops hk_failed_syncs entirely — items will repopulate naturally on next push if there\'s still a real schema problem, but the broken-UUID class is now resolved at source. Wired into both warm-resume and cold sign-in paths in onAuthSuccess. Dave\'s stuck swarms will heal on his next sign-in. Phase 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-11a — critical fix to 4ce-11 ordering. The previous 4ce-11 cold path was: sweep → pull → push-on-failure. But pullFromSupabase WIPES hk_hives_v2 and hk_apiaries_v1 before rebuilding from cloud (those keys aren\'t in keysToKeep — intentional, they\'re cloud-of-truth). So the sweep healing Dave\'s broken-UUID hives in localStorage would be undone before they reached Supabase. Same failure class as the 25 April inspection-loss incident — heal something locally, get wiped before sync, lose the data. Now order is: sweep → if anything healed, push BEFORE pull → pull. If push fails, skip the pull entirely so localStorage retains the healed records for the next sign-in attempt. Applied to both cold sign-in and warm-resume background-sync paths. The 4ce-11 source fixes (swarm-catch, bulk import, inspection import, swarm catch records, landmarks now use uid()) and sweepBrokenIds function remain unchanged. Phase 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
