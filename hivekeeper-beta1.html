@@ -1181,7 +1181,7 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   transition: background 0.2s, opacity 0.2s;
 }
 #side-rail.collapsed {
-  background: rgba(22,43,31,0.30);
+  background: rgba(22,43,31,0.45);
 }
 #side-rail:hover, #side-rail:active {
   background: rgba(22,43,31,0.92);
@@ -1937,13 +1937,14 @@ input[type="checkbox"].hk-chk:checked::after {
   <!-- Logo cluster with honey glow -->
   <div class="hk-auth-fadein" style="position:relative;text-align:center;margin-bottom:8px;z-index:1;">
     <!-- Soft honey glow behind logo -->
-    <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
-    <div class="hk-auth-logomark" style="position:relative;width:140px;height:140px;margin:0 auto 8px;filter:drop-shadow(0 6px 18px rgba(228,163,58,0.45));display:flex;align-items:center;justify-content:center;">
+    <div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:100px;height:100px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
+    <div class="hk-auth-logomark" style="position:relative;width:100px;height:100px;margin:0 auto 8px;filter:drop-shadow(0 5px 14px rgba(228,163,58,0.40));display:flex;align-items:center;justify-content:center;">
       <!-- 5 May 2026 Phase 4ce-5y — bumped from 80px to 140px.
            5 May 2026 Phase 4ce-6 — replaced SVG with the 🐝 emoji per
            Chris's confirmation that the emoji IS the brand mark. Same
-           emoji used on the Asian Hornet Watch card on home (42px). -->
-      <div style="font-size:140px;line-height:1;">🐝</div>
+           emoji used on the Asian Hornet Watch card on home (42px).
+           5 May 2026 Phase 4ce-8 — reduced from 140px to 100px (140 was OTT). -->
+      <div style="font-size:100px;line-height:1;">🐝</div>
     </div>
     <div style="position:relative;font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;">HiveKeeper<span style="font-size:26px;vertical-align:super;opacity:0.55;font-weight:400;">™</span></div>
     <div style="position:relative;font-size:18px;color:rgba(255,255,255,.78);margin-top:14px;font-style:italic;letter-spacing:.01em;line-height:1.4;">Your apiary, always with you</div>
@@ -2528,16 +2529,16 @@ input[type="checkbox"].hk-chk:checked::after {
          a foreign WhatsApp element. Sits at the bottom so it's the last
          thing users see when they finish reviewing their dashboard —
          a natural moment to consider community engagement. -->
-    <div style="margin:24px 16px 0;padding:18px 18px 16px;background:linear-gradient(135deg, #2D5016 0%, #1F380F 100%);border-radius:var(--rs);box-shadow:0 4px 14px rgba(45,80,22,0.25);">
+    <div style="margin:24px 16px 0;padding:18px 18px 16px;background:linear-gradient(135deg, #25D366 0%, #128C7E 100%);border-radius:var(--rs);box-shadow:0 4px 14px rgba(18,140,126,0.30);">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:rgba(228,163,58,0.20);border:1.5px solid rgba(228,163,58,0.45);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.45);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💬</div>
         <div style="flex:1;min-width:0;">
           <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:white;line-height:1.15;">Join the HiveKeeper community</div>
-          <div style="font-size:10px;color:var(--honey);letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-top:2px;">WhatsApp · Free</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.92);letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-top:2px;">WhatsApp · Free</div>
         </div>
       </div>
-      <div style="font-size:12.5px;color:rgba(255,255,255,0.82);line-height:1.5;margin-bottom:14px;">A friendly group with channels for in-the-field questions, feature requests, and general beekeeping chat &mdash; plus founder updates from Chris.</div>
-      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:11px;font-size:13px;font-weight:700;color:white;cursor:pointer;letter-spacing:.02em;box-shadow:0 2px 8px rgba(228,163,58,0.3);">Join community &rarr;</button>
+      <div style="font-size:12.5px;color:rgba(255,255,255,0.95);line-height:1.5;margin-bottom:14px;">A friendly group with channels for in-the-field questions, feature requests, and general beekeeping chat &mdash; plus founder updates from Chris.</div>
+      <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:white;border:none;border-radius:var(--rs);padding:11px;font-size:13px;font-weight:700;color:#128C7E;cursor:pointer;letter-spacing:.02em;box-shadow:0 2px 8px rgba(0,0,0,0.12);">Join community &rarr;</button>
     </div>
     <div style="height:20px;"></div>
   </div>
@@ -3936,44 +3937,66 @@ input[type="checkbox"].hk-chk:checked::after {
         </button>
       </div>
 
-      <!-- 5TH TILE: Apiary settings (27 April 2026 Phase 4f) — full-width
-           single row beneath the 2x2 grid. Houses the Manage apiaries flow
-           that was previously in Tools as a button. Horizontal icon-label
-           layout (instead of stacked) for better visual balance at full width. -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(openManageApiaries,200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
-        <span style="font-size:22px;">🏡</span>
-        <span>Apiary settings</span>
-      </button>
+      <!-- 5 May 2026 Phase 4ce-8 — All settings actions unified to the same
+           tile style as the 2x2 grid above. Was a mix of tile / horizontal
+           buttons / outlined buttons / honey-coloured Refer button — now
+           a single coherent visual language. Tools heading removed because
+           the visual unity replaces the need for an explicit grouping label.
+           Honey pricing keeps its honey-orange gradient since it's the only
+           pricing/finance action — meaningful semantic differentiation. -->
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openManageApiaries,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">🏡</span>
+          <span>Apiary settings</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){goTo('s-inventory');},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📦</span>
+          <span>Inventory</span>
+        </button>
+      </div>
 
-      <!-- 29 April 2026 Phase 4aw — Inventory entry from Settings -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){goTo('s-inventory');},200);" style="width:100%;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;">
-        <span style="font-size:22px;">📦</span>
-        <span>Inventory</span>
-      </button>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openHoneyPricingModal,200);" style="flex:1;background:linear-gradient(135deg,#C8730A,#A0580A);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">💷</span>
+          <span>Honey pricing</span>
+        </button>
+        <button id="settings-sync-status-btn" onclick="closeModalEl('modal-settings');setTimeout(openSyncStatusModal,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;">
+          <span id="settings-sync-badge" style="display:none;position:absolute;top:6px;right:6px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.04em;"></span>
+          <span style="font-size:24px;">🔄</span>
+          <span>Sync status</span>
+        </button>
+      </div>
 
-      <!-- 29 April 2026 Phase 4bc — Honey pricing entry from Settings -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(openHoneyPricingModal,200);" style="width:100%;background:linear-gradient(135deg,#C8730A,#A0580A);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;">
-        <span style="font-size:22px;">💷</span>
-        <span>Honey pricing</span>
-      </button>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="flex:1;background:linear-gradient(135deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">🐝</span>
+          <span>Refer a beekeeper</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📅</span>
+          <span>Subscribe to calendar</span>
+        </button>
+      </div>
 
-      <!-- TOOLS — inline, as they were before the tile experiment -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Tools</div>
-      <button id="settings-sync-status-btn" onclick="closeModalEl('modal-settings');setTimeout(openSyncStatusModal,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
-        <span>🔄 Sync status</span>
-        <span id="settings-sync-badge" style="display:none;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;letter-spacing:.04em;"></span>
-      </button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openReferralModal();},200);" style="width:100%;background:linear-gradient(90deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">🐝 Refer a beekeeper</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){subscribeToCalendar();},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📅 Subscribe to calendar</button>
-      <!-- 1 May 2026 Phase 4cb — Print hive QR stickers. Single + bulk in
-           one flow. Replaces the per-hive QR display buttons that used to
-           live on the inspect screen and hive detail screen. -->
-      <button onclick="closeModalEl('modal-settings');setTimeout(openQRPrintPicker,200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">📱 Print hive QR stickers</button>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="width:100%;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:16px;">🔍 Bee inspector contacts</button>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(openQRPrintPicker,200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📱</span>
+          <span>Print QR stickers</span>
+        </button>
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){openModalEl('modal-inspector-contacts');},200);" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">🔍</span>
+          <span>Bee inspector</span>
+        </button>
+      </div>
 
-      <!-- SUPPORT — inline, as they were before -->
-      <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;">Support</div>
-      <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:10px;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;">✉️ Contact HiveKeeper</button>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button onclick="closeModalEl('modal-settings');openFeedbackModal();" style="flex:1;background:linear-gradient(135deg,var(--honey),#C8730A);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">✉️</span>
+          <span>Contact HiveKeeper</span>
+        </button>
+        <div style="flex:1;"></div>
+      </div>
+
       <!-- COMMUNITY (28 April 2026 Phase 4t) — was a single ambiguous
            "WhatsApp community" button. Now a proper community section
            showing the parent community as primary CTA plus three direct
@@ -20504,6 +20527,7 @@ function openManageApiaries() {
     + '<div style="font-size:11px;color:var(--text-l);margin-bottom:8px;line-height:1.4;">Rename, set location, delete, or add new apiaries. To switch between apiaries, tap the apiary name in the header.</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-manage\');setTimeout(function(){openShareApiary();},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-manage\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-apiary-manage');
@@ -23630,7 +23654,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-7 — four quick-win UX improvements. (1) Side rail (right-hand nav) more transparent when collapsed: rgba(22,43,31,0.55) → rgba(22,43,31,0.30). Content behind is now visible through the rail; hover state stays at 0.92 for clear interaction. (2) Share this Apiary removed from main Settings cog modal — still accessible from the apiary screen header button, the apiary switcher modal, and the Tools modal. Settings is for global config; sharing is per-apiary so should live there contextually. (3) Refer a beekeeper now has a dedicated home card sitting just above the Community WhatsApp card at the bottom of home. Honey-orange gradient distinguishes it from the forest-green community card; same SHAPE so they read as a visual family. Was previously hidden in Settings/Tools modals. (4) Trial-ended banner now sunsets after 7 days post-expiry. Was permanent — a forever conversion nudge that became nag for users who had decided to stay on Free. After 7 days the banner hides; user can still upgrade via Settings. Auto-pop pricing modal still fires once on day 1 of expiry so the message lands at least once. Phase 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path + flying bees), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-8 — seven UX refinements following 4ce-7 feedback. (1) Side rail (right-hand nav) collapsed opacity bumped 0.30 → 0.45; 4ce-7 went too transparent. Sits between original 0.55 and current — visible enough to find, transparent enough to see content behind. (2) Auth screen bee logo 140px → 100px; 140 was OTT per Chris. Still hero of the splash but doesn\'t dominate. (3) Share Apiary button added to Manage apiaries modal, just below + Add new apiary. Now it lives in the apiary-management context rather than scattered across Settings. (4) Settings modal buttons unified to a single tile-style grid: Apiary settings, Inventory, Honey pricing, Sync status, Refer a beekeeper, Subscribe to calendar, Print QR stickers, Bee inspector, Contact HiveKeeper all now use the same tile pattern as the existing 2x2 grid (Your account, Reports, Preferences, Data). Tools/Support headings removed since the visual unity replaces grouping labels. Refer + Contact get honey gradient distinguishing them as "outreach" actions; Honey pricing keeps its honey-orange for finance semantics. (5) Home Community card now uses actual WhatsApp brand green gradient (#25D366 → #128C7E) instead of forest-green. Visually signals "WhatsApp" before reading. White CTA button with WhatsApp-teal text. Phase 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
