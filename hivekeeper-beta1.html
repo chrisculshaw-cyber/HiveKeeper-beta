@@ -889,14 +889,14 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   line-height: 1;
 }
 .hk-hdr-apiary-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
   font-weight: 700;
   color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
 }
 .hk-hdr-apiary-chev {
   font-size: 12px;
@@ -906,19 +906,12 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   margin-left: 2px;
 }
 
-/* 5 May 2026 Phase 4ce-5p — Home variant of the apiary pill.
-   Uses Cormorant Garamond serif for the apiary name to keep the home
-   page's editorial feel while adopting the consistent dropdown pattern.
-   Slightly larger pill padding so it reads as a "hero" element. */
-.hk-hdr-apiary-home {
-  padding: 9px 16px 9px 14px;
-}
-.hk-hdr-apiary-name-home {
-  font-family: 'Cormorant Garamond', serif !important;
-  font-size: 19px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.005em !important;
-}
+/* 5 May 2026 Phase 4ce-5q — Cormorant Garamond is now the universal font
+   for the apiary pill name on all screens (was only home in 4ce-5p).
+   Other screens previously used 14px Syne which felt chunky compared
+   to home. Universal Cormorant 18px gives consistent editorial feel.
+   The .hk-hdr-apiary-name-home class on home is now a harmless no-op —
+   left in HTML for safe revert if needed. */
 
 /* Greeting row sits below the apiary pill on home. Stacks the greeting
    text and tier badge vertically — supports users with no badge. */
@@ -2054,12 +2047,17 @@ input[type="checkbox"].hk-chk:checked::after {
          "Switch" pill before). Cog and help buttons cluster on the right.
          Greeting and tier badge live below the pill. Apiary name uses
          Cormorant Garamond inside the pill — keeps the home page's editorial
-         feel while adopting the consistent header pattern. -->
+         feel while adopting the consistent header pattern.
+         5 May 2026 Phase 4ce-5q — apiary pill, greeting and tier badges
+         are visibility:hidden by default. Inline initial-state script
+         reveals them after setting cached values from localStorage. For
+         first-login (empty localStorage) the async data load reveals them
+         when ready. Eliminates the flash from defaults to real values. -->
     <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);width:100%;">
       <div style="height:4px;background:#C8730A;"></div>
       <div class="hk-hdr">
         <div class="hk-hdr-top">
-          <div class="hk-hdr-apiary hk-hdr-apiary-home" onclick="openApiarySwitcher()">
+          <div class="hk-hdr-apiary hk-hdr-apiary-home" id="home-apiary-pill" onclick="openApiarySwitcher()" style="visibility:hidden;">
             <span class="hk-hdr-apiary-icon">🍯</span>
             <span class="hk-hdr-apiary-name hk-hdr-apiary-name-home" id="apiary-name-text">My Apiary</span>
             <span class="hk-hdr-apiary-chev">▾</span>
@@ -2074,7 +2072,7 @@ input[type="checkbox"].hk-chk:checked::after {
              based on localStorage SYNCHRONOUSLY before paint — eliminates
              the previous flash where badges appeared after the cold-load
              render cycle resolved. -->
-        <div class="hk-hdr-greeting-row" style="margin-top:8px;">
+        <div class="hk-hdr-greeting-row" id="home-greeting-row" style="margin-top:8px;visibility:hidden;">
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
           <div id="founding-header-badge" class="hk-tier-pill hk-tier-founder">
             <span>🏅 Founding Beekeeper</span>
@@ -2092,6 +2090,9 @@ input[type="checkbox"].hk-chk:checked::after {
             // localStorage and sets badge/apiary name correctly so the user
             // never sees the default "My Apiary" + hidden-badges combination
             // followed by a flash to the real values.
+            // Phase 4ce-5q — also reveals visibility:hidden parents once
+            // values are set. If localStorage is empty (first login),
+            // parents stay hidden until renderDashboard runs.
             (function(){
               try {
                 // Apiary name — read from currentApiary or apiaries array
@@ -2107,6 +2108,9 @@ input[type="checkbox"].hk-chk:checked::after {
                 if (name) {
                   var apTxt = document.getElementById('apiary-name-text');
                   if (apTxt) apTxt.textContent = name;
+                  // Reveal pill since we have the name
+                  var pill = document.getElementById('home-apiary-pill');
+                  if (pill) pill.style.visibility = 'visible';
                 }
                 // Tier badges — show whichever the user has
                 var founder = localStorage.getItem('hk_founding_beekeeper') === '1';
@@ -2122,6 +2126,13 @@ input[type="checkbox"].hk-chk:checked::after {
                 var g = h < 12 ? 'Good morning,' : h < 18 ? 'Good afternoon,' : 'Good evening,';
                 var gEl = document.getElementById('dash-greeting');
                 if (gEl) gEl.textContent = g;
+                // Reveal greeting row whenever we have ANY of: name, tier, or just a clean greeting
+                // (greeting + name presence are both desirable). For first login (no localStorage),
+                // we keep it hidden until renderDashboard reveals it.
+                if (name || founder || tier) {
+                  var gr = document.getElementById('home-greeting-row');
+                  if (gr) gr.style.visibility = 'visible';
+                }
               } catch(e) {}
             })();
           </script>
@@ -5927,6 +5938,15 @@ function viewHive(id){
 
 function renderDashboard(){
   updateApiaryNameDisplays();
+  // 5 May 2026 Phase 4ce-5q — reveal the home header pill and greeting row
+  // (visibility:hidden by default to prevent the cold-load flash). After
+  // updateApiaryNameDisplays sets the real name, it's safe to reveal.
+  try {
+    var pill = document.getElementById('home-apiary-pill');
+    if (pill) pill.style.visibility = 'visible';
+    var gr = document.getElementById('home-greeting-row');
+    if (gr) gr.style.visibility = 'visible';
+  } catch(e) {}
   // 27 April 2026 — Phase 1c: refresh the persistent sync badge on the
   // Home greeting. Hidden when all synced; amber for pending; red for failed.
   try { if (typeof updateHomeSyncIndicator === 'function') updateHomeSyncIndicator(); } catch(e) {}
@@ -23375,7 +23395,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5p — home header restructured to match the dropdown pattern used on Calendar, Hive, AI, Marketplace, Forage, Inventory. Apiary name pill is now the primary tappable element (was a separate "Switch" pill before); cog and help cluster on the right matching other screens. Apiary name uses Cormorant Garamond serif inside the pill (kept the home page\'s editorial feel while adopting the consistent header pattern). Tier badge (Founding / Pro / Commercial) sits in a row below the apiary pill; greeting text alongside. Inline initial-state script reads localStorage at HTML-parse time and sets apiary name + tier badge BEFORE first paint — eliminates the cold-load flash where defaults appeared then got overwritten by async render. updateApiaryNameDisplays simplified (no longer routes through old apiary-name-display ID). renderFoundingBadge updated to use display:inline-flex for the new tier-pill class. Phase 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5q — three follow-up fixes after 4ce-5p feedback. (1) Cold-load flash fix: apiary pill, greeting and tier badges are visibility:hidden by default; revealed by inline initial-state script when localStorage cache is present (warm start) or by renderDashboard when async profile data resolves (cold start / first login). User now sees a brief blank rather than defaults flashing to real values. (2) Cormorant Garamond now universal for the apiary pill on ALL screens (was home-only in 4ce-5p) — consistent editorial feel across calendar, hive, ai, marketplace, forage, inventory, inspect. The hk-hdr-apiary-name-home variant CSS removed since base class now does what it did. (3) Voice inspection help text updated — said "requires internet connection" but Phase 2a (27 April) made voice work offline (records to local IndexedDB, transcribes on reconnection). Help text now describes actual behaviour. Phase 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -23441,7 +23461,7 @@ var HK_HELP = {
   },
   'voice-inspect': {
     title: 'Voice Inspections',
-    body: 'Tap the microphone and describe what you found in the hive — frames, brood, queen, stores, treatments, anything notable. Speak naturally.\n\nHiveKeeper transcribes the audio and extracts structured fields automatically: health score, stores level, queen status, swarm risk, varroa level, treatment notes, and any next-action keywords you mention ("treat next week", "feed", "split").\n\nReview the extracted fields before saving — Whisper is good but not perfect.\n\nNote: voice recording requires an internet connection. VPNs may interfere with transcription.'
+    body: 'Tap the microphone and describe what you found in the hive — frames, brood, queen, stores, treatments, anything notable. Speak naturally.\n\nHiveKeeper transcribes the audio and extracts structured fields automatically: health score, stores level, queen status, swarm risk, varroa level, treatment notes, and any next-action keywords you mention ("treat next week", "feed", "split").\n\nReview the extracted fields before saving — Whisper is good but not perfect.\n\nWorks offline: voice recordings are saved locally and transcribed automatically when your connection returns. The amber "Offline" pill appears when recording without signal so you know it\'s queued. VPNs may interfere with transcription once back online.'
   },
   'frame-comp': {
     title: 'Frame Composition (Pro)',
