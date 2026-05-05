@@ -905,6 +905,46 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
   line-height: 1;
   margin-left: 2px;
 }
+
+/* 5 May 2026 Phase 4ce-5p — Home variant of the apiary pill.
+   Uses Cormorant Garamond serif for the apiary name to keep the home
+   page's editorial feel while adopting the consistent dropdown pattern.
+   Slightly larger pill padding so it reads as a "hero" element. */
+.hk-hdr-apiary-home {
+  padding: 9px 16px 9px 14px;
+}
+.hk-hdr-apiary-name-home {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.005em !important;
+}
+
+/* Greeting row sits below the apiary pill on home. Stacks the greeting
+   text and tier badge vertically — supports users with no badge. */
+.hk-hdr-greeting-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* Tier pills — replaces the inline styling from the previous header so
+   they can be shown inline-flex via the synchronous initial-state script. */
+.hk-tier-pill {
+  display: none; /* shown by inline script when applicable */
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: .03em;
+  white-space: nowrap;
+  font-family: 'Syne', sans-serif;
+}
+.hk-tier-pill.hk-tier-founder { background: linear-gradient(90deg, #C8730A, #F4D03F); }
+.hk-tier-pill.hk-tier-pro { background: linear-gradient(90deg, #185FA5, #4A90D9); }
+.hk-tier-pill.hk-tier-commercial { background: linear-gradient(90deg, #3B6D11, #6BA23A); }
 /* Settings cog — single button, right-aligned */
 .hk-hdr-cog {
   width: 36px;
@@ -2008,28 +2048,83 @@ input[type="checkbox"].hk-chk:checked::after {
 <div class="screen active" id="s-home">
   <div class="scroll-area">
 
-    <!-- DASHBOARD HEADER -->
+    <!-- DASHBOARD HEADER — 5 May 2026 Phase 4ce-5p — restructured to match
+         the dropdown pattern used on other screens. Apiary pill with name +
+         chevron is the primary tappable header element (was a separate
+         "Switch" pill before). Cog and help buttons cluster on the right.
+         Greeting and tier badge live below the pill. Apiary name uses
+         Cormorant Garamond inside the pill — keeps the home page's editorial
+         feel while adopting the consistent header pattern. -->
     <div style="background:linear-gradient(180deg, var(--forest) 0%, #2A4A2A 70%, #3D5C3D 100%);width:100%;">
       <div style="height:4px;background:#C8730A;"></div>
-      <div class="app-header">
-        <div>
+      <div class="hk-hdr">
+        <div class="hk-hdr-top">
+          <div class="hk-hdr-apiary hk-hdr-apiary-home" onclick="openApiarySwitcher()">
+            <span class="hk-hdr-apiary-icon">🍯</span>
+            <span class="hk-hdr-apiary-name hk-hdr-apiary-name-home" id="apiary-name-text">My Apiary</span>
+            <span class="hk-hdr-apiary-chev">▾</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+            <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" class="hk-hdr-cog" aria-label="Open settings">&#x2699;&#xFE0F;</div>
+            <div onclick="openManual()" title="Help" class="hk-hdr-help" aria-label="Help">?</div>
+          </div>
+        </div>
+
+        <!-- Greeting + tier badge row. Inline script sets the badge display
+             based on localStorage SYNCHRONOUSLY before paint — eliminates
+             the previous flash where badges appeared after the cold-load
+             render cycle resolved. -->
+        <div class="hk-hdr-greeting-row" style="margin-top:8px;">
           <div class="dash-greeting" id="dash-greeting">Good morning,</div>
-          <div id="founding-header-badge" style="display:none;margin-top:3px;">
-            <span style="background:linear-gradient(90deg,#C8730A,#F4D03F);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🏅 Founding Beekeeper</span>
+          <div id="founding-header-badge" class="hk-tier-pill hk-tier-founder">
+            <span>🏅 Founding Beekeeper</span>
           </div>
-          <div id="pro-header-badge" style="display:none;margin-top:3px;">
-            <span style="background:linear-gradient(90deg,#185FA5,#4A90D9);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🐝 HiveKeeper Pro</span>
+          <div id="pro-header-badge" class="hk-tier-pill hk-tier-pro">
+            <span>🐝 HiveKeeper Pro</span>
           </div>
-          <div id="commercial-header-badge" style="display:none;margin-top:3px;">
-            <span style="background:linear-gradient(90deg,#3B6D11,#6BA23A);border-radius:20px;padding:2px 8px;font-size:8px;font-weight:800;color:white;letter-spacing:.03em;white-space:nowrap;display:inline-block;">🍯 HiveKeeper Commercial</span>
+          <div id="commercial-header-badge" class="hk-tier-pill hk-tier-commercial">
+            <span>🍯 HiveKeeper Commercial</span>
           </div>
           <div id="sync-status" style="display:none;font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;"></div>
-          <div class="dash-name" style="color:white;font-size:20px;font-weight:800;margin-top:2px;"><span id="apiary-name-text">My Apiary</span></div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <button id="apiary-name-display" onclick="openApiarySwitcher()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 10px;color:white;font-size:11px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap;">🍯 Switch</button>
-          <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" style="width:38px;height:38px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-          <div onclick="openManual()" title="Help" style="width:38px;height:38px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15);" aria-label="Help">?</div>
+          <script>
+            // Phase 4ce-5p — synchronous initial-state script. Runs at HTML
+            // parse time, BEFORE any rendering. Reads cached values from
+            // localStorage and sets badge/apiary name correctly so the user
+            // never sees the default "My Apiary" + hidden-badges combination
+            // followed by a flash to the real values.
+            (function(){
+              try {
+                // Apiary name — read from currentApiary or apiaries array
+                var currentId = localStorage.getItem('hk_current_apiary');
+                var apiariesRaw = localStorage.getItem('hk_apiaries_v1');
+                var name = '';
+                if (apiariesRaw) {
+                  var apiaries = JSON.parse(apiariesRaw);
+                  var current = currentId ? apiaries.find(function(a){ return a.id === currentId; }) : null;
+                  if (!current && apiaries.length) current = apiaries[0];
+                  if (current && current.name) name = current.name;
+                }
+                if (name) {
+                  var apTxt = document.getElementById('apiary-name-text');
+                  if (apTxt) apTxt.textContent = name;
+                }
+                // Tier badges — show whichever the user has
+                var founder = localStorage.getItem('hk_founding_beekeeper') === '1';
+                var tier = localStorage.getItem('hk_tier') || '';
+                var fEl = document.getElementById('founding-header-badge');
+                var pEl = document.getElementById('pro-header-badge');
+                var cEl = document.getElementById('commercial-header-badge');
+                if (fEl) fEl.style.display = founder ? 'inline-flex' : 'none';
+                if (pEl) pEl.style.display = (!founder && tier === 'pro') ? 'inline-flex' : 'none';
+                if (cEl) cEl.style.display = (!founder && tier === 'commercial') ? 'inline-flex' : 'none';
+                // Greeting based on time of day
+                var h = new Date().getHours();
+                var g = h < 12 ? 'Good morning,' : h < 18 ? 'Good afternoon,' : 'Good evening,';
+                var gEl = document.getElementById('dash-greeting');
+                if (gEl) gEl.textContent = g;
+              } catch(e) {}
+            })();
+          </script>
         </div>
       </div>
       <!-- STATS GRID -->
@@ -23280,7 +23375,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5o — apiary switching audit + fixes. Six per-screen apiary name labels were missing from updateApiaryNameDisplays (calendar, hive, ai, market, forage, inventory) — switching apiary while viewing those screens left the OLD apiary name in the header; all now update atomically. Data refresh extended for screens previously missed: Calendar gets full refresh including renderCalendarForecast (so new apiary\'s weather appears on grid cells), Forage and Inventory re-render, Hive Detail redirects to s-apiary on switch (old hive invalid in new context). 14-day forecast cache invalidation centralised in applyApiaryLocation so all consumers (calendar grid, home expandable forecast) get fresh data after switch. Home forecast body re-renders if currently expanded during switch. Phase 4ce-5n (icon size 20px), 4ce-5m (real weather data on calendar grid + expandable home forecast), 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5p — home header restructured to match the dropdown pattern used on Calendar, Hive, AI, Marketplace, Forage, Inventory. Apiary name pill is now the primary tappable element (was a separate "Switch" pill before); cog and help cluster on the right matching other screens. Apiary name uses Cormorant Garamond serif inside the pill (kept the home page\'s editorial feel while adopting the consistent header pattern). Tier badge (Founding / Pro / Commercial) sits in a row below the apiary pill; greeting text alongside. Inline initial-state script reads localStorage at HTML-parse time and sets apiary name + tier badge BEFORE first paint — eliminates the cold-load flash where defaults appeared then got overwritten by async render. updateApiaryNameDisplays simplified (no longer routes through old apiary-name-display ID). renderFoundingBadge updated to use display:inline-flex for the new tier-pill class. Phase 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26365,12 +26460,13 @@ function updateApiaryNameDisplays() {
   var apiary = typeof getCurrentApiary === 'function' ? getCurrentApiary() : null;
   var name = apiary ? apiary.name : 'My Apiary';
   // Update all display elements
-  var nameDisplay = document.getElementById('apiary-name-display');
-  if (nameDisplay) {
-    var textSpan = document.getElementById('apiary-name-text');
-    if (textSpan) textSpan.textContent = name;
-    else if (nameDisplay.childNodes[0]) nameDisplay.childNodes[0].textContent = name;
-  }
+  // 5 May 2026 Phase 4ce-5p — Switch pill (id apiary-name-display) was
+  // removed when home header was restructured to match other screens.
+  // apiary-name-text now lives directly inside the apiary pill on home,
+  // so we update it directly. The legacy apiary-name-display check is
+  // kept as a defensive no-op for any forgotten reference.
+  var textSpan = document.getElementById('apiary-name-text');
+  if (textSpan) textSpan.textContent = name;
   // 3 May 2026 Phase 4ce-3 — fix apiary-screen title not updating on switch.
   // The s-apiary header has TWO name elements: apiary-hdr-name (the pill at
   // the top) and apiary-screen-title-hdr (the bigger title beneath). Neither
@@ -30052,14 +30148,18 @@ function renderFoundingBadge() {
   if (fbSection) fbSection.style.display = isFounding ? 'block' : 'none';
 
   // Header badges — founder takes priority over Pro/Commercial
+  // 5 May 2026 Phase 4ce-5p — display:inline-flex to match the new
+  // .hk-tier-pill class. Synchronous initial-state script in the home
+  // header sets these correctly on first paint; this function runs after
+  // async profile verification and corrects if anything has changed.
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   var founderBadge = document.getElementById('founding-header-badge');
   var proBadge = document.getElementById('pro-header-badge');
   var commercialBadge = document.getElementById('commercial-header-badge');
 
-  if (founderBadge) founderBadge.style.display = isFounding ? 'block' : 'none';
-  if (proBadge) proBadge.style.display = (!isFounding && tier === 'pro') ? 'block' : 'none';
-  if (commercialBadge) commercialBadge.style.display = (!isFounding && tier === 'commercial') ? 'block' : 'none';
+  if (founderBadge) founderBadge.style.display = isFounding ? 'inline-flex' : 'none';
+  if (proBadge) proBadge.style.display = (!isFounding && tier === 'pro') ? 'inline-flex' : 'none';
+  if (commercialBadge) commercialBadge.style.display = (!isFounding && tier === 'commercial') ? 'inline-flex' : 'none';
 }
 
 async function awardFoundingBadge(userId) {
