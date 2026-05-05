@@ -1881,62 +1881,24 @@ input[type="checkbox"].hk-chk:checked::after {
     <!-- Soft honey glow behind logo -->
     <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;"></div>
     <div class="hk-auth-logomark" style="position:relative;width:80px;height:80px;margin:0 auto 8px;filter:drop-shadow(0 4px 12px rgba(228,163,58,0.45));">
-      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
-        <defs>
-          <radialGradient id="hk-bee-body-grad" cx="40%" cy="35%">
-            <stop offset="0%" stop-color="#FFD874"/>
-            <stop offset="60%" stop-color="#E4A33A"/>
-            <stop offset="100%" stop-color="#A06D18"/>
-          </radialGradient>
-          <linearGradient id="hk-bee-wing-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.95)"/>
-            <stop offset="100%" stop-color="rgba(255,255,255,0.55)"/>
-          </linearGradient>
-        </defs>
-        <!-- Wings (translucent, swept back — honey bee, not bumble) -->
-        <ellipse cx="22" cy="32" rx="16" ry="8" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(-22 22 32)"/>
-        <ellipse cx="58" cy="32" rx="16" ry="8" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(22 58 32)"/>
-        <ellipse cx="26" cy="40" rx="11" ry="5" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(-12 26 40)"/>
-        <ellipse cx="54" cy="40" rx="11" ry="5" fill="url(#hk-bee-wing-grad)" stroke="rgba(60,40,10,0.4)" stroke-width="0.5" transform="rotate(12 54 40)"/>
-        <!-- Brown legs -->
-        <g stroke="#5C3010" stroke-width="1.6" fill="none" stroke-linecap="round">
-          <path d="M34,38 Q24,40 20,46"/>
-          <path d="M34,44 Q23,46 19,54"/>
-          <path d="M34,50 Q24,54 21,62"/>
-          <path d="M46,38 Q56,40 60,46"/>
-          <path d="M46,44 Q57,46 61,54"/>
-          <path d="M46,50 Q56,54 59,62"/>
-        </g>
-        <!-- Abdomen — honey-amber body, pointed (NOT fuzzy round bumblebee shape) -->
-        <ellipse cx="40" cy="52" rx="10" ry="16" fill="url(#hk-bee-body-grad)"/>
-        <!-- Three subtle abdominal bands (defining honey bee) -->
-        <path d="M30,46 Q40,43 50,46 L50,49 Q40,46 30,49 Z" fill="#5C3010" opacity="0.78"/>
-        <path d="M30,53 Q40,50 50,53 L50,56 Q40,53 30,56 Z" fill="#5C3010" opacity="0.78"/>
-        <path d="M31,60 Q40,57 49,60 L49,63 Q40,60 31,63 Z" fill="#5C3010" opacity="0.78"/>
-        <!-- Pointed abdomen tip -->
-        <path d="M37,66 Q40,72 43,66 Z" fill="#A06D18"/>
-        <!-- Thorax — slightly fuzzy texture but golden, not black -->
-        <ellipse cx="40" cy="36" rx="9" ry="9" fill="#C8810A"/>
-        <!-- Subtle fuzz hatching on thorax -->
-        <g stroke="#7A4818" stroke-width="0.5" opacity="0.6">
-          <line x1="34" y1="30" x2="36" y2="34"/>
-          <line x1="38" y1="29" x2="40" y2="33"/>
-          <line x1="42" y1="29" x2="44" y2="33"/>
-          <line x1="46" y1="30" x2="44" y2="34"/>
-          <line x1="33" y1="36" x2="35" y2="40"/>
-          <line x1="47" y1="36" x2="45" y2="40"/>
-        </g>
-        <!-- Head -->
-        <circle cx="40" cy="22" r="7" fill="#3D2410"/>
-        <!-- Compound eyes (large, distinctive bee feature) -->
-        <ellipse cx="36" cy="22" rx="2" ry="3" fill="#1A0E04"/>
-        <ellipse cx="44" cy="22" rx="2" ry="3" fill="#1A0E04"/>
-        <!-- Eye highlights -->
-        <ellipse cx="35.5" cy="20.5" rx="0.6" ry="0.9" fill="rgba(255,255,255,0.6)"/>
-        <ellipse cx="43.5" cy="20.5" rx="0.6" ry="0.9" fill="rgba(255,255,255,0.6)"/>
-        <!-- Antennae -->
-        <path d="M37,15 Q33,9 31,11" stroke="#3D2410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-        <path d="M43,15 Q47,9 49,11" stroke="#3D2410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <!-- 5 May 2026 Phase 4ce-5x — replaced the off-brand elaborate bee
+           with the HiveKeeper website bee (gethivekeeper.com hero).
+           Brand-consistent honey-orange body + forest-green head/bands. -->
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block;">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
       </svg>
     </div>
     <div style="position:relative;font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;">HiveKeeper<span style="font-size:18px;vertical-align:super;opacity:0.55;font-weight:400;">™</span></div>
@@ -23533,7 +23495,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5w — minimal branded loading splash. The 4ce-5v loading state still showed the "Built at a 24-hive apiary in Northamptonshire alongside our dedicated founding beekeepers" line — that copy is for new visitors evaluating sign-up, not relevant for someone already signing in. Now hidden during the loading state. Result: a clean splash with just the logo + HiveKeeper + tagline ("Your apiary, always with you") + "Loading your apiary..." with cycling dots. Loading message restyled as italic Cormorant 20px matching the tagline aesthetic. The auth-founder-context div was given an ID so showAuthLoadingState can hide it cleanly. showAuthScreen restores it for sign-out cycles. Phase 4ce-5v (loading flow restructured to live on auth screen + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5x — replaced auth screen bee illustration with the actual HiveKeeper website bee (the hero bee-float SVG from gethivekeeper.com). The previous bee was an elaborate, anatomically-detailed honey bee with brown gradient body, gradient wings and fuzz hatching — visually impressive but OFF-BRAND: brown/dark gradients didn\'t match the brand palette. The website bee uses honey-orange body (#e4a33a), forest-green head and abdominal bands (#1F4E3A), and translucent light-blue wings (#a8c8e0) — same palette throughout the marketing site and app. Cleaner, simpler, instantly recognisable. Visual continuity from website to app for users transitioning from gethivekeeper.com. Phase 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
