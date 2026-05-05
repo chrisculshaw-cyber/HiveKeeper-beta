@@ -15576,6 +15576,13 @@ var REPORTS_BY_TIER = {
 };
 // Trial users get the full Pro report set (see comment on REPORTS_BY_TIER.pro above).
 REPORTS_BY_TIER.trial = REPORTS_BY_TIER.pro;
+// 5 May 2026 Phase 4ce-5l — Founders get the full Commercial report set.
+// Without this alias, getUserTier() returning 'founder' falls through to
+// REPORTS_BY_TIER.free (which only has session_report), causing the Next
+// Inspection tile to land on the modal showing only Session Report, and
+// the Reports list itself to look empty. Aligns with the "Pro forever"
+// promise and gives founders maximum testing surface.
+REPORTS_BY_TIER.founder = REPORTS_BY_TIER.commercial;
 
 // Quick-access helper from the home screen "Next inspection" tile (24 April 2026).
 // Jumps DIRECTLY to the Next Inspection Report rather than opening the list first
@@ -23094,7 +23101,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:30 4 May 2026 BST · Phase 4ce-5k — bugfix on /admin-stats data fetches. Silent issue: PostgREST defaults to 1000 rows per response with no warning. analytics_events table generates thousands of rows quickly (each user, each screen view, multiplied across days) so the dashboard\'s live-activity counts read 0 even when users were active — recent events were being truncated by the limit, in indeterminate order. Fix: added Range: 0-99999 header to all list-style fetches in /admin-stats (analytics_events x2, profiles, referrals); ordered analytics by created_at.desc so if cap is somehow hit we get most-recent rows. Phase 4ce-5j (live activity panel — was reading wrong data due to this bug), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard reads via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5l — REPORTS_BY_TIER.founder alias added (mirrors trial→pro pattern). Fixes 3 connected bugs surfacing only for founder accounts: Next Inspection tile showed only Session Report, All Reports tile showed only Session Report, Reports modal listed only one report. All three rooted in same missing tier alias — getUserTier() returns "founder" but REPORTS_BY_TIER had no founder key, falling through to REPORTS_BY_TIER.free which only has session_report. Founders now alias to commercial for full report access. Phase 4ce-5k (PostgREST 1000-row limit fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard reads via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
