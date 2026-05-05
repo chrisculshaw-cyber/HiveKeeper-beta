@@ -376,6 +376,13 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .cal-day.today.inspect-window{background:#C8E6C9;border:3px solid var(--green);color:var(--forest)}
 .cal-day.recommended{background:var(--honey-pale);border-color:rgba(200,115,10,.3);color:var(--honey)}
 .cal-day.poor-weather{background:#F5F5F5;color:#BDBDBD;border-color:#E0E0E0}
+/* 5 May 2026 Phase 4ce-12 — trial-end day marker. Shown ONLY in the
+   month containing the user's trial end date, ONLY when isInTrial()
+   is true. Honey/copper background to match brand and signal urgency
+   without being alarmist. The X glyph overlays the day in the centre. */
+.cal-day.trial-end-day{background:#FCE5C2;border:2px solid var(--honey);color:#5C3A17;font-weight:800}
+.cal-day.trial-end-day .cal-trial-x{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:900;color:var(--honey);line-height:1;pointer-events:none;opacity:0.85}
+.cal-day.trial-end-day.today{border:3px solid var(--honey)}
 /* 5 May 2026 Phase 4ce-5m — real weather-driven cell classes. */
 .cal-day.cal-day-good{background:var(--honey-pale);border-color:rgba(200,115,10,.3);color:var(--honey)}
 .cal-day.cal-day-marginal{background:#FFF6E1;border-color:#E6C68A;color:#7A5C00}
@@ -14374,6 +14381,21 @@ function renderCalendar() {
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const daysInPrevMonth = new Date(calYear, calMonth, 0).getDate();
 
+  // 5 May 2026 Phase 4ce-12 — Trial end day marker. Only set if the user
+  // is currently in trial AND the trial end falls within the month being
+  // viewed. Navigating to past or future months won't show the marker.
+  // The marker disappears entirely once they upgrade, become a Founder,
+  // or the trial expires. UrgentLabel triggers louder visuals on the day.
+  var trialEndKey = null;
+  try {
+    if (typeof isInTrial === 'function' && isInTrial() && typeof getTrialEndDate === 'function') {
+      var trialEndDate = getTrialEndDate();
+      if (trialEndDate.getFullYear() === calYear && trialEndDate.getMonth() === calMonth) {
+        trialEndKey = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(trialEndDate.getDate()).padStart(2,'0');
+      }
+    }
+  } catch(e) { /* if trial helpers fail, just skip the marker */ }
+
   // Recommended inspection days: weather-based for current/next month
   // Use cached forecast if available, otherwise mark weekdays in season as recommended
   const month1 = calMonth + 1; // 1-indexed
@@ -14457,7 +14479,18 @@ function renderCalendar() {
       dots = '<div class="cal-dot-row">' + hives.slice(0,3).map(() => '<div class="cal-dot" style="background:var(--honey-l)"></div>').join('') + '</div>';
     }
 
-    html += '<div class="' + cls + '" data-date="' + dateKey + '" data-hi="' + (hasInsp?'1':'0') + '" onclick="calDayTap(this.dataset.date,this.dataset.hi)">' + weatherIcon + dayNum + dots + '</div>';
+    // 5 May 2026 Phase 4ce-12 — trial-end-day marker. Overrides weather
+    // class so the trial-ending visual takes priority. Cell still tappable;
+    // calDayTap detects data-trial-end and shows the upgrade modal.
+    var trialMarker = '';
+    var trialDataAttr = '';
+    if (trialEndKey && dateKey === trialEndKey) {
+      cls += ' trial-end-day';
+      trialMarker = '<div class="cal-trial-x" aria-label="Trial ends">✕</div>';
+      trialDataAttr = ' data-trial-end="1"';
+    }
+
+    html += '<div class="' + cls + '" data-date="' + dateKey + '" data-hi="' + (hasInsp?'1':'0') + '"' + trialDataAttr + ' onclick="calDayTap(this.dataset.date,this.dataset.hi,this.dataset.trialEnd)">' + weatherIcon + dayNum + dots + trialMarker + '</div>';
   }
 
   grid.innerHTML = html;
@@ -14480,7 +14513,21 @@ function renderCalendar() {
   }
 }
 
-function calDayTap(dateKey, hivesStr) {
+function calDayTap(dateKey, hivesStr, trialEnd) {
+  // 5 May 2026 Phase 4ce-12 — Trial-end day intercept. If this cell was
+  // marked as the trial-end day AND user is still in trial, show the
+  // upgrade modal instead of the normal inspection summary. If the user
+  // has since upgraded or become a Founder, isInTrial returns false and
+  // we fall through to the normal day-tap behaviour.
+  if (trialEnd === '1' && typeof isInTrial === 'function' && isInTrial()) {
+    if (typeof showUpgradeModal === 'function') {
+      showUpgradeModal('trial-ending');
+    } else {
+      showToast('Your trial ends today — tap Settings to upgrade');
+    }
+    return;
+  }
+
   const inspections = loadInspections();
   var hives = loadHives();
   const [y, m, d] = dateKey.split('-').map(Number);
@@ -23723,7 +23770,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-11b — critical regression fix to 4ce-11. The sweepBrokenIds UUID_REGEX was strictly UUID v4 (`4xxx-[89ab]xxx`) which rejected legitimate UUID v5 IDs. Supabase generates v5 IDs in some seed contexts (the original Meadowbrook apiary hives from 18 April 2026 had v5 IDs). The strict regex caused sweepBrokenIds to "heal" those valid v5 IDs by assigning fresh v4 IDs, breaking the cloud↔local FK chain. Surfaced on Chris\'s account: sweep healed 23 hive IDs and 1 apiary ID that didn\'t need healing, then post-sweep push hit 114 FK violations as the new local IDs had no parent rows in cloud. Two fixes: (1) regex relaxed to accept any valid UUID (v1-v5, any variant) — `^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i`. Still correctly rejects non-UUID strings like hive_swarm_<ts>. (2) failed_syncs drop is now conditional — only clears when sweep actually healed something. Previously the unconditional drop was wiping legitimate failure records on every sign-in. Phase 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-12 — trial expiry signals. (1) Calendar trial-end-day marker: shows an X glyph in honey/copper on the day the user\'s trial expires, only visible to free non-founder users actually in trial, only shown in the month containing the trial-end date. Tapping the marker jumps to showUpgradeModal(\'trial-ending\'). Disappears automatically once user upgrades, becomes a Founder, or trial expires. (2) Trial reminder email infrastructure (worker v12 + SQL migration + Cloudflare cron): daily 17:00 UTC cron fires /send-trial-reminders endpoint, walks auth.users + profiles, finds free non-founder users in days 10-14 of trial not yet emailed, sends Resend email "Trial ends in N days" with upgrade CTA, marks trial_reminder_sent_at on success. Manual dry-run via X-Cron-Secret header. Smoke-tested on 5 May with eligible=0 (correct — too soon after launch), 1 user with manual extension correctly skipped. Phase 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
