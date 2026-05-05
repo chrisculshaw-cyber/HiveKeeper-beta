@@ -21903,12 +21903,15 @@ async function onAuthSuccess() {
   if (!localStorage.getItem(_trialKey)) {
     localStorage.setItem(_trialKey, new Date().toISOString());
   }
-  hideAuthScreen();
+  // 5 May 2026 Phase 4ce-5v — DO NOT hideAuthScreen() yet. The auth screen
+  // stays visible (with a loading state) during the cloud data sync, then
+  // we transition to home with everything already populated. Previously
+  // hideAuthScreen() fired here and the user stared at a placeholder on
+  // home for 1-2 seconds while pullFromSupabase resolved — looked clunky.
+  // Now sign-in feels like a single intentional flow.
+  showAuthLoadingState();
   applySettings();
   if (typeof applyColourBlindMode === 'function') applyColourBlindMode();
-
-  // Show loading state while pulling cloud data
-  showSyncStatus('Loading your data...');
 
   try {
     // Migrate any legacy string IDs to proper UUID v4 first
@@ -21951,6 +21954,9 @@ async function onAuthSuccess() {
   try { initLiveData(); } catch(e) {}
   try { renderDashboard(); } catch(e) {}
   try { renderFoundingBadge(); } catch(e) {}
+
+  // NOW hide the auth screen — data is ready, screens have rendered
+  hideAuthScreen();
 
   // pullFromSupabase has completed — now safe to check consent and process invite
   setTimeout(function() {
@@ -22082,6 +22088,15 @@ function showAuthScreen() {
     overlay.style.pointerEvents = 'all';
     overlay.style.zIndex = '9999';
   }
+  // 5 May 2026 Phase 4ce-5v — restore the form panel + build stamp in case
+  // they were hidden by a previous showAuthLoadingState (e.g. during sign-out
+  // before reload). Remove any leftover loading-state element too.
+  var formPanel = document.querySelector('.hk-auth-glass');
+  if (formPanel) formPanel.style.display = '';
+  var buildStamp = document.getElementById('auth-build-stamp');
+  if (buildStamp) buildStamp.style.display = '';
+  var existing = document.getElementById('auth-loading-state');
+  if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
   // Reveal app behind auth screen (no flash of content since auth is on top)
   var app = document.getElementById('app');
   if (app) app.style.visibility = 'visible';
@@ -22098,6 +22113,35 @@ function hideAuthScreen() {
   // Reveal app
   var app = document.getElementById('app');
   if (app) app.style.visibility = 'visible';
+}
+
+// 5 May 2026 Phase 4ce-5v — show a loading state on the auth screen during
+// the post-sign-in data sync. Hides the form panel and tabs, replaces with
+// a centred loading message. The auth screen stays visible until pullFromSupabase
+// completes, then hideAuthScreen() reveals the home with everything populated.
+// Avoids the previous behaviour where the home was visible (with placeholder)
+// for 1-2 seconds while data was syncing.
+function showAuthLoadingState() {
+  // Hide everything except the logo cluster
+  var formPanel = document.querySelector('.hk-auth-glass');
+  if (formPanel) formPanel.style.display = 'none';
+  var buildStamp = document.getElementById('auth-build-stamp');
+  if (buildStamp) buildStamp.style.display = 'none';
+  // Insert a loading message if not already present
+  var existing = document.getElementById('auth-loading-state');
+  if (!existing) {
+    var overlay = document.getElementById('auth-overlay');
+    if (overlay) {
+      var loader = document.createElement('div');
+      loader.id = 'auth-loading-state';
+      loader.style.cssText = 'position:relative;z-index:1;color:rgba(255,255,255,0.92);font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:600;text-align:center;margin-top:24px;letter-spacing:0.01em;';
+      var span = document.createElement('span');
+      span.textContent = 'Loading your apiary';
+      span.classList.add('hk-loading-dots');
+      loader.appendChild(span);
+      overlay.appendChild(loader);
+    }
+  }
 }
 
 // ── SIGN UP ─────────────────────────────────────
@@ -23480,7 +23524,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5u — two follow-up fixes after 4ce-5t feedback. (1) Login showed "Welcome to HiveKeeper" placeholder instead of the "Loading your apiary..." placeholder with animated dots: my inline init script was checking hk_apiaries_v1 to detect returning users, but that key gets cleared on sign-out (it\'s not in the keep-list). So a returning user logging back in had empty localStorage and was misidentified as first-time. Fix: check hk_has_signed_in first (which is in the keep-list and survives sign-out). (2) Auth overlay layout: justify-content:center caused the bee logo at the top to be clipped above the viewport when total content (logo + tagline + build stamp + form panel) exceeded screen height — and centred-overflow makes the top unreachable by scrolling. Switched to justify-content:flex-start with clamp(28px, 6vh, 64px) top padding so content stacks from the top and any overflow is reachable. Phase 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite + help-row-fix), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5v — proper fix for sign-in loading clunkiness, plus apiary screen title fix. (1) Loading flow restructured: previously hideAuthScreen() fired immediately on sign-in, so the user saw the home screen with placeholder text for 1-2 seconds while pullFromSupabase resolved. Now the auth screen STAYS VISIBLE during data sync with a "Loading your apiary..." state (animated dots, Cormorant serif, fits the auth screen aesthetic). hideAuthScreen() only fires after data is ready, so the home screen appears already populated. New showAuthLoadingState() function hides the form panel and shows the loading state inside the auth overlay; showAuthScreen() restores the form for sign-out cycles. The home placeholder still exists as a backstop for edge cases. (2) Apiary screen header was showing the apiary name in BOTH the pill AND the title row below — duplicate display of the same name. Title row now stays as the static "Apiary" label (the pill above it carries the apiary name). Phase 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26588,10 +26632,12 @@ function updateApiaryNameDisplays() {
   // screen left both showing the old name. The legacy 'apiary-screen-title'
   // and 'apiary-switcher-name' references are kept defensively in case some
   // other screen still uses those IDs.
+  // 5 May 2026 Phase 4ce-5v — DO NOT overwrite apiary-screen-title-hdr
+  // with the apiary name. The pill carries the name; the title row should
+  // stay as the static "Apiary" label. Was creating duplicate display of
+  // the same name on the apiary screen.
   var hdrName = document.getElementById('apiary-hdr-name');
   if (hdrName) hdrName.textContent = name;
-  var hdrTitle = document.getElementById('apiary-screen-title-hdr');
-  if (hdrTitle) hdrTitle.textContent = name;
 
   var screenTitle = document.getElementById('apiary-screen-title');
   if (screenTitle) screenTitle.textContent = name;
