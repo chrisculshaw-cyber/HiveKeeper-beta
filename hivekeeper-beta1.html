@@ -380,7 +380,9 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .cal-day.cal-day-good{background:var(--honey-pale);border-color:rgba(200,115,10,.3);color:var(--honey)}
 .cal-day.cal-day-marginal{background:#FFF6E1;border-color:#E6C68A;color:#7A5C00}
 .cal-day.cal-day-poor{background:#F5F5F5;color:#BDBDBD;border-color:#E0E0E0}
-.cal-weather-icon{font-size:16px;line-height:1;margin-bottom:1px;pointer-events:none;filter:saturate(1.1)}
+.cal-weather-icon{font-size:20px;line-height:1;margin-bottom:2px;pointer-events:none;filter:saturate(1.15)}
+/* Phase 4ce-5n — weather icon flows in the cell's column-flex above the day number.
+   NOT position:absolute. Layout: icon at top, day number centred below. */
 .cal-dot-row{display:flex;gap:2px;position:absolute;bottom:3px}
 .cal-dot{width:4px;height:4px;border-radius:50%}
 .cal-legend{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px 0}
@@ -23247,7 +23249,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5m — major weather UX rework. Calendar grid now shows real weather data (14 days) directly on day cells with colour coding and small weather icons. Replaces the previous month-of-year heuristic ("recommended" / "poor-weather" classes were applied based on whether month was in season — a crude proxy that didn\'t actually reflect weather). Removes the separate "Inspection forecast / Flying conditions — next 5 days" block at the bottom of the calendar page (decluttered). Adds 14-day textual summary below the legend ("Next 14 days: 9 good · 3 marginal · 2 poor"). Home weather card now has an expandable 7-day forecast — tap "See the 7-day forecast" footer to reveal inline (mirrors AH Watch toggle pattern, no modal needed). Single source of truth: flyingVerdict() function consumed by both home pill and calendar cells, with rainThreshold parameter so home uses 0.5mm (instantaneous) and calendar uses 1.0mm (daily total). fetchForecast14d() is the unified cache with 1-hour TTL — both surfaces share one fetch. Phase 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5n — weather icons on calendar grid bumped to 20px and confirmed centred above the day number (was 9px corner-positioned in 4ce-5m initial; brief 16px attempt followed). Lesson: any visible CSS change needs a phase letter bump so deploys are verifiable. Phase 4ce-5m functionality unchanged: real 14-day weather data drives calendar grid, expandable home forecast, single source of truth for verdicts. Phase 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
