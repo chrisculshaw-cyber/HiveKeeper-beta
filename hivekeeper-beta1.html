@@ -21994,6 +21994,11 @@ async function onAuthSuccess() {
     // Migrate any legacy IDs first (cheap, synchronous)
     try { migrateLegacyIds(); } catch(e) {}
     try { migratePestsArray(); } catch(e) {}
+    // 5 May 2026 Phase 4ce-11 — every-sign-in sweep for non-UUID IDs
+    // (separate from migrateLegacyIds which has a one-time guard). Heals
+    // hive_swarm_<ts> / hive_import_<ts> / etc. IDs that get created
+    // post-migration on builds before the 4ce-11 source fixes. Idempotent.
+    try { sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
 
     // initCurrentApiary uses cached data
     if (typeof initCurrentApiary === 'function') initCurrentApiary();
@@ -22050,6 +22055,8 @@ async function onAuthSuccess() {
     migrateLegacyIds();
     // 29 April 2026 Phase 4at — migrate legacy waxMoth boolean to pests array
     try { migratePestsArray(); } catch(e) { console.warn('migratePestsArray failed:', e); }
+    // 5 May 2026 Phase 4ce-11 — every-sign-in sweep for non-UUID IDs.
+    try { sweepBrokenIds(); } catch(e) { console.warn('sweepBrokenIds failed:', e); }
 
     // Pull from Supabase first — before any rendering
     if (typeof loadSettingsFromCloud === 'function') {
@@ -23277,7 +23284,11 @@ function saveSwarmCatch() {
   // If no hive selected, create a new one
   if (!hiveId) {
     var newHive = {
-      id: 'hive_swarm_' + Date.now(),
+      // 5 May 2026 Phase 4ce-11 — was 'hive_swarm_' + Date.now() which is
+      // NOT a valid UUID and gets rejected by the Supabase hives table
+      // (uuid column type). Every swarm caught this way was silently
+      // dropped from sync. Surfaced from Dave Townend's diagnostic 5 May.
+      id: uid(),
       name: 'Swarm catch ' + new Date(date).toLocaleDateString('en-GB', {day:'numeric',month:'short'}),
       status: 'active',
       hiveType: 'national',
@@ -23298,7 +23309,9 @@ function saveSwarmCatch() {
   }
 
   var catch_ = {
-    id: 'swarm_' + Date.now(),
+    // 5 May 2026 Phase 4ce-11 — was 'swarm_' + Date.now(). Same bug
+    // class as the hive ID fix above.
+    id: uid(),
     hiveId: hiveId,
     date: date,
     location: location,
@@ -23677,7 +23690,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-10 — two Settings page fixes following 4ce-9 feedback. (1) WhatsApp "Join HiveKeeper community" button background changed from #25D366 (bright lime green, WhatsApp brand-correct but ~2.4:1 contrast with white text — fails WCAG accessibility, hard to read) to #128C7E (WhatsApp\'s darker brand variant — same green family, ~5.5:1 contrast with white text, much more readable). Still on-brand; this is the same darker green WhatsApp uses for headers and primary buttons in their own app. (2) Help & manual + Download diagnostic log promoted from plain outlined buttons (previously hidden below the WhatsApp community section) to tiles in the Help & community group, second row. Forest gradient distinguishes them from the honey "outreach" tiles (Refer + Contact) in the first row — visual variety while staying tile-style consistent. Old duplicate outlined buttons removed. The diagnostic log tile preserves id="hk-log-btn" for any code references. Phase 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-11 — root-cause fix for the broken-UUID sync class. Surfaced from Dave Townend\'s diagnostic 5 May: two swarm-catch hives stuck in failed_syncs with "invalid input syntax for type uuid: hive_swarm_1778008954625" — Postgres uuid column rejecting the legacy hive_swarm_<timestamp> ID format. Two associated inspections and 11 queued hives blocked behind. (1) SOURCE FIXES — every place that was generating non-UUID IDs now uses uid(): swarm-catch flow (was hive_swarm_<ts>), bulk import flow (was hive_import_<ts>_<rand>), inspection import (was insp_import_<ts>_<rand>), swarm catch records (was swarm_<ts>), landmarks (was lm_<ts>). The migrateLegacyIds function had a one-time idempotency guard so post-migration broken-ID creation went unhealed. (2) NEW FUNCTION sweepBrokenIds — runs on every sign-in (separate from migrateLegacyIds) — walks hk_apiaries_v1, hk_hives_v2, hk_inspections_v2, hk_harvest_v1, hk_treatment_v1, hk_varroa_v1, hk_movements_v1, hk_landmarks_v1, hk_swarm_catches, hk_equipment_v1, hk_honey_stock_v1; assigns valid UUIDs to any record with a non-UUID id and updates hiveId/apiaryId FK references via mapping. Then walks hk_offline_queue and rewrites data.id/hive_id/apiary_id from the same maps; any queue items with non-UUID ids that aren\'t in the map get fresh UUIDs. Finally drops hk_failed_syncs entirely — items will repopulate naturally on next push if there\'s still a real schema problem, but the broken-UUID class is now resolved at source. Wired into both warm-resume and cold sign-in paths in onAuthSuccess. Dave\'s stuck swarms will heal on his next sign-in. Phase 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25705,7 +25718,10 @@ function confirmImport(data) {
     // Create hive if it doesn't exist
     if (!hiveMap[key]) {
       var newHive = {
-        id: 'hive_import_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+        // 5 May 2026 Phase 4ce-11 — was 'hive_import_<ts>_<rand>' which
+        // is NOT a valid UUID. Postgres uuid column rejected it. Same
+        // bug class as the swarm-catch flow.
+        id: uid(),
         name: hiveName,
         status: 'active',
         hiveType: 'national',
@@ -25745,7 +25761,9 @@ function confirmImport(data) {
     var queenRaw = (row['queen present'] || '').toLowerCase();
 
     newInspections.push({
-      id: 'insp_import_' + Date.now() + '_' + Math.random().toString(36).substr(2,5),
+      // 5 May 2026 Phase 4ce-11 — was 'insp_import_<ts>_<rand>' which
+      // fails Postgres uuid column. Same bug class as hive_import.
+      id: uid(),
       hiveId: hiveMap[key],
       inspectedAt: inspDate.getTime(),
       inspectedBy: row['inspector name'] || row['inspected by'] || 'Import',
@@ -27475,7 +27493,9 @@ function addLandmark(type) {
   var _lmBaseLng=(_apLm&&_apLm.lng)?_apLm.lng:(_mapCtr?_mapCtr.lng:-1.5);
   var _lmLat=_lmBaseLat+(Math.random()-0.5)*0.0002;
   var _lmLng=_lmBaseLng+(Math.random()-0.5)*0.0002;
-  landmarks.push({id:'lm_'+Date.now().toString(36),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_apLm?_apLm.id:null});
+  // 5 May 2026 Phase 4ce-11 — was 'lm_' + Date.now().toString(36).
+  // Same bug class. landmarks table syncs to Supabase.
+  landmarks.push({id:uid(),type:type,label:label,x:0.5,y:0.5,r:0,scale:1.8,mapLat:_lmLat,mapLng:_lmLng,apiaryId:_apLm?_apLm.id:null});
   saveLandmarks(landmarks);
   try{renderLeafletHives(window._editModeActive||false);}catch(e){}
   showToast(label+' added — drag to position in Apiary Settings');
@@ -28071,6 +28091,197 @@ function migrateLegacyIds() {
   // this device. Setting the flag prevents the function running again on
   // every sign-in.
   localStorage.setItem('hk_migrated_legacy_ids', '1');
+  return changed;
+}
+
+// 5 May 2026 Phase 4ce-11 — sweepBrokenIds: every-sign-in heal for any
+// hive/inspection/harvest/etc record with a non-UUID ID. Surfaced from
+// Dave Townend's diagnostic: legacy 'hive_swarm_<ts>' and 'hive_import_<ts>'
+// IDs were being created post-migrateLegacyIds (which has a one-time
+// idempotency guard) so they were never healed and Postgres rejected
+// every sync attempt with "invalid input syntax for type uuid".
+//
+// This function is separate from migrateLegacyIds (which has the one-time
+// guard for seed-data Meadowbrook duplicate prevention). sweepBrokenIds
+// runs every sign-in because new broken IDs can appear at any time until
+// the 4ce-11 source fixes (swarm-catch, bulk import, landmarks, swarm
+// catch records) propagate to all users via app update.
+//
+// Strategy:
+// 1. Walk hives + apiaries; for non-UUID IDs assign new UUIDs and build
+//    oldId -> newId mappings so we can rewrite FKs.
+// 2. Walk all records that reference hive_id or apiary_id (inspections,
+//    harvests, treatments, varroa, movements, landmarks, swarm catches);
+//    update their FK fields if those IDs were rewritten. Also assign
+//    new UUIDs to any record whose own id is non-UUID.
+// 3. Walk offline_queue: rewrite data.id, data.hive_id, data.apiary_id
+//    fields from the mappings.
+// 4. Drop the failed_syncs list entirely; clean items will be regenerated
+//    from localStorage when push runs.
+//
+// Returns true if any changes were made. Idempotent within a single call
+// (won't reassign UUIDs that are already valid).
+function sweepBrokenIds() {
+  var UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  function isValidUuid(id) { return typeof id === 'string' && UUID_REGEX.test(id); }
+  function freshId() { return uid(); }
+
+  var changed = false;
+  var apiaryMap = {}; // oldId -> newId
+  var hiveMap = {};   // oldId -> newId
+
+  // ─── 1. APIARIES ─────────────────────────────────────────
+  var apiaries;
+  try { apiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]'); }
+  catch(e) { apiaries = []; }
+  apiaries.forEach(function(a) {
+    if (!isValidUuid(a.id)) {
+      var newId = freshId();
+      apiaryMap[a.id] = newId;
+      a.id = newId;
+      changed = true;
+    }
+  });
+
+  // ─── 2. HIVES (rewrite own id + apiaryId FK) ─────────────
+  var hives;
+  try { hives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]'); }
+  catch(e) { hives = []; }
+  hives.forEach(function(h) {
+    if (!isValidUuid(h.id)) {
+      var newId = freshId();
+      hiveMap[h.id] = newId;
+      h.id = newId;
+      changed = true;
+    }
+    if (h.apiaryId && apiaryMap[h.apiaryId]) {
+      h.apiaryId = apiaryMap[h.apiaryId];
+      changed = true;
+    }
+  });
+
+  // Helper: walk a record list, rewrite hiveId/apiaryId FKs from maps,
+  // assign UUID if record's own id is non-UUID. Returns true if changed.
+  function sweepRecordList(key) {
+    var arr;
+    try { arr = JSON.parse(localStorage.getItem(key) || '[]'); }
+    catch(e) { return false; }
+    if (!Array.isArray(arr) || !arr.length) return false;
+    var listChanged = false;
+    arr.forEach(function(rec) {
+      if (rec.id !== undefined && !isValidUuid(rec.id)) {
+        rec.id = freshId();
+        listChanged = true;
+      }
+      if (rec.hiveId && hiveMap[rec.hiveId]) {
+        rec.hiveId = hiveMap[rec.hiveId];
+        listChanged = true;
+      }
+      if (rec.apiaryId && apiaryMap[rec.apiaryId]) {
+        rec.apiaryId = apiaryMap[rec.apiaryId];
+        listChanged = true;
+      }
+    });
+    if (listChanged) {
+      try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e) {}
+    }
+    return listChanged;
+  }
+
+  // ─── 3. RECORDS THAT REFERENCE HIVE/APIARY ───────────────
+  if (sweepRecordList('hk_inspections_v2')) changed = true;
+  if (sweepRecordList('hk_harvest_v1'))     changed = true;
+  if (sweepRecordList('hk_treatment_v1'))   changed = true;
+  if (sweepRecordList('hk_varroa_v1'))      changed = true;
+  if (sweepRecordList('hk_movements_v1'))   changed = true;
+  if (sweepRecordList('hk_landmarks_v1'))   changed = true;
+  if (sweepRecordList('hk_swarm_catches'))  changed = true;
+  if (sweepRecordList('hk_equipment_v1'))   changed = true;
+  if (sweepRecordList('hk_honey_stock_v1')) changed = true;
+
+  // Persist hive + apiary changes (records were already saved per-list)
+  if (Object.keys(apiaryMap).length || Object.keys(hiveMap).length) {
+    try { localStorage.setItem('hk_apiaries_v1', JSON.stringify(apiaries)); } catch(e) {}
+    try { localStorage.setItem('hk_hives_v2', JSON.stringify(hives)); } catch(e) {}
+    // Update current apiary pointer if it was rewritten
+    var currentAp = localStorage.getItem('hk_current_apiary');
+    if (currentAp && apiaryMap[currentAp]) {
+      localStorage.setItem('hk_current_apiary', apiaryMap[currentAp]);
+    }
+  }
+
+  // ─── 4. OFFLINE QUEUE ────────────────────────────────────
+  // Items in the queue have shape { table, data: {...}, queuedAt, attempts }.
+  // The data object carries the row that's about to be pushed. If data.id
+  // is non-UUID we rewrite it (giving the queue's view of this record a
+  // valid UUID); if data.hive_id / data.apiary_id are in our maps we
+  // rewrite those too. ALSO: if data.id matches a key in hiveMap or
+  // apiaryMap (i.e. the localStorage walk above gave it a new UUID) we
+  // use the same new UUID so the queue item lines up with localStorage.
+  try {
+    var queue = JSON.parse(localStorage.getItem('hk_offline_queue') || '[]');
+    var queueChanged = false;
+    queue.forEach(function(item) {
+      if (!item || !item.data) return;
+      var d = item.data;
+      // hive id remap
+      if (d.id && hiveMap[d.id]) {
+        d.id = hiveMap[d.id];
+        queueChanged = true;
+      } else if (item.table === 'hives' && d.id && !isValidUuid(d.id)) {
+        // queue had a hive that wasn't in localStorage hiveMap (e.g. it
+        // was deleted from localStorage but the queue item lingers).
+        // Give it a fresh UUID so the push at least lands somewhere.
+        d.id = freshId();
+        queueChanged = true;
+      }
+      // apiary id remap
+      if (d.id && apiaryMap[d.id] && item.table === 'apiaries') {
+        d.id = apiaryMap[d.id];
+        queueChanged = true;
+      }
+      // FK columns
+      if (d.hive_id && hiveMap[d.hive_id]) {
+        d.hive_id = hiveMap[d.hive_id];
+        queueChanged = true;
+      }
+      if (d.apiary_id && apiaryMap[d.apiary_id]) {
+        d.apiary_id = apiaryMap[d.apiary_id];
+        queueChanged = true;
+      }
+      // Row id on non-hive/apiary tables (inspections, harvests etc.)
+      // should also be a valid UUID. Replace if not.
+      if (d.id && !isValidUuid(d.id) && item.table !== 'hives' && item.table !== 'apiaries') {
+        d.id = freshId();
+        queueChanged = true;
+      }
+    });
+    if (queueChanged) {
+      localStorage.setItem('hk_offline_queue', JSON.stringify(queue));
+      changed = true;
+    }
+  } catch(e) { console.warn('sweepBrokenIds: queue rewrite failed', e); }
+
+  // ─── 5. FAILED SYNCS ─────────────────────────────────────
+  // Drop the failed_syncs list entirely. The data they represent is now
+  // valid in localStorage (we just fixed the IDs). When push runs, those
+  // localStorage records will sync naturally. Anything that's STILL broken
+  // (e.g. a real schema drift) will repopulate the failed_syncs list on
+  // next push attempt — but with a more recent failedAt timestamp.
+  try {
+    var failedRaw = localStorage.getItem('hk_failed_syncs');
+    if (failedRaw && failedRaw !== '[]') {
+      localStorage.setItem('hk_failed_syncs', '[]');
+      changed = true;
+      console.log('HiveKeeper: cleared failed_syncs after broken-ID sweep');
+    }
+  } catch(e) {}
+
+  if (changed) {
+    var hiveCount = Object.keys(hiveMap).length;
+    var apiaryCount = Object.keys(apiaryMap).length;
+    console.log('HiveKeeper: sweepBrokenIds healed ' + hiveCount + ' hive ID(s) and ' + apiaryCount + ' apiary ID(s)');
+  }
   return changed;
 }
 
