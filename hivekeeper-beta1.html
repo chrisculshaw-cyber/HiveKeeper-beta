@@ -19914,11 +19914,24 @@ function switchApiary(id) {
   renderDashboard();
   renderApiary();
   renderMap();
+  // 5 May 2026 Phase 4ce-5o — refresh expanded home forecast if currently visible.
+  // The cache was cleared by applyApiaryLocation, but if the user has the
+  // forecast expanded when they switch, the rendered rows still show the
+  // OLD apiary's weather until they collapse and re-expand. This catches
+  // that case.
+  try {
+    var fcBody = document.getElementById('weather-forecast-body');
+    if (fcBody && fcBody.style.display !== 'none' && typeof renderHomeForecast === 'function') {
+      renderHomeForecast();
+    }
+  } catch(e) {}
   // 1 May 2026 Phase 4bw — calendar is now apiary-scoped, so it must
   // re-render when apiary switches. Without this, switching apiary while
   // viewing the calendar leaves it showing the previous apiary's data.
+  // 5 May 2026 Phase 4ce-5o — forecast cache is now cleared by applyApiaryLocation
+  // (called above). renderCalendarForecast below will find an empty cache and refetch.
   if (currentScreen === 's-calendar') {
-    try { renderCalendar(); renderSeasonalTips(); } catch(e) { console.warn('Calendar re-render after apiary switch failed:', e); }
+    try { renderCalendar(); renderSeasonalTips(); renderCalendarForecast(); } catch(e) { console.warn('Calendar re-render after apiary switch failed:', e); }
   }
   // Leaflet map needs a FULL rebuild for the new apiary: different GPS origin,
   // different saved centre/zoom, potentially different bearing. Rather than try
@@ -19957,6 +19970,24 @@ function switchApiary(id) {
     // Final invalidate covers any post-rotation layout shift.
     setTimeout(function(){ try{ if (_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 1000);
   }
+  // 5 May 2026 Phase 4ce-5o — refresh data on additional screens that were
+  // previously missed by switchApiary. Without these, switching apiary while
+  // viewing these screens left the old apiary's data on display.
+  if (currentScreen === 's-hive') {
+    // Hive detail: the previously-viewed hive belongs to the OLD apiary, so
+    // redirect to the new apiary's overview rather than show stale (or wrong)
+    // hive data. Safer than trying to find an equivalent hive in the new apiary.
+    try { goTo('s-apiary'); } catch(e) { console.warn('s-hive redirect failed:', e); }
+  }
+  if (currentScreen === 's-forage') {
+    try { if (typeof renderForageConditions === 'function') renderForageConditions(); } catch(e) { console.warn('renderForageConditions failed:', e); }
+  }
+  if (currentScreen === 's-inventory') {
+    try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) { console.warn('renderInventory failed:', e); }
+  }
+  // s-ai: not apiary-scoped (chat history is per user, not per apiary)
+  // s-market: not apiary-scoped (national listings)
+
   // Reset Inspect screen state — the previously-selected hive almost certainly belongs
   // to the OLD apiary, so we clear it and rebuild the hive selector with the new apiary's hives.
   // Without this, a user on Inspect who switches apiaries sees stale hives and could log an
@@ -23249,7 +23280,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5n — weather icons on calendar grid bumped to 20px and confirmed centred above the day number (was 9px corner-positioned in 4ce-5m initial; brief 16px attempt followed). Lesson: any visible CSS change needs a phase letter bump so deploys are verifiable. Phase 4ce-5m functionality unchanged: real 14-day weather data drives calendar grid, expandable home forecast, single source of truth for verdicts. Phase 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5o — apiary switching audit + fixes. Six per-screen apiary name labels were missing from updateApiaryNameDisplays (calendar, hive, ai, market, forage, inventory) — switching apiary while viewing those screens left the OLD apiary name in the header; all now update atomically. Data refresh extended for screens previously missed: Calendar gets full refresh including renderCalendarForecast (so new apiary\'s weather appears on grid cells), Forage and Inventory re-render, Hive Detail redirects to s-apiary on switch (old hive invalid in new context). 14-day forecast cache invalidation centralised in applyApiaryLocation so all consumers (calendar grid, home expandable forecast) get fresh data after switch. Home forecast body re-renders if currently expanded during switch. Phase 4ce-5n (icon size 20px), 4ce-5m (real weather data on calendar grid + expandable home forecast), 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26358,6 +26389,22 @@ function updateApiaryNameDisplays() {
   if (switcherName) switcherName.textContent = name;
   var inspectLabel = document.getElementById('inspect-apiary-label');
   if (inspectLabel) inspectLabel.textContent = name;
+  // 5 May 2026 Phase 4ce-5o — six per-screen apiary name labels were missing
+  // from this function, so switching apiary while viewing those screens left
+  // the previous apiary's name in the header. All page headers now update
+  // atomically when the apiary changes.
+  var calendarLabel = document.getElementById('calendar-apiary-label');
+  if (calendarLabel) calendarLabel.textContent = name;
+  var hiveLabel = document.getElementById('hive-apiary-label');
+  if (hiveLabel) hiveLabel.textContent = name;
+  var aiLabel = document.getElementById('ai-apiary-label');
+  if (aiLabel) aiLabel.textContent = name;
+  var marketLabel = document.getElementById('market-apiary-label');
+  if (marketLabel) marketLabel.textContent = name;
+  var forageLabel = document.getElementById('forage-apiary-label');
+  if (forageLabel) forageLabel.textContent = name;
+  var inventoryLabel = document.getElementById('inventory-apiary-label');
+  if (inventoryLabel) inventoryLabel.textContent = name;
 }
 
 // ── DELETE APIARY ─────────────────────────────────────────
@@ -27499,6 +27546,11 @@ function applyApiaryLocation(apiary) {
     localStorage.setItem('hk_active_lng', apiary.lng);
     localStorage.setItem('hk_active_location_name', apiary.location || apiary.name);
     localStorage.removeItem('hk_weather_v1');
+    // 5 May 2026 Phase 4ce-5o — also clear the 14-day forecast cache so the
+    // new apiary's location triggers a fresh fetch. Without this, calendar
+    // grid cells and the home expandable forecast both show the previous
+    // apiary's weather for up to an hour.
+    localStorage.removeItem('hk_forecast_14d_v1');
     fetchWeather();
     if (typeof initAsianHornetWatch === 'function') initAsianHornetWatch();
   }
