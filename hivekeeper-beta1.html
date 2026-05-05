@@ -1787,22 +1787,37 @@ input[type="checkbox"].hk-chk:checked::after {
   }
   /* Phase 4ce-5y — decorative scattered bees on auth screen.
      Three subtly different float patterns so they don't synchronise.
-     Each is a gentle bob with optional sway — atmospheric, not distracting. */
+     Each is a gentle bob with optional sway — atmospheric, not distracting.
+     Phase 4ce-5z — bees now actually fly. Larger paths (50-110px), longer
+     durations (18-26s), multi-stage curves so they wander rather than bob.
+     Opacity dims at peak distance to suggest flying further away. */
   @keyframes hk-extra-bee-a {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(-4px, -8px) rotate(-3deg); }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
+    25%  { transform: translate(-30px, -45px) rotate(-8deg); opacity: 0.55; }
+    50%  { transform: translate(-70px, -20px) rotate(-3deg); opacity: 0.4; }
+    75%  { transform: translate(-25px, 30px) rotate(5deg); opacity: 0.6; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
   }
   @keyframes hk-extra-bee-b {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(6px, -5px) rotate(4deg); }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
+    20%  { transform: translate(40px, -30px) rotate(10deg); opacity: 0.6; }
+    45%  { transform: translate(20px, -70px) rotate(-5deg); opacity: 0.45; }
+    70%  { transform: translate(-15px, -40px) rotate(3deg); opacity: 0.65; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
   }
   @keyframes hk-extra-bee-c {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(-3px, -10px) rotate(2deg); }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
+    25%  { transform: translate(60px, -20px) rotate(8deg); opacity: 0.55; }
+    50%  { transform: translate(80px, 30px) rotate(-4deg); opacity: 0.45; }
+    75%  { transform: translate(30px, 50px) rotate(2deg); opacity: 0.6; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
   }
   @keyframes hk-extra-bee-d {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(5px, -6px) rotate(-2deg); }
+    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
+    20%  { transform: translate(-40px, -50px) rotate(-7deg); opacity: 0.5; }
+    50%  { transform: translate(-90px, -10px) rotate(4deg); opacity: 0.4; }
+    80%  { transform: translate(-30px, 40px) rotate(-3deg); opacity: 0.6; }
+    100% { transform: translate(0, 0) rotate(0deg); opacity: 0.78; }
   }
   .hk-extra-bee {
     position: absolute;
@@ -1810,10 +1825,10 @@ input[type="checkbox"].hk-chk:checked::after {
     z-index: 0;
     opacity: 0.78;
   }
-  .hk-extra-bee-1 { animation: hk-extra-bee-a 7s ease-in-out infinite; }
-  .hk-extra-bee-2 { animation: hk-extra-bee-b 9s ease-in-out infinite; animation-delay: 1.5s; }
-  .hk-extra-bee-3 { animation: hk-extra-bee-c 11s ease-in-out infinite; animation-delay: 0.7s; }
-  .hk-extra-bee-4 { animation: hk-extra-bee-d 8.5s ease-in-out infinite; animation-delay: 2.3s; }
+  .hk-extra-bee-1 { animation: hk-extra-bee-a 22s ease-in-out infinite; }
+  .hk-extra-bee-2 { animation: hk-extra-bee-b 26s ease-in-out infinite; animation-delay: -4s; }
+  .hk-extra-bee-3 { animation: hk-extra-bee-c 18s ease-in-out infinite; animation-delay: -2s; }
+  .hk-extra-bee-4 { animation: hk-extra-bee-d 24s ease-in-out infinite; animation-delay: -6s; }
   @keyframes hk-auth-fade-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -21969,6 +21984,69 @@ async function onAuthSuccess() {
   if (!localStorage.getItem(_trialKey)) {
     localStorage.setItem(_trialKey, new Date().toISOString());
   }
+
+  // 5 May 2026 Phase 4ce-5z — WARM-RESUME FAST PATH.
+  // When the page reloads with a valid session AND populated localStorage
+  // (e.g. iOS killed the WebView during backgrounding, brought it back
+  // fresh), skip the loading splash. Render directly from cache, sync
+  // from Supabase silently in the background. The user experience is
+  // instant — same as the visibilitychange path that doesn't reload.
+  // Cold paths (genuine first sign-in, post-sign-out re-sign-in) still
+  // go through the full loading splash because there's nothing to show
+  // from cache.
+  var hasCachedApiaries = !!localStorage.getItem('hk_apiaries_v1');
+  var isWarmResume = hasCachedApiaries;
+
+  if (isWarmResume) {
+    // Hide auth screen IMMEDIATELY — we have cached data to render
+    hideAuthScreen();
+    applySettings();
+    if (typeof applyColourBlindMode === 'function') applyColourBlindMode();
+
+    // Migrate any legacy IDs first (cheap, synchronous)
+    try { migrateLegacyIds(); } catch(e) {}
+    try { migratePestsArray(); } catch(e) {}
+
+    // initCurrentApiary uses cached data
+    if (typeof initCurrentApiary === 'function') initCurrentApiary();
+
+    // Restore the saved screen (or default to home)
+    var _savedScreen = null;
+    try { _savedScreen = localStorage.getItem('hk_last_screen'); } catch(e) {}
+    var _safeRestoreScreens = ['s-apiary', 's-calendar', 's-ai', 's-market', 's-inspect'];
+    if (_savedScreen && _safeRestoreScreens.indexOf(_savedScreen) >= 0 && document.getElementById(_savedScreen)) {
+      goTo(_savedScreen);
+    } else {
+      goTo('s-home');
+    }
+    try { initLiveData(); } catch(e) {}
+    try { renderDashboard(); } catch(e) {}
+    try { renderFoundingBadge(); } catch(e) {}
+
+    // Sync from Supabase silently in the background.
+    // Don't await — the user is already looking at a working screen.
+    (async function backgroundSync() {
+      try {
+        if (typeof loadSettingsFromCloud === 'function') {
+          await loadSettingsFromCloud().catch(function(){});
+        }
+        var pulled = await pullFromSupabase();
+        if (pulled) {
+          // Re-render anything that might have changed
+          try { renderDashboard(); } catch(e) {}
+          try { renderApiary(); } catch(e) {}
+          try { updateApiaryNameDisplays(); } catch(e) {}
+        }
+      } catch(e) {
+        console.warn('Background sync after warm resume failed:', e);
+      }
+    })();
+
+    // Quietly check account status (soft-delete grace period)
+    try { _checkAccountStatusOnSignIn(); } catch(e) {}
+    return;
+  }
+
   // 5 May 2026 Phase 4ce-5v — DO NOT hideAuthScreen() yet. The auth screen
   // stays visible (with a loading state) during the cloud data sync, then
   // we transition to home with everything already populated. Previously
@@ -23611,7 +23689,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5y — major branded auth/loading splash polish. (1) Bee logo bumped from 80px to 140px — substantially larger, becomes the hero of the splash. (2) HiveKeeper title bumped from 38px to 56px Cormorant; trademark 18px → 26px. Tagline 16px → 18px. Bigger, more dramatic editorial feel. (3) "Loading your apiary..." message bumped from 20px to 26px italic Cormorant. (4) showAuthLoadingState now ALSO hides the Trial Benefits block ("Try Pro free for 14 days" + features list) and the auth footer during loading — they\'re sign-up marketing copy, irrelevant when already signing in. New IDs auth-trial-benefits and auth-footer added to enable clean hide/restore. (5) Four decorative floating bees scattered around the auth overlay edges — same brand-correct bee SVG as the main logo, sized 42-54px, positioned at top-left, mid-right, bottom-left, bottom-right. Four staggered float animations (7s, 9s, 11s, 8.5s with offset delays) so they don\'t synchronise. Visible during loading too — atmospheric brand presence, not noise. z-index 0 keeps them behind the main content; pointer-events:none means they don\'t intercept clicks. Phase 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5z — two genuine UX improvements. (1) Decorative bees now actually fly: replaced the small 4-10px bobbing animations with multi-stage flight paths (50-110px translations, curved waypoints, 18-26s durations, staggered start delays). Opacity dims at peak distance to suggest flying further from the viewer. Each bee follows a different path so they never sync. (2) Warm-resume fast path: previously when iOS killed the WebView during backgrounding and brought it back fresh, the app went through the full loading splash + pullFromSupabase round-trip. Now if there\'s a valid session AND localStorage has cached apiaries, onAuthSuccess takes a fast path: hides auth screen immediately, renders saved screen from cache, then syncs from Supabase silently in the background. Cold paths (genuine first sign-in, post-sign-out re-sign-in) still go through the full loading splash because there\'s nothing to render from cache. The "minimise and maximise on phone" experience now feels instant — same as the visibilitychange path that doesn\'t reload. Phase 4ce-5y (bigger bee + title + loading text + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
