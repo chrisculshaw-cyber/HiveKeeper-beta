@@ -4007,6 +4007,21 @@ input[type="checkbox"].hk-chk:checked::after {
         </button>
       </div>
 
+      <!-- 5 May 2026 Phase 4ce-10 — Help & manual + Diagnostic log promoted
+           to tiles in the Help & community group. Were previously plain
+           outlined buttons hidden below the WhatsApp community section.
+           Forest gradient (utility/reference, not outreach). -->
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){openManual()},200)" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📖</span>
+          <span>Help &amp; manual</span>
+        </button>
+        <button onclick="downloadHkLog()" id="hk-log-btn" style="flex:1;background:linear-gradient(135deg,var(--forest),#2a6448);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+          <span style="font-size:24px;">📋</span>
+          <span>Diagnostic log</span>
+        </button>
+      </div>
+
       <!-- COMMUNITY (28 April 2026 Phase 4t) — was a single ambiguous
            "WhatsApp community" button. Now a proper community section
            showing the parent community as primary CTA plus three direct
@@ -4015,7 +4030,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <div style="font-size:11px;font-weight:700;color:#1A6B3D;letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
           <span style="font-size:14px;">💬</span> WHATSAPP COMMUNITY
         </div>
-        <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:#25D366;border:none;border-radius:var(--rs);padding:10px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">
+        <button onclick="window.open('https://chat.whatsapp.com/GRe8otDE33G8uCbhCD7UQ8','_blank')" style="width:100%;background:#128C7E;border:none;border-radius:var(--rs);padding:10px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;margin-bottom:8px;text-align:left;display:flex;align-items:center;gap:10px;">
           <span style="font-size:18px;">🍯</span>
           <span style="flex:1;">Join HiveKeeper community<div style="font-size:10px;font-weight:400;color:rgba(255,255,255,.92);margin-top:2px;">Announcements + locked Founders channel</div></span>
           <span style="font-size:14px;">→</span>
@@ -4034,16 +4049,14 @@ input[type="checkbox"].hk-chk:checked::after {
           <span style="flex:1;">General<div style="font-size:9px;font-weight:400;color:var(--text-l);margin-top:1px;">Everything else, hive talk</div></span>
         </button>
       </div>
-      <button onclick="closeModalEl('modal-settings');setTimeout(function(){openManual()},200)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;margin-bottom:16px;">📖 Help &amp; manual</button>
-
-      <!-- DIAGNOSTIC LOG — export for troubleshooting (23 April 2026) -->
-      <button onclick="downloadHkLog()" id="hk-log-btn" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;margin-bottom:8px;">📋 Download diagnostic log</button>
 
       <!-- 3 May 2026 Phase 4ce — Export my data and Delete account moved to
            the Data modal (Settings → Data pill). Export sits in the Export
            section; Delete sits in Danger zone alongside Start fresh. Keeps
            irreversible/data-related actions grouped consistently rather than
-           scattered across Settings root. -->
+           scattered across Settings root.
+           5 May 2026 Phase 4ce-10 — Help & manual and Diagnostic log
+           promoted to tiles above; old outlined buttons removed. -->
 
       <!-- SIGN OUT (kept visible — one tap always) -->
       <button onclick="authSignOut()" id="sign-out-btn" style="width:100%;background:transparent;border:1px solid #B83228;border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#B83228;cursor:pointer;margin-bottom:8px;">Sign out</button>
@@ -23664,7 +23677,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-9 — three iterations on 4ce-8 feedback. (1) Home Refer a beekeeper card softened from bold honey gradient with white text + white CTA to a pale-honey card with honey-coloured text + honey-coloured CTA button. The bold version was too loud at the bottom of home; this version sits in the editorial cream-and-honey palette without shouting. Same shape and structure, just colour intensity dialled down. (2) Home Community card reverted from WhatsApp green back to forest-green. Misread Chris\'s 4ce-8 instruction — he meant the Settings page WhatsApp button (which was already correctly WhatsApp green); the home card should stay in the HiveKeeper brand palette. (3) Settings tiles now grouped under section titles for visual hierarchy: "Your account" (above the existing 2x2 of Your account / Reports / Preferences / Data), "Your apiary" (above Apiary settings / Inventory / Honey pricing — Honey pricing now sits alone in its own row instead of paired with Sync status, since semantically it belongs with apiary actions), "Tools" (above Sync status / Subscribe to calendar / Print QR stickers / Bee inspector), "Help & community" (above Refer a beekeeper / Contact HiveKeeper). The unified tile style stays; group titles break up the wall of tiles. Phase 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-10 — two Settings page fixes following 4ce-9 feedback. (1) WhatsApp "Join HiveKeeper community" button background changed from #25D366 (bright lime green, WhatsApp brand-correct but ~2.4:1 contrast with white text — fails WCAG accessibility, hard to read) to #128C7E (WhatsApp\'s darker brand variant — same green family, ~5.5:1 contrast with white text, much more readable). Still on-brand; this is the same darker green WhatsApp uses for headers and primary buttons in their own app. (2) Help & manual + Download diagnostic log promoted from plain outlined buttons (previously hidden below the WhatsApp community section) to tiles in the Help & community group, second row. Forest gradient distinguishes them from the honey "outreach" tiles (Refer + Contact) in the first row — visual variety while staying tile-style consistent. Old duplicate outlined buttons removed. The diagnostic log tile preserves id="hk-log-btn" for any code references. Phase 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
