@@ -376,21 +376,16 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .cal-day.today.inspect-window{background:#C8E6C9;border:3px solid var(--green);color:var(--forest)}
 .cal-day.recommended{background:var(--honey-pale);border-color:rgba(200,115,10,.3);color:var(--honey)}
 .cal-day.poor-weather{background:#F5F5F5;color:#BDBDBD;border-color:#E0E0E0}
+/* 5 May 2026 Phase 4ce-5m — real weather-driven cell classes. */
+.cal-day.cal-day-good{background:var(--honey-pale);border-color:rgba(200,115,10,.3);color:var(--honey)}
+.cal-day.cal-day-marginal{background:#FFF6E1;border-color:#E6C68A;color:#7A5C00}
+.cal-day.cal-day-poor{background:#F5F5F5;color:#BDBDBD;border-color:#E0E0E0}
+.cal-weather-icon{position:absolute;top:2px;right:3px;font-size:9px;line-height:1;opacity:0.85;pointer-events:none}
 .cal-dot-row{display:flex;gap:2px;position:absolute;bottom:3px}
 .cal-dot{width:4px;height:4px;border-radius:50%}
 .cal-legend{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px 0}
 .cal-leg-item{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--text-m)}
 .cal-leg-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0}
-.cal-forecast{margin:0 16px;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden}
-.forecast-title{padding:12px 14px 8px;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--text);border-bottom:1px solid var(--wax)}
-.forecast-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--wax)}
-.forecast-row:last-child{border-bottom:none}
-.forecast-day{font-size:11px;font-weight:700;color:var(--text);width:36px;flex-shrink:0}
-.forecast-icon{font-size:18px;flex-shrink:0}
-.forecast-temp{font-size:13px;font-weight:700;color:var(--text);font-family:'Cormorant Garamond',serif;flex-shrink:0;width:56px}
-.forecast-fly{flex:1;font-size:10px;color:var(--text-m)}
-.forecast-badge{flex-shrink:0;padding:3px 8px;border-radius:20px;font-size:9px;font-weight:700;white-space:nowrap}
-.fly-great{background:#EAFAF1;color:var(--green)}.fly-good{background:var(--honey-pale);color:var(--honey)}.fly-poor{background:#F5F5F5;color:#9E9E9E}
 .cal-next-due{margin:0 16px;background:var(--honey-pale);border-radius:var(--rs);padding:14px;border:1px solid rgba(200,115,10,.25)}
 .cal-next-due-title{font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
 .due-hive-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -2121,6 +2116,19 @@ input[type="checkbox"].hk-chk:checked::after {
         <span id="weather-temp"></span>
         <span id="weather-desc"></span>
       </div>
+      <!-- 5 May 2026 Phase 4ce-5m — Expandable 7-day forecast.
+           Tapping the footer reveals an inline forecast (no modal) and rotates
+           the arrow. Mirrors the AH Watch pattern. Uses the same threshold
+           logic as flyingConditions() so verdicts genuinely agree across views. -->
+      <div onclick="toggleHomeForecast()" id="weather-forecast-toggle" style="border-top:1px solid var(--wax);padding:10px 14px;background:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;color:var(--forest);">
+        <span id="weather-forecast-toggle-label">See the 7-day forecast</span>
+        <span id="weather-forecast-arrow" style="font-size:11px;transition:transform .2s ease;">&#9660;</span>
+      </div>
+      <div id="weather-forecast-body" style="display:none;border-top:1px solid var(--wax);background:var(--white);">
+        <div id="weather-forecast-rows" style="padding:6px 0;">
+          <div style="text-align:center;padding:14px;font-size:12px;color:var(--text-l);">Loading forecast...</div>
+        </div>
+      </div>
     </div>
 
     <!-- 29 April 2026 Phase 4be — Forage Conditions sits under Weather (was
@@ -2951,9 +2959,11 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="cal-legend">
         <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:var(--forest)"></div>Inspected</div>
         <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:#D4EDDA;border:2px solid var(--green)"></div>Inspect window</div>
-        <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:var(--honey-pale);border:1px solid var(--honey)"></div>Good weather</div>
-        <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:#F5F5F5;border:1px solid #E0E0E0"></div>Poor weather</div>
+        <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:var(--honey-pale);border:1px solid var(--honey)"></div>Good day</div>
+        <div class="cal-leg-item"><div class="cal-leg-swatch" style="background:#F5F5F5;border:1px solid #E0E0E0"></div>Poor day</div>
       </div>
+      <!-- 5 May 2026 Phase 4ce-5m — 14-day summary, populated by renderCalendarWeather. -->
+      <div id="cal-weather-summary" style="margin:8px 14px 0;padding:8px 12px;background:var(--cream);border:1px solid var(--wax);border-radius:8px;font-size:11px;color:var(--text-l);text-align:center;line-height:1.5;">Loading 14-day outlook...</div>
       <!-- Subscribe to calendar — contextual link for iCal feed -->
       <button onclick="subscribeToCalendar()" style="width:100%;margin-top:10px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--forest);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
         <span>📅</span><span>Subscribe in Google / Apple / Outlook</span>
@@ -2968,14 +2978,6 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="cal-next-due">
         <div class="cal-next-due-title">Based on last inspection date</div>
         <div id="due-hives-list"></div>
-      </div>
-      <div class="section-head" style="margin-top:12px;">
-        <div class="section-title">Inspection forecast</div>
-        <button class="section-action" onclick="showToast('Live data: Open-Meteo, Brigstock')">Source</button>
-      </div>
-      <div class="cal-forecast">
-        <div class="forecast-title">Flying conditions — next 5 days</div>
-        <div id="forecast-rows"><div style="padding:16px;text-align:center;font-size:12px;color:var(--text-l);">Loading forecast...</div></div>
       </div>
       <div class="section-head" style="margin-top:12px;"><div class="section-title">Inspection guide</div></div>
       <div style="margin:0 16px;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);overflow:hidden;box-shadow:var(--shadow);">
@@ -13637,6 +13639,128 @@ function flyingConditions(temp, windKmh, rain) {
   return 'Marginal conditions';
 }
 
+// 5 May 2026 Phase 4ce-5m — Unified forecast verdict.
+// Mirrors flyingConditions() exactly but returns structured data so the
+// calendar grid can colour cells consistently with the home weather pill.
+// Single source of truth — if flyingConditions() above changes, this should
+// change in lockstep (or be refactored to share gates).
+// rainThreshold defaults to 0.5 (the home page's "rain falling" instantaneous
+// threshold). Calendar passes 1.0 for daily-total semantics — a daily forecast
+// of 0.6mm could be a brief drizzle, not "raining" all day.
+function flyingVerdict(temp, windKmh, rain, opts) {
+  opts = opts || {};
+  var rainThreshold = opts.rainThreshold || 0.5;
+  var windMph = Math.round((windKmh || 0) * 0.621371);
+  if (rain > rainThreshold)              return { cls: 'poor', label: 'Too wet (' + (rain || 0).toFixed(1) + 'mm)', icon: '\uD83C\uDF27\uFE0F' };
+  if (temp < 10)                          return { cls: 'poor', label: 'Too cold (' + Math.round(temp) + 'C)', icon: '\u2744\uFE0F' };
+  if (windMph > 20)                       return { cls: 'poor', label: 'Too windy (' + windMph + 'mph)', icon: '\uD83D\uDCA8' };
+  if (temp >= 15 && windMph < 12 && rain === 0) return { cls: 'great', label: 'Excellent', icon: '\u2600\uFE0F' };
+  if (temp >= 12)                         return { cls: 'good', label: 'Good day to inspect', icon: '\u26C5' };
+  return { cls: 'marginal', label: 'Marginal', icon: '\u2601\uFE0F' };
+}
+
+// Map open-meteo weathercode to a small emoji icon for calendar cells.
+var WMO_EMOJI = {0:'\u2600\uFE0F',1:'\uD83C\uDF24\uFE0F',2:'\u26C5',3:'\u2601\uFE0F',45:'\uD83C\uDF2B\uFE0F',48:'\uD83C\uDF2B\uFE0F',51:'\uD83C\uDF26\uFE0F',53:'\uD83C\uDF26\uFE0F',55:'\uD83C\uDF27\uFE0F',61:'\uD83C\uDF27\uFE0F',63:'\uD83C\uDF27\uFE0F',65:'\uD83C\uDF27\uFE0F',71:'\uD83C\uDF28\uFE0F',73:'\uD83C\uDF28\uFE0F',75:'\u2744\uFE0F',80:'\uD83C\uDF26\uFE0F',81:'\uD83C\uDF27\uFE0F',82:'\uD83C\uDF27\uFE0F',95:'\u26C8\uFE0F'};
+
+// 14-day forecast cache. Single fetch, both home and calendar read this.
+// Refresh on calendar/home open if older than 1 hour.
+var FORECAST_CACHE_KEY = 'hk_forecast_14d_v1';
+var FORECAST_CACHE_MINS = 60;
+var _forecastInflight = null;
+
+async function fetchForecast14d() {
+  // Return cached if fresh
+  try {
+    var cached = JSON.parse(localStorage.getItem(FORECAST_CACHE_KEY) || 'null');
+    if (cached && Date.now() - cached.ts < FORECAST_CACHE_MINS * 60000) {
+      return cached.data;
+    }
+  } catch(e) {}
+  // De-dupe concurrent calls
+  if (_forecastInflight) return _forecastInflight;
+  var loc = (typeof getActiveOrUserLocation === 'function')
+    ? getActiveOrUserLocation()
+    : { lat: parseFloat(localStorage.getItem('hk_user_lat')) || 52.4397,
+        lng: parseFloat(localStorage.getItem('hk_user_lng')) || -0.5432 };
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.lat
+    + '&longitude=' + loc.lng
+    + '&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max'
+    + '&timezone=Europe%2FLondon&forecast_days=14';
+  _forecastInflight = fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      try { localStorage.setItem(FORECAST_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: data })); } catch(e) {}
+      _forecastInflight = null;
+      return data;
+    })
+    .catch(function(err) {
+      _forecastInflight = null;
+      // Fall back to stale cache if available
+      try {
+        var stale = JSON.parse(localStorage.getItem(FORECAST_CACHE_KEY) || 'null');
+        if (stale && stale.data) return stale.data;
+      } catch(e) {}
+      throw err;
+    });
+  return _forecastInflight;
+}
+
+// Render the home page's expandable forecast body. Shows next 7 days.
+async function renderHomeForecast() {
+  var container = document.getElementById('weather-forecast-rows');
+  if (!container) return;
+  try {
+    var data = await fetchForecast14d();
+    var fd = data && data.daily;
+    if (!fd || !fd.temperature_2m_max) {
+      container.innerHTML = '<div style="text-align:center;padding:14px;font-size:12px;color:var(--text-l);">Forecast unavailable</div>';
+      return;
+    }
+    var today = new Date();
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var html = '';
+    var count = Math.min(7, fd.temperature_2m_max.length);
+    for (var i = 0; i < count; i++) {
+      var date = new Date(today); date.setDate(date.getDate() + i);
+      var dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tmrw' : dayNames[date.getDay()];
+      var maxT = Math.round(fd.temperature_2m_max[i]);
+      var minT = Math.round(fd.temperature_2m_min[i]);
+      var code = fd.weathercode[i];
+      var precip = fd.precipitation_sum ? fd.precipitation_sum[i] : 0;
+      var windKmh = fd.windspeed_10m_max ? fd.windspeed_10m_max[i] : 0;
+      var windMph = Math.round(windKmh * 0.621371);
+      var icon = WMO_EMOJI[code] || '\uD83C\uDF21\uFE0F';
+      // Calendar uses daily-total rain semantics → pass rainThreshold:1
+      var v = flyingVerdict(maxT, windKmh, precip, { rainThreshold: 1 });
+      var pillBg = v.cls === 'great' ? '#E8F3E0' : v.cls === 'good' ? '#E8F3E0' : v.cls === 'marginal' ? '#FFF6E1' : '#FBE9E7';
+      var pillColor = v.cls === 'great' ? '#1B5E20' : v.cls === 'good' ? '#2D5016' : v.cls === 'marginal' ? '#7A5C00' : '#8B2E00';
+      html += '<div style="display:flex;align-items:center;padding:8px 14px;border-bottom:' + (i < count - 1 ? '1px solid var(--wax)' : 'none') + ';gap:10px;">'
+        + '<div style="font-size:11px;font-weight:700;color:var(--text);width:46px;flex-shrink:0;">' + dayLabel + '</div>'
+        + '<div style="font-size:18px;flex-shrink:0;">' + icon + '</div>'
+        + '<div style="font-size:12px;color:var(--text);flex-shrink:0;width:60px;">' + maxT + '\u00B0/' + minT + '\u00B0</div>'
+        + '<div style="font-size:11px;color:var(--text-l);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'
+        + (precip > 0 ? precip.toFixed(1) + 'mm \u00B7 ' : '') + windMph + 'mph</div>'
+        + '<div style="display:inline-block;background:' + pillBg + ';color:' + pillColor + ';border-radius:10px;padding:3px 8px;font-size:10px;font-weight:700;flex-shrink:0;">' + v.label + '</div>'
+        + '</div>';
+    }
+    container.innerHTML = html;
+  } catch(e) {
+    container.innerHTML = '<div style="text-align:center;padding:14px;font-size:12px;color:var(--text-l);">Forecast unavailable - check connection</div>';
+  }
+}
+
+function toggleHomeForecast() {
+  var body = document.getElementById('weather-forecast-body');
+  var arrow = document.getElementById('weather-forecast-arrow');
+  var label = document.getElementById('weather-forecast-toggle-label');
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  if (label) label.textContent = isOpen ? 'See the 7-day forecast' : 'Hide forecast';
+  if (!isOpen) renderHomeForecast();
+}
+
 // 28 April 2026 — Phase 4af: helper for consumers that should follow the
 // currently-selected apiary's location (weather, AH Watch nearby calc).
 // Falls back to the user's home location if no active apiary location is set.
@@ -14022,6 +14146,7 @@ function renderCalendar() {
     if (isToday) cls += ' today';
     if (hasInsp) cls += ' has-inspection';
     var dots = '';
+    var weatherIcon = '';
     if (!hasInsp) {
       // Inspection window: 7-10 days after last inspection in THIS apiary.
       // Phase 4bw — only show the window if there's a real last inspection;
@@ -14034,13 +14159,27 @@ function renderCalendar() {
         windowEnd.setDate(windowEnd.getDate() + 10);
         inWindow = (thisDate >= windowStart && thisDate <= windowEnd);
       }
+      // 5 May 2026 Phase 4ce-5m — Real weather data drives cell colour.
+      // Inspect-window keeps priority (planning intent > weather). Past days
+      // get no weather colouring (history). Days beyond 14 get no colour.
+      // Replaces the previous month-of-year heuristic which was inaccurate.
       if (inWindow) {
         cls += ' inspect-window';
-      } else if (isFuture && inSeason) {
-        cls += ' recommended';
-      } else if (isFuture && !inSeason) {
-        cls += ' poor-weather';
+        // Still show weather icon inside an inspect-window cell so the user
+        // sees the weather context for the day they're being prompted to inspect.
+        var fcInWindow = window._calForecastByDate && window._calForecastByDate[dateKey];
+        if (fcInWindow) weatherIcon = '<div class="cal-weather-icon">' + fcInWindow.icon + '</div>';
+      } else if (isFuture) {
+        var fc = window._calForecastByDate && window._calForecastByDate[dateKey];
+        if (fc) {
+          if (fc.verdict.cls === 'great' || fc.verdict.cls === 'good') cls += ' cal-day-good';
+          else if (fc.verdict.cls === 'marginal') cls += ' cal-day-marginal';
+          else cls += ' cal-day-poor';
+          weatherIcon = '<div class="cal-weather-icon">' + fc.icon + '</div>';
+        }
+        // Days beyond 14: no class added, falls through to default cal-day styling.
       }
+      // Past days: no extra class (neutral history).
     }
 
     if (hasInsp) {
@@ -14048,7 +14187,7 @@ function renderCalendar() {
       dots = '<div class="cal-dot-row">' + hives.slice(0,3).map(() => '<div class="cal-dot" style="background:var(--honey-l)"></div>').join('') + '</div>';
     }
 
-    html += '<div class="' + cls + '" data-date="' + dateKey + '" data-hi="' + (hasInsp?'1':'0') + '" onclick="calDayTap(this.dataset.date,this.dataset.hi)">' + dayNum + dots + '</div>';
+    html += '<div class="' + cls + '" data-date="' + dateKey + '" data-hi="' + (hasInsp?'1':'0') + '" onclick="calDayTap(this.dataset.date,this.dataset.hi)">' + weatherIcon + dayNum + dots + '</div>';
   }
 
   grid.innerHTML = html;
@@ -14265,51 +14404,58 @@ function renderDueHives() {
   }).join('');
 }
 
-// Render 4-day forecast rows in calendar
+// 5 May 2026 Phase 4ce-5m — renderCalendarForecast now drives the calendar
+// GRID rather than populating a separate forecast block (which has been
+// removed). Fetches the unified 14-day forecast, stores per-date verdicts
+// in window._calForecastByDate, then re-renders the calendar so cells pick
+// up the weather classes and icons. Also populates the textual summary
+// below the legend with a count of good/marginal/poor days. Verdict logic
+// matches home page (via flyingVerdict) so the two surfaces agree.
 function renderCalendarForecast() {
-  var container = document.getElementById('forecast-rows');
-  if (!container) return;
-  var WMO = {0:'&#9728;',1:'&#127780;',2:'&#9925;',3:'&#9729;',45:'&#127787;',51:'&#127754;',53:'&#127754;',55:'&#127783;',61:'&#127783;',63:'&#127783;',65:'&#127783;',71:'&#127784;',73:'&#127784;',80:'&#127754;',95:'&#9928;'};
-  // 28 April 2026 — Phase 4af: 5-day forecast follows active apiary location
-  var _fcLoc = (typeof getActiveOrUserLocation === 'function') ? getActiveOrUserLocation() : { lat: parseFloat(localStorage.getItem('hk_user_lat')) || 52.4397, lng: parseFloat(localStorage.getItem('hk_user_lng')) || -0.5432 };
-  fetch('https://api.open-meteo.com/v1/forecast?latitude=' + _fcLoc.lat + '&longitude=' + _fcLoc.lng + '&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_sum,windspeed_10m_max&timezone=Europe%2FLondon&forecast_days=5')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var fd = data.daily;
-      var today = new Date();
-      var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      var html = '';
-      var count = Math.min(5, (fd.temperature_2m_max || []).length);
-      for (var i = 0; i < count; i++) {
-        var date = new Date(today); date.setDate(date.getDate() + i);
-        var dayLabel = i===0?'Today':i===1?'Tmrw':dayNames[date.getDay()];
-        var maxT = Math.round(fd.temperature_2m_max[i]);
-        var minT = Math.round(fd.temperature_2m_min[i]);
-        var code = fd.weathercode[i];
-        var precip = fd.precipitation_sum ? fd.precipitation_sum[i] : 0;
-        var windKmh = fd.windspeed_10m_max ? fd.windspeed_10m_max[i] : 0;
-        var windMph = Math.round(windKmh * 0.621371);
-        var icon = WMO[code] || '&#127777;';
-        var flyClass, flyText;
-        if (maxT >= 15 && precip < 1 && windMph < 15) { flyClass='fly-great'; flyText='Good to inspect'; }
-        else if (maxT >= 12 && precip < 3 && windMph < 20) { flyClass='fly-good'; flyText='OK if dry'; }
-        else if (maxT < 10) { flyClass='fly-poor'; flyText='Too cold (' + maxT + 'C)'; }
-        else if (precip >= 3) { flyClass='fly-poor'; flyText='Too wet (' + precip.toFixed(1) + 'mm)'; }
-        else if (windMph >= 20) { flyClass='fly-poor'; flyText='Too windy (' + windMph + 'mph)'; }
-        else { flyClass='fly-good'; flyText='Marginal'; }
-        html += '<div class="forecast-row">'
-          + '<div class="forecast-day">' + dayLabel + '</div>'
-          + '<div class="forecast-icon">' + icon + '</div>'
-          + '<div class="forecast-temp">' + maxT + 'C/' + minT + 'C</div>'
-          + '<div class="forecast-fly">' + (precip > 0 ? precip.toFixed(1) + 'mm rain, ' : '') + windMph + 'mph</div>'
-          + '<div class="forecast-badge ' + flyClass + '">' + flyText + '</div>'
-          + '</div>';
-      }
-      container.innerHTML = html;
-    })
-    .catch(function() {
-      container.innerHTML = '<div style="padding:12px 14px;font-size:11px;color:var(--text-l);">Forecast unavailable - check connection</div>';
-    });
+  var summaryEl = document.getElementById('cal-weather-summary');
+  fetchForecast14d().then(function(data) {
+    var fd = data && data.daily;
+    if (!fd || !fd.time || !fd.temperature_2m_max) {
+      if (summaryEl) summaryEl.textContent = 'Weather forecast unavailable.';
+      return;
+    }
+    // Build verdict map keyed by YYYY-MM-DD
+    var byDate = {};
+    var goodCount = 0, marginalCount = 0, poorCount = 0;
+    for (var i = 0; i < fd.time.length; i++) {
+      var key = fd.time[i]; // already YYYY-MM-DD from open-meteo
+      var maxT = fd.temperature_2m_max[i];
+      var precip = fd.precipitation_sum ? fd.precipitation_sum[i] : 0;
+      var windKmh = fd.windspeed_10m_max ? fd.windspeed_10m_max[i] : 0;
+      var code = fd.weathercode[i];
+      var v = flyingVerdict(maxT, windKmh, precip, { rainThreshold: 1 });
+      byDate[key] = {
+        verdict: v,
+        icon: WMO_EMOJI[code] || '\uD83C\uDF21\uFE0F',
+        maxT: Math.round(maxT),
+        minT: Math.round(fd.temperature_2m_min[i]),
+        precip: precip,
+        windMph: Math.round(windKmh * 0.621371),
+        code: code
+      };
+      if (v.cls === 'great' || v.cls === 'good') goodCount++;
+      else if (v.cls === 'marginal') marginalCount++;
+      else poorCount++;
+    }
+    window._calForecastByDate = byDate;
+    // Re-render calendar so cells pick up the weather data
+    try { renderCalendar(); } catch(e) {}
+    // Update textual summary
+    if (summaryEl) {
+      var bits = [];
+      if (goodCount) bits.push('<strong>' + goodCount + ' good</strong>');
+      if (marginalCount) bits.push(marginalCount + ' marginal');
+      if (poorCount) bits.push(poorCount + ' poor');
+      summaryEl.innerHTML = 'Next 14 days: ' + bits.join(' \u00B7 ');
+    }
+  }).catch(function() {
+    if (summaryEl) summaryEl.textContent = 'Weather forecast unavailable - check connection';
+  });
 }
 
 var _origGoTo = goTo;
@@ -23101,7 +23247,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5l — REPORTS_BY_TIER.founder alias added (mirrors trial→pro pattern). Fixes 3 connected bugs surfacing only for founder accounts: Next Inspection tile showed only Session Report, All Reports tile showed only Session Report, Reports modal listed only one report. All three rooted in same missing tier alias — getUserTier() returns "founder" but REPORTS_BY_TIER had no founder key, falling through to REPORTS_BY_TIER.free which only has session_report. Founders now alias to commercial for full report access. Phase 4ce-5k (PostgREST 1000-row limit fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard reads via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-5m — major weather UX rework. Calendar grid now shows real weather data (14 days) directly on day cells with colour coding and small weather icons. Replaces the previous month-of-year heuristic ("recommended" / "poor-weather" classes were applied based on whether month was in season — a crude proxy that didn\'t actually reflect weather). Removes the separate "Inspection forecast / Flying conditions — next 5 days" block at the bottom of the calendar page (decluttered). Adds 14-day textual summary below the legend ("Next 14 days: 9 good · 3 marginal · 2 poor"). Home weather card now has an expandable 7-day forecast — tap "See the 7-day forecast" footer to reveal inline (mirrors AH Watch toggle pattern, no modal needed). Single source of truth: flyingVerdict() function consumed by both home pill and calendar cells, with rainThreshold parameter so home uses 0.5mm (instantaneous) and calendar uses 1.0mm (daily total). fetchForecast14d() is the unified cache with 1-hour TTL — both surfaces share one fetch. Phase 4ce-5l (REPORTS_BY_TIER.founder alias), 4ce-5k (PostgREST 1000-row fix), 4ce-5j (Live activity panel), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill), and earlier baselines all unchanged. Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
