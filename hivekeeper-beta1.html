@@ -9308,6 +9308,38 @@ function renderApiary(){
   // a specific row, strip shows just that row's hives in order.
   try { if (typeof renderApiaryStackStrip === 'function') renderApiaryStackStrip(hivesToShow); } catch(e) { console.warn('stack strip err', e); }
 
+  // 6 May 2026 Phase 4ce-13b — empty-state for zero-hive users (typically
+  // brand-new post-onboarding). Show friendly guidance instead of a blank
+  // list, and surface the + Add Hive button which would otherwise only
+  // appear inside Apiary Settings edit mode.
+  if (hives.length === 0) {
+    document.getElementById('hive-list-container').innerHTML =
+      '<div style="background:white;border-radius:var(--rs);padding:20px;margin-top:12px;border:1px solid var(--wax);text-align:center;">' +
+        '<div style="font-size:36px;margin-bottom:8px;">🐝</div>' +
+        '<div style="font-size:16px;font-weight:800;color:var(--forest);margin-bottom:6px;">Welcome to your apiary</div>' +
+        '<div style="font-size:13px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Your apiary is set up. Add your first hive to start logging inspections, or tap <strong>Apiary Settings</strong> to position your apiary on the map.</div>' +
+        '<button onclick="openAddHive()" style="background:linear-gradient(135deg,#E4A33A,#C8810A);border:none;border-radius:10px;padding:12px 24px;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:\'Syne\',sans-serif;box-shadow:0 2px 6px rgba(228,163,58,0.4);">+ Add your first hive</button>' +
+      '</div>';
+    // Surface the header + Add Hive button so users don't have to dig into Settings
+    var hiveBtnEarly = document.getElementById('apiary-hive-btn');
+    if (hiveBtnEarly) hiveBtnEarly.style.display = '';
+    var gridEarly = document.getElementById('apiary-action-grid');
+    if (gridEarly) gridEarly.style.gridTemplateColumns = 'repeat(4,1fr)';
+    // Hide the row tabs (no rows to filter when there are no hives)
+    var rowTabsEarly = document.getElementById('row-tabs');
+    if (rowTabsEarly && rowTabsEarly.parentElement) rowTabsEarly.parentElement.style.display = 'none';
+    return;
+  }
+
+  // User has at least one hive — restore default chrome
+  // (only if NOT in edit mode; edit mode handles its own button visibility)
+  if (!window._editModeActive) {
+    var hiveBtnLater = document.getElementById('apiary-hive-btn');
+    if (hiveBtnLater) hiveBtnLater.style.display = 'none';
+    var gridLater = document.getElementById('apiary-action-grid');
+    if (gridLater) gridLater.style.gridTemplateColumns = 'repeat(3,1fr)';
+  }
+
   // Debug: show hive count
   document.getElementById('hive-list-container').innerHTML = hives.map(function(h, _idx) {
     const badge = getBadge(h);
@@ -22276,6 +22308,17 @@ async function onAuthSuccess() {
       if (tier === 'pro' || tier === 'commercial') return;
       if (typeof openPricingModal !== 'function') return;
 
+      // 6 May 2026 Phase 4ce-13b — suppress welcome modal if user just
+      // finished onboarding. Showing a comparison/upsell chart immediately
+      // after they opted into the trial reads as bad UX. They'll see the
+      // welcome modal naturally next sign-in. 1-hour window only.
+      try {
+        var justOnboarded = parseInt(localStorage.getItem('hk_just_completed_onboarding') || '0', 10);
+        if (justOnboarded && (Date.now() - justOnboarded) < 3600000) {
+          return;
+        }
+      } catch(e) {}
+
       var userId = (typeof getUserId === 'function') ? getUserId() : null;
       if (!userId) return; // no userId yet — skip; this fires again next render
 
@@ -23851,7 +23894,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '6 May 2026 BST · Phase 4ce-13a — fixed broken onboarding for all 35 affected new users. Two root causes addressed: (1) initCurrentApiary() was auto-creating a "My Apiary" placeholder on every sign-in, BEFORE checkAndShowOnboarding ran. The placeholder made isNewUser() return false (apiaries.length > 0), so the onboarding modal never fired. New users hit a blank app with a misplaced map and no prompts. Now: initCurrentApiary skips auto-create when profile is incomplete, letting the modal create the real apiary in step 3 with proper geocoded location. (2) Onboarding modal redesigned 4 steps → 5 steps with mandatory all-fields per design decision (Option C, no skip). New flow: (1) display name + phone (2) postcode (3) apiary name + location, prefilled from postcode (4) emergency contact (5) summary. Each step has a "Why we ask" disclaimer explaining real value (weather, hornet alerts, BeeBase exports, voucher posting, SOS). Trigger replaced from local isNewUser to server-side mustShowOnboarding(profile) that checks profiles.display_name, phone, address — same logic as the apology email cohort SQL. Apology email infrastructure to follow in next pass. Phase 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '6 May 2026 BST · Phase 4ce-13b — onboarding fixes from Chris\'s testing of 4ce-13a. (1) Geocoder bug: 4ce-13a called geocodeLocation() which doesn\'t exist (real function is geocodeApiaryLocation). Apiary lat/lng stayed null, map didn\'t centre. Fixed: now calls geocodeApiaryLocation, polls apiary record up to 6s for lat/lng to populate, advances to step 4 when geocoded. (2) "Setting you up" interstitial: pulse-dot loading screen between step 3 and step 4 during the geocoder wait — feels like productive setup, not blocking. (3) Postcode disclaimer copy: removed misleading "Founder Beekeeper rewards" reference (free trial users aren\'t founders). New copy talks about real things: BeeBase exports, postal correspondence, no marketing. (4) Welcome pricing modal suppressed post-onboarding: hk_just_completed_onboarding flag with timestamp, scheduler skips welcome modal if completed within last hour. User sees pricing modal naturally on next sign-in. (5) Empty-state guidance on apiary page: zero-hive users now see friendly card with + Add your first hive button, plus the header + Add Hive button is surfaced (previously only visible inside Apiary Settings edit mode — that was the source of "you have to go into apiary settings to do anything"). Phase 4ce-13a (the initial broken-onboarding fix - superseded by tonight\'s iteration), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -24672,30 +24715,50 @@ function obNext(fromStep) {
     var location = (document.getElementById('ob-apiary-location').value || '').trim();
     if (!name) { showToast('Please name your apiary'); return; }
     if (!location) { showToast('Please enter your apiary location'); return; }
-    // Create the apiary now — same flow as old code
+    // Create the apiary now
     var apiaryId = uid();
     var apiary = { id: apiaryId, name: name, location: location, lat: null, lng: null, createdAt: Date.now() };
     saveApiaries([apiary]);
     localStorage.setItem(CURRENT_APIARY_KEY, apiaryId);
     currentApiaryId = apiaryId;
-    // Geocode in background — try lat/lng first, then geocoder
-    if (location) {
-      var directCoords = (typeof parseLatLng === 'function') ? parseLatLng(location) : null;
-      if (directCoords) {
+
+    // 6 May 2026 Phase 4ce-13b — wait for geocoder before advancing.
+    // Previous code called the wrong function (geocodeLocation, doesn't
+    // exist) and didn't wait — so apiary.lat/lng stayed null and the map
+    // never centred. Now: call the real geocodeApiaryLocation which
+    // updates apiary.lat/lng asynchronously, and poll until populated.
+    //
+    // Show a "Setting you up" interstitial during the wait — feels like
+    // productive setup, not a blocking spinner.
+    var step3 = document.getElementById('ob-step-3');
+    var settingUpEl = document.getElementById('ob-setting-up');
+    if (step3) step3.style.display = 'none';
+    if (settingUpEl) settingUpEl.style.display = 'block';
+
+    // Fire the geocoder (writes to apiary record async)
+    try {
+      if (typeof geocodeApiaryLocation === 'function') {
+        geocodeApiaryLocation(apiaryId, location);
+      }
+    } catch(e) { console.warn('Geocoder call failed:', e); }
+
+    // Poll for completion. Max 6s wait. Advance regardless when done.
+    var attempts = 0;
+    var maxAttempts = 30; // 30 × 200ms = 6 seconds
+    var pollId = setInterval(function() {
+      attempts++;
+      var found = false;
+      try {
         var aps = loadApiaries();
         var a = aps.find(function(x){ return x.id === apiaryId; });
-        if (a) { a.lat = directCoords.lat; a.lng = directCoords.lng; saveApiaries(aps); }
-      } else if (typeof geocodeLocation === 'function') {
-        geocodeLocation(location).then(function(coords) {
-          if (coords) {
-            var apiaries = loadApiaries();
-            var a = apiaries.find(function(x){ return x.id === apiaryId; });
-            if (a) { a.lat = coords.lat; a.lng = coords.lng; saveApiaries(apiaries); }
-          }
-        }).catch(function(){});
+        if (a && a.lat != null && a.lng != null) found = true;
+      } catch(e) {}
+      if (found || attempts >= maxAttempts) {
+        clearInterval(pollId);
+        if (settingUpEl) settingUpEl.style.display = 'none';
+        obShowStep(4);
       }
-    }
-    obShowStep(4);
+    }, 200);
     return;
   }
   // STEP 4 — SOS contact name + number (both required)
@@ -24756,6 +24819,13 @@ async function obFinish() {
   // re-triggering the modal.
   localStorage.setItem('hk_profile_complete', '1');
   localStorage.setItem('hk_onboarded', '1');  // legacy compat — still read in places
+
+  // 6 May 2026 Phase 4ce-13b — flag the just-completed-onboarding moment
+  // so the welcome pricing modal scheduler can suppress its immediate pop.
+  // Showing a comparison/upsell chart 5 seconds after the user agrees to
+  // a free trial reads as bad UX. Flag has a 1-hour expiry — by next
+  // sign-in they'll see the welcome modal naturally.
+  localStorage.setItem('hk_just_completed_onboarding', String(Date.now()));
 
   closeModalEl('modal-onboarding');
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
@@ -31687,7 +31757,7 @@ function goToApiaryAlerts() {
         </div>
         <div style="background:var(--honey-pale);border-radius:var(--rs);padding:14px;margin-bottom:20px;font-size:12px;line-height:1.55;color:var(--text);">
           <div style="font-weight:700;margin-bottom:4px;">Why we ask</div>
-          So we can post you Founder Beekeeper rewards and association mail-outs, and so HiveKeeper can produce accurate BeeBase exports for the National Bee Unit. Your full address is only collected at point of order.
+          So HiveKeeper can produce accurate BeeBase exports for the National Bee Unit, and so we can write to you about your subscription or any postal correspondence from us. Your full address is only collected at point of order, never for marketing.
         </div>
         <button onclick="obNext(2)" class="btn-primary">Next →</button>
         <button onclick="obShowStep(1)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">← Back</button>
@@ -31715,6 +31785,24 @@ function goToApiaryAlerts() {
         </div>
         <button onclick="obNext(3)" class="btn-primary">Next →</button>
         <button onclick="obShowStep(2)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">← Back</button>
+      </div>
+
+      <!-- Interstitial: Setting you up — shown while geocoder runs -->
+      <div id="ob-setting-up" style="display:none;text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">🐝</div>
+        <div style="font-size:18px;font-weight:800;color:var(--forest);margin-bottom:8px;">Setting you up...</div>
+        <div style="font-size:13px;color:var(--text-l);line-height:1.7;margin-bottom:24px;">Finding your apiary location, syncing your details, getting the map ready.</div>
+        <div style="display:flex;justify-content:center;gap:6px;">
+          <div class="ob-pulse-dot" style="width:10px;height:10px;border-radius:50%;background:var(--honey);animation:ob-pulse 1.4s ease-in-out infinite;"></div>
+          <div class="ob-pulse-dot" style="width:10px;height:10px;border-radius:50%;background:var(--honey);animation:ob-pulse 1.4s ease-in-out infinite;animation-delay:0.2s;"></div>
+          <div class="ob-pulse-dot" style="width:10px;height:10px;border-radius:50%;background:var(--honey);animation:ob-pulse 1.4s ease-in-out infinite;animation-delay:0.4s;"></div>
+        </div>
+        <style>
+          @keyframes ob-pulse {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1.1); }
+          }
+        </style>
       </div>
 
       <!-- STEP 4: Emergency contact -->
