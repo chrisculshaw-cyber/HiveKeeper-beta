@@ -2583,13 +2583,17 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
         <div id="edit-mode-banner" style="display:none;background:rgba(255,255,255,.15);border-radius:8px;padding:4px 10px;font-size:11px;color:white;text-align:center;">Drag hives to reposition · Tap Done when finished</div>
-        <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+        <div id="apiary-action-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
         <button onclick="openSwarmCatchModal()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F41D;<br>Swarm</button>
         <button onclick="openShareApiary()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F465;<br>Share</button>
         <button id="edit-layout-btn" onclick="toggleEditLayout()" style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x270F;&#xFE0F;<br>Apiary Settings</button>
         <button id="apiary-export-btn" onclick="exportApiaryMap()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F5BC;&#xFE0F;<br>Export</button>
         <button id="apiary-marks-btn" onclick="openLandmarkPicker()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F4CD;<br>Marks</button>
-        <button id="apiary-hive-btn" onclick="openAddHive()" style="display:none;background:linear-gradient(135deg,#E4A33A,#C8810A);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 4px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;box-shadow:0 2px 6px rgba(228,163,58,0.4);"><span style="font-size:18px;display:block;line-height:1;margin-bottom:2px;">+</span>Add Hive</button>
+        <!-- 7 May 2026 Phase 4ce-13k — Add Hive button now permanently visible.
+             Was hidden outside edit mode + outside empty-state. Once user added
+             their first hive, button vanished — forced them into Apiary Settings
+             to add more. Now lives in the default action grid. -->
+        <button id="apiary-hive-btn" onclick="openAddHive()" style="background:linear-gradient(135deg,#E4A33A,#C8810A);border:1.5px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 4px;color:white;font-size:11px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;box-shadow:0 2px 6px rgba(228,163,58,0.4);"><span style="font-size:18px;display:block;line-height:1;margin-bottom:2px;">+</span>Add Hive</button>
         <button id="show-hidden-btn" onclick="toggleShowHidden()" style="display:none;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px 2px;color:white;font-size:9px;font-weight:700;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;">&#x1F441;&#xFE0F;<br>Show hidden</button>
       </div>
     </div>
@@ -9329,8 +9333,8 @@ function renderApiary(){
 
   // 6 May 2026 Phase 4ce-13b — empty-state for zero-hive users (typically
   // brand-new post-onboarding). Show friendly guidance instead of a blank
-  // list, and surface the + Add Hive button which would otherwise only
-  // appear inside Apiary Settings edit mode.
+  // list. The Add Hive button in the action grid is now permanently visible
+  // (4ce-13k) so we don't need to surface it conditionally.
   if (hives.length === 0) {
     document.getElementById('hive-list-container').innerHTML =
       '<div style="background:white;border-radius:var(--rs);padding:20px;margin-top:12px;border:1px solid var(--wax);text-align:center;">' +
@@ -9339,25 +9343,16 @@ function renderApiary(){
         '<div style="font-size:13px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Your apiary is set up. Add your first hive to start logging inspections, or tap <strong>Apiary Settings</strong> to position your apiary on the map.</div>' +
         '<button onclick="openAddHive()" style="background:linear-gradient(135deg,#E4A33A,#C8810A);border:none;border-radius:10px;padding:12px 24px;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:\'Syne\',sans-serif;box-shadow:0 2px 6px rgba(228,163,58,0.4);">+ Add your first hive</button>' +
       '</div>';
-    // Surface the header + Add Hive button so users don't have to dig into Settings
-    var hiveBtnEarly = document.getElementById('apiary-hive-btn');
-    if (hiveBtnEarly) hiveBtnEarly.style.display = '';
-    var gridEarly = document.getElementById('apiary-action-grid');
-    if (gridEarly) gridEarly.style.gridTemplateColumns = 'repeat(4,1fr)';
     // Hide the row tabs (no rows to filter when there are no hives)
     var rowTabsEarly = document.getElementById('row-tabs');
     if (rowTabsEarly && rowTabsEarly.parentElement) rowTabsEarly.parentElement.style.display = 'none';
     return;
   }
 
-  // User has at least one hive — restore default chrome
-  // (only if NOT in edit mode; edit mode handles its own button visibility)
-  if (!window._editModeActive) {
-    var hiveBtnLater = document.getElementById('apiary-hive-btn');
-    if (hiveBtnLater) hiveBtnLater.style.display = 'none';
-    var gridLater = document.getElementById('apiary-action-grid');
-    if (gridLater) gridLater.style.gridTemplateColumns = 'repeat(3,1fr)';
-  }
+  // User has at least one hive — restore row tabs visibility (in case they
+  // were hidden by the empty-state path on a prior render).
+  var rowTabsRestore = document.getElementById('row-tabs');
+  if (rowTabsRestore && rowTabsRestore.parentElement) rowTabsRestore.parentElement.style.display = '';
 
   // Debug: show hive count
   document.getElementById('hive-list-container').innerHTML = hives.map(function(h, _idx) {
@@ -17242,10 +17237,10 @@ function toggleEditLayout(){
     // Show the apiary-settings hint again on edit-mode exit
     var hintShow = document.getElementById('apiary-edit-hint'); if(hintShow) hintShow.style.display='';
     var marksBtn=document.getElementById('apiary-marks-btn'); if(marksBtn) marksBtn.style.display='none';
-    // apiary-hive-btn only visible inside Apiary Settings (edit mode) — hide on exit
-    var hiveBtnHide=document.getElementById('apiary-hive-btn'); if(hiveBtnHide) hiveBtnHide.style.display='none';
     var exportBtn=document.getElementById('apiary-export-btn'); if(exportBtn) exportBtn.style.display='none';
-    var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(3,1fr)';
+    // 7 May 2026 Phase 4ce-13k — Add Hive button stays permanently visible.
+    // (Previously hidden here on edit-mode exit.) Default grid is now 4 cols.
+    var grid=document.getElementById('apiary-action-grid'); if(grid) grid.style.gridTemplateColumns='repeat(4,1fr)';
     saveHives(loadHives()); showToast('Layout saved');
   }
   renderMap();
@@ -23945,7 +23940,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13j — marketplace gated behind "Coming soon" empty state. Audit revealed MARKET_LISTINGS was 8 hardcoded fake listings (Sarah M., Jim G., Vicky W., etc.) with a dead "Contact seller" button. Real users (Martyn) had already attempted to act on these and concluded contact details were missing. Fix: (1) Market button hidden in bottom nav (display:none). (2) Marketplace screen content replaced with honest "Coming soon" card with mailto CTA to chris.culshaw@gethivekeeper.com. (3) renderMarketplace() short-circuited with early return as belt-and-braces. To re-enable when real listings ship: revert all three. Phase 4ce-13i (login Logo.png), 4ce-13h (inline SVG honeybee - superseded), 4ce-13g (failed image attempt - superseded), 4ce-13f (apiary-settings hint), 4ce-13e (saveNewHive renderLeafletHives — real fix for hive-not-on-map), 4ce-13d (incorrect attempted fix - reverted), 4ce-13c (pricing modal scheduler direct profile check), 4ce-13b (geocoder fix + setting-you-up + postcode copy + empty-state apiary), 4ce-13a (initial broken-onboarding fix - superseded), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos - reverted in 4ce-13g/h/i), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13k — Add Hive button now permanently visible in apiary action grid. Pre-existing logic (predates today\'s session) hid the button outside edit mode AND outside the empty-state path. Once a user added their first hive, the button vanished and they had to enter Apiary Settings to add more. Was hidden by behaviour at line ~9356, restored only in edit-mode by behaviour at ~17203, hidden again on edit-mode exit at ~17241. Caught by Chris testing multi-hive add flow. Fix: (1) action grid default columns 3→4; (2) apiary-hive-btn default display:none → visible; (3) renderApiary post-empty-state hide-logic removed; (4) edit-mode-exit Add Hive hide removed; (5) edit-mode-exit grid restored to repeat(4,1fr). Phase 4ce-13j (marketplace gated with Coming Soon empty state — Market button visible, two CTAs to email Chris), 4ce-13i (login Logo.png), 4ce-13h (inline SVG honeybee - superseded), 4ce-13g (failed image attempt - superseded), 4ce-13f (apiary-settings hint), 4ce-13e (saveNewHive renderLeafletHives — real fix for hive-not-on-map), 4ce-13d (incorrect attempted fix - reverted), 4ce-13c (pricing modal scheduler direct profile check), 4ce-13b (geocoder fix + setting-you-up + postcode copy + empty-state apiary), 4ce-13a (initial broken-onboarding fix - superseded), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos - reverted in 4ce-13g/h/i), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
