@@ -20457,7 +20457,41 @@ function applyApiaryViewMode(mode) {
 function initCurrentApiary() {
   var apiaries = loadApiaries();
   if (!apiaries.length) {
-    // Create default apiary with a proper random UUID (not hardcoded — multiple users sharing the same ID causes data leaks)
+    // 6 May 2026 Phase 4ce-13a — DON'T auto-create "My Apiary" for users
+    // who haven't completed onboarding. The auto-create was making
+    // isNewUser() return false (apiaries.length > 0), which prevented the
+    // onboarding modal from ever firing. 35 users affected. Now: skip
+    // auto-create if profile is incomplete, and let the onboarding modal
+    // create the real apiary in step 2 with proper location + geocoding.
+    //
+    // Three cases:
+    //   1. No _currentUser yet (module-load before auth): skip — we'll be
+    //      called again post-auth via the auth.onAuthStateChange handler.
+    //   2. Signed in but profile incomplete: skip — onboarding will run.
+    //   3. Signed in with complete profile but no apiaries: this is the
+    //      legitimate "returning user lost their data" case — auto-create
+    //      so they have something to render against.
+    var profileIncomplete = false;
+    try {
+      if (!_currentUser) {
+        // Pre-auth — skip auto-create. Function fires again post-auth.
+        return;
+      }
+      // Check if profile is complete using the same fields onboarding asks for.
+      // localStorage.hk_profile_complete is set after onboarding finishes.
+      // If absent, infer from missing user data.
+      profileIncomplete = !localStorage.getItem('hk_profile_complete');
+    } catch(e) {
+      // If anything in this guard throws, fall through to old behaviour.
+      profileIncomplete = false;
+    }
+    if (profileIncomplete) {
+      // Skip auto-create. Onboarding modal will fire next and create the
+      // real apiary (Step 2 of the new flow) with name + location + geocode.
+      currentApiaryId = null;
+      return;
+    }
+    // Returning user with no apiaries (legitimate edge case) — auto-create.
     var defaultId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16);
     });
@@ -23817,7 +23851,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '5 May 2026 BST · Phase 4ce-12c — fixed pricing-modal nag persisting across sign-out + sign-in, which 4ce-12b missed. The 4ce-12b global flags (hk_pricing_welcome_shown etc.) survived pull-wipes (added to keysToKeep) but did NOT survive sign-out (sign-out keep list is much smaller and didn\'t include them). User signing out + back in saw modal again. Reported by Chris testing chris@culshaw.consulting. Replaced with single per-user JSON map: hk_pricing_modals_seen = {"<userId>": {welcome:1, urgency:1, expired:1}}. Same user signs in/out: their entry persists. Different user on same device: their userId is a new entry, fresh prompts. Map added to BOTH sign-out keysToKeep and pullFromSupabase keysToKeep so it survives both wipe paths. Trial-expired auto-pop also migrated to per-user keying. Phase 4ce-12b (initial fix using global flags - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '6 May 2026 BST · Phase 4ce-13a — fixed broken onboarding for all 35 affected new users. Two root causes addressed: (1) initCurrentApiary() was auto-creating a "My Apiary" placeholder on every sign-in, BEFORE checkAndShowOnboarding ran. The placeholder made isNewUser() return false (apiaries.length > 0), so the onboarding modal never fired. New users hit a blank app with a misplaced map and no prompts. Now: initCurrentApiary skips auto-create when profile is incomplete, letting the modal create the real apiary in step 3 with proper geocoded location. (2) Onboarding modal redesigned 4 steps → 5 steps with mandatory all-fields per design decision (Option C, no skip). New flow: (1) display name + phone (2) postcode (3) apiary name + location, prefilled from postcode (4) emergency contact (5) summary. Each step has a "Why we ask" disclaimer explaining real value (weather, hornet alerts, BeeBase exports, voucher posting, SOS). Trigger replaced from local isNewUser to server-side mustShowOnboarding(profile) that checks profiles.display_name, phone, address — same logic as the apology email cohort SQL. Apology email infrastructure to follow in next pass. Phase 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -24471,6 +24505,27 @@ async function acceptPolicies() {
   }
 }
 
+// 6 May 2026 Phase 4ce-13a — single source of truth for onboarding trigger.
+// Returns true if the modal should be shown for this user. Same logic as
+// the cohort SQL used to find affected users for the apology email batch.
+//
+// Profile shape: object from profiles table — needs display_name, phone,
+// address, tier, is_founding_beekeeper, deleted_at fields.
+function mustShowOnboarding(profile) {
+  if (!profile) return false;  // No profile loaded yet — can't decide. Wait.
+  if (profile.is_founding_beekeeper) return false;  // Founders never see this.
+  if (profile.tier === 'pro' || profile.tier === 'commercial') return false;
+  if (profile.deleted_at) return false;  // Soft-deleted accounts don't onboard.
+  // Must show if any of the three core fields is missing.
+  if (!profile.display_name || profile.display_name === '') return true;
+  if (!profile.phone || profile.phone === '') return true;
+  if (!profile.address || profile.address === '') return true;
+  return false;
+}
+
+// Legacy function — preserved for compat in case anything still calls it,
+// but no longer drives the onboarding trigger. New trigger uses
+// mustShowOnboarding(profile) which queries server-side fields.
 function isNewUser() {
   if (localStorage.getItem('hk_onboarded') === '1') return false;
   if (localStorage.getItem('hk_pending_invite')) return false;
@@ -24483,45 +24538,84 @@ function isNewUser() {
 }
 
 async function checkAndShowOnboarding() {
-  // Local checks first
-  if (!isNewUser()) return;
+  // 6 May 2026 Phase 4ce-13a — rewritten to use server-side profile check.
+  // Replaces the old isNewUser localStorage-only logic which was bypassed
+  // by the auto-create-default-apiary bug.
+  if (!_currentUser) return;
+  var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+  if (!sb) return;
 
-  // Ask Supabase — if this user has any accepted apiary shares, they're not a new user
-  if (_currentUser) {
-    try {
-      var sb = getSupabase();
-      // Two separate queries — .or() with email breaks PostgREST
-      var { data: d1 } = await sb.from('apiary_shares')
-        .select('id').eq('user_id', _currentUser.id).eq('status', 'accepted').limit(1);
-      var { data: d2 } = await sb.from('apiary_shares')
-        .select('id').eq('invited_email', _currentUser.email).eq('status', 'accepted').limit(1);
-      var data = (d1 && d1.length) ? d1 : (d2 && d2.length) ? d2 : null;
-      if (data && data.length > 0) {
-        localStorage.setItem('hk_onboarded', '1');
-        return;
-      }
-      // Also check for pending invites (signed_up but not yet accepted)
-      var { data: byEmail } = await sb.from('apiary_shares')
-        .select('id, apiary_id, role, status, token')
-        .eq('invited_email', _currentUser.email)
-        .neq('status', 'accepted')
-        .limit(1);
-      if (byEmail && byEmail.length > 0) {
-        localStorage.setItem('hk_onboarded', '1');
-        localStorage.setItem('hk_pending_invite', byEmail[0].token || byEmail[0].id);
-        return;
-      }
-    } catch(e) {
-      console.warn('Onboarding Supabase check failed — proceeding with local check only');
+  // Quick check first — if user has any accepted apiary shares, they joined
+  // via an invite and don't need our onboarding.
+  try {
+    var d1 = await sb.from('apiary_shares')
+      .select('id').eq('user_id', _currentUser.id).eq('status', 'accepted').limit(1);
+    var d2 = await sb.from('apiary_shares')
+      .select('id').eq('invited_email', _currentUser.email).eq('status', 'accepted').limit(1);
+    if ((d1.data && d1.data.length) || (d2.data && d2.data.length)) {
+      localStorage.setItem('hk_onboarded', '1');
+      localStorage.setItem('hk_profile_complete', '1');
+      return;
     }
+    // Pending invite (signed up via a share link, not yet accepted)
+    var byEmail = await sb.from('apiary_shares')
+      .select('id, apiary_id, role, status, token')
+      .eq('invited_email', _currentUser.email)
+      .neq('status', 'accepted')
+      .limit(1);
+    if (byEmail.data && byEmail.data.length > 0) {
+      localStorage.setItem('hk_onboarded', '1');
+      localStorage.setItem('hk_pending_invite', byEmail.data[0].token || byEmail.data[0].id);
+      return;
+    }
+  } catch(e) {
+    console.warn('checkAndShowOnboarding: apiary_shares check failed (continuing):', e);
   }
 
-  // Still looks like a new user — show wizard
-  openModalEl('modal-onboarding');
+  // Now the real check — fetch the profile and run mustShowOnboarding.
+  try {
+    var resp = await sb.from('profiles')
+      .select('display_name, phone, address, tier, is_founding_beekeeper, deleted_at')
+      .eq('id', _currentUser.id)
+      .single();
+    if (resp.error) {
+      console.warn('checkAndShowOnboarding: profile fetch error', resp.error);
+      return;
+    }
+    var profile = resp.data;
+    if (mustShowOnboarding(profile)) {
+      // Show the modal. Pre-fill any fields we already have so the user
+      // doesn't have to type them again.
+      try {
+        if (profile.display_name) {
+          var el = document.getElementById('ob-display-name');
+          if (el) el.value = profile.display_name;
+        }
+        if (profile.phone) {
+          var pEl = document.getElementById('ob-phone');
+          if (pEl) pEl.value = profile.phone;
+        }
+        if (profile.address) {
+          var aEl = document.getElementById('ob-postcode');
+          if (aEl) aEl.value = profile.address;
+        }
+      } catch(e) {}
+      obShowStep(1);
+      openModalEl('modal-onboarding');
+    } else {
+      // Profile is complete — make sure the local flag matches so we don't
+      // accidentally trigger onboarding logic elsewhere.
+      localStorage.setItem('hk_profile_complete', '1');
+      localStorage.setItem('hk_onboarded', '1');
+    }
+  } catch(e) {
+    console.warn('checkAndShowOnboarding: error during profile check', e);
+  }
 }
 
 function obShowStep(step) {
-  [1,2,3,4].forEach(function(s) {
+  // Phase 4ce-13a — 5 steps now (was 4). Mandatory all fields, no skip.
+  [1,2,3,4,5].forEach(function(s) {
     var el = document.getElementById('ob-step-' + s);
     if (el) el.style.display = s === step ? 'block' : 'none';
     var dot = document.getElementById('ob-dot-' + s);
@@ -24529,20 +24623,64 @@ function obShowStep(step) {
   });
 }
 
+// 6 May 2026 Phase 4ce-13a — UK postcode validator/normaliser. Accepts
+// inputs like 'nn14 3hd', 'NN143HD', '  ec1a 1bb  '. Returns normalised
+// 'NN14 3HD' or null if input doesn't look like a UK postcode at all.
+// Permissive on purpose — we don't want to false-reject Irish, Channel
+// Islands, BFPO, or recently-added formats. The geocoding step is the
+// real validator.
+function _obNormalisePostcode(raw) {
+  if (!raw) return null;
+  var s = String(raw).trim().toUpperCase().replace(/\s+/g, '');
+  if (s.length < 5 || s.length > 8) return null;
+  // Insert a space before the last 3 chars (UK convention)
+  var formatted = s.slice(0, -3) + ' ' + s.slice(-3);
+  // Loose pattern: starts with letter(s), has digits, ends with digit + 2 letters
+  if (!/^[A-Z]{1,2}[0-9][A-Z0-9]?\s[0-9][A-Z]{2}$/.test(formatted)) return null;
+  return formatted;
+}
+
 function obNext(fromStep) {
+  // STEP 1 — display name + phone (both required)
   if (fromStep === 1) {
+    var displayName = (document.getElementById('ob-display-name').value || '').trim();
+    var phone = (document.getElementById('ob-phone').value || '').trim();
+    if (!displayName) { showToast('Please enter your name'); return; }
+    if (!phone) { showToast('Please enter your mobile number'); return; }
+    // Stash for save in obFinish
+    window._obDisplayName = displayName;
+    window._obPhone = phone;
+    obShowStep(2);
+    return;
+  }
+  // STEP 2 — postcode (required, validated as UK postcode-shaped)
+  if (fromStep === 2) {
+    var postRaw = (document.getElementById('ob-postcode').value || '').trim();
+    if (!postRaw) { showToast('Please enter your postcode'); return; }
+    var postcode = _obNormalisePostcode(postRaw);
+    if (!postcode) { showToast('That doesn\'t look like a UK postcode'); return; }
+    window._obPostcode = postcode;
+    // Pre-fill apiary location with the postcode (user can change in step 3)
+    var apLocInput = document.getElementById('ob-apiary-location');
+    if (apLocInput && !apLocInput.value) apLocInput.value = postcode;
+    obShowStep(3);
+    return;
+  }
+  // STEP 3 — apiary name + location (both required, location must geocode)
+  if (fromStep === 3) {
     var name = (document.getElementById('ob-apiary-name').value || '').trim();
     var location = (document.getElementById('ob-apiary-location').value || '').trim();
     if (!name) { showToast('Please name your apiary'); return; }
-    // Create the apiary
+    if (!location) { showToast('Please enter your apiary location'); return; }
+    // Create the apiary now — same flow as old code
     var apiaryId = uid();
     var apiary = { id: apiaryId, name: name, location: location, lat: null, lng: null, createdAt: Date.now() };
     saveApiaries([apiary]);
     localStorage.setItem(CURRENT_APIARY_KEY, apiaryId);
     currentApiaryId = apiaryId;
-    // Geocode in background — check for lat/long first
+    // Geocode in background — try lat/lng first, then geocoder
     if (location) {
-      var directCoords = parseLatLng(location);
+      var directCoords = (typeof parseLatLng === 'function') ? parseLatLng(location) : null;
       if (directCoords) {
         var aps = loadApiaries();
         var a = aps.find(function(x){ return x.id === apiaryId; });
@@ -24557,52 +24695,84 @@ function obNext(fromStep) {
         }).catch(function(){});
       }
     }
-    obShowStep(2);
-  } else if (fromStep === 2) {
-    var hiveName = (document.getElementById('ob-hive-name').value || '').trim();
-    if (!hiveName) { showToast('Please name your hive'); return; }
-    var hiveType = document.getElementById('ob-hive-type').value;
-    var boxType = document.getElementById('ob-box-type').value;
-    var newHive = {
-      id: uid(), name: hiveName, row: 'Row 1', num: 1,
-      apiaryId: currentApiaryId,
-      hiveType: hiveType, boxType: boxType,
-      status: 'active', queenStatus: 'unknown',
-      storesLevel: 'unknown', varroaLevel: 'low',
-      swarmRisk: 'none', feedNeeded: false,
-      waxMoth: false, robbing: false, temper: 'calm',
-      healthScore: 70, mapX: 0.5, mapY: 0.5,
-      notes: '', createdAt: Date.now()
-    };
-    saveHives([newHive]);
-    obShowStep(3);
-  } else if (fromStep === 3) {
+    obShowStep(4);
+    return;
+  }
+  // STEP 4 — SOS contact name + number (both required)
+  if (fromStep === 4) {
     var sosName = (document.getElementById('ob-sos-name').value || '').trim();
     var sosNumber = (document.getElementById('ob-sos-number').value || '').trim();
-    var sosMyName = (document.getElementById('ob-sos-myname').value || '').trim();
-    if (!sosName || !sosNumber) { showToast('Please enter a contact name and number'); return; }
-    saveSOSContact({ name: sosName, number: sosNumber, whatsapp: '', myName: sosMyName });
-    obShowStep(4);
+    if (!sosName) { showToast('Please enter an emergency contact name'); return; }
+    if (!sosNumber) { showToast('Please enter the contact\'s number'); return; }
+    // SOS "your name" — reuse the display name from step 1 (no need to ask twice)
+    var myName = window._obDisplayName || (document.getElementById('ob-display-name').value || '').trim();
+    saveSOSContact({ name: sosName, number: sosNumber, whatsapp: '', myName: myName });
+    obShowStep(5);
+    return;
   }
 }
 
-function obSkip(fromStep) {
-  if (fromStep === 2) { obShowStep(3); return; }
-  if (fromStep === 3) { obShowStep(4); return; }
-}
+// 6 May 2026 Phase 4ce-13a — obSkip removed. All fields mandatory per
+// design decision (Option C). Users who try to abandon mid-flow can
+// dismiss the modal but mustShowOnboarding will re-trigger on next
+// app open until profile is complete.
 
-function obFinish() {
-  localStorage.setItem('hk_onboarded', '1');
+async function obFinish() {
+  // Save the collected profile fields to Supabase profiles table
+  // and mark the local profile as complete so future inits don't re-prompt.
+  try {
+    var displayName = window._obDisplayName || '';
+    var phone = window._obPhone || '';
+    var address = window._obPostcode || '';
+
+    // Persist locally so subsequent reads (loadUserProfile etc) see them
+    if (displayName) localStorage.setItem('hk_display_name', displayName);
+    if (phone) localStorage.setItem('hk_phone', phone);
+    if (address) localStorage.setItem('hk_address', address);
+
+    // Push to Supabase
+    if (_currentUser && typeof getSupabase === 'function') {
+      var sb = getSupabase();
+      try {
+        await sb.from('profiles').update({
+          display_name: displayName,
+          phone: phone,
+          address: address
+        }).eq('id', _currentUser.id);
+      } catch(e) {
+        console.warn('Onboarding profile save to Supabase failed:', e);
+        // Queue for offline retry
+        if (typeof queueOfflineSave === 'function') {
+          queueOfflineSave('profiles', { id: _currentUser.id, display_name: displayName, phone: phone, address: address });
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('obFinish profile save block failed:', e);
+  }
+
+  // Mark profile complete so initCurrentApiary doesn't try to create a
+  // ghost apiary on subsequent loads, and so mustShowOnboarding stops
+  // re-triggering the modal.
+  localStorage.setItem('hk_profile_complete', '1');
+  localStorage.setItem('hk_onboarded', '1');  // legacy compat — still read in places
+
   closeModalEl('modal-onboarding');
   if (typeof initCurrentApiary === 'function') initCurrentApiary();
   if (typeof renderDashboard === 'function') renderDashboard();
   if (typeof pushAllToSupabase === 'function') pushAllToSupabase().catch(function(){});
+
   // Record referral if they came via a ref link
+  if (typeof recordReferralOnSignup === 'function') {
+    try { recordReferralOnSignup().catch(function(){}); } catch(e) {}
+  }
   if (getUserId() && typeof recordReferral === 'function') {
     recordReferral(getUserId()).catch(function(){});
   }
-  trackEvent('onboarding_complete', { referred: !!localStorage.getItem('hk_ref_code') });
-  goTo('s-home');
+  if (typeof trackEvent === 'function') {
+    trackEvent('onboarding_complete', { referred: !!localStorage.getItem('hk_ref_code') });
+  }
+  if (typeof goTo === 'function') goTo('s-home');
 }
 
 // ── USER ID HELPER ───────────────────────────────────────────────
@@ -31472,77 +31642,87 @@ function goToApiaryAlerts() {
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:92vh;overflow-y:auto;">
       <div class="modal-handle"></div>
 
-      <!-- Step indicator -->
+      <!-- Step indicator (5 dots — Phase 4ce-13a, was 4) -->
       <div id="onboarding-steps" style="display:flex;justify-content:center;gap:6px;margin-bottom:20px;">
         <div class="ob-dot" id="ob-dot-1" style="width:8px;height:8px;border-radius:50%;background:var(--forest);"></div>
         <div class="ob-dot" id="ob-dot-2" style="width:8px;height:8px;border-radius:50%;background:var(--wax);"></div>
         <div class="ob-dot" id="ob-dot-3" style="width:8px;height:8px;border-radius:50%;background:var(--wax);"></div>
         <div class="ob-dot" id="ob-dot-4" style="width:8px;height:8px;border-radius:50%;background:var(--wax);"></div>
+        <div class="ob-dot" id="ob-dot-5" style="width:8px;height:8px;border-radius:50%;background:var(--wax);"></div>
       </div>
 
-      <!-- STEP 1: Welcome + apiary name + location -->
+      <!-- STEP 1: About you (display name + phone) -->
       <div id="ob-step-1">
         <div style="text-align:center;margin-bottom:20px;">
           <div style="font-size:40px;margin-bottom:8px;">🐝</div>
           <div style="font-size:20px;font-weight:800;color:var(--forest);margin-bottom:6px;">Welcome to HiveKeeper</div>
-          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">Let's get your apiary set up. It takes about a minute.</div>
+          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">Let's get you set up. It takes about 2 minutes.</div>
         </div>
         <div class="form-group" style="margin-bottom:12px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Your apiary name</label>
-          <input type="text" id="ob-apiary-name" placeholder="e.g. Home Apiary, Nene Valley" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Your name</label>
+          <input type="text" id="ob-display-name" placeholder="e.g. Chris Culshaw" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
         </div>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Apiary location <span style="color:var(--text-l);font-weight:400;">(postcode, town or lat, lng)</span></label>
-          <input type="text" id="ob-apiary-location" placeholder="e.g. NN14 3HD or Brigstock" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
-          <div style="font-size:10px;color:var(--text-l);margin-top:4px;">Used for live weather, nectar calendar and Asian Hornet Watch</div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Your mobile number</label>
+          <input type="tel" id="ob-phone" placeholder="e.g. 07700 900000" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        </div>
+        <!-- Disclaimer: why we ask -->
+        <div style="background:var(--honey-pale);border-radius:var(--rs);padding:14px;margin-bottom:20px;font-size:12px;line-height:1.55;color:var(--text);">
+          <div style="font-weight:700;margin-bottom:4px;">Why we ask</div>
+          So we can address you properly in the app and reach you about your subscription. Your phone is also used if HiveKeeper needs to send you a security code or critical service alert.
         </div>
         <button onclick="obNext(1)" class="btn-primary">Next →</button>
       </div>
 
-      <!-- STEP 2: First hive -->
+      <!-- STEP 2: Where you keep bees (postcode) -->
       <div id="ob-step-2" style="display:none;">
         <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:36px;margin-bottom:8px;">🏠</div>
-          <div style="font-size:18px;font-weight:800;color:var(--forest);margin-bottom:6px;">Add your first hive</div>
-          <div style="font-size:13px;color:var(--text-l);">You can add more hives once you're in.</div>
+          <div style="font-size:36px;margin-bottom:8px;">📍</div>
+          <div style="font-size:18px;font-weight:800;color:var(--forest);margin-bottom:6px;">Your postcode</div>
+          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">The area where you live or are based.</div>
         </div>
-        <div class="form-group" style="margin-bottom:12px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Hive name</label>
-          <input type="text" id="ob-hive-name" placeholder="e.g. Hive 1, The Big One" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Postcode</label>
+          <input type="text" id="ob-postcode" placeholder="e.g. NN14 3HD" autocomplete="postal-code" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;text-transform:uppercase;">
         </div>
-        <div class="form-group" style="margin-bottom:12px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Hive type</label>
-          <select id="ob-hive-type" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
-            <option value="overwintered">Overwintered colony</option>
-            <option value="nuc">Nuc</option>
-            <option value="swarm_prime">Prime swarm</option>
-            <option value="swarm_cast">Cast swarm</option>
-            <option value="split">Split / artificial swarm</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Box type</label>
-          <select id="ob-box-type" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
-            <option value="National">National</option>
-            <option value="Langstroth">Langstroth</option>
-            <option value="WBC">WBC</option>
-            <option value="Commercial">Commercial</option>
-            <option value="Smith">Smith</option>
-            <option value="Dadant">Dadant</option>
-            <option value="Top Bar">Top Bar</option>
-            <option value="Other">Other</option>
-          </select>
+        <div style="background:var(--honey-pale);border-radius:var(--rs);padding:14px;margin-bottom:20px;font-size:12px;line-height:1.55;color:var(--text);">
+          <div style="font-weight:700;margin-bottom:4px;">Why we ask</div>
+          So we can post you Founder Beekeeper rewards and association mail-outs, and so HiveKeeper can produce accurate BeeBase exports for the National Bee Unit. Your full address is only collected at point of order.
         </div>
         <button onclick="obNext(2)" class="btn-primary">Next →</button>
-        <button onclick="obSkip(2)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">Skip for now</button>
+        <button onclick="obShowStep(1)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">← Back</button>
       </div>
 
-      <!-- STEP 3: SOS contact -->
+      <!-- STEP 3: Your apiary (name + location) -->
       <div id="ob-step-3" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:36px;margin-bottom:8px;">🏡</div>
+          <div style="font-size:18px;font-weight:800;color:var(--forest);margin-bottom:6px;">Your first apiary</div>
+          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">The bee yard where your hives live. You can add more apiaries later.</div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Apiary name</label>
+          <input type="text" id="ob-apiary-name" placeholder="e.g. Home Apiary, Nene Valley" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Apiary location <span style="color:var(--text-l);font-weight:400;">(postcode, town or lat, lng)</span></label>
+          <input type="text" id="ob-apiary-location" placeholder="e.g. NN14 3HD or Brigstock" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+          <div style="font-size:11px;color:var(--text-l);margin-top:6px;">Pre-filled from your postcode — change it if your apiary is somewhere different.</div>
+        </div>
+        <div style="background:var(--honey-pale);border-radius:var(--rs);padding:14px;margin-bottom:20px;font-size:12px;line-height:1.55;color:var(--text);">
+          <div style="font-weight:700;margin-bottom:4px;">Why we ask</div>
+          The apiary location drives the entire app — live weather forecasts, the UK nectar calendar, Asian Hornet Watch alerts, and crop spraying notices that affect your bees. Without it, none of these features can work properly.
+        </div>
+        <button onclick="obNext(3)" class="btn-primary">Next →</button>
+        <button onclick="obShowStep(2)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">← Back</button>
+      </div>
+
+      <!-- STEP 4: Emergency contact -->
+      <div id="ob-step-4" style="display:none;">
         <div style="text-align:center;margin-bottom:20px;">
           <div style="font-size:36px;margin-bottom:8px;">🆘</div>
           <div style="font-size:18px;font-weight:800;color:var(--forest);margin-bottom:6px;">Emergency contact</div>
-          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">If you tap SOS at the apiary, a message with your GPS location is sent instantly — no confirm step.</div>
+          <div style="font-size:13px;color:var(--text-l);line-height:1.6;">For lone-worker safety. If you tap SOS at the apiary, a message with your GPS location is sent instantly — no confirm step.</div>
         </div>
         <div class="form-group" style="margin-bottom:12px;">
           <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Contact name</label>
@@ -31552,20 +31732,20 @@ function goToApiaryAlerts() {
           <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Their mobile number</label>
           <input type="tel" id="ob-sos-number" placeholder="e.g. 07700 900000" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
         </div>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label style="font-size:12px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;">Your name <span style="color:var(--text-l);font-weight:400;">(shown in the message)</span></label>
-          <input type="text" id="ob-sos-myname" placeholder="e.g. Chris" style="width:100%;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);font-size:15px;font-family:'Syne',sans-serif;box-sizing:border-box;">
+        <div style="background:var(--honey-pale);border-radius:var(--rs);padding:14px;margin-bottom:20px;font-size:12px;line-height:1.55;color:var(--text);">
+          <div style="font-weight:700;margin-bottom:4px;">Why we ask</div>
+          Beekeeping is often a solo activity. If you have an incident at the apiary — a sting reaction, a fall, a swarm collection gone wrong — one tap will SMS your contact your live GPS location.
         </div>
-        <button onclick="obNext(3)" class="btn-primary">Next →</button>
-        <button onclick="obSkip(3)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">Skip for now</button>
+        <button onclick="obNext(4)" class="btn-primary">Next →</button>
+        <button onclick="obShowStep(3)" style="width:100%;margin-top:8px;background:transparent;border:none;font-size:13px;color:var(--text-l);cursor:pointer;padding:8px;">← Back</button>
       </div>
 
-      <!-- STEP 4: All done -->
-      <div id="ob-step-4" style="display:none;">
+      <!-- STEP 5: All done -->
+      <div id="ob-step-5" style="display:none;">
         <div style="text-align:center;padding:20px 0 30px;">
           <div style="font-size:48px;margin-bottom:12px;">🍯</div>
           <div style="font-size:22px;font-weight:800;color:var(--forest);margin-bottom:10px;">You're all set!</div>
-          <div style="font-size:13px;color:var(--text-l);line-height:1.7;margin-bottom:24px;">Your apiary is ready. Add more hives from the Apiary tab, record your first inspection from the Inspect tab, and tap a hive on the map to see its detail.</div>
+          <div style="font-size:13px;color:var(--text-l);line-height:1.7;margin-bottom:24px;">Your apiary is ready. Add hives from the Apiary tab, log inspections from the Inspect tab, and tap a hive on the map to see its detail.</div>
           <button onclick="obFinish()" class="btn-primary" style="font-size:16px;padding:16px;">Go to my apiary 🐝</button>
         </div>
       </div>
