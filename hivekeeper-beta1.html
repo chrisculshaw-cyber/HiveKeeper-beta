@@ -2119,6 +2119,16 @@ input[type="checkbox"].hk-chk:checked::after {
           </div>
           <div class="hk-hdr-controls">
             <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" class="hk-hdr-cog" aria-label="Open settings">&#x2699;&#xFE0F;</div>
+            <!-- 7 May 2026 Phase 4ce-13t — Messages icon with unread badge.
+                 Tap opens the in-app messages modal. Badge shows unread count
+                 (anything > 0); hidden entirely when no unread messages so
+                 the icon stays visually quiet by default. Refreshed by
+                 renderMessagesBadge() which is called after fetch on app
+                 open / warm resume / message read. -->
+            <div onclick="openMessagesModal()" title="Messages" class="hk-hdr-msg" aria-label="View messages" style="position:relative;cursor:pointer;font-size:18px;display:inline-flex;align-items:center;justify-content:center;padding:6px;">
+              📬
+              <span id="messages-badge" style="display:none;position:absolute;top:0;right:0;background:#C62828;color:white;border-radius:10px;min-width:16px;height:16px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;font-family:'Syne',sans-serif;line-height:1;">0</span>
+            </div>
             <div class="hk-hdr-help" onclick="openManual()" title="Help" aria-label="Help">?</div>
           </div>
         </div>
@@ -3906,6 +3916,26 @@ input[type="checkbox"].hk-chk:checked::after {
   </div>
 
   <!-- MODAL: SETTINGS -->
+  <!-- 7 May 2026 Phase 4ce-13t — In-app messages modal.
+       Lists all published, unexpired messages from app_messages table.
+       Read state tracked in localStorage hk_read_messages (per-device).
+       Tap a message to expand it inline; tap again to collapse. Marking
+       read happens on first expand. Severity drives visual treatment:
+       info (blue), warning (gold), critical (red). -->
+  <div class="modal-overlay" id="modal-messages" onclick="closeModal(event,'modal-messages')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="modal-title">Messages</div>
+        <div onclick="closeModalEl('modal-messages')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+      </div>
+      <div id="messages-list-container">
+        <!-- Populated by renderMessagesList() -->
+        <div style="padding:24px;text-align:center;color:var(--text-l);font-size:13px;">Loading messages…</div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
       <div class="modal-handle"></div>
@@ -6044,6 +6074,10 @@ document.addEventListener('visibilitychange', function() {
       diagLog('visibility HIDDEN wrote ' + currentScreen);
     } catch(e) { diagLog('visibility HIDDEN write FAILED: ' + e.message); }
   } else {
+    // 7 May 2026 Phase 4ce-13t — refresh in-app messages on warm resume.
+    // Fire-and-forget. If the user has been backgrounded for a while there
+    // may be new messages waiting. Silent on failure.
+    try { if (typeof fetchAppMessages === 'function') fetchAppMessages(); } catch(e) {}
     // Coming back — restore the saved screen if we're not already on it
     try {
       var saved = localStorage.getItem('hk_last_screen');
@@ -6155,6 +6189,146 @@ function hkVibrate(pattern){
   } catch(e) {
     // Some browsers throw if vibrate is called outside a user-gesture context.
     // Silent failure is correct — haptic feedback is enhancement not core.
+  }
+}
+
+// 7 May 2026 Phase 4ce-13t — In-app messages.
+// Read tracking is per-device (localStorage hk_read_messages array of UUIDs).
+// Server-side per-user read sync deferred — most users have one device for now.
+// Fetch failure is silent (no toast) — messages are nice-to-have, not critical.
+function loadReadMessageIds() {
+  try {
+    var raw = localStorage.getItem('hk_read_messages');
+    if (!raw) return [];
+    var arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+
+function markMessageRead(id) {
+  if (!id) return;
+  var ids = loadReadMessageIds();
+  if (ids.indexOf(id) !== -1) return;
+  ids.push(id);
+  try { localStorage.setItem('hk_read_messages', JSON.stringify(ids)); } catch(e) {}
+  renderMessagesBadge();
+}
+
+async function fetchAppMessages() {
+  // Silent fetch — messages are enhancement, not core. No error toast.
+  try {
+    if (typeof supabase === 'undefined' || !supabase) return;
+    var nowIso = new Date().toISOString();
+    var resp = await supabase
+      .from('app_messages')
+      .select('id, title, body, severity, created_at, expires_at')
+      .eq('is_published', true)
+      .or('expires_at.is.null,expires_at.gt.' + nowIso)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (resp && !resp.error && Array.isArray(resp.data)) {
+      window._appMessages = resp.data;
+      renderMessagesBadge();
+    }
+  } catch(e) {
+    // Silent. Messages icon stays hidden if we can't fetch.
+    console.warn('[messages] fetch failed:', e && e.message);
+  }
+}
+
+function renderMessagesBadge() {
+  var badge = document.getElementById('messages-badge');
+  if (!badge) return;
+  var msgs = window._appMessages || [];
+  var readIds = loadReadMessageIds();
+  var unread = msgs.filter(function(m){ return readIds.indexOf(m.id) === -1; }).length;
+  if (unread > 0) {
+    badge.textContent = unread > 99 ? '99+' : String(unread);
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openMessagesModal() {
+  // Lazy fetch if we don't have messages cached yet
+  if (!window._appMessages) {
+    fetchAppMessages().then(function(){
+      renderMessagesList();
+    });
+  } else {
+    renderMessagesList();
+  }
+  if (typeof openModalEl === 'function') openModalEl('modal-messages');
+}
+
+function renderMessagesList() {
+  var container = document.getElementById('messages-list-container');
+  if (!container) return;
+  var msgs = window._appMessages || [];
+  var readIds = loadReadMessageIds();
+
+  if (msgs.length === 0) {
+    container.innerHTML = '<div style="padding:32px 16px;text-align:center;color:var(--text-l);font-size:13px;">'
+      + '<div style="font-size:32px;margin-bottom:8px;opacity:0.5;">📭</div>'
+      + 'No messages right now.<br><span style="font-size:11px;opacity:0.7;">We\'ll let you know when there\'s something to share.</span>'
+      + '</div>';
+    return;
+  }
+
+  var html = '';
+  msgs.forEach(function(m){
+    var isRead = readIds.indexOf(m.id) !== -1;
+    var sevColour = m.severity === 'critical' ? '#C62828' :
+                    m.severity === 'warning' ? '#C8810A' :
+                    '#1976D2';
+    var sevIcon = m.severity === 'critical' ? '🚨' :
+                  m.severity === 'warning' ? '⚠️' :
+                  'ℹ️';
+    var sevLabel = m.severity.charAt(0).toUpperCase() + m.severity.slice(1);
+    var d = new Date(m.created_at);
+    var dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    // Escape the body for safe innerHTML; basic escape only.
+    var safeBody = String(m.body || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var safeTitle = String(m.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html += '<div class="hk-message-row" data-msg-id="' + m.id + '" onclick="toggleMessageExpand(\'' + m.id + '\')" style="border-left:3px solid ' + sevColour + ';background:' + (isRead ? 'transparent' : 'rgba(200,129,10,0.05)') + ';border-radius:6px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border-top:1px solid var(--wax);border-right:1px solid var(--wax);border-bottom:1px solid var(--wax);">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:' + sevColour + ';font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">'
+            + '<span>' + sevIcon + '</span><span>' + sevLabel + '</span>'
+            + (isRead ? '' : '<span style="background:#C62828;color:white;font-size:9px;padding:2px 6px;border-radius:8px;letter-spacing:0;">NEW</span>')
+          + '</div>'
+          + '<div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3;">' + safeTitle + '</div>'
+          + '<div style="font-size:11px;color:var(--text-l);margin-top:3px;">' + dateStr + '</div>'
+        + '</div>'
+        + '<div class="hk-message-chev" data-msg-chev="' + m.id + '" style="font-size:14px;color:var(--text-l);transition:transform 0.2s;">▾</div>'
+      + '</div>'
+      + '<div class="hk-message-body" data-msg-body="' + m.id + '" style="display:none;font-size:13px;color:var(--text);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--wax);white-space:pre-wrap;">' + safeBody + '</div>'
+      + '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function toggleMessageExpand(id) {
+  if (!id) return;
+  var body = document.querySelector('[data-msg-body="' + id + '"]');
+  var chev = document.querySelector('[data-msg-chev="' + id + '"]');
+  if (!body) return;
+  var isOpen = body.style.display !== 'none';
+  if (isOpen) {
+    body.style.display = 'none';
+    if (chev) chev.style.transform = 'rotate(0deg)';
+  } else {
+    body.style.display = 'block';
+    if (chev) chev.style.transform = 'rotate(180deg)';
+    markMessageRead(id);
+    // Re-render the row visual (NEW badge, background tint)
+    var row = document.querySelector('[data-msg-id="' + id + '"]');
+    if (row) {
+      row.style.background = 'transparent';
+      var newBadge = row.querySelector('span[style*="background:#C62828"]');
+      if (newBadge && newBadge.textContent === 'NEW') newBadge.remove();
+    }
   }
 }
 
@@ -22296,6 +22470,9 @@ async function initAuth() {
       _currentSession = session;
       _currentUser = session.user;
       onAuthSuccess();
+      // 7 May 2026 Phase 4ce-13t — fetch in-app messages on sign-in.
+      // Fire-and-forget — doesn't block any user-visible flow.
+      try { if (typeof fetchAppMessages === 'function') fetchAppMessages(); } catch(e) {}
     } else if (event === 'SIGNED_OUT') {
       _currentUser = null;
       _currentSession = null;
@@ -22902,7 +23079,7 @@ async function authSignOut() {
     // Reported by Chris on chris@culshaw.consulting test account.
     var keysToKeep = ['hk_24h','hk_large_text','hk_sos_contact','hk_has_signed_in',
       'hk_user_lat','hk_user_lng','hk_user_location_name','hk_app_version','hk_compass_v1',
-      'hk_pricing_modals_seen','hk_haptic_enabled','hk_pull_refresh'];
+      'hk_pricing_modals_seen','hk_haptic_enabled','hk_pull_refresh','hk_read_messages'];
     Object.keys(localStorage).forEach(function(k){
       if (keysToKeep.indexOf(k) === -1) localStorage.removeItem(k);
     });
@@ -24144,7 +24321,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13s — Universal back-arrow header on non-root drill-in screens. Reported by an iPhone user: navigation feels stuck on non-root screens because s-inspect and s-inventory had no back button. Now both have a back-arrow matching the existing s-hive pattern (line 2969 reference). Uses the existing goBack() function which handles unsaved-inspection guards, pops from screenHistory, and re-renders correctly. Label is "‹ Back" rather than "‹ Apiary" because both screens reachable from multiple contexts — honest generic label. s-hive keeps its existing "‹ Apiary" label (could be tidied to match in a future cosmetic phase). Phase 4ce-13r reverted (JS pull-to-refresh blocker did not work in Median Android), 4ce-13q (overscroll-behavior CSS at three layers — defence in depth), 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13t — In-app messages with badge on home header. New 📬 icon between cog and help shows unread count badge (red, white text, hidden when zero). Tap opens modal-messages — lists all published, unexpired messages from new app_messages Supabase table sorted newest first. Three severity levels: info (blue), warning (gold), critical (red) with matching icons (ℹ️/⚠️/🚨). Tap a message row to expand body inline; expanding marks read. Read state tracked in hk_read_messages localStorage (per-device, multi-device sync deferred). Fetch hooks: SIGNED_IN auth event (cold start) and visibilitychange visible (warm resume). Silent failure on fetch error — messages are enhancement, not core. SQL migration shipped separately: 20260507-app-messages-schema.sql includes table, indexes, RLS policy, seed pull-to-refresh warning. Phase 4ce-13s (Universal back-arrow on s-inspect + s-inventory), 4ce-13r reverted (JS pull-to-refresh blocker did not work in Median Android), 4ce-13q (overscroll-behavior CSS at three layers), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25461,6 +25638,8 @@ async function pullFromSupabase() {
         'hk_haptic_enabled',
         // 7 May 2026 Phase 4ce-13p — pull-to-refresh preference, same pattern.
         'hk_pull_refresh',
+        // 7 May 2026 Phase 4ce-13t — in-app messages read state (per-device).
+        'hk_read_messages',
         // 5 May 2026 Phase 4ce-12c — pricing modal state, per-user JSON map.
         // Replaces the four global flags from 4ce-12b (hk_pricing_welcome_shown,
         // hk_pricing_urgency_shown, hk_trial_expired_shown). Per-user keying
