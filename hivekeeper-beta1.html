@@ -13865,8 +13865,17 @@ function closeToSettingsOnOverlay(event, subModalId) {
 // INIT
 // ═══════════════════════════════════════════════
 
-// Only seed demo data if user is NOT signed in (new/anonymous session)
-if (!localStorage.getItem('hk_has_signed_in')) seedRealData();
+// 7 May 2026 Phase 4ce-13l — seedRealData() permanently disabled.
+// The function created a hardcoded "Meadowbrook Apiary" with 12 demo hives
+// in localStorage on first device sign-in — a 2024-era beta-launch fixture.
+// Diagnosed 7 May 2026 to have created 41 phantom apiaries + 492 phantom
+// hives in Supabase across 5 real users (plus 36 on Chris's testing account).
+// The local cleanup at line 13879 is insufficient because pullApiaries
+// pulls Meadowbrook back in from Supabase. The right fix is to stop the
+// seed running in the first place AND filter Meadowbrook on the pull
+// side (see pullApiaries 4ce-13l filter). Function definition kept in
+// place for reference; only the call site is gated.
+// if (!localStorage.getItem('hk_has_signed_in')) seedRealData();
 
 // 30 April 2026 Phase 4bv — one-shot Meadowbrook cleanup.
 // Users who logged in before the sync-filter fix have accumulated multiple
@@ -23940,7 +23949,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13k — Add Hive button now permanently visible in apiary action grid. Pre-existing logic (predates today\'s session) hid the button outside edit mode AND outside the empty-state path. Once a user added their first hive, the button vanished and they had to enter Apiary Settings to add more. Was hidden by behaviour at line ~9356, restored only in edit-mode by behaviour at ~17203, hidden again on edit-mode exit at ~17241. Caught by Chris testing multi-hive add flow. Fix: (1) action grid default columns 3→4; (2) apiary-hive-btn default display:none → visible; (3) renderApiary post-empty-state hide-logic removed; (4) edit-mode-exit Add Hive hide removed; (5) edit-mode-exit grid restored to repeat(4,1fr). Phase 4ce-13j (marketplace gated with Coming Soon empty state — Market button visible, two CTAs to email Chris), 4ce-13i (login Logo.png), 4ce-13h (inline SVG honeybee - superseded), 4ce-13g (failed image attempt - superseded), 4ce-13f (apiary-settings hint), 4ce-13e (saveNewHive renderLeafletHives — real fix for hive-not-on-map), 4ce-13d (incorrect attempted fix - reverted), 4ce-13c (pricing modal scheduler direct profile check), 4ce-13b (geocoder fix + setting-you-up + postcode copy + empty-state apiary), 4ce-13a (initial broken-onboarding fix - superseded), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos - reverted in 4ce-13g/h/i), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13l — Meadowbrook seed data extinction event. Investigation revealed seedRealData() was creating hardcoded "Meadowbrook Apiary" + 12 demo hives in localStorage on every fresh device sign-in (a 2024 beta-launch fixture). Result: 41 phantom apiaries + 492 phantom hives in Supabase across 5 real users (kmavian, darenpedlar, davesmith744, mark.deathridge13, toddsparkle). Existing local cleanup (4bv, 30 April 2026) was insufficient because pullApiaries pulled the rows back from Supabase. Three coordinated changes: (1) seedRealData() call permanently disabled — function definition kept for reference. (2) pullApiaries adds a filter excluding any apiary with id="apiary_meadowbrook" OR (defensive) name="Meadowbrook Apiary" with createdAt=1712000000000. (3) pullHives filter for any hive with apiary_id="apiary_meadowbrook" OR id starting "demo-". After SQL cleanup of the 41 phantom rows runs, the pull filters become no-ops but stay in place as belt-and-braces. Phase 4ce-13k (Add Hive button permanently visible), 4ce-13j (marketplace gated with Coming Soon empty state), 4ce-13i (login Logo.png), 4ce-13h (inline SVG honeybee - superseded), 4ce-13g (failed image attempt - superseded), 4ce-13f (apiary-settings hint), 4ce-13e (saveNewHive renderLeafletHives — real fix for hive-not-on-map), 4ce-13d (incorrect attempted fix - reverted), 4ce-13c (pricing modal scheduler direct profile check), 4ce-13b (geocoder fix + setting-you-up + postcode copy + empty-state apiary), 4ce-13a (initial broken-onboarding fix - superseded), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos - reverted in 4ce-13g/h/i), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -25368,6 +25377,31 @@ async function pullFromSupabase() {
     }
 
     if (!ae && apiaries && apiaries.length) {
+      // 7 May 2026 Phase 4ce-13l — filter out the seeded Meadowbrook before
+      // it lands in localStorage. The legacy seed function (now disabled)
+      // pushed an apiary with id='apiary_meadowbrook' to Supabase for many
+      // users. Until the SQL cleanup runs, those rows still come back on
+      // every pull. This filter prevents them entering localStorage.
+      // Defensive: also catch any apiary with the seed's hardcoded
+      // createdAt of 1712000000000 (2024-04-01 19:33:20 UTC). After SQL
+      // cleanup, this filter becomes a no-op.
+      apiaries = apiaries.filter(function(a) {
+        if (!a) return false;
+        if (a.id === 'apiary_meadowbrook') return false;
+        // Defensive: if the row has the seed's exact hardcoded timestamp
+        // AND name "Meadowbrook Apiary", treat as phantom and exclude.
+        if (a.name === 'Meadowbrook Apiary') {
+          var createdMs = a.created_at ? new Date(a.created_at).getTime() : 0;
+          if (createdMs === 1712000000000) return false;
+        }
+        return true;
+      });
+      // If filter dropped everything, return early — nothing to map.
+      if (!apiaries.length) {
+        // Don't write empty array to localStorage if we had filtered phantoms;
+        // let initCurrentApiary handle the "no apiaries" case appropriately.
+        return;
+      }
       // Load existing localStorage data first — we need to preserve map view state
       // if the Supabase row doesn't have map_view_lat/lng populated (either because
       // the column doesn't exist, or because the value is null).
@@ -25452,6 +25486,16 @@ async function pullFromSupabase() {
       if (ah) sharedHives = sharedHives.concat(ah);
     }
     var allHives = (hives || []).concat(sharedHives);
+    // 7 May 2026 Phase 4ce-13l — filter out seeded demo hives. Mirrors the
+    // apiary filter above. Catches both the legacy 'demo-NNNN' hive IDs and
+    // any hive whose apiary_id is 'apiary_meadowbrook'. After SQL cleanup,
+    // this filter becomes a no-op.
+    allHives = allHives.filter(function(h) {
+      if (!h) return false;
+      if (h.apiary_id === 'apiary_meadowbrook') return false;
+      if (h.id && h.id.toString().startsWith('demo-')) return false;
+      return true;
+    });
     if (!he && allHives.length) {
       // Same defensive pattern as apiary map_view_lat/lng — if the list_order column
       // doesn't exist in Supabase (returns undefined) or is null, preserve the
