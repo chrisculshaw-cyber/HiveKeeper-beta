@@ -2923,9 +2923,11 @@ input[type="checkbox"].hk-chk:checked::after {
         <div class="frame-total" id="fc-total">Total: 0 frames</div>
       </div>
     </div>
-    <div style="margin:14px 20px 0;">
-      <button id="save-inspection-btn" class="btn-primary" onclick="saveInspection()" style="padding:20px;font-size:18px;letter-spacing:.02em;transition:background-color 0.2s ease, color 0.2s ease;">Save inspection &#x2713;</button>
-    </div>
+    <!-- 7 May 2026 Phase 4ce-13n — Form-bottom save button removed.
+         Replaced by the always-visible rail save button (4ce-13m) which
+         is reachable without scrolling. References to save-inspection-btn
+         in saveInspection() and _restoreSaveButtonFromTerminal() are
+         defensive and silently no-op without the element. -->
     <div style="padding:8px 20px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
     </div>
@@ -13127,12 +13129,14 @@ function saveInspection(){
   // after a 2.5s display.
   function _releaseSaveLock(success) {
     window._saveInspectionInProgress = false;
-    // 7 May 2026 Phase 4ce-13m — haptic feedback + rail button refresh.
-    // Success: short single pulse for "got it" confirmation.
-    // Failure: distinct three-pulse pattern so the user feels something's wrong.
+    // 7 May 2026 Phase 4ce-13m → 4ce-13n — haptic feedback + rail button refresh.
+    // Success: double-pulse [40, 60, 40] — two crisp pulses with a 60ms gap,
+    //   reads as "tap-tap" confirmation rather than a flat buzz.
+    // Failure: [100, 50, 100, 50, 100] — slower three-pulse rhythm, distinct
+    //   "something's wrong" feel.
     try {
       if (success) {
-        hkVibrate(50);
+        hkVibrate([40, 60, 40]);
       } else {
         hkVibrate([100, 50, 100, 50, 100]);
       }
@@ -24067,7 +24071,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13m — Save in side rail + haptic feedback. Reported by Davey: voice-only inspections sometimes do not get saved because save was at the bottom of a long form. Adding save to the always-visible right rail (Apiary, Inspect, big gap, Save) solves reachability without a competing FAB. Save button visible only on s-inspect with a hive selected; greyed when clean, gold when dirty, spinner when saving, green tick when just-saved. Click calls saveInspection() — same lock as form-bottom button so multi-tap from either cannot duplicate. Haptic feedback via navigator.vibrate (50ms success / 100-50-100-50-100 failure); Android supported, iOS Safari no-op (graceful degradation). Phase 4ce-13l (Meadowbrook seed extinction — 41 phantom apiaries + 492 hives + 34 inspections deleted, seedRealData disabled, pull filters added), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13n — Form-bottom save button removed; haptic feedback now double-pulse. Two save buttons doing the same thing was visual noise. Rail save (4ce-13m) is the single source of truth — always visible, state-driven, idempotent. Defensive references to save-inspection-btn in saveInspection() and _restoreSaveButtonFromTerminal() silently no-op without the element. Haptic success pattern changed from flat 50ms to [40, 60, 40] — two crisp pulses with a 60ms gap, reads as tap-tap confirmation. Failure pattern unchanged. Phase 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
