@@ -2706,6 +2706,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div class="hk-hdr-title-row">
         <div>
+          <div class="back-btn" onclick="goBack()" style="color:rgba(255,255,255,.75);font-size:12px;cursor:pointer;display:inline-block;margin-bottom:2px;">&#8249; Back</div>
           <div class="hk-hdr-title" id="inspect-screen-title">Inspect</div>
           <div class="hk-hdr-title-sub">Choose a hive to begin</div>
         </div>
@@ -4337,6 +4338,7 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <div class="hk-hdr-title-row">
         <div>
+          <div class="back-btn" onclick="goBack()" style="color:rgba(255,255,255,.75);font-size:12px;cursor:pointer;display:inline-block;margin-bottom:2px;">&#8249; Back</div>
           <div class="hk-hdr-title">Inventory</div>
           <div class="hk-hdr-title-sub">Equipment, frames and honey</div>
         </div>
@@ -24142,7 +24144,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13r reverted — JavaScript pull-to-refresh blocker did not work in the Median Android wrapper (gesture appears to be intercepted before reaching JS event system; full diagnostic deferred). 4ce-13q CSS rules retained as defence in depth — they work in standard browser environments (gethivekeeper.com PWA) but Chrome WebView in Median ignores overscroll-behavior. The Median Android pull-to-refresh fix is purely a dashboard config change — Chris handling iOS + Android config separately. New App Store / Play Store builds will resolve the symptom for the app cohort. Apiary-context-loss-on-reload bug remains P1 backlog regardless. Phase 4ce-13q (overscroll-behavior CSS at three layers — defence in depth, did not fix Median Android), 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13s — Universal back-arrow header on non-root drill-in screens. Reported by an iPhone user: navigation feels stuck on non-root screens because s-inspect and s-inventory had no back button. Now both have a back-arrow matching the existing s-hive pattern (line 2969 reference). Uses the existing goBack() function which handles unsaved-inspection guards, pops from screenHistory, and re-renders correctly. Label is "‹ Back" rather than "‹ Apiary" because both screens reachable from multiple contexts — honest generic label. s-hive keeps its existing "‹ Apiary" label (could be tidied to match in a future cosmetic phase). Phase 4ce-13r reverted (JS pull-to-refresh blocker did not work in Median Android), 4ce-13q (overscroll-behavior CSS at three layers — defence in depth), 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
