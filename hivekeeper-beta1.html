@@ -6012,62 +6012,6 @@ function updateInspectConnPill() {
 // React to connectivity changes live
 window.addEventListener('online',  function() { updateInspectConnPill(); });
 window.addEventListener('offline', function() { updateInspectConnPill(); });
-
-// 7 May 2026 Phase 4ce-13r — Block browser-native pull-to-refresh (Chrome doc option D).
-// Symptom: scroll-up at top of page triggers full reload, kicks user to default
-// apiary, data integrity risk for multi-apiary users mid-inspection.
-// CSS-only fixes (4ce-13p, 4ce-13q) didn't catch it because Chrome WebView ignores
-// overscroll-behavior in some configurations. JavaScript preventDefault is the
-// canonical fix per Chrome's own documentation.
-//
-// Strategy: surgical block — only preventDefault the specific overscroll-up gesture
-// that triggers refresh. Normal scrolling, taps, swipes, modal interactions all
-// work unaffected.
-//
-// Conditions for preventDefault:
-//   1. Touch started at scrollTop === 0 of its scrollable ancestor
-//   2. Touch is moving DOWN (deltaY > 0) — the user is pulling down past the top
-//
-// passive:false is required — preventDefault on touchmove silently fails otherwise.
-(function blockPullToRefresh() {
-  var startY = 0;
-  var startedAtTop = false;
-
-  function nearestScrollable(el) {
-    while (el && el !== document.body && el !== document.documentElement) {
-      var s = window.getComputedStyle(el);
-      var oy = s.overflowY;
-      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) {
-        return el;
-      }
-      el = el.parentElement;
-    }
-    // Fall back to documentElement if nothing else matches
-    return document.documentElement;
-  }
-
-  document.addEventListener('touchstart', function(e) {
-    if (!e.touches || e.touches.length !== 1) {
-      startedAtTop = false;
-      return;
-    }
-    startY = e.touches[0].clientY;
-    var scrollable = nearestScrollable(e.target);
-    startedAtTop = (scrollable.scrollTop === 0);
-  }, { passive: true });
-
-  document.addEventListener('touchmove', function(e) {
-    if (!startedAtTop || !e.touches || e.touches.length !== 1) return;
-    var currentY = e.touches[0].clientY;
-    var deltaY = currentY - startY;
-    // deltaY > 0 means user is dragging DOWN, which at scrollTop=0 means
-    // overscroll-up — exactly the gesture that triggers pull-to-refresh.
-    // Small threshold (5px) avoids preventing micro-jitter on tap.
-    if (deltaY > 5) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-})();
 // Initial paint on load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function() { try { updateInspectConnPill(); } catch(e) {} });
@@ -24198,7 +24142,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13r — JavaScript pull-to-refresh blocker (Chrome doc option D). CSS approaches (4ce-13p, 4ce-13q) failed because Chrome WebView in Median Android ignores overscroll-behavior. Per Chrome\'s own documentation, the canonical fix is touchmove preventDefault — surgical: only blocks the specific overscroll-up-from-top gesture that triggers refresh, leaves all other scrolling/tapping unaffected. Conditions for preventDefault: touchstart was at scrollTop=0 of nearest scrollable ancestor AND touchmove deltaY > 5px (downward = pull-to-refresh gesture). 5px threshold avoids preventing tap micro-jitter. passive:false required for preventDefault to work. CSS rules from 4ce-13q kept as defence in depth. Phase 4ce-13q (overscroll-behavior CSS at three layers — defence in depth, did not fix Median Android), 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13r reverted — JavaScript pull-to-refresh blocker did not work in the Median Android wrapper (gesture appears to be intercepted before reaching JS event system; full diagnostic deferred). 4ce-13q CSS rules retained as defence in depth — they work in standard browser environments (gethivekeeper.com PWA) but Chrome WebView in Median ignores overscroll-behavior. The Median Android pull-to-refresh fix is purely a dashboard config change — Chris handling iOS + Android config separately. New App Store / Play Store builds will resolve the symptom for the app cohort. Apiary-context-loss-on-reload bug remains P1 backlog regardless. Phase 4ce-13q (overscroll-behavior CSS at three layers — defence in depth, did not fix Median Android), 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
