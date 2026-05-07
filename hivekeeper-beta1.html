@@ -311,13 +311,18 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 /* 7 May 2026 Phase 4ce-13m — rail-save spinner for the saving state. */
 @keyframes rail-save-spinner{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .rail-save-spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:rail-save-spinner 0.7s linear infinite}
-/* 7 May 2026 Phase 4ce-13p — Block browser-native pull-to-refresh when
-   .pull-refresh-disabled is on the body. Reported by Chris: caught the
-   gesture several times by accident, refreshing the screen mid-task.
-   overscroll-behavior-y: contain stops the gesture bubbling up to the
-   browser. Default OFF (class applied) — power users can opt in via
-   Settings → Preferences. */
-body.pull-refresh-disabled, html:has(body.pull-refresh-disabled) { overscroll-behavior-y: contain; }
+/* 7 May 2026 Phase 4ce-13q — Disable browser-native pull-to-refresh.
+   Earlier 4ce-13p attempt only set overscroll-behavior on body, which
+   didn't work because body has overflow:hidden and scrolling happens
+   inside .scroll-area containers. When the user pulls up from inside
+   .scroll-area, the overscroll bubbles past it to body, where Chrome's
+   native pull-to-refresh fires. Applying at every layer stops the bubble.
+   Symptom Chris reported: "halfway down the page, scroll up triggers
+   refresh." Multi-apiary users were being kicked back to default apiary
+   silently — data integrity risk for inspections logged after the kick. */
+html, body { overscroll-behavior: none; }
+.scroll-area { overscroll-behavior-y: contain; }
+.modal-sheet { overscroll-behavior: contain; }
 .rec-time{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);margin-top:10px;position:relative}
 .transcript-box{margin:10px 20px 0;background:var(--white);border-radius:var(--rs);padding:14px;border:1px solid var(--wax);box-shadow:var(--shadow)}
 .transcript-label{font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
@@ -24137,7 +24142,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13p — Haptic on hive save & swarm catch (completes Option A scope). Adds Tier 1 confirmation haptic [40,60,40] to saveNewHive() and swarm catch save success. Pull-to-refresh toggle ATTEMPTED but reverted in this same phase — CSS overscroll-behavior approach does not catch the Median wrapper gesture, only Chrome native. Toggle backlogged for a Median-bridge-based fix. CSS rule and keysToKeep entries left in place as harmless no-ops. Phase 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction — 41 phantom apiaries + 492 hives + 34 inspections deleted), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13q — Pull-to-refresh disabled at the right layer. Earlier 4ce-13p attempt put overscroll-behavior on body only, which did not work because HiveKeeper screens have overflow:hidden on body and actual scrolling happens inside .scroll-area containers. Chrome native pull-to-refresh fires when overscroll bubbles up to body — by which point the gesture is already in flight. Fix: overscroll-behavior:none on html and body, overscroll-behavior-y:contain on .scroll-area and .modal-sheet — stops the bubble at every layer. Applied unconditionally; no toggle. Symptom: halfway-down-page scroll-up was triggering refresh. Multi-apiary users kicked silently to default apiary — data integrity risk. Phase 4ce-13p (haptic on hive save & swarm catch; pull-to-refresh toggle attempt reverted), 4ce-13o (Haptic toggle in Preferences + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail + haptic feedback), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
