@@ -6286,28 +6286,50 @@ function markMessageRead(id) {
 }
 
 async function fetchAppMessages() {
-  // Silent fetch — messages are enhancement, not core. No error toast.
+  // 7 May 2026 Phase 4ce-13w — TEMPORARY DIAGNOSTIC VERSION.
+  // Will be reverted in next phase once root cause identified.
+  // Captures full fetch state on window._messagesDiag for visible inspection.
+  window._messagesDiag = window._messagesDiag || {};
+  var diag = window._messagesDiag;
+  diag.fetchAttempts = (diag.fetchAttempts || 0) + 1;
+  diag.lastFetchTime = new Date().toISOString();
   try {
-    if (typeof supabase === 'undefined' || !supabase) return;
-    // 7 May 2026 Phase 4ce-13v — fix: removed client-side expires_at filter.
-    // The .or('expires_at.is.null,expires_at.gt.' + nowIso) PostgREST syntax
-    // breaks when the timestamp contains colons (which all ISO timestamps do)
-    // and silently returns zero rows. RLS policy on app_messages already
-    // filters expired messages server-side, so client-side filtering was
-    // both redundant and broken. Keeping is_published filter as belt-and-
-    // braces — RLS enforces it too but explicit is clearer.
+    diag.supabaseAvailable = (typeof supabase !== 'undefined' && !!supabase);
+    if (!diag.supabaseAvailable) {
+      diag.skippedReason = 'supabase undefined or null';
+      return;
+    }
+    // Capture auth state
+    try {
+      var sessionResp = await supabase.auth.getSession();
+      diag.hasSession = !!(sessionResp && sessionResp.data && sessionResp.data.session);
+      diag.userId = (sessionResp && sessionResp.data && sessionResp.data.session && sessionResp.data.session.user && sessionResp.data.session.user.id) || null;
+    } catch(authErr) {
+      diag.authError = authErr && authErr.message;
+    }
+    // Run the actual query
     var resp = await supabase
       .from('app_messages')
       .select('id, title, body, severity, created_at, expires_at')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(50);
+    diag.respHasError = !!(resp && resp.error);
+    diag.respError = resp && resp.error ? (resp.error.message || JSON.stringify(resp.error)) : null;
+    diag.respDataIsArray = Array.isArray(resp && resp.data);
+    diag.respDataLength = (resp && Array.isArray(resp.data)) ? resp.data.length : -1;
+    diag.respStatus = resp && resp.status;
+    diag.respFirstRow = (resp && Array.isArray(resp.data) && resp.data[0]) ? {
+      id: resp.data[0].id,
+      title: resp.data[0].title ? resp.data[0].title.substring(0, 40) : '(no title)',
+      severity: resp.data[0].severity
+    } : null;
     if (resp && !resp.error && Array.isArray(resp.data)) {
       window._appMessages = resp.data;
       renderMessagesBadge();
     }
   } catch(e) {
-    // Silent. Messages icon stays hidden if we can't fetch.
+    diag.exception = e && e.message;
     console.warn('[messages] fetch failed:', e && e.message);
   }
 }
@@ -6327,14 +6349,11 @@ function renderMessagesBadge() {
 }
 
 function openMessagesModal() {
-  // Lazy fetch if we don't have messages cached yet
-  if (!window._appMessages) {
-    fetchAppMessages().then(function(){
-      renderMessagesList();
-    });
-  } else {
+  // 7 May 2026 Phase 4ce-13w — TEMPORARY: always fetch fresh on modal open
+  // for diagnostic visibility. Will revert to lazy-fetch in 4ce-13x.
+  fetchAppMessages().then(function(){
     renderMessagesList();
-  }
+  });
   if (typeof openModalEl === 'function') openModalEl('modal-messages');
 }
 
@@ -6344,15 +6363,38 @@ function renderMessagesList() {
   var msgs = window._appMessages || [];
   var readIds = loadReadMessageIds();
 
+  // 7 May 2026 Phase 4ce-13w — TEMPORARY DIAGNOSTIC PANEL.
+  // Shows fetch state so we can see what's happening on real device.
+  // Will be removed in 4ce-13x once root cause is identified.
+  var diag = window._messagesDiag || { note: 'No diagnostic captured yet' };
+  var diagHtml = '<div style="background:#FFF7E6;border:1px solid #C8810A;border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;font-family:JetBrains Mono,monospace;color:#412402;line-height:1.5;">'
+    + '<div style="font-weight:800;margin-bottom:6px;font-family:Syne,sans-serif;font-size:12px;">DIAG (4ce-13w — temporary)</div>'
+    + 'fetchAttempts: ' + (diag.fetchAttempts || 0) + '<br>'
+    + 'lastFetchTime: ' + (diag.lastFetchTime || 'never') + '<br>'
+    + 'supabaseAvailable: ' + (diag.supabaseAvailable === undefined ? '?' : diag.supabaseAvailable) + '<br>'
+    + 'hasSession: ' + (diag.hasSession === undefined ? '?' : diag.hasSession) + '<br>'
+    + 'userId: ' + (diag.userId || 'null') + '<br>'
+    + 'authError: ' + (diag.authError || 'none') + '<br>'
+    + 'respHasError: ' + (diag.respHasError === undefined ? '?' : diag.respHasError) + '<br>'
+    + 'respError: ' + (diag.respError || 'none') + '<br>'
+    + 'respDataIsArray: ' + (diag.respDataIsArray === undefined ? '?' : diag.respDataIsArray) + '<br>'
+    + 'respDataLength: ' + (diag.respDataLength === undefined ? '?' : diag.respDataLength) + '<br>'
+    + 'respStatus: ' + (diag.respStatus === undefined ? '?' : diag.respStatus) + '<br>'
+    + 'respFirstRow: ' + (diag.respFirstRow ? JSON.stringify(diag.respFirstRow) : 'null') + '<br>'
+    + 'exception: ' + (diag.exception || 'none') + '<br>'
+    + 'window._appMessages: ' + (window._appMessages === undefined ? 'undefined' : 'array len=' + window._appMessages.length) + '<br>'
+    + 'skippedReason: ' + (diag.skippedReason || 'n/a')
+    + '</div>';
+
   if (msgs.length === 0) {
-    container.innerHTML = '<div style="padding:32px 16px;text-align:center;color:var(--text-l);font-size:13px;">'
+    container.innerHTML = diagHtml + '<div style="padding:32px 16px;text-align:center;color:var(--text-l);font-size:13px;">'
       + '<div style="font-size:32px;margin-bottom:8px;opacity:0.5;">📭</div>'
       + 'No messages right now.<br><span style="font-size:11px;opacity:0.7;">We\'ll let you know when there\'s something to share.</span>'
       + '</div>';
     return;
   }
 
-  var html = '';
+  var html = diagHtml;
   msgs.forEach(function(m){
     var isRead = readIds.indexOf(m.id) !== -1;
     var sevColour = m.severity === 'critical' ? '#C62828' :
@@ -24397,7 +24439,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13v — Fix messages fetch returning empty. Bug in 4ce-13t: client query used .or(\'expires_at.is.null,expires_at.gt.\' + nowIso) which fails in PostgREST when the ISO timestamp contains colons — silently returns zero rows even when published, unexpired messages exist. Diagnosed via Supabase SQL Editor: row was present with is_published=true, expires_at=null, and RLS-as-authenticated query returned it correctly. Fix: removed client-side expires_at filter entirely. RLS policy on app_messages already enforces expiration server-side (USING is_published AND expires_at NULL OR > now()), so client filter was redundant and broken. is_published filter kept on client as explicit belt-and-braces. Phase 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13w — TEMPORARY DIAGNOSTIC for messages-not-showing bug. Adds visible diagnostic panel at top of messages modal showing: fetchAttempts, lastFetchTime, supabaseAvailable, hasSession, userId, authError, respHasError, respError, respDataIsArray, respDataLength, respStatus, respFirstRow, exception, _appMessages state. Also forces re-fetch on every modal open instead of caching, so each tap shows fresh diagnostic. Diagnostic state captured on window._messagesDiag. WILL BE REMOVED in 4ce-13x once root cause identified — Chris taps icon, screenshots panel, sends to Claude. Phase 4ce-13v (fetch fix attempt 1 — removed broken .or filter, did not solve), 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
