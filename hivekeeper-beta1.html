@@ -308,6 +308,9 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .rec-btn.recording{background:var(--red);animation:recpulse-red 1s infinite}
 @keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(200,115,10,.4)}50%{box-shadow:0 0 0 14px rgba(200,115,10,0)}}
 @keyframes recpulse-red{0%,100%{box-shadow:0 0 0 0 rgba(184,50,40,.5)}50%{box-shadow:0 0 0 16px rgba(184,50,40,0)}}
+/* 7 May 2026 Phase 4ce-13m — rail-save spinner for the saving state. */
+@keyframes rail-save-spinner{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.rail-save-spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:rail-save-spinner 0.7s linear infinite}
 .rec-time{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);margin-top:10px;position:relative}
 .transcript-box{margin:10px 20px 0;background:var(--white);border-radius:var(--rs);padding:14px;border:1px solid var(--wax);box-shadow:var(--shadow)}
 .transcript-label{font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
@@ -4602,6 +4605,23 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="side-rail-label">Inspect</div>
     </button>
 
+    <!-- 7 May 2026 Phase 4ce-13m — Save in the rail.
+         Reported by Davey: voice-only inspections sometimes don't get saved
+         because the save button is at the bottom of a long form. Putting
+         save in the always-visible rail solves the reachability problem
+         without adding a competing FAB.
+         The 24px gap above this button visually separates navigation actions
+         (Apiary, Inspect) from the commit action (Save) — different verbs,
+         different visual grammar. Visibility and state driven by
+         renderRailSave(): hidden when not on s-inspect; greyed when clean
+         (nothing to save); gold when dirty; spinner when saving; green tick
+         for 2s post-save. Click calls saveInspection() — shares the
+         _saveInspectionInProgress lock with the form-bottom button. -->
+    <button class="side-rail-btn" id="rail-save" onclick="saveInspection()" style="display:none;margin-top:24px;background:rgba(255,255,255,0.08);border-radius:10px;padding:6px 4px;transition:background 0.3s, opacity 0.3s;" aria-label="Save inspection">
+      <div class="side-rail-icon" id="rail-save-icon">💾</div>
+      <div class="side-rail-label" id="rail-save-label">Save</div>
+    </button>
+
   </div>
 
 </div><!-- /#app — closes here so screens, bottom-nav, side-rail are all children.
@@ -5795,6 +5815,8 @@ function goTo(id){
   var _cs=document.getElementById(currentScreen); if(_cs) _cs.classList.remove('active');
   var _ns=document.getElementById(id); if(_ns) _ns.classList.add('active');
   currentScreen = id;
+  // 7 May 2026 Phase 4ce-13m — refresh rail-save visibility on screen change
+  try { if (typeof renderRailSave === 'function') renderRailSave(); } catch(e) {}
   if(screenHistory[screenHistory.length-1] !== id) screenHistory.push(id);
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === id));
   // Push state to intercept browser back button
@@ -6096,6 +6118,87 @@ function showToast(msg){
   t.style.top = (60 + bannerCount * 40) + 'px';
   t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+// 7 May 2026 Phase 4ce-13m — haptic feedback wrapper.
+// navigator.vibrate is supported on Android Chrome/Firefox/Samsung Internet
+// but NOT on iOS Safari (Apple doesn't expose the API to web pages). Wrapper
+// fails silently when unsupported. Pattern is a number (single vibration in
+// ms) or an array of [vibrate, pause, vibrate, ...] alternating ms values.
+function hkVibrate(pattern){
+  try {
+    if (navigator && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(pattern);
+    }
+  } catch(e) {
+    // Some browsers throw if vibrate is called outside a user-gesture context.
+    // Silent failure is correct — haptic feedback is enhancement not core.
+  }
+}
+
+// 7 May 2026 Phase 4ce-13m — render the side-rail Save button state.
+// Driven by:
+//   currentScreen           — only show on s-inspect
+//   currentHiveId           — only show when a hive is selected
+//   _saveInspectionInProgress — saving spinner state
+//   _inspectionJustSaved    — 2.5s green-tick "Saved" state
+//   _inspectionDirty        — gold (dirty) vs greyed (clean)
+//
+// States:
+//   hidden         not on s-inspect or no hive selected
+//   clean          everything saved, button greyed (50% opacity)
+//   dirty          unsaved changes — button gold, ready to commit
+//   saving         spinner, click locked (saveInspection() also has its own lock)
+//   just-saved     green tick + "Saved" label for 2.5s after success
+function renderRailSave(){
+  var btn = document.getElementById('rail-save');
+  if (!btn) return;
+  var icon = document.getElementById('rail-save-icon');
+  var label = document.getElementById('rail-save-label');
+
+  // Hide if not on s-inspect or no hive selected.
+  if (currentScreen !== 's-inspect' || !currentHiveId) {
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = '';
+
+  // Saving state takes precedence
+  if (window._saveInspectionInProgress) {
+    if (icon) icon.innerHTML = '<span class="rail-save-spinner"></span>';
+    if (label) label.textContent = 'Saving';
+    btn.style.background = 'linear-gradient(135deg,#E4A33A,#C8810A)';
+    btn.style.opacity = '1';
+    btn.disabled = true;
+    return;
+  }
+
+  // Just-saved — green tick for 2.5s
+  if (window._inspectionJustSaved) {
+    if (icon) icon.textContent = '✓';
+    if (label) label.textContent = 'Saved';
+    btn.style.background = 'linear-gradient(135deg,#4A8B3D,#2D5016)';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+    return;
+  }
+
+  // Dirty — gold, ready to save
+  if (window._inspectionDirty) {
+    if (icon) icon.textContent = '💾';
+    if (label) label.textContent = 'Save';
+    btn.style.background = 'linear-gradient(135deg,#E4A33A,#C8810A)';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+    return;
+  }
+
+  // Clean — greyed, nothing to save
+  if (icon) icon.textContent = '💾';
+  if (label) label.textContent = 'Save';
+  btn.style.background = 'rgba(255,255,255,0.08)';
+  btn.style.opacity = '0.5';
+  btn.disabled = true;
 }
 
 function viewHive(id){
@@ -12880,6 +12983,8 @@ function _restoreSaveButtonFromTerminal() {
         if (_dirty && wasFalse) {
           try { _restoreSaveButtonFromTerminal(); } catch(e) {}
         }
+        // 7 May 2026 Phase 4ce-13m — keep rail-save button visual in sync with dirty state
+        try { if (typeof renderRailSave === 'function') renderRailSave(); } catch(e) {}
       },
       configurable: true
     });
@@ -12995,6 +13100,8 @@ function saveInspection(){
     return;
   }
   window._saveInspectionInProgress = true;
+  // 7 May 2026 Phase 4ce-13m — flip rail save button into spinner state.
+  try { if (typeof renderRailSave === 'function') renderRailSave(); } catch(e) {}
 
   // Capture the Save button's original state and immediately flip it to
   // "Saving…" with a spinner. The user has tapped — give them feedback NOW,
@@ -13020,6 +13127,17 @@ function saveInspection(){
   // after a 2.5s display.
   function _releaseSaveLock(success) {
     window._saveInspectionInProgress = false;
+    // 7 May 2026 Phase 4ce-13m — haptic feedback + rail button refresh.
+    // Success: short single pulse for "got it" confirmation.
+    // Failure: distinct three-pulse pattern so the user feels something's wrong.
+    try {
+      if (success) {
+        hkVibrate(50);
+      } else {
+        hkVibrate([100, 50, 100, 50, 100]);
+      }
+    } catch(e) {}
+    try { if (typeof renderRailSave === 'function') renderRailSave(); } catch(e) {}
     if (success) return;
     try {
       if (_btnAtStart && _btnOrigState) {
@@ -23949,7 +24067,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13l — Meadowbrook seed data extinction event. Investigation revealed seedRealData() was creating hardcoded "Meadowbrook Apiary" + 12 demo hives in localStorage on every fresh device sign-in (a 2024 beta-launch fixture). Result: 41 phantom apiaries + 492 phantom hives in Supabase across 5 real users (kmavian, darenpedlar, davesmith744, mark.deathridge13, toddsparkle). Existing local cleanup (4bv, 30 April 2026) was insufficient because pullApiaries pulled the rows back from Supabase. Three coordinated changes: (1) seedRealData() call permanently disabled — function definition kept for reference. (2) pullApiaries adds a filter excluding any apiary with id="apiary_meadowbrook" OR (defensive) name="Meadowbrook Apiary" with createdAt=1712000000000. (3) pullHives filter for any hive with apiary_id="apiary_meadowbrook" OR id starting "demo-". After SQL cleanup of the 41 phantom rows runs, the pull filters become no-ops but stay in place as belt-and-braces. Phase 4ce-13k (Add Hive button permanently visible), 4ce-13j (marketplace gated with Coming Soon empty state), 4ce-13i (login Logo.png), 4ce-13h (inline SVG honeybee - superseded), 4ce-13g (failed image attempt - superseded), 4ce-13f (apiary-settings hint), 4ce-13e (saveNewHive renderLeafletHives — real fix for hive-not-on-map), 4ce-13d (incorrect attempted fix - reverted), 4ce-13c (pricing modal scheduler direct profile check), 4ce-13b (geocoder fix + setting-you-up + postcode copy + empty-state apiary), 4ce-13a (initial broken-onboarding fix - superseded), 4ce-12c (per-user pricing modal seen-map), 4ce-12b (initial pricing-modal nag fix - superseded), 4ce-12 (calendar trial-end-day X marker + trial reminder email infrastructure), 4ce-11b (relaxed UUID regex to accept v1-v5; conditional failed_syncs drop), 4ce-11a (push-before-pull when sweep healed), 4ce-11 (broken-UUID source fixes + sweepBrokenIds heal function), 4ce-10 (WhatsApp button contrast + Help/Diagnostic tiles), 4ce-9 (group titles + Refer card softened + Community card reverted), 4ce-8 (tile unification + side rail darker + bee logo smaller + Share Apiary in Manage), 4ce-7 (4 quick wins), 4ce-6 (emoji bee logos - reverted in 4ce-13g/h/i), 4ce-5z (warm-resume fast path), 4ce-5y (bigger logo + scattered bees), 4ce-5x (real website bee), 4ce-5w (minimal branded loading splash), 4ce-5v (loading flow restructured + apiary title fix), 4ce-5u (hk_has_signed_in detection + auth scroll), 4ce-5t (animated dots + cog/help universal), 4ce-5s (placeholder no-overwrite), 4ce-5r (placeholder text), 4ce-5q (universal Cormorant + voice help), 4ce-5p (home header restructure), 4ce-5o (apiary switching audit), 4ce-5n (icon size), 4ce-5m (real weather data), 4ce-5l (REPORTS_BY_TIER.founder), 4ce-5k (PostgREST 1000-row), 4ce-5j (Live activity), 4ce-5i (Settings tile rename), 4ce-5h (social media + marketplace + Charter removal + Google Play live), 4ce-5g (iOS upgrade fallback), 4ce-5f (per-card pills), 4ce-5e (removed duplicate trial banner), 4ce-5b (admin dashboard via service-role), 4ce-5 (magic-link SSO + profile creation trigger + 44-row backfill). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13m — Save in side rail + haptic feedback. Reported by Davey: voice-only inspections sometimes do not get saved because save was at the bottom of a long form. Adding save to the always-visible right rail (Apiary, Inspect, big gap, Save) solves reachability without a competing FAB. Save button visible only on s-inspect with a hive selected; greyed when clean, gold when dirty, spinner when saving, green tick when just-saved. Click calls saveInspection() — same lock as form-bottom button so multi-tap from either cannot duplicate. Haptic feedback via navigator.vibrate (50ms success / 100-50-100-50-100 failure); Android supported, iOS Safari no-op (graceful degradation). Phase 4ce-13l (Meadowbrook seed extinction — 41 phantom apiaries + 492 hives + 34 inspections deleted, seedRealData disabled, pull filters added), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
