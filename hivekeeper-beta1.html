@@ -1047,6 +1047,75 @@ html, body { overscroll-behavior: none; }
 .hk-hdr-help:hover, .hk-hdr-help:active {
   background: rgba(255,255,255,0.22);
 }
+/* 7 May 2026 Phase 4ce-13u — Messages icon styling.
+   Same dimensions and look as .hk-hdr-cog/.hk-hdr-help, with position:relative
+   so the unread-count badge can sit absolutely positioned over the top-right
+   corner. Badge is hidden by default — renderMessagesBadge() toggles
+   display:flex when unread > 0. */
+.hk-hdr-msg {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  position: relative;
+}
+.hk-hdr-msg:hover, .hk-hdr-msg:active {
+  background: rgba(255,255,255,0.22);
+}
+.hk-hdr-msg-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #C62828;
+  color: white;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-family: 'Syne', sans-serif;
+  line-height: 1;
+  border: 2px solid var(--forest);
+  box-sizing: content-box;
+}
+/* 7 May 2026 Phase 4ce-13u — Back button styling for non-root drill-in screens.
+   Was a small text "‹ Back" prefix that read as a title decoration; now a
+   circular button matching cog/help so it reads unambiguously as a navigation
+   control. Sits at the start of .hk-hdr-title-row; title block flexes
+   alongside it. iOS-pattern muscle memory. */
+.hk-hdr-back {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  line-height: 1;
+  padding-right: 2px; /* visually centre the chevron glyph */
+}
+.hk-hdr-back:hover, .hk-hdr-back:active {
+  background: rgba(255,255,255,0.22);
+}
 /* Row 3 (optional): screen-specific context — e.g. month nav on calendar,
    hive picker on inspect, action buttons on apiary. */
 .hk-hdr-context {
@@ -2119,15 +2188,17 @@ input[type="checkbox"].hk-chk:checked::after {
           </div>
           <div class="hk-hdr-controls">
             <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" class="hk-hdr-cog" aria-label="Open settings">&#x2699;&#xFE0F;</div>
-            <!-- 7 May 2026 Phase 4ce-13t — Messages icon with unread badge.
+            <!-- 7 May 2026 Phase 4ce-13t → 4ce-13u — Messages icon with unread badge.
                  Tap opens the in-app messages modal. Badge shows unread count
                  (anything > 0); hidden entirely when no unread messages so
                  the icon stays visually quiet by default. Refreshed by
                  renderMessagesBadge() which is called after fetch on app
-                 open / warm resume / message read. -->
-            <div onclick="openMessagesModal()" title="Messages" class="hk-hdr-msg" aria-label="View messages" style="position:relative;cursor:pointer;font-size:18px;display:inline-flex;align-items:center;justify-content:center;padding:6px;">
-              📬
-              <span id="messages-badge" style="display:none;position:absolute;top:0;right:0;background:#C62828;color:white;border-radius:10px;min-width:16px;height:16px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;font-family:'Syne',sans-serif;line-height:1;">0</span>
+                 open / warm resume / message read.
+                 4ce-13u — circular button matching cog/help; envelope glyph
+                 instead of postbox; badge is dedicated CSS class. -->
+            <div onclick="openMessagesModal()" title="Messages" class="hk-hdr-msg" aria-label="View messages">
+              &#x2709;&#xFE0F;
+              <span id="messages-badge" class="hk-hdr-msg-badge">0</span>
             </div>
             <div class="hk-hdr-help" onclick="openManual()" title="Help" aria-label="Help">?</div>
           </div>
@@ -2714,9 +2785,9 @@ input[type="checkbox"].hk-chk:checked::after {
           <div class="hk-hdr-help" onclick="showHelp('hive-selector')" title="How to choose a hive to inspect" aria-label="Help">?</div>
         </div>
       </div>
-      <div class="hk-hdr-title-row">
-        <div>
-          <div class="back-btn" onclick="goBack()" style="color:rgba(255,255,255,.75);font-size:12px;cursor:pointer;display:inline-block;margin-bottom:2px;">&#8249; Back</div>
+      <div class="hk-hdr-title-row" style="align-items:center;gap:10px;">
+        <div class="hk-hdr-back" onclick="goBack()" title="Back" aria-label="Go back">&#8249;</div>
+        <div style="flex:1;min-width:0;">
           <div class="hk-hdr-title" id="inspect-screen-title">Inspect</div>
           <div class="hk-hdr-title-sub">Choose a hive to begin</div>
         </div>
@@ -2975,9 +3046,9 @@ input[type="checkbox"].hk-chk:checked::after {
           <div class="hk-hdr-help" onclick="showHelp('hive-detail')" title="What's on the hive detail screen?" aria-label="Help">?</div>
         </div>
       </div>
-      <div class="hk-hdr-title-row">
+      <div class="hk-hdr-title-row" style="align-items:center;gap:10px;">
+        <div class="hk-hdr-back" onclick="goBack()" title="Back" aria-label="Go back">&#8249;</div>
         <div style="flex:1;min-width:0;">
-          <div class="back-btn" onclick="goBack()" style="color:rgba(255,255,255,.75);font-size:12px;cursor:pointer;display:inline-block;margin-bottom:2px;">&#8249; Apiary</div>
           <div class="hk-hdr-title" id="hive-detail-name">Hive</div>
           <div class="hk-hdr-title-sub" id="hive-detail-meta">Loading...</div>
         </div>
@@ -4366,9 +4437,9 @@ input[type="checkbox"].hk-chk:checked::after {
           <div class="hk-hdr-help" onclick="openManual()" title="Help" aria-label="Help">?</div>
         </div>
       </div>
-      <div class="hk-hdr-title-row">
-        <div>
-          <div class="back-btn" onclick="goBack()" style="color:rgba(255,255,255,.75);font-size:12px;cursor:pointer;display:inline-block;margin-bottom:2px;">&#8249; Back</div>
+      <div class="hk-hdr-title-row" style="align-items:center;gap:10px;">
+        <div class="hk-hdr-back" onclick="goBack()" title="Back" aria-label="Go back">&#8249;</div>
+        <div style="flex:1;min-width:0;">
           <div class="hk-hdr-title">Inventory</div>
           <div class="hk-hdr-title-sub">Equipment, frames and honey</div>
         </div>
@@ -6244,7 +6315,7 @@ function renderMessagesBadge() {
   var unread = msgs.filter(function(m){ return readIds.indexOf(m.id) === -1; }).length;
   if (unread > 0) {
     badge.textContent = unread > 99 ? '99+' : String(unread);
-    badge.style.display = 'inline-flex';
+    badge.style.display = 'flex';
   } else {
     badge.style.display = 'none';
   }
@@ -24321,7 +24392,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13t — In-app messages with badge on home header. New 📬 icon between cog and help shows unread count badge (red, white text, hidden when zero). Tap opens modal-messages — lists all published, unexpired messages from new app_messages Supabase table sorted newest first. Three severity levels: info (blue), warning (gold), critical (red) with matching icons (ℹ️/⚠️/🚨). Tap a message row to expand body inline; expanding marks read. Read state tracked in hk_read_messages localStorage (per-device, multi-device sync deferred). Fetch hooks: SIGNED_IN auth event (cold start) and visibilitychange visible (warm resume). Silent failure on fetch error — messages are enhancement, not core. SQL migration shipped separately: 20260507-app-messages-schema.sql includes table, indexes, RLS policy, seed pull-to-refresh warning. Phase 4ce-13s (Universal back-arrow on s-inspect + s-inventory), 4ce-13r reverted (JS pull-to-refresh blocker did not work in Median Android), 4ce-13q (overscroll-behavior CSS at three layers), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '7 May 2026 BST · Phase 4ce-13u — Visual polish on messages icon and back buttons. Messages icon now uses circular .hk-hdr-msg class matching cog and help (36×36, semi-transparent white background, 1px subtle border). Envelope ✉️ glyph replaces postbox 📬 — cleaner, matches "messages/mail" mental model. Badge moved to dedicated .hk-hdr-msg-badge CSS class with proper absolute positioning at top-right corner with forest-coloured border ring (separates badge from icon visually). Back buttons on s-inspect, s-hive, s-inventory upgraded from small text "‹ Back" prefix (which read as title decoration) to circular icon buttons with chevron glyph — same dimensions as cog/help. iOS-pattern muscle memory; iPhone users will recognise it as a navigation control. Title row layout changed to flex with [back-circle] [title-block]. s-hive\'s old "‹ Apiary" label became chevron-only — also kills the inconsistency where the label promised a destination but goBack() is history-driven. Phase 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow first version), 4ce-13r reverted (JS pull-to-refresh blocker did not work in Median Android), 4ce-13q (overscroll-behavior CSS at three layers), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed; haptic now double-pulse), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
