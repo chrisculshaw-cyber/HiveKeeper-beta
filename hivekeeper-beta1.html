@@ -18792,6 +18792,17 @@ function renderAsianHornetWatch(lat, lng) {
   var _ahSub = document.getElementById('ah-header-sub');
   if (!_ahContent && !_ahSub) return; // AH banner not in DOM yet
 
+  // 12 May 2026 Phase 4ce-14e — defensive guard against early-init call.
+  // The test session on 12 May surfaced a cold-start error here:
+  // AH_SIGHTINGS was undefined when this fired, because var-hoisting hoists
+  // the declaration but NOT the value assignment. If renderAsianHornetWatch
+  // is called from an init path that runs before line 18147 executes, the
+  // .map() below throws. Silent return — next render call will work once
+  // the var-assigned seed data is available.
+  if (typeof AH_SIGHTINGS === 'undefined' || !Array.isArray(AH_SIGHTINGS) || AH_SIGHTINGS.length === 0) {
+    return;
+  }
+
   // Calculate distance to all sightings and sort
   var withDist = AH_SIGHTINGS.map(function(s) {
     return Object.assign({}, s, {distKm: haversineKm(lat, lng, s.lat, s.lng)});
@@ -19328,6 +19339,13 @@ function updateDashTipTeaser() {
   var _tipEl = document.getElementById('dash-tip-text');
   var _tipIcon = document.getElementById('dash-tip-icon');
   if (!_tipEl) return;
+  // 12 May 2026 Phase 4ce-14e — defensive guard against early-init call.
+  // SEASONAL_TIPS is var-declared at line ~19150 but this function can be
+  // called from line 15159 init before the var assignment runs. Same fix
+  // pattern as renderAsianHornetWatch. There's a setTimeout retry at
+  // line 15170 that fires 150ms later, by which point SEASONAL_TIPS is
+  // ready and the tip teaser populates correctly.
+  if (typeof SEASONAL_TIPS === 'undefined' || !SEASONAL_TIPS) return;
   var now = new Date();
   var month = now.getMonth() + 1;
   var tips = SEASONAL_TIPS[month] || [];
@@ -24841,7 +24859,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14d (revised) — ROOT CAUSE FIX for inspection cadence persistence. After 4ce-14b (onchange), 4ce-14c (oninput), and 4ce-14d (explicit Save button) all failed to make the cadence value survive a force-close, the diagnostic Save button revealed the smoking gun: write was succeeding (✓ Saved 14 days confirmation) but value was gone after reopen. The hk_inspection_cadence_days key was NOT in the keysToKeep whitelist that protects localStorage from being wiped on pull-from-cloud. Every sign-in restore was silently wiping it. Same bug class as the 25 April inspection loss, 7 May haptic/pull-refresh additions. Added the key to both keysToKeep lists (pull-from-cloud at line 26146 area + sign-out at line 23596 area). The diagnostic Save button + readback verification stays in place — both because it\'s a better UX than auto-save and because it surfaces this class of bug fast next time. Phase 4ce-14b/c/d (cadence-aware strip + persistence bug — now fixed), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '12 May 2026 BST · Phase 4ce-14e — Defensive guards for two cold-start console errors. Test session on 12 May surfaced two TypeError exceptions firing on every cold start: (1) renderAsianHornetWatch → AH_SIGHTINGS undefined, (2) updateDashTipTeaser → SEASONAL_TIPS undefined. Both caused by var-hoisting: the variable declaration is hoisted but the value assignment is not, so if these functions are called from init paths that fire before the relevant line executes, .map()/[month] access throws. Errors were caught by surrounding try/catch and harmless to user, but noisy in the console and could mask genuine errors. Fix: added typeof undefined guards at the top of both functions. Silent return → next call (from setTimeout retry at line 15170, or subsequent re-render) succeeds once the var assignment has run. Phase 4ce-14d revised (cadence persistence keysToKeep fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
