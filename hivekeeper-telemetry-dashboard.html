@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiveKeeper · Telemetry Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --honey:#C8730A; --honey-l:#E8960C; --honey-pale:#FFF4DC;
+  --forest:#162B1F; --forest-m:#243D2E; --forest-l:#3A6B4A;
+  --cream:#FAF6EE; --warm:#F5EFE3; --wax:#EDE4CC;
+  --bark:#4A2E0E; --bark-l:#6B3F18;
+  --text:#1A1208; --text-m:#4A3A25; --text-l:#8A7A60;
+  --white:#FFFDF8;
+  --red:#B83228; --red-soft:#D97A6F; --red-pale:#F9E0DD;
+  --amber:#D97706; --amber-pale:#FBEBD3;
+  --green:#2A7A48; --green-dark:#1F5234; --green-pale:#D7EBD9;
+  --cool:#2C7A9C; --purple:#6B3FA0;
+  --r:14px; --rs:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100vh;background:var(--cream);font-family:'Syne',sans-serif;color:var(--text);}
+body{padding:0;}
+
+/* ───── Header ───── */
+.header{background:linear-gradient(180deg,var(--bark) 0%, var(--bark-l) 100%);color:#fff;padding:20px 24px;border-bottom:4px solid var(--honey);position:relative;}
+.header::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--honey-l) 0%, var(--honey) 60%, var(--honey-l) 100%);}
+.header-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-icon{width:42px;height:42px;border-radius:10px;background:var(--honey);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.brand-text h1{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em;line-height:1;}
+.brand-text .sub{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.05em;margin-top:4px;text-transform:uppercase;}
+
+.controls{display:flex;gap:8px;flex-wrap:wrap;}
+.ctrl{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:24px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease;}
+.ctrl:hover{background:rgba(255,255,255,.14);}
+.ctrl.active{background:var(--honey);border-color:var(--honey);}
+.ctrl-select{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L2 4h8z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:10px;}
+.ctrl-select option{background:var(--bark);color:#fff;}
+.refresh-btn{background:var(--honey);border:none;color:#fff;border-radius:24px;padding:9px 18px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;}
+.refresh-btn:hover{background:var(--honey-l);}
+
+/* ───── Main ───── */
+.main{max-width:1320px;margin:0 auto;padding:28px 24px 60px;}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px;margin-bottom:24px;}
+.kpi-card{background:var(--white);border:1.5px solid var(--wax);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden;}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent,var(--honey));}
+.kpi-label{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:var(--text-l);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.kpi-value{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:38px;line-height:1;color:var(--text);}
+.kpi-unit{font-family:'Syne',sans-serif;font-weight:500;font-size:16px;color:var(--text-m);margin-left:4px;}
+.kpi-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-l);margin-top:6px;letter-spacing:.02em;display:flex;align-items:center;gap:6px;}
+.kpi-trend{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:600;font-size:10px;background:var(--green-pale);color:var(--green-dark);}
+.kpi-trend.down{background:var(--red-pale);color:var(--red);}
+.kpi-trend.flat{background:var(--wax);color:var(--text-m);}
+
+/* Chart cards */
+.chart-row{display:grid;grid-template-columns:repeat(2, 1fr);gap:14px;margin-bottom:14px;}
+.chart-row.full{grid-template-columns:1fr;}
+.chart-card{background:var(--white);border:1.5px solid var(--wax);border-radius:var(--r);padding:20px 22px;}
+.chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.chart-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--text);}
+.chart-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-l);letter-spacing:.04em;}
+.chart-wrap{position:relative;height:260px;}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px dashed var(--wax);font-family:'Syne',sans-serif;font-size:12px;color:var(--text-m);}
+.legend-swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+
+/* Alerts */
+.alerts-card{background:var(--white);border:1.5px solid var(--wax);border-radius:var(--r);padding:22px 24px;margin-bottom:14px;}
+.alerts-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.alert{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--rs);background:var(--warm);border-left:4px solid var(--text-l);}
+.alert.info{border-left-color:var(--cool);background:#EAF1F6;}
+.alert.warning{border-left-color:var(--amber);background:var(--amber-pale);}
+.alert.critical{border-left-color:var(--red);background:var(--red-pale);}
+.alert-icon{font-size:18px;flex-shrink:0;}
+.alert-body{flex:1;min-width:0;}
+.alert-msg{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;color:var(--text);margin-bottom:2px;}
+.alert-meta{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-l);}
+.alert-sev{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:var(--white);}
+.alert.info .alert-sev{color:var(--cool);}
+.alert.warning .alert-sev{color:var(--amber);}
+.alert.critical .alert-sev{color:var(--red);}
+.alerts-empty{font-family:'Syne',sans-serif;font-size:14px;color:var(--text-l);font-style:italic;padding:24px;text-align:center;}
+
+/* Connectivity strip */
+.conn-strip{background:var(--white);border:1.5px solid var(--wax);border-radius:var(--r);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;}
+.conn-item{display:flex;flex-direction:column;gap:2px;}
+.conn-item .lbl{font-family:'Syne',sans-serif;font-weight:700;font-size:10px;color:var(--text-l);letter-spacing:.12em;text-transform:uppercase;}
+.conn-item .val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text);letter-spacing:.02em;}
+.conn-pill{padding:5px 10px;border-radius:14px;background:var(--green-pale);color:var(--green-dark);font-family:'Syne',sans-serif;font-weight:700;font-size:11px;}
+.conn-pill.warn{background:var(--amber-pale);color:var(--amber);}
+.conn-pill.bad{background:var(--red-pale);color:var(--red);}
+
+/* Footer note */
+.note{margin-top:18px;padding:18px 22px;background:var(--honey-pale);border:1px dashed var(--honey);border-radius:var(--r);font-family:'Syne',sans-serif;font-size:13px;color:var(--text-m);line-height:1.5;}
+.note strong{color:var(--text);font-weight:700;}
+.note code{font-family:'DM Mono',monospace;font-size:12px;background:rgba(200,115,10,.12);padding:1px 5px;border-radius:3px;color:var(--bark);}
+
+/* Responsive */
+@media (max-width:880px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .chart-row{grid-template-columns:1fr;}
+}
+@media (max-width:560px){
+  .kpi-strip{grid-template-columns:1fr;}
+  .header{padding:16px;}
+  .main{padding:18px 14px 40px;}
+  .chart-wrap{height:220px;}
+  .brand-text h1{font-size:18px;}
+  .controls{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- ───── Header ───── -->
+<div class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">📡</div>
+      <div class="brand-text">
+        <h1>HiveKeeper Telemetry</h1>
+        <div class="sub">Hive monitoring · Prototype</div>
+      </div>
+    </div>
+    <div class="controls">
+      <select class="ctrl-select" id="device-select"></select>
+      <button class="ctrl active" data-range="24">24h</button>
+      <button class="ctrl" data-range="72">72h</button>
+      <button class="ctrl" data-range="168">7d</button>
+      <button class="refresh-btn" id="refresh-btn">↻ Refresh</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───── Main ───── -->
+<div class="main">
+
+  <!-- KPI strip -->
+  <div class="kpi-strip" id="kpi-strip"></div>
+
+  <!-- Charts -->
+  <div class="chart-row full">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Temperature & Humidity</div>
+        <div class="chart-meta" id="temp-meta"></div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-temp"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="legend-swatch" style="background:#C8730A"></span>Temperature (°C)</span>
+        <span><span class="legend-swatch" style="background:#2C7A9C"></span>Humidity (%)</span>
+        <span><span class="legend-swatch" style="background:#1F5234"></span>Brood target band (33-36°C)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Battery & Solar</div>
+        <div class="chart-meta" id="batt-meta"></div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-batt"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="legend-swatch" style="background:#2A7A48"></span>Battery (V)</span>
+        <span><span class="legend-swatch" style="background:#E8960C"></span>Solar (V)</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Acoustic activity</div>
+        <div class="chart-meta" id="acou-meta"></div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-acou"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="legend-swatch" style="background:#3A6B4A"></span>Sound avg</span>
+        <span><span class="legend-swatch" style="background:#D97A6F"></span>Sound peak</span>
+        <span><span class="legend-swatch" style="background:#B83228;border-radius:50%"></span>Anomaly</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-row full">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Acoustic frequency bands</div>
+        <div class="chart-meta">Normalised energy 0-1 · low/mid/high band split</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart-bands"></canvas></div>
+      <div class="chart-legend">
+        <span><span class="legend-swatch" style="background:#6B3FA0"></span>Low band</span>
+        <span><span class="legend-swatch" style="background:#C8730A"></span>Mid band</span>
+        <span><span class="legend-swatch" style="background:#B83228"></span>High band</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connectivity strip -->
+  <div class="conn-strip" id="conn-strip"></div>
+
+  <!-- Alerts -->
+  <div class="alerts-card" style="margin-top:14px">
+    <div class="chart-header" style="margin-bottom:0">
+      <div class="chart-title">Alerts</div>
+      <div class="chart-meta" id="alerts-meta"></div>
+    </div>
+    <div class="alerts-list" id="alerts-list"></div>
+  </div>
+
+  <div class="note">
+    <strong>Currently using mock data.</strong> To wire this to your Supabase, replace <code>fetchTelemetry()</code>
+    and <code>fetchAlerts()</code> in the JS (marked with comments) with Supabase client calls.
+    The mock generator produces realistic patterns: brood ~34.5°C with daily variation, battery drift
+    with solar recovery, foraging-hour acoustic peaks, and ~2% anomaly rate. Refresh re-rolls the noise.
+  </div>
+
+</div>
+
+<script>
+// ============================================================================
+// CONFIG
+// ============================================================================
+const DEVICES = [
+  { device_id: 'HK-DEV-0001', hive_id: 'nene-row1-h1', label: 'Row 1 · Hive 1 (Nene Valley)' },
+  { device_id: 'HK-DEV-0002', hive_id: 'nene-row1-h2', label: 'Row 1 · Hive 2 (Nene Valley)' },
+  { device_id: 'HK-DEV-0003', hive_id: 'brigstock-h1',  label: 'Brigstock Home · Hive 1' },
+];
+
+let currentDevice = DEVICES[0];
+let currentRange  = 24;
+let charts = {};
+
+// ============================================================================
+// DATA SOURCE
+// ----------------------------------------------------------------------------
+// Currently returns mock data. TO USE LIVE SUPABASE DATA:
+//
+// PREREQUISITE — one-time Supabase Dashboard step:
+//   Project Settings → API → Exposed schemas → add 'telemetry'
+//   Without this, PostgREST returns 404 on telemetry.* tables.
+//
+//   import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js'
+//
+//   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+//     db: { schema: 'telemetry' }   // <-- targets the telemetry schema by default
+//   });
+//
+//   // Alternative: keep the default 'public' schema and switch per-query:
+//   //   supabase.schema('telemetry').from('hive_telemetry').select(...)
+//
+//   async function fetchTelemetry(device, hoursBack) {
+//     const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
+//     const { data, error } = await supabase
+//       .from('hive_telemetry')          // resolves to telemetry.hive_telemetry
+//       .select('*')
+//       .eq('device_id', device.device_id)
+//       .gte('recorded_at', since)
+//       .order('recorded_at', { ascending: true });
+//     if (error) console.error(error);
+//     return data || [];
+//   }
+//
+//   async function fetchAlerts(device, hoursBack) {
+//     const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
+//     const { data, error } = await supabase
+//       .from('hive_alerts')             // resolves to telemetry.hive_alerts
+//       .select('*')
+//       .eq('device_id', device.device_id)
+//       .gte('triggered_at', since)
+//       .order('triggered_at', { ascending: false });
+//     if (error) console.error(error);
+//     return data || [];
+//   }
+// ============================================================================
+async function fetchTelemetry(device, hoursBack){
+  return generateMockTelemetry(device, hoursBack);
+}
+async function fetchAlerts(device, hoursBack){
+  return generateMockAlerts(device, hoursBack);
+}
+
+// ============================================================================
+// MOCK DATA GENERATION
+// ============================================================================
+function seededRandom(seed){
+  // Lightweight seeded PRNG so each device feels different
+  let s = seed;
+  return function(){
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function generateMockTelemetry(device, hoursBack){
+  const data = [];
+  const now = new Date();
+  const seed = device.device_id.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const rng = seededRandom(seed + Math.floor(Date.now()/30000)); // re-seed per refresh
+
+  for (let h = hoursBack; h >= 0; h--){
+    const ts = new Date(now.getTime() - h * 3600 * 1000);
+    const hourOfDay = ts.getHours();
+    const dayPhase = Math.sin((hourOfDay - 6) / 24 * 2 * Math.PI); // -1 night, +1 noon
+
+    // Brood temp ~34.5°C, slight daily variation, small drift
+    const tempBase = 34.5 + dayPhase * 0.3;
+    const temperature_c = tempBase + (rng() - 0.5) * 0.4;
+
+    // Humidity 50-65%, inverse to daylight
+    const humidity_percent = 60 - dayPhase * 5 + (rng() - 0.5) * 4;
+
+    // Battery: long-term slow drift down, daily solar recovery
+    const totalProgress = (hoursBack - h) / hoursBack;
+    const baseBattery = 12.5 - totalProgress * 0.15;
+    const solarBoost  = Math.max(0, dayPhase) * 0.35;
+    const battery_voltage = baseBattery + solarBoost - 0.25 + (rng() - 0.5) * 0.08;
+    const battery_percent = Math.min(100, Math.max(15, ((battery_voltage - 10.5) / 3) * 100));
+    const solar_voltage   = Math.max(0, dayPhase) * (4.5 + rng() * 0.8);
+    const charging_status = solar_voltage > 1.0;
+
+    // Acoustic: foraging hours 10-17 louder
+    const isForage = hourOfDay >= 10 && hourOfDay <= 17;
+    const sound_level_avg  = Math.round((isForage ? 65 + rng()*18 : 32 + rng()*12));
+    const sound_level_peak = Math.round(sound_level_avg + 10 + rng()*18);
+    const dominant_frequency_hz = +(250 + rng()*80 - 40).toFixed(2);
+
+    const low_band_energy  = +(isForage ? 0.30 + rng()*0.20 : 0.10 + rng()*0.08).toFixed(4);
+    const mid_band_energy  = +(isForage ? 0.48 + rng()*0.20 : 0.20 + rng()*0.10).toFixed(4);
+    const high_band_energy = +(isForage ? 0.18 + rng()*0.10 : 0.05 + rng()*0.05).toFixed(4);
+
+    const acoustic_score = Math.round(65 + rng()*25);
+    const anomaly_flag = rng() < 0.025;
+
+    const signal_rssi   = Math.round(-78 + rng()*15 - 8);
+    const signal_snr    = +(7 + rng()*4).toFixed(2);
+    const packets_sent  = 48 + Math.floor(rng()*4);
+    const packets_failed = rng() < 0.1 ? Math.floor(rng()*3) : 0;
+
+    data.push({
+      device_id: device.device_id,
+      hive_id: device.hive_id,
+      recorded_at: ts,
+      temperature_c: +temperature_c.toFixed(2),
+      humidity_percent: +humidity_percent.toFixed(2),
+      battery_voltage: +battery_voltage.toFixed(2),
+      battery_percent: +battery_percent.toFixed(1),
+      solar_voltage: +solar_voltage.toFixed(2),
+      charging_status,
+      sound_level_avg, sound_level_peak,
+      dominant_frequency_hz,
+      low_band_energy, mid_band_energy, high_band_energy,
+      acoustic_score, anomaly_flag,
+      signal_rssi, signal_snr,
+      packets_sent, packets_failed,
+    });
+  }
+  return data;
+}
+
+function generateMockAlerts(device, hoursBack){
+  const telemetry = generateMockTelemetry(device, hoursBack);
+  const alerts = [];
+  telemetry.forEach(t => {
+    if (t.battery_voltage < 11.6){
+      alerts.push({type:'low_battery', severity:'warning',
+        message:`Battery dropped to ${t.battery_voltage.toFixed(2)}V`,
+        triggered_at:t.recorded_at});
+    }
+    if (t.battery_voltage < 11.0){
+      alerts.push({type:'low_battery_critical', severity:'critical',
+        message:`Battery critical: ${t.battery_voltage.toFixed(2)}V — device may go offline`,
+        triggered_at:t.recorded_at});
+    }
+    if (t.temperature_c > 36){
+      alerts.push({type:'high_temp', severity:'critical',
+        message:`Brood overheating at ${t.temperature_c.toFixed(1)}°C`,
+        triggered_at:t.recorded_at});
+    }
+    if (t.temperature_c < 32 && new Date(t.recorded_at).getHours() < 22){
+      alerts.push({type:'low_temp', severity:'warning',
+        message:`Brood below target: ${t.temperature_c.toFixed(1)}°C`,
+        triggered_at:t.recorded_at});
+    }
+    if (t.anomaly_flag){
+      alerts.push({type:'acoustic_anomaly', severity:'info',
+        message:'Unusual acoustic signature detected',
+        triggered_at:t.recorded_at});
+    }
+    if (t.packets_failed > 1){
+      alerts.push({type:'comms_degraded', severity:'info',
+        message:`${t.packets_failed} packets failed in last cycle`,
+        triggered_at:t.recorded_at});
+    }
+  });
+  // Sort newest first, cap at 15
+  return alerts.sort((a,b)=>new Date(b.triggered_at)-new Date(a.triggered_at)).slice(0,15);
+}
+
+// ============================================================================
+// RENDERING
+// ============================================================================
+function formatTimeLabel(d){
+  const dt = new Date(d);
+  return dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' · ' +
+         dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+}
+
+function formatShortTime(d){
+  const dt = new Date(d);
+  return dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function trendBadge(curr, prev){
+  if (prev == null) return '<span class="kpi-trend flat">—</span>';
+  const diff = curr - prev;
+  if (Math.abs(diff) < 0.05) return '<span class="kpi-trend flat">flat</span>';
+  if (diff > 0) return `<span class="kpi-trend">▲ ${diff.toFixed(2)}</span>`;
+  return `<span class="kpi-trend down">▼ ${Math.abs(diff).toFixed(2)}</span>`;
+}
+
+function renderKPIs(telemetry){
+  if (!telemetry.length) return;
+  const latest = telemetry[telemetry.length-1];
+  const previous = telemetry.length > 1 ? telemetry[telemetry.length-2] : null;
+
+  const cards = [
+    {label:'Brood temperature', value:latest.temperature_c.toFixed(1), unit:'°C',
+     accent:'var(--honey)',
+     meta:`${formatShortTime(latest.recorded_at)} · ${trendBadge(latest.temperature_c, previous?.temperature_c)}`},
+    {label:'Humidity', value:latest.humidity_percent.toFixed(0), unit:'%',
+     accent:'var(--cool)',
+     meta:`${formatShortTime(latest.recorded_at)} · ${trendBadge(latest.humidity_percent, previous?.humidity_percent)}`},
+    {label:'Battery', value:latest.battery_percent.toFixed(0), unit:'%',
+     accent: latest.battery_voltage < 11.5 ? 'var(--red)' : 'var(--green)',
+     meta:`${latest.battery_voltage.toFixed(2)}V · ${latest.charging_status?'⚡ charging':'on battery'}`},
+    {label:'Acoustic score', value:latest.acoustic_score, unit:'/100',
+     accent:'var(--forest-l)',
+     meta:`Peak ${latest.sound_level_peak} · dom. ${latest.dominant_frequency_hz.toFixed(0)}Hz`},
+  ];
+
+  document.getElementById('kpi-strip').innerHTML = cards.map(c => `
+    <div class="kpi-card" style="--accent:${c.accent}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}<span class="kpi-unit">${c.unit}</span></div>
+      <div class="kpi-meta">${c.meta}</div>
+    </div>`).join('');
+}
+
+function renderConnectivity(telemetry){
+  if (!telemetry.length) return;
+  const latest = telemetry[telemetry.length-1];
+  const rssiPill = latest.signal_rssi > -75 ? 'good' :
+                   latest.signal_rssi > -90 ? 'warn' : 'bad';
+  const rssiText = latest.signal_rssi > -75 ? 'Strong' :
+                   latest.signal_rssi > -90 ? 'OK'     : 'Weak';
+  const totalSent = telemetry.reduce((a,t)=>a+(t.packets_sent||0),0);
+  const totalFail = telemetry.reduce((a,t)=>a+(t.packets_failed||0),0);
+  const lossPct = totalSent ? ((totalFail/totalSent)*100).toFixed(1) : 0;
+
+  document.getElementById('conn-strip').innerHTML = `
+    <div class="conn-item"><span class="lbl">RSSI</span><span class="val">${latest.signal_rssi} dBm <span class="conn-pill ${rssiPill==='good'?'':rssiPill}">${rssiText}</span></span></div>
+    <div class="conn-item"><span class="lbl">SNR</span><span class="val">${latest.signal_snr} dB</span></div>
+    <div class="conn-item"><span class="lbl">Packets (window)</span><span class="val">${totalSent} sent · ${totalFail} failed (${lossPct}%)</span></div>
+    <div class="conn-item"><span class="lbl">Last reading</span><span class="val">${formatTimeLabel(latest.recorded_at)}</span></div>
+  `;
+}
+
+function renderAlerts(alerts){
+  const list = document.getElementById('alerts-list');
+  const meta = document.getElementById('alerts-meta');
+  const counts = {critical:0, warning:0, info:0};
+  alerts.forEach(a => counts[a.severity]++);
+  meta.textContent = `${counts.critical} critical · ${counts.warning} warning · ${counts.info} info`;
+
+  if (!alerts.length){
+    list.innerHTML = '<div class="alerts-empty">No alerts in this window — all healthy.</div>';
+    return;
+  }
+  const icons = {info:'ℹ️', warning:'⚠️', critical:'🚨'};
+  list.innerHTML = alerts.map(a => `
+    <div class="alert ${a.severity}">
+      <div class="alert-icon">${icons[a.severity]||'•'}</div>
+      <div class="alert-body">
+        <div class="alert-msg">${a.message}</div>
+        <div class="alert-meta">${a.type} · ${formatTimeLabel(a.triggered_at)}</div>
+      </div>
+      <div class="alert-sev">${a.severity}</div>
+    </div>`).join('');
+}
+
+// Chart common config
+function commonChartOpts(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index', intersect:false},
+    plugins:{
+      legend:{display:false},
+      tooltip:{
+        backgroundColor:'#1A1208', titleColor:'#FFF4DC', bodyColor:'#fff',
+        titleFont:{family:'Syne',weight:700,size:12},
+        bodyFont:{family:'DM Mono',size:11},
+        padding:10, borderColor:'#C8730A', borderWidth:1, displayColors:true,
+      },
+    },
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60', maxRotation:0, autoSkipPadding:20}},
+      y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60'}},
+    },
+  };
+}
+
+function destroyCharts(){
+  Object.values(charts).forEach(c => c && c.destroy());
+  charts = {};
+}
+
+function renderCharts(telemetry){
+  destroyCharts();
+  const labels = telemetry.map(t => formatShortTime(t.recorded_at));
+
+  // Temperature & Humidity (dual axis)
+  charts.temp = new Chart(document.getElementById('chart-temp'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Temperature (°C)', data:telemetry.map(t=>t.temperature_c), borderColor:'#C8730A', backgroundColor:'rgba(200,115,10,0.08)', borderWidth:2, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:4, yAxisID:'y'},
+      {label:'Humidity (%)', data:telemetry.map(t=>t.humidity_percent), borderColor:'#2C7A9C', borderWidth:2, borderDash:[4,3], tension:0.3, pointRadius:0, pointHoverRadius:4, yAxisID:'y1'},
+    ]},
+    options:{...commonChartOpts(),
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60', maxRotation:0, autoSkipPadding:20}},
+        y:{position:'left', grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#C8730A', callback:v=>v+'°'}, title:{display:false}, suggestedMin:30, suggestedMax:38},
+        y1:{position:'right', grid:{display:false}, ticks:{font:{family:'DM Mono',size:10}, color:'#2C7A9C', callback:v=>v+'%'}, suggestedMin:30, suggestedMax:80},
+      }}
+  });
+
+  // Battery & Solar
+  charts.batt = new Chart(document.getElementById('chart-batt'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Battery (V)', data:telemetry.map(t=>t.battery_voltage), borderColor:'#2A7A48', backgroundColor:'rgba(42,122,72,0.10)', borderWidth:2, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:4},
+      {label:'Solar (V)', data:telemetry.map(t=>t.solar_voltage), borderColor:'#E8960C', borderWidth:2, tension:0.3, pointRadius:0, pointHoverRadius:4},
+    ]},
+    options:{...commonChartOpts(),
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60', maxRotation:0, autoSkipPadding:20}},
+        y:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60', callback:v=>v+'V'}, suggestedMin:0, suggestedMax:14},
+      }}
+  });
+
+  // Acoustic levels (avg + peak) with anomaly markers
+  const anomalyPoints = telemetry.map(t => t.anomaly_flag ? t.sound_level_peak + 6 : null);
+  charts.acou = new Chart(document.getElementById('chart-acou'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Sound peak', data:telemetry.map(t=>t.sound_level_peak), borderColor:'#D97A6F', borderWidth:1.5, tension:0.25, pointRadius:0, pointHoverRadius:4},
+      {label:'Sound avg', data:telemetry.map(t=>t.sound_level_avg), borderColor:'#3A6B4A', backgroundColor:'rgba(58,107,74,0.12)', borderWidth:2, fill:true, tension:0.25, pointRadius:0, pointHoverRadius:4},
+      {label:'Anomaly', data:anomalyPoints, type:'scatter', backgroundColor:'#B83228', borderColor:'#B83228', pointRadius:6, pointStyle:'crossRot', showLine:false},
+    ]},
+    options:commonChartOpts()
+  });
+
+  // Frequency bands (stacked area)
+  charts.bands = new Chart(document.getElementById('chart-bands'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Low band',  data:telemetry.map(t=>t.low_band_energy),  borderColor:'#6B3FA0', backgroundColor:'rgba(107,63,160,0.35)', borderWidth:1.5, fill:true, tension:0.3, pointRadius:0},
+      {label:'Mid band',  data:telemetry.map(t=>t.mid_band_energy),  borderColor:'#C8730A', backgroundColor:'rgba(200,115,10,0.35)', borderWidth:1.5, fill:true, tension:0.3, pointRadius:0},
+      {label:'High band', data:telemetry.map(t=>t.high_band_energy), borderColor:'#B83228', backgroundColor:'rgba(184,50,40,0.35)', borderWidth:1.5, fill:true, tension:0.3, pointRadius:0},
+    ]},
+    options:{...commonChartOpts(),
+      scales:{
+        x:{grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60', maxRotation:0, autoSkipPadding:20}},
+        y:{stacked:true, grid:{color:'rgba(0,0,0,0.04)'}, ticks:{font:{family:'DM Mono',size:10}, color:'#8A7A60'}, min:0, max:1.2},
+      }}
+  });
+
+  // Metadata strings
+  const avgTemp = (telemetry.reduce((a,t)=>a+t.temperature_c,0)/telemetry.length).toFixed(1);
+  const avgHum = (telemetry.reduce((a,t)=>a+t.humidity_percent,0)/telemetry.length).toFixed(0);
+  document.getElementById('temp-meta').textContent = `Avg ${avgTemp}°C · ${avgHum}% over window`;
+  const minBatt = Math.min(...telemetry.map(t=>t.battery_voltage)).toFixed(2);
+  const maxBatt = Math.max(...telemetry.map(t=>t.battery_voltage)).toFixed(2);
+  document.getElementById('batt-meta').textContent = `Battery range ${minBatt}–${maxBatt}V`;
+  const anomCount = telemetry.filter(t=>t.anomaly_flag).length;
+  document.getElementById('acou-meta').textContent = `${anomCount} acoustic anomalies in window`;
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+async function refresh(){
+  const telemetry = await fetchTelemetry(currentDevice, currentRange);
+  const alerts = await fetchAlerts(currentDevice, currentRange);
+  renderKPIs(telemetry);
+  renderCharts(telemetry);
+  renderConnectivity(telemetry);
+  renderAlerts(alerts);
+}
+
+// Populate device selector
+const deviceSel = document.getElementById('device-select');
+DEVICES.forEach(d => {
+  const opt = document.createElement('option');
+  opt.value = d.device_id;
+  opt.textContent = d.label;
+  deviceSel.appendChild(opt);
+});
+deviceSel.addEventListener('change', e => {
+  currentDevice = DEVICES.find(d => d.device_id === e.target.value);
+  refresh();
+});
+
+// Time range buttons
+document.querySelectorAll('.ctrl[data-range]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ctrl[data-range]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRange = parseInt(btn.dataset.range);
+    refresh();
+  });
+});
+
+// Refresh button
+document.getElementById('refresh-btn').addEventListener('click', refresh);
+
+// Initial
+refresh();
+</script>
+
+</body>
+</html>
