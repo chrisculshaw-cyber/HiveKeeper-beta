@@ -260,6 +260,58 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
 .hive-list-item{margin:0 20px 8px;background:var(--white);border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid var(--wax);box-shadow:var(--shadow);cursor:pointer;transition:all .2s}
 .hive-list-item:active{transform:scale(.98);background:var(--honey-pale)}
 .hive-list-item.dead{background:#F8F8F8;border-color:#E0E0E0}
+/* 9 May 2026 Phase 4ce-14a — inspection status strip.
+   Dave Townend's request: show on each hive card how many days since last
+   inspection AND the next forecast inspection opportunity. Strip sits at
+   the bottom of the card, white background matching body, separated by
+   a thin top border. Overdue (>10 days since last inspection) gets a
+   2px red border around the entire card. Strip is suppressed for
+   empty/dead/unclear hives — not relevant info for those states.
+   Card switches to flex-direction:column when it has a strip so the
+   strip stretches full width below the main row. */
+.hive-list-item.has-ins-strip{
+  flex-direction:column;
+  align-items:stretch;
+  padding:0;
+}
+.hive-list-item.has-ins-strip .hive-list-item-main{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+}
+.hive-list-item.overdue{
+  border:2px solid #C62828;
+}
+.ins-strip{
+  border-top:1px solid rgba(0,0,0,.1);
+  padding:9px 14px;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  color:var(--text-m);
+  font-weight:600;
+  border-radius:0 0 var(--rs) var(--rs);
+}
+.ins-strip-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:1;
+  min-width:0;
+}
+.ins-strip-item.right{justify-content:flex-end}
+.ins-strip-item strong{color:var(--text);font-weight:700}
+.ins-strip-item.warn strong{color:#C62828}
+.ins-strip-item.good strong{color:#2E7D32}
+.ins-strip-divider{
+  width:1px;
+  align-self:stretch;
+  background:rgba(0,0,0,.08);
+}
 .hive-list-icon{font-size:22px;flex-shrink:0;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;}
 .hive-list-info{flex:1;min-width:0}
 .hive-list-name{font-size:13px;font-weight:700;color:var(--text)}
@@ -9759,10 +9811,12 @@ function renderApiary(){
     if (h.varroaLevel === 'medium') alerts.push({ icon: '&#x1F7E0;', label: 'Varroa', colour: '#E65100' });
     // Stores
     if (h.storesLevel === 'low') alerts.push({ icon: '&#x1F37F;', label: 'Low stores', colour: '#F57F17' });
-    // Inspection overdue (>14 days)
+    // 9 May 2026 Phase 4ce-14a — removed the old "Not inspected" alert badge.
+    // The bottom inspection strip (added this phase) carries days-since-last
+    // information more clearly. Compute daysSinceInsp here only to determine
+    // the overdue class on the card.
     var lastInspArr = loadInspections().filter(function(i){ return i.hiveId === h.id; }).sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
     var daysSinceInsp = lastInspArr.length ? Math.floor((Date.now() - lastInspArr[0].inspectedAt) / 86400000) : 999;
-    if (daysSinceInsp > 14) alerts.push({ icon: '&#x1F4CB;', label: daysSinceInsp > 99 ? 'Not inspected' : daysSinceInsp + 'd ago', colour: '#5F5E5A' });
         const alertsHTML = alerts.length ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">' + alerts.map(a =>
       '<span style="font-size:10px;padding:2px 6px;background:' + a.colour + '15;border:1px solid ' + a.colour + '40;border-radius:20px;color:' + a.colour + ';font-weight:600;">' + a.icon + ' ' + a.label + '</span>'
     ).join('') + '</div>' : '';
@@ -9795,31 +9849,54 @@ function renderApiary(){
         }
       }
     } catch(e) {}
-    return `
-      <div class="hive-list-item ${isDead?'dead':''}" data-hiveid="${h.id}" onclick="highlightHiveOnMap('${h.id}')" ondblclick="viewHive('${h.id}')">
-        ${dragHandle}
-        <div class="hive-list-icon" style="position:relative;">
-          ${h.coverPhoto ? '<img src="' + h.coverPhoto + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)}
-          <div onclick="event.stopPropagation();handleHivePhotoTap('${h.id}')" title="Hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>
-        </div>
-        <div class="hive-list-info">
-          <div class="hive-list-name" style="${isDead?'color:#9E9E9E;':''}">${h.name}${honeyBadge}</div>
-          <div class="hive-list-meta">${metaText}</div>
-          ${alertsHTML}
-        </div>
-        <div class="hive-list-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          ${(function(){
+    return (function(){
+      // 9 May 2026 Phase 4ce-14a — compute strip + outer modifiers.
+      var stripHtml = renderInspectionStrip(h);
+      var outerClasses = 'hive-list-item';
+      if (isDead) outerClasses += ' dead';
+      if (stripHtml) {
+        outerClasses += ' has-ins-strip';
+        // Overdue: only mark when active AND >10 days since last (or never inspected)
+        var isOverdueForBorder = (h.status === 'active' || !h.status) && daysSinceInsp > 10;
+        if (isOverdueForBorder && lastInspArr.length) outerClasses += ' overdue';
+      }
+      var mainContent =
+        dragHandle +
+        '<div class="hive-list-icon" style="position:relative;">' +
+          (h.coverPhoto ? '<img src="' + h.coverPhoto + '" style="width:44px;height:44px;object-fit:cover;border-radius:8px;display:block;">' : getHiveIcon(h)) +
+          '<div onclick="event.stopPropagation();handleHivePhotoTap(\'' + h.id + '\')" title="Hive photo" style="position:absolute;bottom:-4px;right:-4px;background:var(--honey);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:2px solid white;">📷</div>' +
+        '</div>' +
+        '<div class="hive-list-info">' +
+          '<div class="hive-list-name" style="' + (isDead?'color:#9E9E9E;':'') + '">' + h.name + honeyBadge + '</div>' +
+          '<div class="hive-list-meta">' + metaText + '</div>' +
+          alertsHTML +
+        '</div>' +
+        '<div class="hive-list-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' +
+          (function(){
             var hiveInsps = loadInspections().filter(function(i){ return i.hiveId === h.id && i.photoUrls && i.photoUrls.length; }).sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
             if (!hiveInsps.length) return '';
             var url = hiveInsps[0].photoUrls[0];
             return '<img src="' + url + '" onclick="event.stopPropagation();window.open(\'' + url + '\',\'_blank\')" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--wax);cursor:pointer;" title="Latest frame photo">';
-          })()}
-          <div class="badge ${badge.cls}">${badge.text}</div>
-          <button onclick="event.stopPropagation();viewHive('${h.id}')" style="background:var(--honey);border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap;">Open hive</button>
-        </div>
-      </div>
-    `;
+          })() +
+          '<div class="badge ' + badge.cls + '">' + badge.text + '</div>' +
+          '<button onclick="event.stopPropagation();viewHive(\'' + h.id + '\')" style="background:var(--honey);border:none;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:white;cursor:pointer;font-family:Syne,sans-serif;white-space:nowrap;">Open hive</button>' +
+        '</div>';
+
+      if (stripHtml) {
+        return '<div class="' + outerClasses + '" data-hiveid="' + h.id + '" onclick="highlightHiveOnMap(\'' + h.id + '\')" ondblclick="viewHive(\'' + h.id + '\')">'
+          + '<div class="hive-list-item-main">' + mainContent + '</div>'
+          + stripHtml
+          + '</div>';
+      }
+      return '<div class="' + outerClasses + '" data-hiveid="' + h.id + '" onclick="highlightHiveOnMap(\'' + h.id + '\')" ondblclick="viewHive(\'' + h.id + '\')">' + mainContent + '</div>';
+    })();
   }).join('');
+  // 9 May 2026 Phase 4ce-14a — async populate the "Next good day" labels
+  // in each inspection strip. DOM has just been rewritten by innerHTML above,
+  // so setTimeout(0) lets the browser paint the placeholders before the
+  // forecast fetch resolves. Fire-and-forget — strip shows "Checking forecast..."
+  // until the label arrives, then updates to "Next: <day>" or "No good days".
+  setTimeout(function(){ try { populateForecastLabels(); } catch(e) {} }, 0);
   // Alerts & seasonal tips below hive list
   var apiaryAlertsEl = document.getElementById('apiary-alerts-container');
   if (apiaryAlertsEl) {
@@ -14459,7 +14536,109 @@ async function fetchForecast14d() {
   return _forecastInflight;
 }
 
-// Render the home page's expandable forecast body. Shows next 7 days.
+// 9 May 2026 Phase 4ce-14a — helpers for the per-hive inspection status strip.
+// Dave Townend's request: each hive card shows "X days ago" + "Next: Sat 11 May".
+
+// Returns the number of full days since the hive's most recent inspection,
+// or null if the hive has never been inspected. Reads from existing
+// localStorage records via loadInspections() — no schema change.
+function getDaysSinceLastInspection(hiveId) {
+  try {
+    var insps = loadInspections().filter(function(i){ return i.hiveId === hiveId; });
+    if (!insps.length) return null;
+    insps.sort(function(a,b){ return b.inspectedAt - a.inspectedAt; });
+    var ms = Date.now() - insps[0].inspectedAt;
+    return Math.floor(ms / 86400000);
+  } catch(e) { return null; }
+}
+
+// Given a forecast14d response, returns a human label for the next good
+// day to inspect, e.g. "today", "tomorrow", "Sat 11 May", or null if
+// no good days are forecast in the window. Uses flyingVerdict() so the
+// criteria match the calendar page exactly.
+function getNextGoodDayLabel(forecastData) {
+  try {
+    var d = forecastData && forecastData.daily;
+    if (!d || !d.time || !d.temperature_2m_max) return null;
+    var todayStr = new Date().toISOString().slice(0,10);
+    var todayIdx = d.time.indexOf(todayStr);
+    if (todayIdx < 0) todayIdx = 0;
+    var weekDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    for (var i = todayIdx; i < d.time.length && i < todayIdx + 14; i++) {
+      var verdict = flyingVerdict(
+        d.temperature_2m_max[i],
+        d.windspeed_10m_max[i],
+        d.precipitation_sum[i],
+        { rainThreshold: 1.0 }
+      );
+      if (verdict.cls === 'great' || verdict.cls === 'good') {
+        var offset = i - todayIdx;
+        if (offset === 0) return 'today';
+        if (offset === 1) return 'tomorrow';
+        var dt = new Date(d.time[i] + 'T12:00:00');
+        if (offset <= 6) return weekDays[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()];
+        return dt.getDate() + ' ' + months[dt.getMonth()];
+      }
+    }
+    return null;
+  } catch(e) { return null; }
+}
+
+// After renderApiary() runs, populate each card's inspection strip with the
+// "Next good day" label. Days-since is rendered synchronously inline by
+// renderApiary; the forecast label fills in async so the page renders
+// immediately without waiting for the network. Safe fallback: if forecast
+// is unavailable, the placeholder text "Checking forecast..." is replaced
+// with "Forecast unavailable" and the rest of the strip still works.
+async function populateForecastLabels() {
+  var slots = document.querySelectorAll('.ins-strip-forecast');
+  if (!slots.length) return;
+  var label = null;
+  try {
+    var data = await fetchForecast14d();
+    label = getNextGoodDayLabel(data);
+  } catch(e) {
+    label = null;
+  }
+  for (var i = 0; i < slots.length; i++) {
+    var el = slots[i];
+    if (label) {
+      el.innerHTML = '<span>\u2600\uFE0F</span> Next: <strong>' + label + '</strong>';
+    } else {
+      el.innerHTML = '<span>\uD83C\uDF27\uFE0F</span> <strong>No good days this week</strong>';
+    }
+  }
+}
+
+// Render the strip HTML for a single hive. Returns empty string if the hive
+// shouldn't have a strip (non-active status). Used inside renderApiary card
+// template.
+function renderInspectionStrip(h) {
+  if (h.status !== 'active' && h.status !== undefined && h.status !== '') return '';
+  // Treat missing status as active (legacy hives)
+  if (h.status && h.status !== 'active') return '';
+  var days = getDaysSinceLastInspection(h.id);
+  var daysHtml;
+  if (days === null) {
+    daysHtml = '<span>\uD83D\uDCCB</span> <strong>No inspection yet</strong>';
+  } else if (days === 0) {
+    daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>today</strong>';
+  } else if (days === 1) {
+    daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>yesterday</strong>';
+  } else if (days > 10) {
+    daysHtml = '<span>\u26A0\uFE0F</span> <strong>' + days + ' days \u00B7 overdue</strong>';
+  } else {
+    daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>' + days + ' days ago</strong>';
+  }
+  var daysClass = (days !== null && days > 10) ? 'ins-strip-item warn' : (days !== null && days <= 7) ? 'ins-strip-item good' : 'ins-strip-item';
+  return '<div class="ins-strip">'
+    + '<div class="' + daysClass + '">' + daysHtml + '</div>'
+    + '<div class="ins-strip-divider"></div>'
+    + '<div class="ins-strip-item right ins-strip-forecast"><span style="opacity:.5">\u23F3</span> Checking forecast\u2026</div>'
+  + '</div>';
+}
+
 async function renderHomeForecast() {
   var container = document.getElementById('weather-forecast-rows');
   if (!container) return;
@@ -21132,7 +21311,8 @@ function openApiarySwitcher() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">Switch apiary</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
-    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openManageApiaries()},200)" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">⚙️ Manage apiary</button>'
+    + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-apiary-switcher');
@@ -24440,7 +24620,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '8 May 2026 BST · Phase 4ce-13z — Pull from cloud button added to Data modal. Reported by Chris: hive detail pages showing "No inspections recorded yet" for hives that have inspections in Supabase (47 records confirmed in DB via audit). Root cause: localStorage cache out of sync with cloud — possibly from a long-ago wipe never refilled, or partial pull. Existing Sync to cloud button only PUSHES; no manual PULL was exposed in UI. Now both directions available. pullFromSupabase pre-pushes any local-only records before wiping local cache, so unsynced data is preserved. After pull, re-renders current screen so missing records appear. Phase 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction — but 36 phantom apiaries remain), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14a — Two visual improvements. (1) Hive-card inspection status strip (Dave Townend\'s request, designed via mockup iteration with Chris): each hive card on the apiary page now shows "Inspected X days ago" + "Next: <day>" in a white bottom strip. Days-since computed from existing inspection records. Forecast label uses fetchForecast14d() + flyingVerdict() to find the next day in the 14-day window where temp >= 12C, wind < 12mph, no significant rain — same criteria as the calendar page. Overdue (>10 days since last inspection) cards get a 2px red border around the entire card; warn-red strong text in the strip. Empty/dead/unclear hives suppress the strip entirely (not relevant info). Strip placeholder shows "Checking forecast..." until async fetch resolves, falls back to "No good days this week" if all 14 days are poor. The old "Not inspected" alert badge has been removed since the strip carries this info more clearly. (2) "Manage apiary" item added to the bottom of the apiary switcher modal — Chris\'s request: opens openManageApiaries() (rename/location/delete/add). Positioned above Share button for grouping with apiary-level actions. Phase 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG — found root cause), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction — 36 phantom apiaries still in DB), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
