@@ -9856,9 +9856,14 @@ function renderApiary(){
       if (isDead) outerClasses += ' dead';
       if (stripHtml) {
         outerClasses += ' has-ins-strip';
-        // Overdue: only mark when active AND >10 days since last (or never inspected)
-        var isOverdueForBorder = (h.status === 'active' || !h.status) && daysSinceInsp > 10;
-        if (isOverdueForBorder && lastInspArr.length) outerClasses += ' overdue';
+        // Overdue: days exceed cadence + 3 days grace (Phase 4ce-14b).
+        // Matches the renderInspectionStrip overdue threshold so border and
+        // strip warn-text appear together. Only mark when active AND has been
+        // inspected before (never-inspected uses createdAt-based logic in strip
+        // but doesn't get the red border — too aggressive on day-old hives).
+        var _stripCadence = getInspectionCadence();
+        var isOverdueForBorder = (h.status === 'active' || !h.status) && lastInspArr.length && daysSinceInsp > (_stripCadence + 3);
+        if (isOverdueForBorder) outerClasses += ' overdue';
       }
       var mainContent =
         dragHandle +
@@ -14538,6 +14543,33 @@ async function fetchForecast14d() {
 
 // 9 May 2026 Phase 4ce-14a — helpers for the per-hive inspection status strip.
 // Dave Townend's request: each hive card shows "X days ago" + "Next: Sat 11 May".
+// 9 May 2026 Phase 4ce-14b — extended with cadence-awareness. Strip now shows
+// "Due <date> — <weather verdict>" based on user-configurable inspection
+// cadence (default 7 days, bounds 1-21). Setting lives in the Manage Apiaries
+// modal as a single global value — per-apiary breakdown deferred to later.
+
+// Read the user's inspection cadence in days. Default 7. Bounded 1-21 on read
+// so an out-of-bounds value in localStorage doesn't break the strip logic.
+function getInspectionCadence() {
+  try {
+    var raw = localStorage.getItem('hk_inspection_cadence_days');
+    if (raw === null || raw === '') return 7;
+    var n = parseInt(raw, 10);
+    if (isNaN(n)) return 7;
+    if (n < 1) return 1;
+    if (n > 21) return 21;
+    return n;
+  } catch(e) { return 7; }
+}
+
+// Save the cadence value. Returns the saved value (after clamping).
+function setInspectionCadence(n) {
+  var v = parseInt(n, 10);
+  if (isNaN(v) || v < 1) v = 1;
+  if (v > 21) v = 21;
+  try { localStorage.setItem('hk_inspection_cadence_days', String(v)); } catch(e) {}
+  return v;
+}
 
 // Returns the number of full days since the hive's most recent inspection,
 // or null if the hive has never been inspected. Reads from existing
@@ -14552,20 +14584,54 @@ function getDaysSinceLastInspection(hiveId) {
   } catch(e) { return null; }
 }
 
-// Given a forecast14d response, returns a human label for the next good
-// day to inspect, e.g. "today", "tomorrow", "Sat 11 May", or null if
-// no good days are forecast in the window. Uses flyingVerdict() so the
-// criteria match the calendar page exactly.
-function getNextGoodDayLabel(forecastData) {
+// Format a date label given a day-offset from today. Returns "today",
+// "tomorrow", "Fri 16 May" (within 6 days), or "16 May" (beyond).
+function formatDayOffsetLabel(offsetDays) {
+  if (offsetDays === 0) return 'today';
+  if (offsetDays === 1) return 'tomorrow';
+  if (offsetDays === -1) return 'yesterday';
+  var weekDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dt = new Date(Date.now() + offsetDays * 86400000);
+  if (Math.abs(offsetDays) <= 6) return weekDays[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()];
+  return dt.getDate() + ' ' + months[dt.getMonth()];
+}
+
+// Given a forecast14d response and a day-offset from today (0=today, 1=tomorrow),
+// returns the flying verdict for that specific day. Used by the strip to show
+// "Due Fri — good" / "Due Fri — wet". Returns null if the date is beyond the
+// 14-day window or the forecast data is unavailable.
+function getForecastVerdictForDate(forecastData, daysFromToday) {
   try {
     var d = forecastData && forecastData.daily;
     if (!d || !d.time || !d.temperature_2m_max) return null;
     var todayStr = new Date().toISOString().slice(0,10);
     var todayIdx = d.time.indexOf(todayStr);
     if (todayIdx < 0) todayIdx = 0;
-    var weekDays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    for (var i = todayIdx; i < d.time.length && i < todayIdx + 14; i++) {
+    var i = todayIdx + daysFromToday;
+    if (i < 0 || i >= d.time.length) return null;
+    return flyingVerdict(
+      d.temperature_2m_max[i],
+      d.windspeed_10m_max[i],
+      d.precipitation_sum[i],
+      { rainThreshold: 1.0 }
+    );
+  } catch(e) { return null; }
+}
+
+// Given a forecast14d response and a starting day offset, returns the first
+// good day (cls 'great' or 'good') at or after that offset. Returns the
+// day offset as a number, or null if no good day found within 14 days.
+function getNextGoodDayOffset(forecastData, startOffset) {
+  startOffset = startOffset || 0;
+  try {
+    var d = forecastData && forecastData.daily;
+    if (!d || !d.time || !d.temperature_2m_max) return null;
+    var todayStr = new Date().toISOString().slice(0,10);
+    var todayIdx = d.time.indexOf(todayStr);
+    if (todayIdx < 0) todayIdx = 0;
+    for (var i = todayIdx + startOffset; i < d.time.length && i < todayIdx + 14; i++) {
+      if (i < 0) continue;
       var verdict = flyingVerdict(
         d.temperature_2m_max[i],
         d.windspeed_10m_max[i],
@@ -14573,52 +14639,113 @@ function getNextGoodDayLabel(forecastData) {
         { rainThreshold: 1.0 }
       );
       if (verdict.cls === 'great' || verdict.cls === 'good') {
-        var offset = i - todayIdx;
-        if (offset === 0) return 'today';
-        if (offset === 1) return 'tomorrow';
-        var dt = new Date(d.time[i] + 'T12:00:00');
-        if (offset <= 6) return weekDays[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()];
-        return dt.getDate() + ' ' + months[dt.getMonth()];
+        return i - todayIdx;
       }
     }
     return null;
   } catch(e) { return null; }
 }
 
+// Legacy helper retained for backward-compat. Use getNextGoodDayOffset() for
+// cadence-aware lookups.
+function getNextGoodDayLabel(forecastData) {
+  var off = getNextGoodDayOffset(forecastData, 0);
+  if (off === null) return null;
+  return formatDayOffsetLabel(off);
+}
+
 // After renderApiary() runs, populate each card's inspection strip with the
-// "Next good day" label. Days-since is rendered synchronously inline by
+// "Due <date> — <verdict>" or "Next: <day>" label depending on the strip's
+// data-due-offset attribute. Days-since is rendered synchronously inline by
 // renderApiary; the forecast label fills in async so the page renders
-// immediately without waiting for the network. Safe fallback: if forecast
-// is unavailable, the placeholder text "Checking forecast..." is replaced
-// with "Forecast unavailable" and the rest of the strip still works.
+// immediately without waiting for the network.
+// Phase 4ce-14b — was a single label; now per-strip lookup based on each
+// hive's due-offset.
 async function populateForecastLabels() {
   var slots = document.querySelectorAll('.ins-strip-forecast');
   if (!slots.length) return;
-  var label = null;
+  var data = null;
   try {
-    var data = await fetchForecast14d();
-    label = getNextGoodDayLabel(data);
-  } catch(e) {
-    label = null;
-  }
+    data = await fetchForecast14d();
+  } catch(e) { data = null; }
+
+  // Pre-compute the next-good-from-today offset once; used by all overdue strips.
+  var nextGoodFromTodayOffset = data ? getNextGoodDayOffset(data, 0) : null;
+
   for (var i = 0; i < slots.length; i++) {
     var el = slots[i];
-    if (label) {
-      el.innerHTML = '<span>\u2600\uFE0F</span> Next: <strong>' + label + '</strong>';
+    var offsetAttr = el.getAttribute('data-due-offset');
+    var html;
+
+    if (!data) {
+      // Forecast unavailable — show date only if we have an offset, else fallback.
+      if (offsetAttr === 'next-good-from-today' || offsetAttr === null) {
+        html = '<span style="opacity:.6">\u2601\uFE0F</span> Forecast unavailable';
+      } else {
+        var dueOff = parseInt(offsetAttr, 10);
+        if (isNaN(dueOff)) {
+          html = '<span style="opacity:.6">\u2601\uFE0F</span> Forecast unavailable';
+        } else {
+          html = '<span style="opacity:.6">\u2601\uFE0F</span> Due <strong>' + formatDayOffsetLabel(dueOff) + '</strong>';
+        }
+      }
+    } else if (offsetAttr === 'next-good-from-today') {
+      // Overdue strip — find next good day from today.
+      if (nextGoodFromTodayOffset === null) {
+        html = '<span>\uD83C\uDF27\uFE0F</span> <strong>No good days this week</strong>';
+      } else {
+        html = '<span>\u2600\uFE0F</span> Next: <strong>' + formatDayOffsetLabel(nextGoodFromTodayOffset) + '</strong>';
+      }
     } else {
-      el.innerHTML = '<span>\uD83C\uDF27\uFE0F</span> <strong>No good days this week</strong>';
+      var off = parseInt(offsetAttr, 10);
+      if (isNaN(off)) {
+        html = '<span style="opacity:.6">\u2601\uFE0F</span> Forecast unavailable';
+      } else {
+        // Show verdict for the due date.
+        var verdict = getForecastVerdictForDate(data, off);
+        var dueLabel = formatDayOffsetLabel(off);
+        if (verdict === null) {
+          // Beyond 14-day window
+          html = '<span style="opacity:.6">\u2601\uFE0F</span> Due <strong>' + dueLabel + '</strong>';
+        } else {
+          html = '<span>' + verdict.icon + '</span> Due <strong>' + dueLabel + '</strong> \u2014 ' + verdict.label.toLowerCase();
+        }
+      }
     }
+    el.innerHTML = html;
   }
 }
 
+
 // Render the strip HTML for a single hive. Returns empty string if the hive
 // shouldn't have a strip (non-active status). Used inside renderApiary card
-// template.
+// template. Cadence-aware (Phase 4ce-14b) — strip's right side shows the due
+// date and the weather verdict for that date, not just "next good day."
 function renderInspectionStrip(h) {
-  if (h.status !== 'active' && h.status !== undefined && h.status !== '') return '';
-  // Treat missing status as active (legacy hives)
   if (h.status && h.status !== 'active') return '';
+  var cadence = getInspectionCadence();
   var days = getDaysSinceLastInspection(h.id);
+
+  // Compute effective due offset (days from today until due).
+  // Never-inspected hives use createdAt + cadence; if createdAt missing, due now.
+  var dueOffset;
+  if (days === null) {
+    if (h.createdAt) {
+      var daysSinceCreated = Math.floor((Date.now() - h.createdAt) / 86400000);
+      dueOffset = cadence - daysSinceCreated;
+    } else {
+      dueOffset = 0; // treat as due now
+    }
+  } else {
+    dueOffset = cadence - days;
+  }
+
+  // Determine state class for the strip's right side.
+  // Overdue threshold: cadence + 3 (e.g. cadence 7 → overdue at 11+).
+  var overdueDays = (days !== null && days > cadence + 3);
+  var isDue = (dueOffset <= 0 && !overdueDays);
+
+  // ── Left side: days-since narrative ──
   var daysHtml;
   if (days === null) {
     daysHtml = '<span>\uD83D\uDCCB</span> <strong>No inspection yet</strong>';
@@ -14626,18 +14753,38 @@ function renderInspectionStrip(h) {
     daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>today</strong>';
   } else if (days === 1) {
     daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>yesterday</strong>';
-  } else if (days > 10) {
+  } else if (overdueDays) {
     daysHtml = '<span>\u26A0\uFE0F</span> <strong>' + days + ' days \u00B7 overdue</strong>';
+  } else if (isDue) {
+    daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>' + days + ' days ago</strong> \u00B7 due';
   } else {
     daysHtml = '<span>\uD83D\uDCCB</span> Inspected <strong>' + days + ' days ago</strong>';
   }
-  var daysClass = (days !== null && days > 10) ? 'ins-strip-item warn' : (days !== null && days <= 7) ? 'ins-strip-item good' : 'ins-strip-item';
+  var daysClass = overdueDays
+    ? 'ins-strip-item warn'
+    : (isDue ? 'ins-strip-item' : (days !== null && days >= 0 ? 'ins-strip-item good' : 'ins-strip-item'));
+
+  // ── Right side: placeholder, populated async by populateForecastLabels ──
+  // Carry the effective due offset on a data attribute so the async populator
+  // can look up the verdict for the correct date.
+  var lookupOffset;
+  if (overdueDays) {
+    lookupOffset = 'next-good-from-today';
+  } else if (dueOffset <= 0) {
+    lookupOffset = 0; // due today
+  } else {
+    lookupOffset = dueOffset; // due in future
+  }
+
   return '<div class="ins-strip">'
     + '<div class="' + daysClass + '">' + daysHtml + '</div>'
     + '<div class="ins-strip-divider"></div>'
-    + '<div class="ins-strip-item right ins-strip-forecast"><span style="opacity:.5">\u23F3</span> Checking forecast\u2026</div>'
+    + '<div class="ins-strip-item right ins-strip-forecast" data-due-offset="' + lookupOffset + '">'
+      + '<span style="opacity:.5">\u23F3</span> Checking forecast\u2026'
+    + '</div>'
   + '</div>';
 }
+
 
 async function renderHomeForecast() {
   var container = document.getElementById('weather-forecast-rows');
@@ -21352,6 +21499,15 @@ function openManageApiaries() {
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">Manage apiaries</div>'
     + '<div style="font-size:11px;color:var(--text-l);margin-bottom:8px;line-height:1.4;">Rename, set location, delete, or add new apiaries. To switch between apiaries, tap the apiary name in the header.</div>'
+    // 9 May 2026 Phase 4ce-14b — global inspection cadence setting. Single
+    // field applies to all apiaries; per-apiary breakdown deferred to later.
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px;">Inspection cadence</div>'
+        + '<div style="font-size:10px;color:var(--text-l);line-height:1.4;">Days between inspections \u00B7 applies to all apiaries</div>'
+      + '</div>'
+      + '<input type="number" min="1" max="21" value="' + getInspectionCadence() + '" id="cadence-input" onchange="setInspectionCadence(this.value);this.value=getInspectionCadence();try{renderApiary()}catch(e){}" style="width:64px;padding:8px 10px;border:1px solid var(--wax);border-radius:8px;font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;text-align:center;color:var(--text);background:white;">'
+    + '</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-manage\');setTimeout(function(){openShareApiary();},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
@@ -24620,7 +24776,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14a — Two visual improvements. (1) Hive-card inspection status strip (Dave Townend\'s request, designed via mockup iteration with Chris): each hive card on the apiary page now shows "Inspected X days ago" + "Next: <day>" in a white bottom strip. Days-since computed from existing inspection records. Forecast label uses fetchForecast14d() + flyingVerdict() to find the next day in the 14-day window where temp >= 12C, wind < 12mph, no significant rain — same criteria as the calendar page. Overdue (>10 days since last inspection) cards get a 2px red border around the entire card; warn-red strong text in the strip. Empty/dead/unclear hives suppress the strip entirely (not relevant info). Strip placeholder shows "Checking forecast..." until async fetch resolves, falls back to "No good days this week" if all 14 days are poor. The old "Not inspected" alert badge has been removed since the strip carries this info more clearly. (2) "Manage apiary" item added to the bottom of the apiary switcher modal — Chris\'s request: opens openManageApiaries() (rename/location/delete/add). Positioned above Share button for grouping with apiary-level actions. Phase 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG — found root cause), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction — 36 phantom apiaries still in DB), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14b — Cadence-aware inspection strip. Fixes the spec-drift in 4ce-14a: the strip\'s right side now shows "Due <date> — <weather verdict>" based on user-configurable inspection cadence (default 7 days, bounds 1-21). Different per hive because each hive has its own due date based on its last inspection. (1) Global cadence setting added at top of Manage Apiaries modal — single field applies to all apiaries; per-apiary breakdown deferred. (2) Strip right side adapts based on state: not-yet-due hives show "Due <date> — <verdict>"; due-today shows "Due today — <verdict>"; overdue (cadence + 3 grace days) gets red border + "Next: <next good day>"; never-inspected uses createdAt + cadence as effective due date. (3) Overdue red border threshold now uses cadence + 3 instead of hardcoded > 10, so it matches the strip warn-text state exactly. (4) Helpers added: getInspectionCadence/setInspectionCadence (localStorage hk_inspection_cadence_days), getForecastVerdictForDate (verdict for specific day offset), getNextGoodDayOffset (find first good day from arbitrary start). Forecast still uses fetchForecast14d() + flyingVerdict() — no new API calls; cache untouched. Phase 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
