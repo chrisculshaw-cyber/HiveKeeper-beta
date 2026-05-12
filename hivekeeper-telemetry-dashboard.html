@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
   --honey:#C8730A; --honey-l:#E8960C; --honey-pale:#FFF4DC;
@@ -213,10 +214,12 @@ body{padding:0;}
   </div>
 
   <div class="note">
-    <strong>Currently using mock data.</strong> To wire this to your Supabase, replace <code>fetchTelemetry()</code>
-    and <code>fetchAlerts()</code> in the JS (marked with comments) with Supabase client calls.
-    The mock generator produces realistic patterns: brood ~34.5°C with daily variation, battery drift
-    with solar recovery, foraging-hour acoustic peaks, and ~2% anomaly rate. Refresh re-rolls the noise.
+    <strong>Live data ready — anon key still needed.</strong> Your Supabase URL is pre-filled.
+    To switch from mock to live data: paste your <code>anon</code> key into <code>SUPABASE_ANON_KEY</code>
+    near the top of the JS, then reload. Until then (or on any query failure) the dashboard
+    auto-falls-back to realistic mock data — brood ~34.5°C with daily variation, battery drift with
+    solar recovery, foraging-hour acoustic peaks, ~2% anomaly rate. Refresh re-rolls the noise.
+    Check the browser console after wiring up — it logs "Live Supabase mode active" on success.
   </div>
 
 </div>
@@ -236,52 +239,69 @@ let currentRange  = 24;
 let charts = {};
 
 // ============================================================================
-// DATA SOURCE
+// SUPABASE CONFIGURATION
 // ----------------------------------------------------------------------------
-// Currently returns mock data. TO USE LIVE SUPABASE DATA:
-//
-// PREREQUISITE — one-time Supabase Dashboard step:
-//   Project Settings → API → Exposed schemas → add 'telemetry'
-//   Without this, PostgREST returns 404 on telemetry.* tables.
-//
-//   import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js'
-//
-//   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-//     db: { schema: 'telemetry' }   // <-- targets the telemetry schema by default
-//   });
-//
-//   // Alternative: keep the default 'public' schema and switch per-query:
-//   //   supabase.schema('telemetry').from('hive_telemetry').select(...)
-//
-//   async function fetchTelemetry(device, hoursBack) {
-//     const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
-//     const { data, error } = await supabase
-//       .from('hive_telemetry')          // resolves to telemetry.hive_telemetry
-//       .select('*')
-//       .eq('device_id', device.device_id)
-//       .gte('recorded_at', since)
-//       .order('recorded_at', { ascending: true });
-//     if (error) console.error(error);
-//     return data || [];
-//   }
-//
-//   async function fetchAlerts(device, hoursBack) {
-//     const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
-//     const { data, error } = await supabase
-//       .from('hive_alerts')             // resolves to telemetry.hive_alerts
-//       .select('*')
-//       .eq('device_id', device.device_id)
-//       .gte('triggered_at', since)
-//       .order('triggered_at', { ascending: false });
-//     if (error) console.error(error);
-//     return data || [];
-//   }
+// To use live data from your Supabase project:
+//   1. Run hivekeeper-telemetry-schema.sql in Supabase SQL Editor
+//   2. Project Settings → API → Exposed schemas → add 'telemetry'
+//   3. Paste your anon (public) key below — NOT service_role
+//   4. Reload this page
+// While SUPABASE_ANON_KEY is the placeholder, the dashboard uses mock data.
+// On any query failure (404, RLS reject, network) it also falls back to mock
+// and logs to the console — check there if charts look wrong after wiring up.
 // ============================================================================
-async function fetchTelemetry(device, hoursBack){
-  return generateMockTelemetry(device, hoursBack);
+const SUPABASE_URL      = 'https://hknauovhcfsfszyilnrw.supabase.co';
+const SUPABASE_ANON_KEY = 'PASTE_YOUR_ANON_KEY_HERE'; // safe in client code; RLS controls access
+
+const LIVE_MODE = SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'PASTE_YOUR_ANON_KEY_HERE';
+
+let _supabaseClient = null;
+function getSupabase(){
+  if (!LIVE_MODE) return null;
+  if (_supabaseClient) return _supabaseClient;
+  if (typeof supabase === 'undefined' || !supabase.createClient){
+    console.warn('[HiveKeeper] Supabase library not loaded; using mock data');
+    return null;
+  }
+  _supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    db: { schema: 'telemetry' }   // targets the telemetry schema by default
+  });
+  console.info('[HiveKeeper] Live Supabase mode active');
+  return _supabaseClient;
 }
+
+async function fetchTelemetry(device, hoursBack){
+  const sb = getSupabase();
+  if (!sb) return generateMockTelemetry(device, hoursBack);
+  const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
+  const { data, error } = await sb
+    .from('hive_telemetry')             // resolves to telemetry.hive_telemetry
+    .select('*')
+    .eq('device_id', device.device_id)
+    .gte('recorded_at', since)
+    .order('recorded_at', { ascending: true });
+  if (error){
+    console.error('[HiveKeeper] fetchTelemetry failed, falling back to mock:', error.message);
+    return generateMockTelemetry(device, hoursBack);
+  }
+  return data || [];
+}
+
 async function fetchAlerts(device, hoursBack){
-  return generateMockAlerts(device, hoursBack);
+  const sb = getSupabase();
+  if (!sb) return generateMockAlerts(device, hoursBack);
+  const since = new Date(Date.now() - hoursBack * 3600 * 1000).toISOString();
+  const { data, error } = await sb
+    .from('hive_alerts')                // resolves to telemetry.hive_alerts
+    .select('*')
+    .eq('device_id', device.device_id)
+    .gte('triggered_at', since)
+    .order('triggered_at', { ascending: false });
+  if (error){
+    console.error('[HiveKeeper] fetchAlerts failed, falling back to mock:', error.message);
+    return generateMockAlerts(device, hoursBack);
+  }
+  return data || [];
 }
 
 // ============================================================================
