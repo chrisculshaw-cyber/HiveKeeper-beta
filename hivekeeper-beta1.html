@@ -14570,8 +14570,57 @@ function setInspectionCadence(n) {
   var v = parseInt(n, 10);
   if (isNaN(v) || v < 1) v = 1;
   if (v > 21) v = 21;
-  try { localStorage.setItem('hk_inspection_cadence_days', String(v)); } catch(e) {}
+  try {
+    localStorage.setItem('hk_inspection_cadence_days', String(v));
+    try { hkLog('Cadence saved: ' + v + ' days'); } catch(e) {}
+  } catch(e) {
+    try { hkLog('Cadence save FAILED: ' + e); } catch(e2) {}
+  }
   return v;
+}
+
+// 9 May 2026 Phase 4ce-14d — explicit save handler called from the Save button
+// in the Manage Apiaries modal. After 4ce-14c's oninput approach failed to
+// persist reliably (Chris reported the value reverting to 7 after app reopen),
+// switched to user-initiated commit pattern. Reads input, commits, shows
+// "Saved ✓" feedback on the button, fires a toast, refreshes apiary strips.
+function saveCadenceFromInput() {
+  try {
+    var input = document.getElementById('cadence-input');
+    if (!input) return;
+    var typed = input.value;
+    var saved = setInspectionCadence(typed);
+    // Update input to reflect clamped value (e.g. typed 25 → shows 21)
+    input.value = saved;
+    // Verify the write took effect by reading back
+    var readback = getInspectionCadence();
+    var btn = document.getElementById('cadence-save-btn');
+    if (btn) {
+      if (readback === saved) {
+        btn.textContent = '\u2713 Saved (' + saved + ' days)';
+        btn.style.background = '#2E7D32';
+        setTimeout(function(){
+          if (btn) {
+            btn.textContent = 'Save cadence';
+            btn.style.background = '';
+          }
+        }, 1800);
+      } else {
+        btn.textContent = '\u26A0 Save failed';
+        btn.style.background = '#C62828';
+        setTimeout(function(){
+          if (btn) {
+            btn.textContent = 'Save cadence';
+            btn.style.background = '';
+          }
+        }, 2500);
+      }
+    }
+    try { showToast('Cadence: ' + saved + ' days'); } catch(e) {}
+    try { renderApiary(); } catch(e) {}
+  } catch(e) {
+    try { hkLog('saveCadenceFromInput ERROR: ' + e); } catch(e2) {}
+  }
 }
 
 // Returns the number of full days since the hive's most recent inspection,
@@ -21506,12 +21555,19 @@ function openManageApiaries() {
     + '<div style="font-size:11px;color:var(--text-l);margin-bottom:8px;line-height:1.4;">Rename, set location, delete, or add new apiaries. To switch between apiaries, tap the apiary name in the header.</div>'
     // 9 May 2026 Phase 4ce-14b — global inspection cadence setting. Single
     // field applies to all apiaries; per-apiary breakdown deferred to later.
-    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;">'
-      + '<div style="flex:1;min-width:0;">'
-        + '<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px;">Inspection cadence</div>'
-        + '<div style="font-size:10px;color:var(--text-l);line-height:1.4;">Days between inspections \u00B7 applies to all apiaries</div>'
+    // 9 May 2026 Phase 4ce-14d — explicit Save button added after 4ce-14c
+    // failed to persist (oninput/onblur events were unreliable across mobile
+    // browsers). User now taps Save to commit; visible "Saved ✓" feedback
+    // confirms the write happened.
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px;">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px;">Inspection cadence</div>'
+          + '<div style="font-size:10px;color:var(--text-l);line-height:1.4;">Days between inspections \u00B7 applies to all apiaries</div>'
+        + '</div>'
+        + '<input type="number" min="1" max="21" value="' + getInspectionCadence() + '" id="cadence-input" style="width:64px;padding:8px 10px;border:1px solid var(--wax);border-radius:8px;font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;text-align:center;color:var(--text);background:white;">'
       + '</div>'
-      + '<input type="number" min="1" max="21" value="' + getInspectionCadence() + '" id="cadence-input" oninput="setInspectionCadence(this.value);" onblur="this.value=getInspectionCadence();try{renderApiary()}catch(e){}" style="width:64px;padding:8px 10px;border:1px solid var(--wax);border-radius:8px;font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;text-align:center;color:var(--text);background:white;">'
+      + '<button id="cadence-save-btn" onclick="saveCadenceFromInput()" style="width:100%;background:var(--honey);border:none;border-radius:8px;padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;transition:background 0.2s;">Save cadence</button>'
     + '</div>'
     + '<div style="margin:0 -20px;">' + listHtml + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
@@ -24781,7 +24837,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14c — Two fixes to 4ce-14b. (1) Cadence input now uses oninput instead of onchange — Chris reported the cadence value reverted to 7 after closing the app. Root cause: onchange fires on blur only, which is unreliable on mobile when the user closes the modal without tapping outside the input first. oninput fires on every value change so localStorage write happens immediately. onblur retained for clamp + re-render. (2) Strip right side format compacted to fix text wrapping over 2 lines on phone widths. Was "<icon> Due Fri 15 May — excellent" (verbose, ~32 chars). Now "<icon> Due Fri 15 May" (~18 chars) — verdict word dropped since the weather icon already carries the signal (sun / cloud / rain). Plus belt-and-braces: .ins-strip-item gets white-space:nowrap + overflow:hidden + text-overflow:ellipsis so any future longer text truncates cleanly rather than wrapping. "No good days this week" → "No good days" for the same reason. Phase 4ce-14b (cadence-aware strip, global cadence setting), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish on messages icon and back buttons), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '9 May 2026 BST · Phase 4ce-14d — Explicit Save button for inspection cadence. 4ce-14c\'s oninput approach was supposed to fix the persistence bug from 4ce-14b but Chris reported cadence still reverting to 7 after app reopen. Root cause uncertain — could be iOS WebView event-timing quirk, could be localStorage write failing silently. Rather than guess further, switched to user-initiated commit pattern: number input + adjacent "Save cadence" button. User taps Save → setInspectionCadence runs → readback verifies the value persisted → button briefly changes to green "✓ Saved (14 days)" → toast confirms → renderApiary refreshes strips. If write fails, button shows red "⚠ Save failed" instead. setInspectionCadence now logs every write to hkLog so we can see what\'s happening in logs. Diagnostic-friendly: tap Save, see confirmation, close app, reopen — if cadence reverts AFTER seeing "✓ Saved (14 days)", we know the write happened but something else is wiping it. Phase 4ce-14c (oninput attempt, didn\'t persist), 4ce-14b (cadence-aware strip, global cadence setting), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed via getSupabase), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
