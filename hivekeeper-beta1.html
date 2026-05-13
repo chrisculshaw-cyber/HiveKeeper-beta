@@ -21151,6 +21151,26 @@ function setDefaultApiary(apiaryId) {
   } catch(e) { console.warn('setDefaultApiary error:', e); }
 }
 
+// 13 May 2026 Phase 4ce-14h — locked apiary nudge for free tier.
+// Shown when a free-tier user with multiple owned apiaries taps a non-
+// default one. Per paywall philosophy: subtle nudge, not modal. Honest
+// copy. Rate-limited to prevent stacking.
+var _lastApiaryNudgeAt = 0;
+function showLockedApiaryNudge(apiaryId) {
+  var now = Date.now();
+  // Rate limit: 60s mute window per philosophy Rule 3
+  if (now - _lastApiaryNudgeAt < 60 * 1000) return;
+  _lastApiaryNudgeAt = now;
+  try {
+    var apiaries = loadApiaries();
+    var a = apiaries.find(function(x){ return x.id === apiaryId; });
+    var name = a ? a.name : 'This apiary';
+    showToast(name + ' is part of Pro. Star it as default to access on Free.');
+  } catch(e) {
+    showToast('This apiary is part of Pro.');
+  }
+}
+
 function selectApiaryItem(id) {
   document.querySelectorAll("[id^='apiary-opt-']").forEach(function(el){
     el.style.background="var(--white)";
@@ -21164,6 +21184,43 @@ function selectApiaryItem(id) {
   switchApiary(id);
 }
 function switchApiary(id) {
+  // 13 May 2026 Phase 4ce-14h — defence-in-depth guard. The UI prevents
+  // tapping locked apiaries via openApiarySwitcher (Phase 4ce-14h render
+  // update). But switchApiary can be called directly via console, deep-
+  // link, or future code paths. If a free user tries to switch to a non-
+  // default OWNED apiary while they have multiple owned, refuse.
+  // Uses same implicit-default fallback as openApiarySwitcher so users
+  // who never starred a default still have one accessible apiary.
+  try {
+    if (typeof isFreeTier === 'function' && isFreeTier()) {
+      var _apiaries = loadApiaries();
+      var _target = _apiaries.find(function(a){ return a.id === id; });
+      if (_target && !_target.isShared) {
+        var _ownedCount = _apiaries.filter(function(a){ return !a.isShared; }).length;
+        if (_ownedCount > 1) {
+          // Find the effective default (explicit or implicit fallback)
+          var _effDef = _apiaries.find(function(a){ return a.isDefault === true && !a.isShared; });
+          var _effDefId = _effDef ? _effDef.id : null;
+          if (!_effDefId) {
+            var _curId = localStorage.getItem(CURRENT_APIARY_KEY);
+            var _cur = _apiaries.find(function(a){ return a.id === _curId && !a.isShared; });
+            if (_cur) {
+              _effDefId = _cur.id;
+            } else {
+              var _first = _apiaries.find(function(a){ return !a.isShared; });
+              if (_first) _effDefId = _first.id;
+            }
+          }
+          if (_target.id !== _effDefId) {
+            // Block the switch; show nudge if not already shown recently
+            showLockedApiaryNudge(id);
+            try { closeModalEl('modal-apiary-switcher'); } catch(e) {}
+            return;
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('Free-tier apiary guard error:', e); }
   // Close the switcher IMMEDIATELY for instant feedback (before data work)
   try { closeModalEl('modal-apiary-switcher'); } catch(e) {}
   localStorage.setItem(CURRENT_APIARY_KEY, id);
@@ -21512,6 +21569,40 @@ function openApiarySwitcher() {
   if (!sheet) return;
   _apiaryListSource = 'switcher';
 
+  // 13 May 2026 Phase 4ce-14h — multi-apiary lockout for free tier.
+  // Free users keep all their apiaries visible (Rule 5: free users keep
+  // their data) but can only INTERACT with their default + any shared
+  // apiaries. Non-default OWNED apiaries are greyed and tappable-with-nudge.
+  // Only OWNED apiaries count toward the 1-apiary free limit (shared
+  // apiaries are someone else's data — user is a member, not owner).
+  // Targets the 16 May real expirer flam.wellman who has 3 apiaries.
+  var _isFree = (typeof isFreeTier === 'function' && isFreeTier());
+  var ownedCount = apiaries.filter(function(a){ return !a.isShared; }).length;
+  var _lockoutActive = _isFree && ownedCount > 1;
+
+  // If lockout is active but NO apiary has isDefault=true, fall back to
+  // current/last-used/first-created as the implicit default so the user
+  // isn't locked out of everything. Mirrors getCurrentApiary() fallback
+  // chain so the "default for lockout" matches the "default for open."
+  var _implicitDefaultId = null;
+  if (_lockoutActive) {
+    var _explicitDef = apiaries.find(function(a){ return a.isDefault === true && !a.isShared; });
+    if (_explicitDef) {
+      _implicitDefaultId = _explicitDef.id;
+    } else if (current && !current.isShared) {
+      _implicitDefaultId = current.id;
+    } else {
+      var _lastUsedId = localStorage.getItem(CURRENT_APIARY_KEY);
+      var _lastUsed = apiaries.find(function(a){ return a.id === _lastUsedId && !a.isShared; });
+      if (_lastUsed) {
+        _implicitDefaultId = _lastUsed.id;
+      } else {
+        var _firstOwned = apiaries.find(function(a){ return !a.isShared; });
+        if (_firstOwned) _implicitDefaultId = _firstOwned.id;
+      }
+    }
+  }
+
   // 27 April 2026 Phase 4e — switcher rows no longer include rename/location/
   // delete buttons. Beta testers were hitting them by mistake when trying to
   // tap-to-switch. Those actions moved to the new Manage apiaries modal in
@@ -21524,11 +21615,25 @@ function openApiarySwitcher() {
     var isDefault = a.isDefault === true;
     var starIcon = isDefault ? '⭐' : '☆';
     var starTitle = isDefault ? 'Remove default' : 'Set as default (opens first on app start)';
-    return '<div id="apiary-opt-' + a.id + '" onclick="selectApiaryItem(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';">'
+    // 13 May 2026 Phase 4ce-14h — lockout calculation per apiary.
+    // Locked if: free tier, multiple owned apiaries, this one is OWNED,
+    // and it's not the (explicit or implicit) default. Shared apiaries
+    // are never locked. Uses _implicitDefaultId so even users who never
+    // starred a default still have one accessible apiary.
+    var isLocked = _lockoutActive && !a.isShared && a.id !== _implicitDefaultId;
+    var rowOpacity = isLocked ? '0.5' : '1';
+    var rowCursor = isLocked ? 'pointer' : 'pointer'; // still tappable, fires nudge
+    var rowOnclick = isLocked
+      ? 'showLockedApiaryNudge(\'' + a.id + '\')'
+      : 'selectApiaryItem(\'' + a.id + '\')';
+    var lockBadge = isLocked
+      ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">🔒 Pro</span>'
+      : '';
+    return '<div id="apiary-opt-' + a.id + '" onclick="' + rowOnclick + '" style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--wax);cursor:' + rowCursor + ';background:' + (isCurrent ? 'var(--honey-pale)' : 'var(--white)') + ';opacity:' + rowOpacity + ';">'
       + '<div data-def-id="' + a.id + '" onclick="event.stopPropagation();setDefaultApiary(this.dataset.defId)" title="' + starTitle + '" style="font-size:22px;cursor:pointer;user-select:none;padding:4px;line-height:1;color:' + (isDefault ? '#F5A623' : 'var(--text-l)') + ';">' + starIcon + '</div>'
       + '<div style="font-size:28px;">🏡</div>'
       + '<div style="flex:1;">'
-        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + lockBadge + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
       + '</div>'
       + (isCurrent ? '<div style="font-size:18px;color:var(--forest);font-weight:800;padding:4px 8px;">✓</div>' : '<div style="font-size:14px;color:var(--text-l);padding:4px 8px;">›</div>')
@@ -24873,7 +24978,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12 May 2026 BST · Phase 4ce-14f — Four P1 fixes ahead of first real-user trial expiry on 16 May. (1) hk_trial_start added to sign-out keysToKeep list — was being wiped on sign-out, causing onAuthSuccess to set it to NOW and give expired-trial users a stealth fresh 14-day trial (Anomaly #1 from 12 May expired-trial test). (2) canShareApiary() now returns strict boolean (=== \'inspect\'). Was returning the sharing value directly — Free tier value \'view\' is truthy, so the gate at openShareApiary was passing and free users could create real apiary shares with real invites (Anomaly #3, revenue leak). (3) getReferralHiveLimit base changed from 5 to 3 — spec says Free = 3 hives but base was 5, letting free users add 5 hives (revenue leak, confirmed by Chris). Referral bonuses still stack via _referralHiveBonus. (4) Sync 403/permission errors now surface a user-facing toast \'Some changes couldn\'t sync. Tap to retry.\' — was silent failure causing potential data loss (Anomaly #7, same severity class as 25 April inspection loss). Rate-limited to 1 toast per minute. RLS policy investigation deferred — only the silent-failure UX is fixed here. Phase 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14h — Multi-apiary lockout for free tier. When a free user has more than one OWNED apiary (e.g. trial user with 3 apiaries transitioning to free), all non-default owned apiaries are greyed in the apiary switcher with a 🔒 Pro badge. Default apiary (starred by user via setDefaultApiary) stays fully accessible. Shared apiaries (received from other keepers) stay fully accessible regardless — they are someone else\'s data. Tapping a locked apiary shows a toast nudge: \'<apiary name> is part of Pro. Star it as default to access on Free.\' Rate-limited to 60s per philosophy doc Rule 3 (nudges don\'t stack). Defence-in-depth guard in switchApiary blocks programmatic switches too. Targets the 16 May real expirer flam.wellman@me.com who has 3 apiaries + 4 hives; also covers jolyon.sanders (2 apiaries, 5 hives, 19 May) and other multi-apiary trial transitions. Free users keep their data visible (philosophy Rule 5) — no deletion, no hiding. Phase 4ce-14f (four P1 fixes: trial_start keysToKeep, canShareApiary boolean, free hive cap 5→3, sync 403 user toast), 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -30179,7 +30284,7 @@ async function syncToCloud(table, record, options) {
           _lastSyncErrorToastAt = now;
           try {
             if (typeof showToast === 'function') {
-              showToast("Some changes couldn't sync. Tap to retry.");
+              showToast("Some changes couldn't sync. We'll retry automatically.");
             }
           } catch(e) {}
         }
