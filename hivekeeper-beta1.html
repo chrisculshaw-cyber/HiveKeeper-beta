@@ -17808,7 +17808,15 @@ async function recordReferral(newUserId) {
 
 // Get effective hive limit including referral bonus
 function getReferralHiveLimit() {
-  var base = 5;
+  // 12 May 2026 Phase 4ce-14f — base changed from 5 to 3. Free tier spec
+  // says 3 hives. Previous value of 5 was a bug — Chris confirmed 12 May
+  // that he was able to add 5 hives on Free tier. The canAddHive override
+  // at line ~17825 uses this function (bypassing TIER_LIMITS) for free
+  // users, so this is the source of truth for the free-tier hive cap.
+  // Referral bonuses still stack via _referralHiveBonus. Referral reward
+  // jumps (>=1 → 7, >=3 → 10) flagged for separate spec lookup — those
+  // hardcoded values may also be wrong but are deferred to a later session.
+  var base = 3;
   // From Supabase-loaded bonus
   if (_referralHiveBonus > 0) return base + _referralHiveBonus;
   // From localStorage (new referred user, profile not yet loaded)
@@ -23614,10 +23622,16 @@ async function authSignOut() {
     // 9 May 2026 Phase 4ce-14d — added hk_inspection_cadence_days. Without
     // this, signing out wipes the user's cadence preference. Same bug class
     // as the earlier hk_pricing_modals_seen miss.
+    // 12 May 2026 Phase 4ce-14f — added hk_trial_start. Without this,
+    // signing out wiped the trial start date. onAuthSuccess then saw it
+    // missing and set to NOW, giving expired-trial users a stealth fresh
+    // 14-day trial on every sign-in cycle. Anomaly #1 from 12 May expired-
+    // trial test session. Same bug class as inspection cadence persistence
+    // (4ce-14d) and 25 April inspection loss.
     var keysToKeep = ['hk_24h','hk_large_text','hk_sos_contact','hk_has_signed_in',
       'hk_user_lat','hk_user_lng','hk_user_location_name','hk_app_version','hk_compass_v1',
       'hk_pricing_modals_seen','hk_haptic_enabled','hk_pull_refresh','hk_read_messages',
-      'hk_inspection_cadence_days'];
+      'hk_inspection_cadence_days','hk_trial_start'];
     Object.keys(localStorage).forEach(function(k){
       if (keysToKeep.indexOf(k) === -1) localStorage.removeItem(k);
     });
@@ -24859,7 +24873,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12 May 2026 BST · Phase 4ce-14e — Defensive guards for two cold-start console errors. Test session on 12 May surfaced two TypeError exceptions firing on every cold start: (1) renderAsianHornetWatch → AH_SIGHTINGS undefined, (2) updateDashTipTeaser → SEASONAL_TIPS undefined. Both caused by var-hoisting: the variable declaration is hoisted but the value assignment is not, so if these functions are called from init paths that fire before the relevant line executes, .map()/[month] access throws. Errors were caught by surrounding try/catch and harmless to user, but noisy in the console and could mask genuine errors. Fix: added typeof undefined guards at the top of both functions. Silent return → next call (from setTimeout retry at line 15170, or subsequent re-render) succeeds once the var assignment has run. Phase 4ce-14d revised (cadence persistence keysToKeep fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '12 May 2026 BST · Phase 4ce-14f — Four P1 fixes ahead of first real-user trial expiry on 16 May. (1) hk_trial_start added to sign-out keysToKeep list — was being wiped on sign-out, causing onAuthSuccess to set it to NOW and give expired-trial users a stealth fresh 14-day trial (Anomaly #1 from 12 May expired-trial test). (2) canShareApiary() now returns strict boolean (=== \'inspect\'). Was returning the sharing value directly — Free tier value \'view\' is truthy, so the gate at openShareApiary was passing and free users could create real apiary shares with real invites (Anomaly #3, revenue leak). (3) getReferralHiveLimit base changed from 5 to 3 — spec says Free = 3 hives but base was 5, letting free users add 5 hives (revenue leak, confirmed by Chris). Referral bonuses still stack via _referralHiveBonus. (4) Sync 403/permission errors now surface a user-facing toast \'Some changes couldn\'t sync. Tap to retry.\' — was silent failure causing potential data loss (Anomaly #7, same severity class as 25 April inspection loss). Rate-limited to 1 toast per minute. RLS policy investigation deferred — only the silent-failure UX is fixed here. Phase 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix), 4ce-13x (messages fetch fixed), 4ce-13w (TEMP DIAG), 4ce-13v (fetch fix attempt 1), 4ce-13u (visual polish), 4ce-13t (In-app messages with badge), 4ce-13s (Universal back-arrow), 4ce-13r reverted, 4ce-13q (overscroll-behavior CSS), 4ce-13p (haptic on hive save & swarm catch), 4ce-13o (Haptic toggle + SOS Tier 3 haptic), 4ce-13n (form-bottom save button removed), 4ce-13m (Save in side rail), 4ce-13l (Meadowbrook seed extinction), 4ce-13k (Add Hive permanent), 4ce-13j (marketplace gated). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -27737,7 +27751,14 @@ function canAddHive() {
 }
 
 function canShareApiary() {
-  return getTierLimits().sharing;
+  // 12 May 2026 Phase 4ce-14f — strict boolean check. Was returning the
+  // sharing value directly. For Free tier the value is the string 'view'
+  // which is truthy, so the gate at openShareApiary line 24564 was passing
+  // and free users could create shares. Anomaly #3 from 12 May expired-trial
+  // test session. Free tier semantics confirmed by Chris: free users can
+  // VIEW shared apiaries received from others but cannot CREATE shares.
+  // Pro+ sharing value is 'inspect' (can view + invite + inspect).
+  return getTierLimits().sharing === 'inspect';
 }
 
 function showUpgradeModal(reason) {
@@ -30104,6 +30125,33 @@ function queueOfflineSave(table, data) {
 //   record:      the object to upsert (must include `id`)
 //   options:     { onConflict: 'id' } default. Pass { delete: true, id: 'xxx' } to queue a delete.
 // Returns a promise that resolves on push success, queues silently on failure.
+// 12 May 2026 Phase 4ce-14f — track last user-facing sync error toast time
+// per error type to rate-limit and prevent spam. Anomaly #7 from expired-
+// trial test: silent 403s for free/expired users with no user surface.
+var _lastSyncErrorToastAt = 0;
+var _SYNC_ERROR_TOAST_MIN_INTERVAL_MS = 60 * 1000; // 1 minute between toasts
+
+// Detect if a Supabase error is permission/auth related (typically RLS).
+// Permission errors usually mean: free tier user trying to write to a Pro-
+// only table, expired-trial user, missing RLS policy, etc. Network blips
+// look different — they throw catch'd exceptions, not error objects.
+function isPermissionError(err) {
+  if (!err) return false;
+  var code = String(err.code || '');
+  var msg = String(err.message || '').toLowerCase();
+  // Postgres permission error codes
+  if (code === '42501') return true; // insufficient_privilege
+  if (code === '403') return true;
+  // HTTP status in message
+  if (msg.indexOf('403') !== -1) return true;
+  if (msg.indexOf('forbidden') !== -1) return true;
+  if (msg.indexOf('permission denied') !== -1) return true;
+  if (msg.indexOf('row-level security') !== -1) return true;
+  if (msg.indexOf('row level security') !== -1) return true;
+  if (msg.indexOf('new row violates') !== -1) return true;
+  return false;
+}
+
 async function syncToCloud(table, record, options) {
   if (!getUserId()) return;  // anonymous session — nothing to sync
   options = options || {};
@@ -30122,6 +30170,20 @@ async function syncToCloud(table, record, options) {
     if (result && result.error) {
       console.warn('[syncToCloud] ' + table + ' failed, queueing:', result.error.message);
       queueOfflineSave(table, record);
+      // 12 May 2026 Phase 4ce-14f — surface permission/auth errors to user.
+      // Previously silent failure → user thinks data is saved, it isn't.
+      // Rate-limited so RLS-rejection storms don't spam the screen.
+      if (isPermissionError(result.error)) {
+        var now = Date.now();
+        if (now - _lastSyncErrorToastAt > _SYNC_ERROR_TOAST_MIN_INTERVAL_MS) {
+          _lastSyncErrorToastAt = now;
+          try {
+            if (typeof showToast === 'function') {
+              showToast("Some changes couldn't sync. Tap to retry.");
+            }
+          } catch(e) {}
+        }
+      }
     }
   } catch(e) {
     // Network blip mid-request — queue and move on
