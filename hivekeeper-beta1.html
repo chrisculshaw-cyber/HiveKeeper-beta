@@ -7629,10 +7629,13 @@ function getUsedJarSizes() {
 function openHoneyPricingModal() {
   // 29 April 2026 Phase 4bd — financial features are Pro+
   if (!hasFinancialFeatures()) {
-    if (typeof showUpgradeModal === 'function') {
-      showUpgradeModal('honey-pricing');
-    } else {
-      showToast('Honey pricing is a Pro feature');
+    // 13 May 2026 Phase 4ce-14k — subtle nudge for free tier per Rule 2.
+    if (!showPaywallNudge('honey-pricing', "Honey pricing is part of Pro. Tap to upgrade.")) {
+      if (typeof showUpgradeModal === 'function') {
+        showUpgradeModal('honey-pricing');
+      } else {
+        showToast('Honey pricing is a Pro feature');
+      }
     }
     return;
   }
@@ -7807,7 +7810,7 @@ function renderHomeDashboard() {
 
   var valueLine = canShowValue
     ? '<div style="font-size:13px;font-weight:700;color:#5C3A17;margin-top:4px;">' + valueText + ' \u00B7 <span style="font-weight:600;font-size:11px;">' + esc(valueSubtext) + '</span></div>'
-    : '<div onclick="event.stopPropagation();showUpgradeModal(\'honey-pricing\');" style="font-size:11px;font-weight:600;color:#5C3A17;margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,0.08);padding:3px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:10px;">\uD83D\uDD12</span> ' + esc(valueSubtext) + '</div>';
+    : '<div onclick="event.stopPropagation();openHoneyPricingModal();" style="font-size:11px;font-weight:600;color:#5C3A17;margin-top:4px;display:inline-flex;align-items:center;gap:4px;background:rgba(0,0,0,0.08);padding:3px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:10px;">\uD83D\uDD12</span> ' + esc(valueSubtext) + '</div>';
 
   var heroCard = '<div onclick="' + heroOnClick + '" '
     + 'style="margin:8px 16px;padding:16px;background:linear-gradient(135deg,#F4D77A,#E8B742);border-radius:var(--rs);box-shadow:var(--shadow);cursor:pointer;">'
@@ -9658,7 +9661,10 @@ function compressImageFile(file, maxEdge, quality) {
 
 async function uploadHiveCoverPhoto(hiveId) {
   if (getUserTier() === 'free' && !isFoundingBeekeeper()) {
-    showUpgradeModal('photos');
+    // 13 May 2026 Phase 4ce-14k — subtle nudge for free tier per Rule 2.
+    if (!showPaywallNudge('photos', "Photos are part of Pro. Tap to upgrade.")) {
+      showUpgradeModal('photos');
+    }
     return;
   }
   var input = document.getElementById('_hive_cover_input');
@@ -12791,7 +12797,10 @@ function openPhotoUpgradeTeaser() {
 function addPhoto(){
   // Frame photo storage is Pro and Commercial only
   if (getUserTier() === 'free' && !isFoundingBeekeeper()) {
-    showUpgradeModal('photos');
+    // 13 May 2026 Phase 4ce-14k — subtle nudge for free tier per Rule 2.
+    if (!showPaywallNudge('photos', "Photos are part of Pro. Tap to upgrade.")) {
+      showUpgradeModal('photos');
+    }
     return;
   }
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -15455,11 +15464,41 @@ function calDayTap(dateKey, hivesStr, trialEnd) {
   // upgrade modal instead of the normal inspection summary. If the user
   // has since upgraded or become a Founder, isInTrial returns false and
   // we fall through to the normal day-tap behaviour.
+  // 13 May 2026 Phase 4ce-14k — converted from full pricing modal to
+  // subtle toast nudge per philosophy doc. Calendar-tap is exploratory
+  // ("what does this red day mean?") — should inform, not interrupt with
+  // a full pricing modal. Direct showToast (not showPaywallNudge) because
+  // showPaywallNudge is free-tier-only and this user is mid-trial.
   if (trialEnd === '1' && typeof isInTrial === 'function' && isInTrial()) {
-    if (typeof showUpgradeModal === 'function') {
+    var t = document.getElementById('toast');
+    if (t) {
+      t.textContent = "Your Pro trial ends today. Tap to see plans.";
+      t.style.cursor = 'pointer';
+      var existing = t._trialEndingHandler;
+      if (existing) { try { t.removeEventListener('click', existing); } catch(e) {} }
+      var handler = function() {
+        try { t.classList.remove('show'); } catch(e) {}
+        try { openPricingModal('trial_ending'); } catch(e) {}
+      };
+      t._trialEndingHandler = handler;
+      t.addEventListener('click', handler);
+      var bannerCount = (document.getElementById('admin-banner') && document.getElementById('admin-banner').style.display !== 'none' ? 1 : 0)
+        + (document.getElementById('admin-award-btn') ? 1 : 0);
+      t.style.top = (60 + bannerCount * 40) + 'px';
+      t.classList.add('show');
+      setTimeout(function(){
+        try {
+          t.classList.remove('show');
+          if (t._trialEndingHandler) {
+            t.removeEventListener('click', t._trialEndingHandler);
+            t._trialEndingHandler = null;
+          }
+          t.style.cursor = '';
+        } catch(e) {}
+      }, 4500);
+    } else if (typeof showUpgradeModal === 'function') {
+      // Fallback if toast element missing
       showUpgradeModal('trial-ending');
-    } else {
-      showToast('Your trial ends today — tap Settings to upgrade');
     }
     return;
   }
@@ -25196,7 +25235,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14j — Subtle paywall nudges for three critical free-tier sites. Per philosophy doc Rule 2: paywall hits use nudges (toast), not modals. Full pricing modal reserved for once-per-user trial-expiry pop + user-initiated upgrade browsing. New showPaywallNudge(reason, message) helper: free-tier only (trial/pro/founder fall through to original modal), rate-limited per reason 60s (Rule 3 no stacking), tap-to-open-pricing preserves upgrade path, auto-dismiss 4.5s. Three call sites converted: (1) Add hive — \'Free plan: 3 hives. Tap to upgrade.\'; (2) Add apiary (both paths: Move-hive flow + addNewApiary) — \'Adding more apiaries is part of Pro. Tap to upgrade.\'; (3) Share apiary — \'Sharing is part of Pro. Tap to upgrade.\' Remaining 6 paywall sites (photos x2, honey-pricing x2, generic feature x1, trial-ending x1) deferred to next session — explicitly user-initiated upgrade paths kept as modals. Phase 4ce-14i (one-time choose-default-apiary modal + star lock to close rotation loophole), 4ce-14h (multi-apiary lockout greying for free tier), 4ce-14f (four P1 fixes: trial_start keysToKeep, canShareApiary boolean, free hive cap 5→3, sync 403 user toast), 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14a-c (hive-card inspection status strip + cadence + Manage apiary). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14k — Completed the subtle paywall messaging work originally scoped this morning. Six changes: (1) Honey pricing tap on hive card → nudge instead of modal (\'Honey pricing is part of Pro. Tap to upgrade.\'); (2) Honey pricing inline lock badge → routes through openHoneyPricingModal (centralised nudge logic); (3) Hive cover photo upload paywall → nudge (\'Photos are part of Pro. Tap to upgrade.\'); (4) Frame photo addPhoto paywall → same nudge; (5) Calendar trial-ending day tap → tappable toast nudge (\'Your Pro trial ends today. Tap to see plans.\') instead of full modal — trial users need a soft reminder when tapping the calendar exploratorily, not a blocking pricing modal; (6) Trial-expired modal copy improved from generic \'14 days of Pro, on us, have ended\' to direct \'Your 14-day Pro trial has ended. You\'re now on the Free plan — your apiaries and inspections stay safe. Pro adds multiple apiaries, unlimited hives, sharing, AI features, and more.\' Kept as modal (per Rule 2 user-initiated): Photo teaser sheet \'Upgrade to Pro\' button (line 12792) and Trial-expired banner tap (line 34600). These are deliberate user-initiated upgrade CTAs. Total paywall sites converted across 4ce-14j+4ce-14k: 8 of 11 (3 sites today + 5 today = 8). Phase 4ce-14j (subtle nudges for add hive, share apiary, add apiary). 4ce-14i (choose-default-apiary modal + star lock). 4ce-14h (multi-apiary lockout greying). 4ce-14f (four P1 fixes). 4ce-14e (defensive guards for cold-start JS errors). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -28213,7 +28252,7 @@ function openPricingModal(highlightTier) {
     share: "Apiary sharing requires a Pro or Commercial plan.",
     photos: "Frame photo storage and hive cover photos require a Pro or Commercial plan. Upgrade to start building your photo timeline.",
     trial_banner: "You're on Pro while you try HiveKeeper — keep everything you're using by staying on Pro.",
-    trial_expired: "Your 14 days of Pro, on us, have ended. Keep full access by staying on Pro — or continue on the Free plan with the limits below.",
+    trial_expired: "Your 14-day Pro trial has ended. You're now on the Free plan — your apiaries and inspections stay safe. Pro adds multiple apiaries, unlimited hives, sharing, AI features, and more.",
     welcome_back: "While you try HiveKeeper, you're on Pro — and you've got " + (typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14) + " day" + ((typeof trialDaysLeft === 'function' && trialDaysLeft() === 1) ? '' : 's') + " left of your trial. Here's what you get on each plan.",
     welcome_first: "Welcome to HiveKeeper! Your 14-day Pro trial has started — every feature unlocked while you try it. Here's what you get on each plan, so you can decide what suits you."
   };
