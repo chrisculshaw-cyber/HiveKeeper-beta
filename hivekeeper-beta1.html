@@ -4824,6 +4824,18 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
+  <!-- MODAL: CHOOSE DEFAULT APIARY (13 May 2026 Phase 4ce-14i) -->
+  <!-- Fires ONCE for free-tier users with multiple owned apiaries (typically
+       on first app open after trial expiry, or for any free-multi-apiary
+       user who hasn't yet chosen). After choice, hk_default_chosen_at_expiry
+       is set and the modal never fires again for this user. Dismissable —
+       implicit default stands if user dismisses. Populated at runtime by
+       openChooseDefaultApiaryModal(). -->
+  <div class="modal-overlay" id="modal-choose-default-apiary" onclick="closeModal(event,'modal-choose-default-apiary')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:85vh;overflow-y:auto;">
+    </div>
+  </div>
+
   <!-- MODAL: SOS -->
   <div class="modal-overlay" id="modal-sos" onclick="closeModal(event,'modal-sos')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
@@ -21133,6 +21145,21 @@ function getCurrentApiary() {
 
 // Set an apiary as the default — untoggles default on all others
 function setDefaultApiary(apiaryId) {
+  // 13 May 2026 Phase 4ce-14i — gate star-tap for free-tier multi-apiary users.
+  // Once a free user with multiple owned apiaries has chosen their default
+  // (via openChooseDefaultApiaryModal), they can't change it. Star becomes
+  // a Pro feature in this state. Shows a subtle nudge instead of switching.
+  // The choose-default flow bypasses this gate via chooseDefaultApiaryAndContinue.
+  try {
+    if (typeof isFreeTier === 'function' && isFreeTier()) {
+      var _apsList = loadApiaries();
+      var _ownedCount = _apsList.filter(function(a){ return !a.isShared; }).length;
+      if (_ownedCount > 1 && localStorage.getItem('hk_default_chosen_at_expiry') === 'true') {
+        showLockedStarNudge();
+        return;
+      }
+    }
+  } catch(e) { console.warn('setDefaultApiary tier gate error:', e); }
   try {
     var apiaries = loadApiaries();
     var target = apiaries.find(function(a){ return a.id === apiaryId; });
@@ -21149,6 +21176,17 @@ function setDefaultApiary(apiaryId) {
     // Re-render switcher if it's open
     try { openApiarySwitcher(); } catch(e) {}
   } catch(e) { console.warn('setDefaultApiary error:', e); }
+}
+
+// 13 May 2026 Phase 4ce-14i — locked-star nudge for free tier post-choice.
+// Shown when free user with >1 owned apiary tries to change their default
+// after they've already chosen. Same rate-limit pattern as apiary nudge.
+var _lastStarNudgeAt = 0;
+function showLockedStarNudge() {
+  var now = Date.now();
+  if (now - _lastStarNudgeAt < 60 * 1000) return;
+  _lastStarNudgeAt = now;
+  showToast('Changing your default apiary is part of Pro.');
 }
 
 // 13 May 2026 Phase 4ce-14h — locked apiary nudge for free tier.
@@ -21169,6 +21207,92 @@ function showLockedApiaryNudge(apiaryId) {
   } catch(e) {
     showToast('This apiary is part of Pro.');
   }
+}
+
+// 13 May 2026 Phase 4ce-14i — choose-default modal for free-tier multi-
+// apiary users. Fires ONCE per user (typically on first app open after
+// trial expiry). After choice, hk_default_chosen_at_expiry is set and
+// the modal never fires again. User can dismiss — implicit default stands.
+function openChooseDefaultApiaryModal() {
+  var apiaries = loadApiaries();
+  var owned = apiaries.filter(function(a){ return !a.isShared; });
+  if (owned.length <= 1) {
+    // Edge case: data changed between trigger and render. Just set flag and bail.
+    try { localStorage.setItem('hk_default_chosen_at_expiry', 'true'); } catch(e) {}
+    return;
+  }
+  var sheet = document.querySelector('#modal-choose-default-apiary .modal-sheet');
+  if (!sheet) return;
+
+  var listHtml = owned.map(function(a) {
+    var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
+    var active = hives.filter(function(h){ return h.status === 'active'; }).length;
+    return '<div onclick="chooseDefaultApiaryAndContinue(\'' + a.id + '\')" style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--wax);cursor:pointer;background:var(--white);">'
+      + '<div style="font-size:32px;">🏡</div>'
+      + '<div style="flex:1;">'
+        + '<div style="font-size:15px;font-weight:800;color:var(--text);">' + a.name + '</div>'
+        + '<div style="font-size:12px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
+      + '</div>'
+      + '<div style="font-size:16px;color:var(--text-l);padding:4px 8px;">›</div>'
+    + '</div>';
+  }).join('');
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div class="modal-title" style="margin-bottom:6px;">Choose your apiary</div>'
+    + '<div style="font-size:13px;color:var(--text-m);line-height:1.5;padding:0 4px 16px;">'
+      + 'Your trial gave you Pro features including multiple apiaries. On the Free plan you can use one apiary at a time.<br><br>'
+      + 'Pick which one to use now. <strong>Your other apiaries stay safe</strong> — you can see them anytime, and upgrade to Pro to use them all.'
+    + '</div>'
+    + '<div style="margin:0 -20px;">' + listHtml + '</div>'
+    + '<button onclick="dismissChooseDefaultApiary()" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">I\'ll decide later</button>';
+
+  openModalEl('modal-choose-default-apiary');
+}
+
+// User picked an apiary in the choose-default flow. Set it as default,
+// flag the choice as made, close the modal, refresh the UI.
+function chooseDefaultApiaryAndContinue(apiaryId) {
+  try {
+    var apiaries = loadApiaries();
+    var target = apiaries.find(function(a){ return a.id === apiaryId; });
+    if (!target) return;
+    apiaries.forEach(function(a){ a.isDefault = false; });
+    target.isDefault = true;
+    saveApiaries(apiaries);
+    localStorage.setItem('hk_default_chosen_at_expiry', 'true');
+    // Switch to the chosen apiary immediately so the user lands on it
+    try { switchApiary(apiaryId); } catch(e) {}
+    try { closeModalEl('modal-choose-default-apiary'); } catch(e) {}
+    showToast('⭐ ' + target.name + ' is your default apiary');
+  } catch(e) { console.warn('chooseDefaultApiaryAndContinue error:', e); }
+}
+
+// User dismissed without choosing. Set the flag so we don't ask again.
+// The implicit default (current/last-used/first-owned) stands as their
+// effective default for the lockout.
+function dismissChooseDefaultApiary() {
+  try {
+    localStorage.setItem('hk_default_chosen_at_expiry', 'true');
+    closeModalEl('modal-choose-default-apiary');
+  } catch(e) { console.warn('dismissChooseDefaultApiary error:', e); }
+}
+
+// 13 May 2026 Phase 4ce-14i — scheduler. Decides whether to fire the
+// choose-default modal. Called from app-init paths after auth/data load.
+// Fires when: free tier, >1 owned apiary, flag not yet set. Once it fires
+// AND user makes a choice (or dismisses), the flag is set permanently.
+function maybeFireChooseDefaultApiaryModal() {
+  try {
+    if (typeof isFreeTier !== 'function' || !isFreeTier()) return;
+    if (localStorage.getItem('hk_default_chosen_at_expiry') === 'true') return;
+    var apiaries = loadApiaries();
+    var ownedCount = apiaries.filter(function(a){ return !a.isShared; }).length;
+    if (ownedCount <= 1) return;
+    // Defer briefly so other init UI settles first
+    setTimeout(function(){
+      try { openChooseDefaultApiaryModal(); } catch(e) { console.warn('choose-default modal fire failed:', e); }
+    }, 800);
+  } catch(e) { console.warn('maybeFireChooseDefaultApiaryModal error:', e); }
 }
 
 function selectApiaryItem(id) {
@@ -23430,6 +23554,20 @@ async function onAuthSuccess() {
       // provide the passive prompts. User can open pricing via Settings.
     } catch(e) { console.warn('Pricing modal scheduler failed:', e); }
   }, 2500);
+
+  // 13 May 2026 Phase 4ce-14i — choose-default-apiary modal trigger for
+  // free-tier users with multiple owned apiaries. Fires ONCE per user.
+  // Same init-time slot as pricing modal scheduler. Function defers
+  // another 800ms so any pricing modal opens first, then this one if
+  // applicable (or simultaneous if no pricing modal is queued).
+  // Gated by hk_default_chosen_at_expiry — once set, never fires again.
+  setTimeout(function() {
+    try {
+      if (typeof maybeFireChooseDefaultApiaryModal === 'function') {
+        maybeFireChooseDefaultApiaryModal();
+      }
+    } catch(e) { console.warn('Choose-default modal scheduler failed:', e); }
+  }, 2700);
 }
 
 async function loadUserProfile() {
@@ -23733,10 +23871,14 @@ async function authSignOut() {
     // 14-day trial on every sign-in cycle. Anomaly #1 from 12 May expired-
     // trial test session. Same bug class as inspection cadence persistence
     // (4ce-14d) and 25 April inspection loss.
+    // 13 May 2026 Phase 4ce-14i — added hk_default_chosen_at_expiry. This
+    // flag ensures the "choose your default apiary" modal fires once and
+    // only once per user. Wiping it on sign-out would cause the modal to
+    // re-fire on every sign-in cycle. Same bug class as above.
     var keysToKeep = ['hk_24h','hk_large_text','hk_sos_contact','hk_has_signed_in',
       'hk_user_lat','hk_user_lng','hk_user_location_name','hk_app_version','hk_compass_v1',
       'hk_pricing_modals_seen','hk_haptic_enabled','hk_pull_refresh','hk_read_messages',
-      'hk_inspection_cadence_days','hk_trial_start'];
+      'hk_inspection_cadence_days','hk_trial_start','hk_default_chosen_at_expiry'];
     Object.keys(localStorage).forEach(function(k){
       if (keysToKeep.indexOf(k) === -1) localStorage.removeItem(k);
     });
@@ -24978,7 +25120,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14h — Multi-apiary lockout for free tier. When a free user has more than one OWNED apiary (e.g. trial user with 3 apiaries transitioning to free), all non-default owned apiaries are greyed in the apiary switcher with a 🔒 Pro badge. Default apiary (starred by user via setDefaultApiary) stays fully accessible. Shared apiaries (received from other keepers) stay fully accessible regardless — they are someone else\'s data. Tapping a locked apiary shows a toast nudge: \'<apiary name> is part of Pro. Star it as default to access on Free.\' Rate-limited to 60s per philosophy doc Rule 3 (nudges don\'t stack). Defence-in-depth guard in switchApiary blocks programmatic switches too. Targets the 16 May real expirer flam.wellman@me.com who has 3 apiaries + 4 hives; also covers jolyon.sanders (2 apiaries, 5 hives, 19 May) and other multi-apiary trial transitions. Free users keep their data visible (philosophy Rule 5) — no deletion, no hiding. Phase 4ce-14f (four P1 fixes: trial_start keysToKeep, canShareApiary boolean, free hive cap 5→3, sync 403 user toast), 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher), 4ce-13z (Pull from cloud button), 4ce-13y (voice transcript contamination 3-layer fix). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14i — One-time \'choose your default apiary\' modal for free-tier users with multiple owned apiaries. Fires automatically ~2.7s after sign-in for users where: isFreeTier() && ownedCount > 1 && !hk_default_chosen_at_expiry. Modal lists all owned apiaries with hive counts; user taps one to set as default and continue. Dismissible (\'I\'ll decide later\') — implicit default stands, flag still set. Either way, flag persists so modal never fires twice. setDefaultApiary now gated for free-tier multi-apiary users post-choice — star becomes a Pro feature in this state, attempts show toast \'Changing your default apiary is part of Pro.\' Prevents star-rotation loophole where free users could rotate which apiary is active to get effectively-Pro functionality. hk_default_chosen_at_expiry added to BOTH keysToKeep lists (pull + sign-out) — same bug class as 4ce-14d cadence persistence and 4ce-14f trial-start wipe. Phase 4ce-14h (multi-apiary lockout: non-default owned apiaries greyed for free tier), 4ce-14f (four P1 fixes: trial_start keysToKeep, canShareApiary boolean, free hive cap 5→3, sync 403 user toast), 4ce-14e (defensive guards for cold-start JS errors), 4ce-14d (cadence persistence keysToKeep root cause fix), 4ce-14b/c (cadence-aware strip + bug-hunt), 4ce-14a (hive-card inspection status strip + Manage apiary in switcher). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -26305,6 +26447,11 @@ async function pullFromSupabase() {
         // but being wiped on the next pull cycle. Same bug class as the
         // 25 April inspection loss — keysToKeep miss → silent wipe on pull.
         'hk_inspection_cadence_days',
+        // 13 May 2026 Phase 4ce-14i — choose-default-apiary flag. Once
+        // user has answered the "choose your default" modal (or dismissed),
+        // this flag prevents it firing again. Wiping on pull would cause
+        // the modal to re-fire on every sign-in/restore. Same bug class.
+        'hk_default_chosen_at_expiry',
         // 5 May 2026 Phase 4ce-12c — pricing modal state, per-user JSON map.
         // Replaces the four global flags from 4ce-12b (hk_pricing_welcome_shown,
         // hk_pricing_urgency_shown, hk_trial_expired_shown). Per-user keying
