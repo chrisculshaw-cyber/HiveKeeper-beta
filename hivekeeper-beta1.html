@@ -1145,6 +1145,52 @@ html, body { overscroll-behavior: none; }
   border: 2px solid var(--forest);
   box-sizing: content-box;
 }
+/* 20 May 2026 Phase 4ce-14l — Pending apiary invite icon. Same circular
+   form as cog/help/messages for visual consistency in the header cluster.
+   Glyph is the handshake 🤝 to signal collaboration/sharing. Badge uses
+   honey (#C8730A) rather than the messages red (#C62828) — both call
+   attention but the colour difference helps users distinguish "unread
+   message" (red, informational) from "pending invitation requiring action"
+   (honey, actionable). Hidden by default; renderInvitesBadge() shows it
+   when there are pending invites for the signed-in user. */
+.hk-hdr-share {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  position: relative;
+}
+.hk-hdr-share:hover, .hk-hdr-share:active {
+  background: rgba(255,255,255,0.22);
+}
+.hk-hdr-share-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #C8730A;
+  color: white;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: 800;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-family: 'Syne', sans-serif;
+  line-height: 1;
+  border: 2px solid var(--forest);
+  box-sizing: content-box;
+}
 /* 7 May 2026 Phase 4ce-13u — Back button styling for non-root drill-in screens.
    Was a small text "‹ Back" prefix that read as a title decoration; now a
    circular button matching cog/help so it reads unambiguously as a navigation
@@ -2254,6 +2300,17 @@ input[type="checkbox"].hk-chk:checked::after {
             <div onclick="openMessagesModal()" title="Messages" class="hk-hdr-msg" aria-label="View messages">
               &#x2709;&#xFE0F;
               <span id="messages-badge" class="hk-hdr-msg-badge">0</span>
+            </div>
+            <!-- 20 May 2026 Phase 4ce-14l — Pending apiary invitations icon.
+                 Tap opens Manage Apiaries, which now shows a Pending Invites
+                 section at the top when invites exist. Badge shows count
+                 of pending invites for the current user; hidden when zero.
+                 Refreshed by renderInvitesBadge() called after sign-in and
+                 after pull-from-cloud. Home-screen only — invitations are
+                 reviewed in context, not while deep in inspecting a hive. -->
+            <div onclick="openManageApiaries()" title="Apiary invitations" class="hk-hdr-share" aria-label="View apiary invitations">
+              &#x1F91D;
+              <span id="invites-badge" class="hk-hdr-share-badge">0</span>
             </div>
             <div class="hk-hdr-help" onclick="openManual()" title="Help" aria-label="Help">?</div>
           </div>
@@ -6450,6 +6507,221 @@ function renderMessagesBadge() {
     badge.style.display = 'flex';
   } else {
     badge.style.display = 'none';
+  }
+}
+
+// 20 May 2026 Phase 4ce-14l — Pending apiary invitations data layer.
+// Queries apiary_shares for rows where the current user is the invitee
+// and status is pending. Joins to apiaries (name) and profiles (inviter
+// display name). Result cached at window._pendingInvites for the
+// Manage Apiaries renderer to consume. Called on sign-in and after
+// pull-from-cloud. Failures are non-fatal: badge stays hidden, manage-
+// apiaries renders without the pending section. Match is case-insensitive
+// to avoid the kind of capitalisation bug that bit us with the auth-email
+// RLS check on 13 May.
+async function loadPendingInvites() {
+  try {
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+    if (!sb || !_currentUser || !_currentUser.email) {
+      window._pendingInvites = [];
+      renderInvitesBadge();
+      return;
+    }
+    var emailLower = _currentUser.email.toLowerCase();
+    // Two-step fetch: get matching share rows, then enrich with apiary and
+    // owner profile names. Done as separate queries because RLS-friendly
+    // SELECT joins through PostgREST need foreign-key relationships that
+    // the type-mismatched apiary_shares.apiary_id (text) vs apiaries.id
+    // (uuid) doesn't reliably support.
+    var sharesRes = await sb.from('apiary_shares')
+      .select('id, token, apiary_id, owner_id, invited_email, role, status, created_at')
+      .ilike('invited_email', emailLower)
+      .eq('status', 'pending');
+    if (sharesRes.error) {
+      console.warn('loadPendingInvites: shares fetch failed:', sharesRes.error.message);
+      window._pendingInvites = [];
+      renderInvitesBadge();
+      return;
+    }
+    var shares = sharesRes.data || [];
+    if (shares.length === 0) {
+      window._pendingInvites = [];
+      renderInvitesBadge();
+      return;
+    }
+    // Collect unique apiary IDs and owner IDs for enrichment lookups
+    var apiaryIds = shares.map(function(s){ return s.apiary_id; }).filter(Boolean);
+    var ownerIds = shares.map(function(s){ return s.owner_id; }).filter(Boolean);
+    var apiaryMap = {};
+    var ownerMap = {};
+    if (apiaryIds.length > 0) {
+      var apiariesRes = await sb.from('apiaries').select('id, name').in('id', apiaryIds);
+      if (apiariesRes.data) {
+        apiariesRes.data.forEach(function(a){ apiaryMap[String(a.id)] = a.name; });
+      }
+    }
+    if (ownerIds.length > 0) {
+      var ownersRes = await sb.from('profiles').select('id, name, display_name, email').in('id', ownerIds);
+      if (ownersRes.data) {
+        ownersRes.data.forEach(function(p){
+          ownerMap[String(p.id)] = p.display_name || p.name || (p.email ? p.email.split('@')[0] : 'A HiveKeeper user');
+        });
+      }
+    }
+    window._pendingInvites = shares.map(function(s){
+      return {
+        id: s.id,
+        token: s.token,
+        apiaryId: s.apiary_id,
+        apiaryName: apiaryMap[String(s.apiary_id)] || 'an apiary',
+        ownerName: ownerMap[String(s.owner_id)] || 'A HiveKeeper user',
+        role: s.role || 'viewer',
+        createdAt: s.created_at
+      };
+    });
+    renderInvitesBadge();
+  } catch (err) {
+    console.warn('loadPendingInvites: unexpected error:', err.message);
+    window._pendingInvites = [];
+    renderInvitesBadge();
+  }
+}
+
+// 20 May 2026 Phase 4ce-14l — Invite count badge renderer. Mirrors
+// renderMessagesBadge: show count + flex display when > 0, hide entirely
+// when 0. Cap at "99+" for visual sanity (we never expect 99 invitations
+// but defensive formatting matches the messages pattern).
+function renderInvitesBadge() {
+  var badge = document.getElementById('invites-badge');
+  if (!badge) return;
+  var invites = window._pendingInvites || [];
+  var count = invites.length;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : String(count);
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// 20 May 2026 Phase 4ce-14l — Accept handler with explicit row-count check.
+// Critical change from the legacy accept flow at processInviteToken: the
+// .select() chain forces Supabase to return affected rows. Previously, an
+// UPDATE that affected 0 rows (RLS rejection, wrong token, etc) returned
+// silently with error: null and the user saw no signal. With .select(),
+// we get data: [] and surface it as a real error toast. This is the
+// surgical fix for the silent-failure bug that bit Dave on 13 May.
+async function acceptApiaryInvite(shareId) {
+  if (!shareId) {
+    showToast('Couldn\'t identify this invitation.');
+    return;
+  }
+  var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+  if (!sb || !_currentUser) {
+    showToast('Please sign in to accept invitations.');
+    return;
+  }
+  // Disable buttons in the manage-apiaries modal while we process so the
+  // user can't double-tap and create racy double-accepts. We're using
+  // a class-based selector rather than re-rendering immediately.
+  var btns = document.querySelectorAll('[data-invite-id="' + shareId + '"]');
+  btns.forEach(function(b){ b.disabled = true; b.style.opacity = '0.5'; });
+
+  try {
+    var updateRes = await sb.from('apiary_shares').update({
+      status: 'accepted',
+      accepted_at: new Date().toISOString(),
+      accepted_by: _currentUser.id,
+      user_id: _currentUser.id
+    }).eq('id', shareId).select();
+
+    if (updateRes.error) {
+      // Real error returned by Supabase — show the message.
+      showToast('Couldn\'t accept invitation: ' + updateRes.error.message);
+      btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+      return;
+    }
+    if (!updateRes.data || updateRes.data.length === 0) {
+      // The silent-failure case: UPDATE returned no error but affected
+      // no rows. RLS blocked silently, or the row was modified by another
+      // session, or the share_id no longer matches. Surface it clearly
+      // rather than hiding it.
+      showToast('Couldn\'t accept this invitation. Please try again, or contact support if it keeps failing.');
+      btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+      return;
+    }
+
+    showToast('Accepted! Loading the apiary…');
+
+    // Pull from cloud so the newly shared apiary appears in the local list.
+    if (typeof pullFromSupabase === 'function') {
+      try { await pullFromSupabase(); } catch(e) { console.warn('pullFromSupabase after accept failed:', e.message); }
+    }
+    // Refresh invite state and re-render the modal.
+    await loadPendingInvites();
+    if (document.getElementById('modal-apiary-manage') && document.getElementById('modal-apiary-manage').style.display !== 'none') {
+      openManageApiaries();
+    }
+  } catch (err) {
+    console.error('acceptApiaryInvite error:', err);
+    showToast('Couldn\'t accept invitation. Please try again.');
+    btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+  }
+}
+
+// 20 May 2026 Phase 4ce-14l — Decline handler. Confirmation required
+// because declining is socially meaningful — the owner sees a 'declined'
+// status, not just absence. Same .select() pattern as accept so any
+// silent-failure is surfaced rather than swallowed.
+async function declineApiaryInvite(shareId) {
+  if (!shareId) return;
+  var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+  if (!sb || !_currentUser) {
+    showToast('Please sign in to decline invitations.');
+    return;
+  }
+  // Use the existing confirm-modal pattern. Fall back to native confirm
+  // if showConfirmModal isn't available in this code path.
+  var proceed;
+  if (typeof showConfirmModal === 'function') {
+    proceed = await showConfirmModal(
+      'Decline this invitation?',
+      'The apiary owner will see that you\'ve declined. You can be re-invited later if needed.',
+      { confirmText: 'Decline', cancelText: 'Keep', destructive: true }
+    );
+  } else {
+    proceed = window.confirm('Decline this invitation? The apiary owner will see it as declined.');
+  }
+  if (!proceed) return;
+
+  var btns = document.querySelectorAll('[data-invite-id="' + shareId + '"]');
+  btns.forEach(function(b){ b.disabled = true; b.style.opacity = '0.5'; });
+
+  try {
+    var updateRes = await sb.from('apiary_shares').update({
+      status: 'declined'
+    }).eq('id', shareId).select();
+
+    if (updateRes.error) {
+      showToast('Couldn\'t decline: ' + updateRes.error.message);
+      btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+      return;
+    }
+    if (!updateRes.data || updateRes.data.length === 0) {
+      showToast('Couldn\'t decline this invitation. Please try again.');
+      btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
+      return;
+    }
+
+    showToast('Invitation declined');
+    await loadPendingInvites();
+    if (document.getElementById('modal-apiary-manage') && document.getElementById('modal-apiary-manage').style.display !== 'none') {
+      openManageApiaries();
+    }
+  } catch (err) {
+    console.error('declineApiaryInvite error:', err);
+    showToast('Couldn\'t decline. Please try again.');
+    btns.forEach(function(b){ b.disabled = false; b.style.opacity = '1'; });
   }
 }
 
@@ -21838,7 +22110,7 @@ function openApiarySwitcher() {
   // tap-to-switch. Those actions moved to the new Manage apiaries modal in
   // Settings → Tools. The default-star toggle stays — it's about switching
   // behaviour (which apiary opens by default), so it belongs here.
-  var listHtml = apiaries.map(function(a) {
+  function renderSwitcherRow(a) {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
     var isCurrent = current && a.id === current.id;
@@ -21863,16 +22135,32 @@ function openApiarySwitcher() {
       + '<div data-def-id="' + a.id + '" onclick="event.stopPropagation();setDefaultApiary(this.dataset.defId)" title="' + starTitle + '" style="font-size:22px;cursor:pointer;user-select:none;padding:4px;line-height:1;color:' + (isDefault ? '#F5A623' : 'var(--text-l)') + ';">' + starIcon + '</div>'
       + '<div style="font-size:28px;">🏡</div>'
       + '<div style="flex:1;">'
-        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + lockBadge + '</div>'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (isCurrent ? ' ✓' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + lockBadge + '</div>'
         + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
       + '</div>'
       + (isCurrent ? '<div style="font-size:18px;color:var(--forest);font-weight:800;padding:4px 8px;">✓</div>' : '<div style="font-size:14px;color:var(--text-l);padding:4px 8px;">›</div>')
       + '</div>';
-  }).join('');
+  }
+
+  // 20 May 2026 Phase 4ce-14l — partition into My Apiaries / Shared with Me.
+  // The "Shared" inline pill that previously appeared in the row's title is
+  // removed because the section header itself signals "Shared with Me." The
+  // section is hidden entirely when there are no shared apiaries.
+  var ownedRows = apiaries.filter(function(a){ return !a.isShared; });
+  var sharedRows = apiaries.filter(function(a){ return a.isShared; });
+  var ownedListHtml = ownedRows.length ? ownedRows.map(renderSwitcherRow).join('') : '';
+  var sharedListHtml = sharedRows.length ? sharedRows.map(renderSwitcherRow).join('') : '';
+
+  function switcherSectionHeader(label) {
+    return '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;padding:14px 20px 6px;background:var(--cream);">' + label + '</div>';
+  }
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">Switch apiary</div>'
-    + '<div style="margin:0 -20px;">' + listHtml + '</div>'
+    + '<div style="margin:0 -20px;">'
+      + (ownedListHtml ? switcherSectionHeader('My Apiaries') + ownedListHtml : '')
+      + (sharedListHtml ? switcherSectionHeader('Shared with Me') + sharedListHtml : '')
+    + '</div>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openManageApiaries()},200)" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">⚙️ Manage apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\');setTimeout(function(){openShareApiary()},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-switcher\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
@@ -21891,7 +22179,10 @@ function openManageApiaries() {
   if (!sheet) return;
   _apiaryListSource = 'manage';
 
-  var listHtml = apiaries.map(function(a) {
+  // 20 May 2026 Phase 4ce-14l — render each apiary row (used by both
+  // My Apiaries and Shared with Me sections). Factored out into a helper
+  // so the two sections share the same visual layout.
+  function renderApiaryRow(a, totalApiaryCount) {
     var hives = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; });
     var active = hives.filter(function(h){ return h.status === 'active'; }).length;
     var isDefault = a.isDefault === true;
@@ -21899,17 +22190,65 @@ function openManageApiaries() {
       + '<div style="display:flex;align-items:center;gap:12px;">'
         + '<div style="font-size:28px;">🏡</div>'
         + '<div style="flex:1;min-width:0;">'
-          + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (a.isShared ? ' <span style="font-size:10px;background:var(--honey-pale);color:var(--honey);border-radius:8px;padding:2px 6px;font-weight:700;">Shared</span>' : '') + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
+          + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
           + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
         + '</div>'
       + '</div>'
       + '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
         + '<button onclick="renameApiary(\'' + a.id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--honey);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--honey);cursor:pointer;">✏️ Rename</button>'
         + '<button data-apiary-id="' + a.id + '" onclick="setApiaryLocation(this.dataset.apiaryId)" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--forest);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--forest);cursor:pointer;">📍 Location</button>'
-        + (apiaries.length > 1 ? '<button data-del-id="' + a.id + '" onclick="event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--red,#e53935);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--red,#e53935);cursor:pointer;">🗑 Delete</button>' : '')
+        + (totalApiaryCount > 1 ? '<button data-del-id="' + a.id + '" onclick="event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--red,#e53935);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--red,#e53935);cursor:pointer;">🗑 Delete</button>' : '')
       + '</div>'
       + '</div>';
-  }).join('');
+  }
+
+  // Split apiaries into owned vs shared.
+  var owned = apiaries.filter(function(a){ return !a.isShared; });
+  var shared = apiaries.filter(function(a){ return a.isShared; });
+
+  var ownedListHtml = owned.length
+    ? owned.map(function(a){ return renderApiaryRow(a, apiaries.length); }).join('')
+    : '<div style="padding:18px 20px;text-align:center;color:var(--text-l);font-size:12px;font-style:italic;background:var(--white);border-bottom:1px solid var(--wax);">No apiaries yet. Tap "+ Add new apiary" below.</div>';
+
+  var sharedListHtml = shared.length
+    ? shared.map(function(a){ return renderApiaryRow(a, apiaries.length); }).join('')
+    : '';
+
+  // Section header — small uppercase pill pattern matching Settings modal.
+  function sectionHeader(label) {
+    return '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;padding:14px 20px 6px;background:var(--cream);">' + label + '</div>';
+  }
+
+  // 20 May 2026 Phase 4ce-14l — Pending Invites section. Rendered only if
+  // window._pendingInvites has entries. Each row shows apiary name, who
+  // shared it, role being granted, and Accept/Decline buttons. The buttons
+  // have data-invite-id so the handler can disable them during async work
+  // and prevent racy double-taps. If a user opens this modal before
+  // loadPendingInvites has run (e.g. very early in app load), they see no
+  // section — natural empty state.
+  var pendingInvites = window._pendingInvites || [];
+  var pendingHtml = '';
+  if (pendingInvites.length > 0) {
+    pendingHtml = sectionHeader('Pending Invitations (' + pendingInvites.length + ')')
+      + pendingInvites.map(function(inv){
+        var roleLabel = inv.role === 'manager' ? 'as a manager (full access)'
+                      : inv.role === 'inspector' ? 'as an inspector (can inspect & log)'
+                      : 'as a viewer (read-only)';
+        return '<div style="display:flex;flex-direction:column;gap:8px;padding:14px 20px;border-bottom:1px solid var(--wax);background:#FFF8E7;">'
+          + '<div style="display:flex;align-items:center;gap:12px;">'
+            + '<div style="font-size:28px;">🤝</div>'
+            + '<div style="flex:1;min-width:0;">'
+              + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + inv.apiaryName + '</div>'
+              + '<div style="font-size:11px;color:var(--text-l);line-height:1.4;">Shared by <strong>' + inv.ownerName + '</strong> ' + roleLabel + '</div>'
+            + '</div>'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;">'
+            + '<button data-invite-id="' + inv.id + '" onclick="acceptApiaryInvite(\'' + inv.id + '\')" style="flex:1;background:var(--forest);border:none;border-radius:8px;padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;">✓ Accept</button>'
+            + '<button data-invite-id="' + inv.id + '" onclick="declineApiaryInvite(\'' + inv.id + '\')" style="flex:1;background:transparent;border:1px solid var(--text-l);border-radius:8px;padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;">Decline</button>'
+          + '</div>'
+          + '</div>';
+      }).join('');
+  }
 
   sheet.innerHTML = '<div class="modal-handle"></div>'
     + '<div class="modal-title">Manage apiaries</div>'
@@ -21930,7 +22269,15 @@ function openManageApiaries() {
       + '</div>'
       + '<button id="cadence-save-btn" onclick="saveCadenceFromInput()" style="width:100%;background:var(--honey);border:none;border-radius:8px;padding:10px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;transition:background 0.2s;">Save cadence</button>'
     + '</div>'
-    + '<div style="margin:0 -20px;">' + listHtml + '</div>'
+    // 20 May 2026 Phase 4ce-14l — pending invites + sectioned apiary list.
+    // Edge gutter (-20px margin) so coloured row backgrounds reach the modal
+    // edges; the section headers and rows manage their own internal padding.
+    + '<div style="margin:0 -20px;">'
+      + pendingHtml
+      + sectionHeader('My Apiaries')
+      + ownedListHtml
+      + (sharedListHtml ? sectionHeader('Shared with Me') + sharedListHtml : '')
+    + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-manage\');setTimeout(function(){openShareApiary();},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-manage\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
@@ -23680,6 +24027,16 @@ async function onAuthSuccess() {
       }
     } catch(e) { console.warn('Choose-default modal scheduler failed:', e); }
   }, 2700);
+
+  // 20 May 2026 Phase 4ce-14l — load pending apiary invitations after sign-in.
+  // Fire-and-forget; the badge will update when the query completes. Wrapped
+  // in try/catch so any failure here doesn't break sign-in. The function
+  // itself is also internally defensive and won't throw.
+  setTimeout(function() {
+    try {
+      if (typeof loadPendingInvites === 'function') loadPendingInvites();
+    } catch(e) { console.warn('loadPendingInvites scheduler failed:', e); }
+  }, 1500);
 }
 
 async function loadUserProfile() {
@@ -27072,6 +27429,14 @@ async function pullFromSupabase() {
       // 29 April 2026 Phase 4bf — pull inventory movement log
       pullMovementsLog().catch(function(e){ console.warn('[pull movements log]', e); })
     ]);
+
+    // 20 May 2026 Phase 4ce-14l — refresh pending invite count after every
+    // pull from cloud. Catches invites created between sessions (e.g. another
+    // user sent a share while this user was offline). Non-blocking; the badge
+    // updates when ready.
+    try {
+      if (typeof loadPendingInvites === 'function') loadPendingInvites();
+    } catch(e) { console.warn('[pull pending invites]', e); }
 
     return true;
 
