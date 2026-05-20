@@ -22197,7 +22197,7 @@ function openManageApiaries() {
       + '<div style="display:flex;align-items:center;gap:12px;">'
         + '<div style="font-size:28px;">🏡</div>'
         + '<div style="flex:1;min-width:0;">'
-          + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + a.name + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + '</div>'
+          + '<div style="font-size:14px;font-weight:800;color:var(--text);">' + (a.isShared ? a.name.replace(' (shared)', '') : a.name) + (isDefault ? ' <span style="font-size:10px;background:#FFF3CD;color:#B07800;border-radius:8px;padding:2px 6px;font-weight:700;">Default</span>' : '') + (a.isShared && a.sharedByName ? ' <span style="font-size:10px;background:#E8F5E9;color:#2E7D32;border-radius:8px;padding:2px 6px;font-weight:700;">Shared by ' + a.sharedByName + '</span>' : '') + '</div>'
           + '<div style="font-size:11px;color:var(--text-l);">' + hives.length + ' hives · ' + active + ' active' + (a.location ? ' · 📍 ' + a.location : '') + '</div>'
         + '</div>'
       + '</div>'
@@ -25646,7 +25646,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14n — Share button per-apiary in Manage Apiaries. Each owned apiary row now has a 👥 Share button alongside Rename, Location and Delete. Tapping it opens the Share modal pre-scoped to that specific apiary via openShareApiary(apiaryId). Removed standalone "Share this apiary" button from bottom of Manage modal — cleaner, no ambiguity about which apiary is being shared. Share button hidden on shared-with-me apiaries (cannot re-share). Previous: 4ce-14m (apiary picker dropdown in share modal). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14n — Share button per-apiary in Manage Apiaries + owner name on shared apiaries. Each owned apiary row now has a 👥 Share button alongside Rename, Location and Delete — opens Share modal pre-scoped to that apiary. Removed standalone Share button from modal footer. Shared-with-me apiaries now show "Shared by [Name]" badge (owner name fetched from profiles during sync, stored as sharedByName). Strip redundant "(shared)" suffix from display name in Manage. Previous: 4ce-14m (apiary picker dropdown in share modal). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -27341,6 +27341,20 @@ async function pullFromSupabase() {
 
     if (!sse && sharedShares && sharedShares.length) {
       var sharedApiaryIds = sharedShares.map(function(s){ return s.apiary_id; });
+      // 20 May 2026 Phase 4ce-14n — fetch owner profiles so we can display
+      // "Shared by [Name]" in Manage Apiaries instead of a generic "(shared)".
+      var _ownerIds = sharedShares.map(function(s){ return s.owner_id; }).filter(Boolean);
+      var _ownerNameMap = {};
+      if (_ownerIds.length > 0) {
+        try {
+          var _ownersRes = await sb.from('profiles').select('id, name, display_name, email').in('id', _ownerIds);
+          if (_ownersRes.data) {
+            _ownersRes.data.forEach(function(p){
+              _ownerNameMap[String(p.id)] = p.display_name || p.name || (p.email ? p.email.split('@')[0] : '');
+            });
+          }
+        } catch(e) { /* non-fatal — falls back to empty string */ }
+      }
       var { data: sharedApiaries } = await sb.from('apiaries').select('*').in('id', sharedApiaryIds);
       if (sharedApiaries && sharedApiaries.length) {
         var existingApiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
@@ -27353,19 +27367,22 @@ async function pullFromSupabase() {
         // instead of "Shared with Me" in the split renderer. Self-healing —
         // fixes stale local state on next pull without user action.
         sharedApiaries.forEach(function(a) {
-          var sharedRole = (sharedShares.find(function(s){ return s.apiary_id === a.id; }) || {}).role || 'viewer';
+          var _shareRow = sharedShares.find(function(s){ return s.apiary_id === a.id; }) || {};
+          var sharedRole = _shareRow.role || 'viewer';
+          var _sharedByName = _ownerNameMap[String(_shareRow.owner_id)] || '';
           var existing = existingApiaries.find(function(ea){ return ea.id === a.id; });
           if (existing) {
             // Stamp the shared flags onto the existing row + ensure name suffix.
             existing.isShared = true;
             existing.sharedRole = sharedRole;
+            existing.sharedByName = _sharedByName;
             if (existing.name && existing.name.indexOf(' (shared)') === -1) {
               existing.name = existing.name + ' (shared)';
             }
           } else {
             existingApiaries.push({ id: a.id, name: a.name + ' (shared)', location: a.location,
               lat: a.lat || null, lng: a.lng || null, createdAt: new Date(a.created_at).getTime(),
-              isShared: true, sharedRole: sharedRole });
+              isShared: true, sharedRole: sharedRole, sharedByName: _sharedByName });
           }
         });
         localStorage.setItem('hk_apiaries_v1', JSON.stringify(existingApiaries));
