@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260520-2210">
+  <meta name="app-version" content="20260520-2225">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -25124,11 +25124,20 @@ async function onAuthSuccess() {
           await loadSettingsFromCloud().catch(function(){});
         }
         var pulled = await pullFromSupabase();
+        // Phase 4cf-01a hotfix6 · 20 May 2026 — pull queen rearing batches
+        // alongside the warm-resume pull so the home banner shows immediately
+        // after backgrounded apps return to foreground.
+        try {
+          if (typeof syncQueenBatchesFromCloud === 'function') {
+            await syncQueenBatchesFromCloud().catch(function(){});
+          }
+        } catch(e){}
         if (pulled) {
           // Re-render anything that might have changed
           try { renderDashboard(); } catch(e) {}
           try { renderApiary(); } catch(e) {}
           try { updateApiaryNameDisplays(); } catch(e) {}
+          try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
         }
       } catch(e) {
         console.warn('Background sync after warm resume failed:', e);
@@ -25183,6 +25192,16 @@ async function onAuthSuccess() {
       await loadSettingsFromCloud().catch(function(){});
     }
     var pulled = await pullFromSupabase();
+
+    // Phase 4cf-01a hotfix6 · 20 May 2026 — pull queen rearing batches
+    // during the "Loading your apiary" phase, before home renders. Without
+    // this, the home banner races auth and only shows after app restart
+    // (when the localStorage cache from a previous session is available).
+    try {
+      if (typeof syncQueenBatchesFromCloud === 'function') {
+        await syncQueenBatchesFromCloud().catch(function(){});
+      }
+    } catch(e){}
 
     if (!pulled) {
       // Supabase unreachable or empty — push whatever local data exists up
@@ -26968,7 +26987,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22:10 20 May 2026 BST · Phase 4cf-01a hotfix5 — Queen Rearing Calendar (v1). Supabase-backed batch tracker for grafted queens. Three modals (list / new / detail), 8-stage timeline auto-calculated from graft date (graft → accept → capped → transfer → emerge → mate → check eggs → established), editable cell counts at each stage, urgency-sorted next-action banner. Pro+ gated; Free tier hits paywall nudge. Entry points: Settings → Tools → 👑 Queen rearing, and a home-screen banner (visible only when active batches exist). REQUIRES Supabase migration queen_batches_schema.sql to be run before first use. Previous: 4ce-15e (rail buttons frosted glass). Restore point: hivekeeper-beta1-restore-20260520-prephase4cf.html.';
+var HIVEKEEPER_BUILD = '22:25 20 May 2026 BST · Phase 4cf-01a hotfix6 — Queen Rearing Calendar (v1). Supabase-backed batch tracker for grafted queens. Three modals (list / new / detail), 8-stage timeline auto-calculated from graft date (graft → accept → capped → transfer → emerge → mate → check eggs → established), editable cell counts at each stage, urgency-sorted next-action banner. Pro+ gated; Free tier hits paywall nudge. Entry points: Settings → Tools → 👑 Queen rearing, and a home-screen banner (visible only when active batches exist). REQUIRES Supabase migration queen_batches_schema.sql to be run before first use. Previous: 4ce-15e (rail buttons frosted glass). Restore point: hivekeeper-beta1-restore-20260520-prephase4cf.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
