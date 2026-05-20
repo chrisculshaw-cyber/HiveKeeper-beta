@@ -22204,6 +22204,7 @@ function openManageApiaries() {
       + '<div style="display:flex;gap:6px;flex-wrap:wrap;">'
         + '<button onclick="renameApiary(\'' + a.id + '\')" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--honey);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--honey);cursor:pointer;">✏️ Rename</button>'
         + '<button data-apiary-id="' + a.id + '" onclick="setApiaryLocation(this.dataset.apiaryId)" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--forest);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--forest);cursor:pointer;">📍 Location</button>'
+        + (!a.isShared ? '<button data-share-id="' + a.id + '" onclick="closeModalEl(\'modal-apiary-manage\');var _id=this.dataset.shareId;setTimeout(function(){openShareApiary(_id);},200);" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--forest);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share</button>' : '')
         + (totalApiaryCount > 1 ? '<button data-del-id="' + a.id + '" onclick="event.preventDefault();handleDeleteApiary(this.dataset.delId);return false;" style="flex:1;min-width:80px;background:transparent;border:1px solid var(--red,#e53935);border-radius:8px;padding:8px 10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--red,#e53935);cursor:pointer;">🗑 Delete</button>' : '')
       + '</div>'
       + '</div>';
@@ -22286,7 +22287,6 @@ function openManageApiaries() {
       + (sharedListHtml ? sectionHeader('Shared with Me') + sharedListHtml : '')
     + '</div>'
     + '<button onclick="addNewApiary()" style="width:100%;margin-top:16px;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer;">+ Add new apiary</button>'
-    + '<button onclick="closeModalEl(\'modal-apiary-manage\');setTimeout(function(){openShareApiary();},200)" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;">👥 Share this apiary</button>'
     + '<button onclick="closeModalEl(\'modal-apiary-manage\')" style="width:100%;margin-top:8px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Close</button>';
 
   openModalEl('modal-apiary-manage');
@@ -25331,7 +25331,7 @@ function onShareApiaryPickerChange(apiaryId) {
   renderShareList();
 }
 
-async function openShareApiary() {
+async function openShareApiary(apiaryId) {
   // Paywall: sharing is Pro/Commercial only
   if (!canShareApiary()) {
     // 13 May 2026 Phase 4ce-14j — subtle nudge for free tier per Rule 2.
@@ -25340,8 +25340,10 @@ async function openShareApiary() {
     }
     return;
   }
-  // 20 May 2026 Phase 4ce-14m — initialise scoped apiary ID for share modal
-  _shareApiaryId = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
+  // 20 May 2026 Phase 4ce-14n — accept optional apiaryId so Manage Apiaries
+  // rows can open share pre-scoped to a specific apiary. Falls back to
+  // currentApiaryId when called without an argument (e.g. from header Share).
+  _shareApiaryId = apiaryId || currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
   var modal = document.getElementById('modal-share-apiary');
   if (!modal) return;
   openModalEl('modal-share-apiary');
@@ -25644,7 +25646,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14m — Apiary picker dropdown in share modal. Users with multiple owned apiaries now see a dropdown at the top of the Share modal to choose which apiary to share, without leaving the modal or changing the main apiary screen. Scoped via _shareApiaryId — renderShareList, inviteToApiary, changeShareRole, removeShare all use the picker selection instead of currentApiaryId. Dropdown hidden when user has only 1 owned apiary (no choice needed). Shared apiaries excluded from picker (cannot re-share). Previous: 4ce-14l (shared apiary split in switcher). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14n — Share button per-apiary in Manage Apiaries. Each owned apiary row now has a 👥 Share button alongside Rename, Location and Delete. Tapping it opens the Share modal pre-scoped to that specific apiary via openShareApiary(apiaryId). Removed standalone "Share this apiary" button from bottom of Manage modal — cleaner, no ambiguity about which apiary is being shared. Share button hidden on shared-with-me apiaries (cannot re-share). Previous: 4ce-14m (apiary picker dropdown in share modal). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
