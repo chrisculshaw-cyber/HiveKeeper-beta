@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260520-1745">
+  <meta name="app-version" content="20260520-1800">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2916,10 +2916,13 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
       <div class="hk-hdr-context" id="inspect-hive-select-wrap-outer" style="overflow:hidden;">
-        <!-- 20 May 2026 Phase 4ce-14q — Swipeable hive strip replaces dropdown.
-             Hives sorted by urgency (most overdue first). Auto-selects most
-             overdue on entry. Tap any chip to switch hive. Hidden compat
-             elements preserved for QR scanner and editInspection flows. -->
+        <!-- 20 May 2026 Phase 4ce-14t — Sort toggle + swipeable hive strip -->
+        <div id="inspect-strip-sort" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;">Sort:</span>
+          <button onclick="setHiveStripSort('urgency')" id="strip-sort-urgency" class="strip-sort-btn strip-sort-active" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.2);color:white;cursor:pointer;font-family:'Syne',sans-serif;">⚡ Urgency</button>
+          <button onclick="setHiveStripSort('row')" id="strip-sort-row" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;">📍 By row</button>
+          <button onclick="setHiveStripSort('name')" id="strip-sort-name" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;">Aa Name</button>
+        </div>
         <div id="inspect-hive-strip" style="display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;"></div>
         <!-- 20 May 2026 Phase 4ce-14r — Bare compat elements. Only the name
              span is needed by populateHiveSelector/QR scanner/editInspection.
@@ -6343,7 +6346,29 @@ function hideInspectFields() {
 // by urgency (most overdue first). Auto-selects the most overdue
 // hive if none is currently selected. Tapping a chip calls
 // changeInspectHive(). Active chip scrolls into view.
+// Phase 4ce-14t — Sort toggle: urgency (default), by row, by name.
 // ═══════════════════════════════════════════════════════════════
+var _hiveStripSort = 'urgency'; // 'urgency' | 'row' | 'name'
+
+function setHiveStripSort(mode) {
+  _hiveStripSort = mode;
+  // Update toggle button styles
+  document.querySelectorAll('.strip-sort-btn').forEach(function(btn) {
+    btn.style.background = 'transparent';
+    btn.style.borderColor = 'rgba(255,255,255,.15)';
+    btn.style.color = 'rgba(255,255,255,.5)';
+    btn.classList.remove('strip-sort-active');
+  });
+  var activeBtn = document.getElementById('strip-sort-' + mode);
+  if (activeBtn) {
+    activeBtn.style.background = 'rgba(255,255,255,.2)';
+    activeBtn.style.borderColor = 'rgba(255,255,255,.25)';
+    activeBtn.style.color = 'white';
+    activeBtn.classList.add('strip-sort-active');
+  }
+  renderHiveStrip();
+}
+
 function renderHiveStrip() {
   var strip = document.getElementById('inspect-hive-strip');
   if (!strip) return;
@@ -6369,8 +6394,23 @@ function renderHiveStrip() {
     return { hive: h, daysSince: daysSince, overdueDays: overdueDays };
   });
 
-  // Sort: most overdue first, then due, then on-track
-  hiveData.sort(function(a, b) { return b.overdueDays - a.overdueDays; });
+  // Sort based on current mode
+  if (_hiveStripSort === 'row') {
+    // Sort by row name (natural sort), then by hive name within row
+    hiveData.sort(function(a, b) {
+      var rowA = (a.hive.row || 'zzz').toLowerCase();
+      var rowB = (b.hive.row || 'zzz').toLowerCase();
+      if (rowA !== rowB) return rowA.localeCompare(rowB, undefined, { numeric: true });
+      return (a.hive.name || '').localeCompare(b.hive.name || '', undefined, { numeric: true });
+    });
+  } else if (_hiveStripSort === 'name') {
+    hiveData.sort(function(a, b) {
+      return (a.hive.name || '').localeCompare(b.hive.name || '', undefined, { numeric: true });
+    });
+  } else {
+    // Default: urgency — most overdue first
+    hiveData.sort(function(a, b) { return b.overdueDays - a.overdueDays; });
+  }
 
   // Auto-select most overdue if no hive currently selected
   if (!currentHiveId && hiveData.length) {
@@ -6401,6 +6441,7 @@ function renderHiveStrip() {
     html += '<div class="' + chipClass + '" data-hive-id="' + d.hive.id + '" onclick="changeInspectHive(\'' + d.hive.id + '\')">'
       + '<span style="font-size:20px;">🐝</span>'
       + '<div><div class="hsc-name">' + (d.hive.name || 'Hive') + '</div>'
+      + (_hiveStripSort === 'row' && d.hive.row ? '<div style="font-size:9px;color:rgba(255,255,255,.4);margin-bottom:1px;">' + d.hive.row + '</div>' : '')
       + '<span class="hsc-badge ' + badgeClass + '">' + badgeText + '</span></div></div>';
   });
 
@@ -25982,7 +26023,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14t — Hive strip polish. (1) Never-inspected hives show "Not inspected" instead of "999d overdue". (2) Apiary pill on inspect screen is now just a label — removed dropdown chevron and onclick since apiary switching happens from home, not mid-inspection. Previous: 4ce-14s (layout shift + badge fix). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14u — Hive strip sort toggle. Three sort modes: Urgency (default, most overdue first), By Row (physical apiary order with row labels on chips), By Name (alphabetical). Toggle pills above the strip. Sort state persists within session. Row sort uses natural sort so Row 1 < Row 2 < Row 10. Hives within a row sorted by name. Previous: 4ce-14t (not inspected label + apiary label). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
