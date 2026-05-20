@@ -27290,11 +27290,28 @@ async function pullFromSupabase() {
       var { data: sharedApiaries } = await sb.from('apiaries').select('*').in('id', sharedApiaryIds);
       if (sharedApiaries && sharedApiaries.length) {
         var existingApiaries = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]');
+        // 20 May 2026 Phase 4ce-14m — pull-from-cloud now UPDATES existing
+        // local rows with isShared/sharedRole, not just inserts new ones.
+        // Previously: if the apiary was already in localStorage before being
+        // shared (e.g. another account on the same device created it, or
+        // earlier sync pulled it as owned), the dedup-skip meant isShared
+        // was never written. Result: the apiary appeared under "My Apiaries"
+        // instead of "Shared with Me" in the split renderer. Self-healing —
+        // fixes stale local state on next pull without user action.
         sharedApiaries.forEach(function(a) {
-          if (!existingApiaries.find(function(ea){ return ea.id === a.id; })) {
+          var sharedRole = (sharedShares.find(function(s){ return s.apiary_id === a.id; }) || {}).role || 'viewer';
+          var existing = existingApiaries.find(function(ea){ return ea.id === a.id; });
+          if (existing) {
+            // Stamp the shared flags onto the existing row + ensure name suffix.
+            existing.isShared = true;
+            existing.sharedRole = sharedRole;
+            if (existing.name && existing.name.indexOf(' (shared)') === -1) {
+              existing.name = existing.name + ' (shared)';
+            }
+          } else {
             existingApiaries.push({ id: a.id, name: a.name + ' (shared)', location: a.location,
               lat: a.lat || null, lng: a.lng || null, createdAt: new Date(a.created_at).getTime(),
-              isShared: true, sharedRole: (sharedShares.find(function(s){ return s.apiary_id === a.id; }) || {}).role || 'viewer' });
+              isShared: true, sharedRole: sharedRole });
           }
         });
         localStorage.setItem('hk_apiaries_v1', JSON.stringify(existingApiaries));
@@ -27302,8 +27319,15 @@ async function pullFromSupabase() {
       var { data: sharedHives } = await sb.from('hives').select('*').in('apiary_id', sharedApiaryIds);
       if (sharedHives && sharedHives.length) {
         var existingHives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
+        // 20 May 2026 Phase 4ce-14m — same self-healing pattern as the apiary
+        // loop above: update existing local hives with isShared instead of
+        // skipping them. Necessary when a hive was in localStorage before
+        // its apiary was formally shared.
         sharedHives.forEach(function(h) {
-          if (!existingHives.find(function(eh){ return eh.id === h.id; })) {
+          var existing = existingHives.find(function(eh){ return eh.id === h.id; });
+          if (existing) {
+            existing.isShared = true;
+          } else {
             existingHives.push({ id: h.id, name: h.name, row: h.row, status: h.status,
               hiveType: h.hive_type, boxType: h.box_type, broodBoxes: h.brood_boxes, supers: h.supers,
               queenStatus: h.queen_status, storesLevel: h.stores_level, varroaLevel: h.varroa_level,
