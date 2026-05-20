@@ -3568,7 +3568,14 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
         <button onclick="renderShareList()" style="background:transparent;border:1px solid var(--wax);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--forest);cursor:pointer;font-family:Syne,sans-serif;">↻ Refresh</button>
       </div>
-      <div id="share-apiary-name" style="font-size:13px;color:var(--text-l);margin-top:-8px;margin-bottom:16px;"></div>
+      <!-- 20 May 2026 Phase 4ce-14m — apiary picker dropdown. Lets user
+           choose which apiary to share without leaving the modal. Only shows
+           owned apiaries (can't re-share a shared apiary). Defaults to the
+           current apiary. Scoped: does NOT change the main currentApiaryId. -->
+      <div id="share-apiary-picker-wrap" style="margin-top:-4px;margin-bottom:12px;">
+        <select id="share-apiary-picker" onchange="onShareApiaryPickerChange(this.value)" style="width:100%;padding:10px 12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--forest);box-sizing:border-box;background:var(--cream);cursor:pointer;"></select>
+      </div>
+      <div id="share-apiary-name" style="display:none;"></div>
 
       <!-- Current shares -->
       <div id="share-list" style="margin-bottom:16px;"></div>
@@ -25289,6 +25296,41 @@ function loadSwarmCatches(hiveId) {
 // APIARY SHARING
 // ═══════════════════════════════════════════════
 
+// 20 May 2026 Phase 4ce-14m — scoped apiary ID for the share modal.
+// Defaults to currentApiaryId on open. Picker changes update this,
+// NOT the main currentApiaryId (no side-effects on apiary screen).
+var _shareApiaryId = null;
+
+function populateShareApiaryPicker() {
+  var picker = document.getElementById('share-apiary-picker');
+  var wrap = document.getElementById('share-apiary-picker-wrap');
+  if (!picker) return;
+  var apiaries = loadApiaries().filter(function(a){ return !a.isShared; });
+  // Hide picker entirely if user has only 1 owned apiary — no choice to make
+  if (apiaries.length <= 1) {
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  if (wrap) wrap.style.display = 'block';
+  picker.innerHTML = apiaries.map(function(a) {
+    var hiveCount = _origLoadHives().filter(function(h){ return h.apiaryId === a.id; }).length;
+    var sel = (a.id === _shareApiaryId) ? ' selected' : '';
+    return '<option value="' + a.id + '"' + sel + '>' + a.name + ' (' + hiveCount + ' hives)</option>';
+  }).join('');
+}
+
+function onShareApiaryPickerChange(apiaryId) {
+  _shareApiaryId = apiaryId;
+  // Clear any stale invite QR / fields from previous apiary
+  var qrEl = document.getElementById('share-invite-qr');
+  if (qrEl) { qrEl.style.display = 'none'; qrEl.innerHTML = ''; }
+  var emailEl = document.getElementById('share-email');
+  if (emailEl) emailEl.value = '';
+  var nameEl = document.getElementById('share-name');
+  if (nameEl) nameEl.value = '';
+  renderShareList();
+}
+
 async function openShareApiary() {
   // Paywall: sharing is Pro/Commercial only
   if (!canShareApiary()) {
@@ -25298,16 +25340,22 @@ async function openShareApiary() {
     }
     return;
   }
+  // 20 May 2026 Phase 4ce-14m — initialise scoped apiary ID for share modal
+  _shareApiaryId = currentApiaryId || localStorage.getItem(CURRENT_APIARY_KEY) || null;
   var modal = document.getElementById('modal-share-apiary');
   if (!modal) return;
   openModalEl('modal-share-apiary');
+  populateShareApiaryPicker();
   var qrEl = document.getElementById('share-invite-qr');
   if (qrEl) { qrEl.style.display = 'none'; qrEl.innerHTML = ''; }
   await renderShareList();
 }
 
 async function renderShareList() {
-  var apiary = getCurrentApiary ? getCurrentApiary() : null;
+  // 20 May 2026 Phase 4ce-14m — use scoped _shareApiaryId, not currentApiaryId.
+  var _sid = _shareApiaryId || currentApiaryId;
+  var apiary = loadApiaries().find(function(a){ return a.id === _sid; });
+  if (!apiary) { apiary = getCurrentApiary ? getCurrentApiary() : null; }
   if (!apiary) return;
 
   var list = document.getElementById('share-list');
@@ -25324,7 +25372,7 @@ async function renderShareList() {
     var { data, error } = await sb
       .from('apiary_shares')
       .select('*')
-      .eq('apiary_id', currentApiaryId)
+      .eq('apiary_id', _sid)
       .order('created_at', { ascending: false });
 
     if (!error && data) {
@@ -25332,10 +25380,10 @@ async function renderShareList() {
       var localShares = shares.map(function(s) {
         return { id: s.id, email: s.invited_email, name: s.invited_name || s.invited_email.split('@')[0], role: s.role, status: s.status, invitedAt: new Date(s.created_at).getTime(), token: s.token };
       });
-      localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(localShares));
+      localStorage.setItem('hk_apiary_shares_' + _sid, JSON.stringify(localShares));
     }
   } catch(e) {
-    shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]')
+    shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + _sid) || '[]')
       .map(function(s) { return { id: s.id, invited_email: s.email, invited_name: s.name, role: s.role, status: s.status }; });
   }
 
@@ -25397,6 +25445,8 @@ async function renderShareList() {
 }
 
 async function inviteToApiary() {
+  // 20 May 2026 Phase 4ce-14m — use scoped _shareApiaryId
+  var _sid = _shareApiaryId || currentApiaryId;
   var email = document.getElementById('share-email').value.trim();
   var role = document.getElementById('share-role').value;
   var nameInput = document.getElementById('share-name');
@@ -25404,15 +25454,15 @@ async function inviteToApiary() {
 
   if (!email || !email.includes('@')) { showToast('Enter a valid email'); return; }
 
-  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + _sid) || '[]');
   if (shares.length >= 3) { showToast('Free tier: max 3 collaborators'); return; }
   if (shares.find(function(s){ return s.email === email; })) { showToast('Already invited'); return; }
 
   // Generate a unique token
   var token = 'inv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-  // Get current apiary and user name
-  var apiary = getCurrentApiary();
+  // Get selected apiary and user name
+  var apiary = loadApiaries().find(function(a){ return a.id === _sid; });
   var apiaryName = apiary ? apiary.name : 'My Apiary';
   var inviterName = (_currentUser && _currentUser.user_metadata && _currentUser.user_metadata.full_name)
     ? _currentUser.user_metadata.full_name
@@ -25437,7 +25487,7 @@ async function inviteToApiary() {
         'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk'
       },
       body: JSON.stringify({
-        apiaryId: currentApiaryId,
+        apiaryId: _sid,
         apiaryName: apiaryName,
         invitedEmail: email,
         invitedName: name,
@@ -25460,7 +25510,7 @@ async function inviteToApiary() {
         status: 'pending',
         token: token
       });
-      localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+      localStorage.setItem('hk_apiary_shares_' + _sid, JSON.stringify(shares));
       document.getElementById('share-email').value = '';
       var shareNameEl = document.getElementById('share-name');
       if (shareNameEl) shareNameEl.value = '';
@@ -25510,13 +25560,14 @@ function copyInviteLink(link) {
 }
 
 async function changeShareRole(shareId, newRole) {
+  var _sid = _shareApiaryId || currentApiaryId;
   try {
     var sb = getSupabase();
     await sb.from('apiary_shares').update({ role: newRole }).eq('id', shareId);
     // Update localStorage cache
-    var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+    var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + _sid) || '[]');
     var s = shares.find(function(s){ return s.id === shareId; });
-    if (s) { s.role = newRole; localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares)); }
+    if (s) { s.role = newRole; localStorage.setItem('hk_apiary_shares_' + _sid, JSON.stringify(shares)); }
     showToast('Role updated to ' + newRole + ' ✓');
   } catch(e) {
     showToast('Could not update role — try again');
@@ -25526,6 +25577,7 @@ async function changeShareRole(shareId, newRole) {
 }
 
 async function removeShare(shareId) {
+  var _sid = _shareApiaryId || currentApiaryId;
   // Use in-app confirm
   var confirmed = await showConfirmModal('Remove access?', 'This person will no longer be able to see or use this apiary.');
   if (!confirmed) return;
@@ -25537,9 +25589,9 @@ async function removeShare(shareId) {
     console.warn('Failed to remove from Supabase:', e);
   }
 
-  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + currentApiaryId) || '[]');
+  var shares = JSON.parse(localStorage.getItem('hk_apiary_shares_' + _sid) || '[]');
   shares = shares.filter(function(s){ return s.id !== shareId; });
-  localStorage.setItem('hk_apiary_shares_' + currentApiaryId, JSON.stringify(shares));
+  localStorage.setItem('hk_apiary_shares_' + _sid, JSON.stringify(shares));
 
   renderShareList();
   showToast('Access removed');
@@ -25592,7 +25644,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '13 May 2026 BST · Phase 4ce-14k — Completed the subtle paywall messaging work originally scoped this morning. Six changes: (1) Honey pricing tap on hive card → nudge instead of modal (\'Honey pricing is part of Pro. Tap to upgrade.\'); (2) Honey pricing inline lock badge → routes through openHoneyPricingModal (centralised nudge logic); (3) Hive cover photo upload paywall → nudge (\'Photos are part of Pro. Tap to upgrade.\'); (4) Frame photo addPhoto paywall → same nudge; (5) Calendar trial-ending day tap → tappable toast nudge (\'Your Pro trial ends today. Tap to see plans.\') instead of full modal — trial users need a soft reminder when tapping the calendar exploratorily, not a blocking pricing modal; (6) Trial-expired modal copy improved from generic \'14 days of Pro, on us, have ended\' to direct \'Your 14-day Pro trial has ended. You\'re now on the Free plan — your apiaries and inspections stay safe. Pro adds multiple apiaries, unlimited hives, sharing, AI features, and more.\' Kept as modal (per Rule 2 user-initiated): Photo teaser sheet \'Upgrade to Pro\' button (line 12792) and Trial-expired banner tap (line 34600). These are deliberate user-initiated upgrade CTAs. Total paywall sites converted across 4ce-14j+4ce-14k: 8 of 11 (3 sites today + 5 today = 8). Phase 4ce-14j (subtle nudges for add hive, share apiary, add apiary). 4ce-14i (choose-default-apiary modal + star lock). 4ce-14h (multi-apiary lockout greying). 4ce-14f (four P1 fixes). 4ce-14e (defensive guards for cold-start JS errors). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-14m — Apiary picker dropdown in share modal. Users with multiple owned apiaries now see a dropdown at the top of the Share modal to choose which apiary to share, without leaving the modal or changing the main apiary screen. Scoped via _shareApiaryId — renderShareList, inviteToApiary, changeShareRole, removeShare all use the picker selection instead of currentApiaryId. Dropdown hidden when user has only 1 owned apiary (no choice needed). Shared apiaries excluded from picker (cannot re-share). Previous: 4ce-14l (shared apiary split in switcher). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
