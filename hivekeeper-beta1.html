@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260520-2020">
+  <meta name="app-version" content="20260520-2030">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -5061,6 +5061,23 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
+  <!-- MODAL: Queen Rearing (Phase 4cf-01a 20 May 2026)
+       Pro+ feature. Three modals lazy-populated by openQueenRearingList,
+       openQueenRearingNew, openQueenRearingDetail. Top-level (closeModal,
+       not closeToSettings) so closing returns to the home screen. -->
+  <div class="modal-overlay" id="modal-queen-list" onclick="closeModal(event,'modal-queen-list')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-queen-new" onclick="closeModal(event,'modal-queen-new')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-queen-detail" onclick="closeModal(event,'modal-queen-detail')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+    </div>
+  </div>
+
   <!-- MODAL: Support (feedback, WhatsApp, help) -->
   <div class="modal-overlay" id="modal-support" onclick="closeToSettingsOnOverlay(event,'modal-support')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
@@ -6175,6 +6192,7 @@ function goTo(id){
     renderDashboard();
     // 29 April 2026 Phase 4aw — inventory low-stock alert on home
     try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
     // 29 April 2026 Phase 4bb — forage conditions on home (moved from Environment)
     try { renderForageConditions(); } catch(e) {}
     // 29 April 2026 Phase 4bc — community spray alert on home (async, fire-and-forget)
@@ -9603,6 +9621,7 @@ function saveEquipmentFromModal() {
   closeEquipmentModal();
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 // 29 April 2026 Phase 4bf — quick stock adjustment helpers from the modal.
@@ -9627,6 +9646,7 @@ function quickAdjust(delta) {
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 // 30 April 2026 Phase 4bm — Equipment state breakdown + transition UI.
@@ -9733,6 +9753,7 @@ function transitionStock(from, to) {
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 function customAdjust(isUse) {
@@ -9758,6 +9779,7 @@ function customAdjust(isUse) {
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 function confirmDeleteEquipment() {
@@ -9768,6 +9790,7 @@ function confirmDeleteEquipment() {
   showToast('Deleted');
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10095,6 +10118,7 @@ function completeBottlingNow() {
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 var _honeyStockEditingId = null;
@@ -11743,6 +11767,7 @@ function saveStackEditor() {
   try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
   try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
   try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 function closeStackEditor() {
@@ -12340,6 +12365,7 @@ function saveHiveEditor() {
   try { if (typeof renderInventory === 'function') renderInventory(); } catch(e) {}
   try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
   try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
+  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
 function closeHiveEditor() {
@@ -23730,6 +23756,667 @@ function openPreferencesModal() {
 // ═══════════════════════════════════════════════════════════════
 // TOOLS MODAL — Refer, Share apiary, Bee inspector contacts
 // ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// QUEEN REARING CALENDAR — Phase 4cf-01a · 20 May 2026
+// 
+// Pro+ feature. Tracks grafting batches through 8 stages from
+// graft to laying queen. Supabase-backed (queen_batches table),
+// localStorage cached for offline reads.
+// 
+// Entry points:
+//   - Settings → Tools → 👑 Queen rearing
+//   - Home screen banner (visible when active batches have a next action)
+// 
+// Requires SQL migration (queen_batches_schema.sql) to have been run
+// in Supabase BEFORE this code can persist. Without the table, create
+// operations will throw and surface to the user as an alert.
+// ═══════════════════════════════════════════════════════════════
+
+var QUEEN_BATCHES_KEY = 'hk_queen_batches_cache';
+
+// Timeline definition — day offsets from graft_date.
+// Stages mirror the mockup (20 May 2026 build agreement).
+var QUEEN_STAGES = [
+  { key:'graft',       day:0,  range:[0,0],   icon:'\uD83C\uDF31', title:'Grafting',                note:'Larvae ~24hrs old grafted into cell cups. Place in cell builder (queenless, strong nurse bees).' },
+  { key:'accept',      day:1,  range:[1,1],   icon:'\u2713',       title:'Check acceptance',        note:'Count accepted cells. Remove empty cups. 60-80% acceptance is a good first graft.' },
+  { key:'capped',      day:5,  range:[5,5],   icon:'\uD83D\uDD12', title:'Cells capped',            note:'Accepted cells now sealed. Handle gently \u2014 pupation in progress.' },
+  { key:'transfer',    day:8,  range:[8,11],  icon:'\uD83D\uDCCB', title:'Transfer to mating nucs', note:'\u26A0 Critical: transfer BEFORE Day 12 or the first queen emerges and destroys remaining cells. One cell per mating nuc. Handle vertically \u2014 wing buds forming.' },
+  { key:'emerge',      day:12, range:[12,12], icon:'\uD83D\uDC23', title:'Queens emerge',           note:'Check mating nucs for emerged queens. Look for a round hole at the tip of the cell. Remove any emergency cells the nuc may have started.' },
+  { key:'mate',        day:18, range:[17,20], icon:'\u2708\uFE0F', title:'Mating flights',          note:'Do NOT open nucs during this period. Queens need calm, dry days (above 20\u00B0C, low wind). Weather-dependent \u2014 delays of 3-5 days are normal.' },
+  { key:'lay_check',   day:26, range:[24,28], icon:'\uD83D\uDD0D', title:'Check for eggs',          note:'Gently check for eggs in worker cells. A good laying pattern = successful mating. No eggs by Day 28 = queen may have failed; consider replacement.' },
+  { key:'established', day:30, range:[30,99], icon:'\uD83D\uDC51', title:'Queen established',       note:'Mated queen confirmed laying. Ready to introduce to production hive, sell, or keep in nuc. Mark queen (2026 = white) and record in hive notes.' }
+];
+
+function loadQueenBatches() {
+  try { return JSON.parse(localStorage.getItem(QUEEN_BATCHES_KEY)) || []; }
+  catch(e){ return []; }
+}
+
+function saveQueenBatchesCache(batches) {
+  try { localStorage.setItem(QUEEN_BATCHES_KEY, JSON.stringify(batches)); } catch(e){}
+}
+
+async function syncQueenBatchesFromCloud() {
+  try {
+    if (!_currentUser) return loadQueenBatches();
+    var sb = getSupabase();
+    var res = await sb.from('queen_batches')
+      .select('*')
+      .eq('user_id', _currentUser.id)
+      .order('graft_date', { ascending: false });
+    if (res.error) { console.warn('[QR] cloud sync failed', res.error); return loadQueenBatches(); }
+    saveQueenBatchesCache(res.data || []);
+    return res.data || [];
+  } catch(e) {
+    console.warn('[QR] sync error', e);
+    return loadQueenBatches();
+  }
+}
+
+function calcBatchTimeline(graftDate) {
+  var base = new Date(graftDate);
+  if (isNaN(base.getTime())) return null;
+  return QUEEN_STAGES.map(function(stage){
+    var d = new Date(base); d.setDate(d.getDate() + stage.day);
+    var dMax = new Date(base); dMax.setDate(dMax.getDate() + stage.range[1]);
+    return {
+      key: stage.key, date: d, dateMax: dMax,
+      icon: stage.icon, title: stage.title, note: stage.note,
+      day: stage.day, range: stage.range
+    };
+  });
+}
+
+function getBatchStageStatus(batch, stageKey) {
+  // 'done' if the relevant cell-count field has been filled in,
+  // 'current' if today >= stage start date and not done,
+  // 'future' otherwise.
+  var today = new Date(); today.setHours(0,0,0,0);
+  var tl = calcBatchTimeline(batch.graft_date);
+  if (!tl) return 'future';
+  var stage = tl.filter(function(s){ return s.key === stageKey; })[0];
+  if (!stage) return 'future';
+
+  var doneMap = {
+    graft: (batch.cells_grafted||0) > 0,
+    accept: batch.cells_accepted != null,
+    capped: batch.cells_capped != null,
+    transfer: batch.cells_transferred != null,
+    emerge: batch.cells_emerged != null,
+    mate: batch.cells_mated != null,
+    lay_check: batch.cells_laying != null,
+    established: (batch.cells_laying||0) > 0 && batch.status === 'complete'
+  };
+  if (doneMap[stageKey]) return 'done';
+  if (today.getTime() >= stage.date.getTime()) return 'current';
+  return 'future';
+}
+
+function getNextAction(batch) {
+  var tl = calcBatchTimeline(batch.graft_date);
+  if (!tl) return null;
+  var today = new Date(); today.setHours(0,0,0,0);
+  for (var i=0; i<tl.length; i++) {
+    var stage = tl[i];
+    if (getBatchStageStatus(batch, stage.key) === 'done') continue;
+    var diffDays = Math.round((stage.date.getTime() - today.getTime()) / 86400000);
+    return {
+      stageKey: stage.key,
+      title: stage.title,
+      date: stage.date,
+      daysFromNow: diffDays,
+      icon: stage.icon,
+      note: stage.note,
+      isCritical: stage.key === 'transfer'
+    };
+  }
+  return null; // all stages done
+}
+
+function getBatchProgress(batch) {
+  var stages = ['graft','accept','capped','transfer','emerge','mate','lay_check','established'];
+  var completed = 0;
+  for (var i=0; i<stages.length; i++) {
+    if (getBatchStageStatus(batch, stages[i]) === 'done') completed++;
+    else break;
+  }
+  var pct = Math.round((completed / stages.length) * 100);
+  var colour = 'green';
+  var label = 'In progress';
+  if (batch.status === 'complete') { colour = 'royal'; label = 'Queen laying'; pct = 100; }
+  else if (batch.status === 'failed') { colour = 'amber'; label = 'Failed'; }
+  else if (completed === 0) { label = 'Just started'; }
+  else if (completed < 4) { label = 'Cell building'; }
+  else if (completed < 7) { label = 'Mating phase'; }
+  return { pct: pct, label: label, colour: colour };
+}
+
+function qbFormatDate(d) {
+  if (!d) return '';
+  var date = (d instanceof Date) ? d : new Date(d);
+  if (isNaN(date.getTime())) return '';
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+}
+
+function qbEsc(s) {
+  return String(s==null?'':s).replace(/[<>&"']/g, function(c){
+    return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+// ── Entry point with Pro+ gate ─────────────────────────────
+function openQueenRearing() {
+  var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
+  var canUse = tier === 'pro' || tier === 'commercial' || tier === 'founder' || tier === 'trial';
+  if (!canUse) {
+    if (typeof trackEvent === 'function') { try { trackEvent('paywall_hit', { reason: 'queen_rearing', tier: tier }); } catch(e){} }
+    if (typeof showPaywallNudge === 'function') {
+      showPaywallNudge('queen_rearing', 'Queen rearing tracking is a Pro feature.');
+      return;
+    }
+    if (typeof openPricingModal === 'function') return openPricingModal('queen_rearing');
+    return;
+  }
+  openQueenRearingList();
+}
+
+async function openQueenRearingList() {
+  var modal = document.getElementById('modal-queen-list');
+  if (!modal) return;
+  var sheet = modal.querySelector('.modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = qbShellHeader('\uD83D\uDC51 Queen Rearing','Loading batches...');
+  openModalEl('modal-queen-list');
+
+  var batches = await syncQueenBatchesFromCloud();
+  sheet.innerHTML = qbRenderList(batches);
+}
+
+function qbShellHeader(title, loadingMsg) {
+  return '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">' + qbEsc(title) + '</div>'
+      + '<div onclick="closeModalEl(\'modal-queen-list\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+    + (loadingMsg ? ('<div style="padding:40px 20px;text-align:center;font-size:13px;color:var(--text-l);">' + qbEsc(loadingMsg) + '</div>') : '');
+}
+
+function qbRenderList(batches) {
+  var html = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">\uD83D\uDC51 Queen Rearing</div>'
+      + '<div onclick="closeModalEl(\'modal-queen-list\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:14px;">Track grafting batches from cell to laying queen. Timelines calculate automatically from your graft date.</p>';
+
+  batches = batches || [];
+  var active = batches.filter(function(b){ return b.status === 'active'; });
+  var done   = batches.filter(function(b){ return b.status === 'complete' || b.status === 'failed'; });
+
+  if (batches.length === 0) {
+    html += '<div style="padding:32px 20px;text-align:center;background:var(--cream);border:1px dashed var(--wax);border-radius:var(--rs);margin-bottom:14px;">'
+      + '<div style="font-size:42px;margin-bottom:8px;">\uD83D\uDC51</div>'
+      + '<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">No batches yet</div>'
+      + '<div style="font-size:12px;color:var(--text-l);line-height:1.5;">Start your first grafting batch. We\'ll calculate the timeline from your graft date and remind you of every milestone.</div>'
+    + '</div>';
+  } else {
+    // Most urgent next action across all active batches
+    var mostUrgent = null; var minDays = 9999;
+    active.forEach(function(b){
+      var na = getNextAction(b);
+      if (na && na.daysFromNow < minDays) { minDays = na.daysFromNow; mostUrgent = { batch: b, action: na }; }
+    });
+    if (mostUrgent) {
+      var dayText = mostUrgent.action.daysFromNow === 0 ? 'today'
+        : mostUrgent.action.daysFromNow < 0 ? (Math.abs(mostUrgent.action.daysFromNow) + ' days overdue')
+        : ('in ' + mostUrgent.action.daysFromNow + ' days');
+      html += '<div style="margin:0 0 14px;padding:14px 16px;background:#FFF4E0;border:1.5px solid var(--honey);border-radius:var(--rs);">'
+        + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">\u23F0 Next action</div>'
+        + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + qbEsc(mostUrgent.action.title) + '</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + qbEsc(mostUrgent.batch.name) + ' \u00B7 ' + qbFormatDate(mostUrgent.action.date) + ' (' + dayText + ')</div>'
+      + '</div>';
+    }
+    active.forEach(function(b){ html += qbRenderCard(b, false); });
+    if (done.length > 0) {
+      html += '<div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Past batches</div>';
+      done.forEach(function(b){ html += qbRenderCard(b, true); });
+    }
+  }
+
+  html += '<button onclick="closeModalEl(\'modal-queen-list\');setTimeout(openQueenRearingNew,200);" style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:14px;font-family:\'Syne\',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;margin-top:8px;">+ Start new batch</button>'
+    + '<button onclick="closeModalEl(\'modal-queen-list\')" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-top:8px;">Close</button>';
+
+  return html;
+}
+
+function qbRenderCard(b, dimmed) {
+  var prog = getBatchProgress(b);
+  var graftStr = qbFormatDate(b.graft_date);
+  var today = new Date(); today.setHours(0,0,0,0);
+  var graftD = new Date(b.graft_date); graftD.setHours(0,0,0,0);
+  var dayNum = Math.floor((today.getTime() - graftD.getTime()) / 86400000);
+  var dayMeta = b.status === 'complete' ? 'Complete' : (b.status === 'failed' ? 'Failed' : ('Day ' + Math.max(0, dayNum) + ' of ~30'));
+  var badgeBg, badgeColor, badgeText;
+  if (b.status === 'complete') { badgeBg = '#F3E5F5'; badgeColor = '#6A1B9A'; badgeText = 'Complete'; }
+  else if (b.status === 'failed') { badgeBg = '#FFEBEE'; badgeColor = '#C62828'; badgeText = 'Failed'; }
+  else { badgeBg = '#E8F5E9'; badgeColor = '#2E7D32'; badgeText = 'Active'; }
+  var fillColor = prog.colour === 'royal' ? '#6A1B9A' : (prog.colour === 'amber' ? 'var(--honey)' : '#2E7D32');
+
+  return '<div onclick="openQueenRearingDetail(\'' + qbEsc(b.id) + '\')" style="margin:0 0 12px;background:white;border:1px solid var(--wax);border-radius:var(--rs);overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04);cursor:pointer;' + (dimmed ? 'opacity:.7;' : '') + '">'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;">'
+      + '<div style="font-size:30px;">\uD83D\uDC51</div>'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:14px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + qbEsc(b.name) + '</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">Grafted ' + qbEsc(graftStr) + ' \u00B7 ' + qbEsc(dayMeta) + '</div>'
+      + '</div>'
+      + '<span style="font-size:10px;font-weight:700;border-radius:6px;padding:3px 8px;background:' + badgeBg + ';color:' + badgeColor + ';">' + badgeText + '</span>'
+    + '</div>'
+    + '<div style="padding:0 16px 12px;">'
+      + '<div style="height:6px;background:#F0EBE0;border-radius:3px;overflow:hidden;">'
+        + '<div style="height:100%;width:' + prog.pct + '%;background:' + fillColor + ';border-radius:3px;"></div>'
+      + '</div>'
+      + '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-l);">'
+        + '<span>' + qbEsc(prog.label) + '</span><span>' + prog.pct + '%</span>'
+      + '</div>'
+    + '</div>'
+    + '<div style="display:flex;border-top:1px solid var(--wax);">'
+      + qbStatCell('Grafted', b.cells_grafted)
+      + qbStatCell('Accepted', b.cells_accepted)
+      + qbStatCell('Capped', b.cells_capped)
+      + qbStatCell('Emerged', b.cells_emerged)
+      + qbStatCell('Laying', b.cells_laying)
+    + '</div>'
+  + '</div>';
+}
+
+function qbStatCell(label, val) {
+  var displayVal = (val == null || val === '') ? '\u2014' : val;
+  return '<div style="flex:1;text-align:center;padding:9px 4px;border-right:1px solid var(--wax);">'
+    + '<div style="font-size:15px;font-weight:800;color:var(--text);">' + displayVal + '</div>'
+    + '<div style="font-size:8px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;">' + label + '</div>'
+  + '</div>';
+}
+
+function openQueenRearingNew() {
+  var modal = document.getElementById('modal-queen-new');
+  if (!modal) return;
+  var sheet = modal.querySelector('.modal-sheet');
+  if (!sheet) return;
+
+  var todayStr = new Date().toISOString().slice(0,10);
+
+  sheet.innerHTML = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:var(--text);">New Batch</div>'
+      + '<div onclick="closeModalEl(\'modal-queen-new\')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">\u2715</div>'
+    + '</div>'
+    + '<p style="font-size:12px;color:var(--text-l);line-height:1.6;margin-bottom:16px;">Set your graft date \u2014 we\'ll calculate the rest.</p>'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Batch name</div>'
+    + '<input id="qb-name" type="text" placeholder="e.g. Spring batch \u2014 Hive 7 breeder" style="width:100%;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;margin-bottom:14px;box-sizing:border-box;">'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Graft date</div>'
+    + '<input id="qb-date" type="date" value="' + todayStr + '" style="width:100%;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;margin-bottom:14px;box-sizing:border-box;">'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Breeder queen source</div>'
+    + '<input id="qb-breeder" type="text" placeholder="e.g. Hive 7 (best temper, high yield)" style="width:100%;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;margin-bottom:14px;box-sizing:border-box;">'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Cells grafted</div>'
+    + '<input id="qb-cells" type="number" placeholder="e.g. 24" min="1" max="200" style="width:140px;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;margin-bottom:14px;box-sizing:border-box;">'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Method</div>'
+    + '<div style="display:flex;gap:8px;margin-bottom:14px;">'
+      + '<button type="button" id="qb-method-doolittle" onclick="qbSelectMethod(\'doolittle\')" style="flex:1;padding:10px;border:1.5px solid var(--honey);border-radius:var(--rs);background:#FFF4E0;font-size:12px;font-weight:700;color:var(--honey);cursor:pointer;font-family:\'Syne\',sans-serif;">Doolittle (graft)</button>'
+      + '<button type="button" id="qb-method-miller" onclick="qbSelectMethod(\'miller\')" style="flex:1;padding:10px;border:1.5px solid var(--wax);border-radius:var(--rs);background:white;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;font-family:\'Syne\',sans-serif;">Miller (cut comb)</button>'
+      + '<button type="button" id="qb-method-nicot" onclick="qbSelectMethod(\'nicot\')" style="flex:1;padding:10px;border:1.5px solid var(--wax);border-radius:var(--rs);background:white;font-size:12px;font-weight:700;color:var(--text-l);cursor:pointer;font-family:\'Syne\',sans-serif;">Nicot/Jenter</button>'
+    + '</div>'
+    + '<input id="qb-method" type="hidden" value="doolittle">'
+
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notes (optional)</div>'
+    + '<textarea id="qb-notes" rows="2" placeholder="e.g. Selected for calm temper and strong honey production" style="width:100%;padding:12px 14px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;margin-bottom:14px;box-sizing:border-box;resize:vertical;"></textarea>'
+
+    + '<button id="qb-create" onclick="qbCreateBatch()" style="width:100%;padding:16px;background:var(--honey);border:none;border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:15px;font-weight:800;color:white;cursor:pointer;">\uD83D\uDC51 Create batch \u2014 calculate timeline</button>'
+    + '<button onclick="closeModalEl(\'modal-queen-new\');setTimeout(openQueenRearingList,200);" style="width:100%;padding:14px;background:transparent;border:1.5px solid var(--forest);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--forest);cursor:pointer;margin-top:8px;">Cancel</button>';
+
+  openModalEl('modal-queen-new');
+}
+
+function qbSelectMethod(method) {
+  var hidden = document.getElementById('qb-method');
+  if (hidden) hidden.value = method;
+  ['doolittle','miller','nicot'].forEach(function(m){
+    var btn = document.getElementById('qb-method-' + m);
+    if (!btn) return;
+    if (m === method) {
+      btn.style.borderColor = 'var(--honey)';
+      btn.style.background = '#FFF4E0';
+      btn.style.color = 'var(--honey)';
+    } else {
+      btn.style.borderColor = 'var(--wax)';
+      btn.style.background = 'white';
+      btn.style.color = 'var(--text-l)';
+    }
+  });
+}
+
+async function qbCreateBatch() {
+  var name = (document.getElementById('qb-name').value || '').trim();
+  var graftDate = document.getElementById('qb-date').value;
+  var breeder = (document.getElementById('qb-breeder').value || '').trim();
+  var cells = parseInt(document.getElementById('qb-cells').value, 10) || 0;
+  var method = document.getElementById('qb-method').value || 'doolittle';
+  var notes = (document.getElementById('qb-notes').value || '').trim();
+
+  if (!name) { alert('Please give the batch a name.'); return; }
+  if (!graftDate) { alert('Please set a graft date.'); return; }
+  if (cells <= 0) { alert('Please enter how many cells you grafted.'); return; }
+
+  var btn = document.getElementById('qb-create');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; btn.style.opacity = '.6'; }
+
+  try {
+    if (!_currentUser) throw new Error('Not signed in');
+    var sb = getSupabase();
+    var apiaryId = (typeof currentApiaryId !== 'undefined' && currentApiaryId) ? currentApiaryId : null;
+    var record = {
+      user_id: _currentUser.id,
+      apiary_id: apiaryId,
+      name: name,
+      graft_date: graftDate,
+      breeder_source: breeder || null,
+      method: method,
+      cells_grafted: cells,
+      notes: notes || null,
+      status: 'active'
+    };
+    var res = await sb.from('queen_batches').insert(record).select().single();
+    if (res.error) throw res.error;
+
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+
+    closeModalEl('modal-queen-new');
+    setTimeout(function(){ openQueenRearingDetail(res.data.id); }, 200);
+  } catch(e) {
+    console.error('[QR] create failed', e);
+    alert('Could not save batch: ' + (e.message || 'unknown error') + '\n\nIf this is the first time you\'re using queen rearing, the queen_batches table may not exist yet. Ask your admin to run the SQL migration.');
+    if (btn) { btn.disabled = false; btn.innerHTML = '\uD83D\uDC51 Create batch \u2014 calculate timeline'; btn.style.opacity = '1'; }
+  }
+}
+
+async function openQueenRearingDetail(batchId) {
+  var modal = document.getElementById('modal-queen-detail');
+  if (!modal) return;
+  var sheet = modal.querySelector('.modal-sheet');
+  if (!sheet) return;
+
+  sheet.innerHTML = '<div class="modal-handle"></div><div style="padding:40px 20px;text-align:center;font-size:13px;color:var(--text-l);">Loading batch...</div>';
+  openModalEl('modal-queen-detail');
+
+  var batches = await syncQueenBatchesFromCloud();
+  var batch = batches.filter(function(b){ return b.id === batchId; })[0];
+  if (!batch) {
+    sheet.innerHTML = '<div class="modal-handle"></div>'
+      + '<div style="padding:40px 20px;text-align:center;">'
+        + '<div style="font-size:14px;color:var(--text);margin-bottom:12px;">Batch not found.</div>'
+        + '<button onclick="closeModalEl(\'modal-queen-detail\')" style="padding:10px 24px;background:var(--honey);border:none;border-radius:var(--rs);color:white;font-family:Syne,sans-serif;font-weight:700;cursor:pointer;">Close</button>'
+      + '</div>';
+    return;
+  }
+  sheet.innerHTML = qbRenderDetail(batch);
+}
+
+function qbRenderDetail(b) {
+  var tl = calcBatchTimeline(b.graft_date);
+  var today = new Date(); today.setHours(0,0,0,0);
+  var graftD = new Date(b.graft_date); graftD.setHours(0,0,0,0);
+  var dayNum = Math.floor((today.getTime() - graftD.getTime()) / 86400000);
+  var next = getNextAction(b);
+
+  var html = '<div class="modal-handle"></div>'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:17px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;margin-right:8px;">' + qbEsc(b.name) + '</div>'
+      + '<div onclick="closeModalEl(\'modal-queen-detail\');setTimeout(openQueenRearingList,200);" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);flex-shrink:0;">\u2715</div>'
+    + '</div>'
+    + '<p style="font-size:11px;color:var(--text-l);margin-bottom:14px;">Day ' + Math.max(0, dayNum) + ' of ~30 \u00B7 Grafted ' + qbFormatDate(b.graft_date) + (b.breeder_source ? (' \u00B7 from ' + qbEsc(b.breeder_source)) : '') + '</p>';
+
+  if (next && b.status === 'active') {
+    var dayText = next.daysFromNow === 0 ? 'today'
+      : next.daysFromNow < 0 ? (Math.abs(next.daysFromNow) + ' days overdue')
+      : ('in ' + next.daysFromNow + ' days');
+    var crit = next.isCritical ? ' \u2014 must complete before Day 12' : '';
+    html += '<div style="margin:0 0 14px;padding:14px 16px;background:#FFF4E0;border:1.5px solid var(--honey);border-radius:var(--rs);">'
+      + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">\u23F0 Next action required</div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + qbEsc(next.title) + '</div>'
+      + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">' + qbFormatDate(next.date) + ' (' + dayText + ')' + qbEsc(crit) + '</div>'
+    + '</div>';
+  }
+
+  // Cell counts (editable inputs that update Supabase on change)
+  html += '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Cell tracking</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:8px;">'
+      + qbCountInput('grafted', b.cells_grafted, b.id)
+      + qbCountInput('accepted', b.cells_accepted, b.id)
+      + qbCountInput('capped', b.cells_capped, b.id)
+    + '</div>'
+    + '<div style="display:flex;gap:6px;margin-bottom:6px;">'
+      + qbCountInput('transferred', b.cells_transferred, b.id)
+      + qbCountInput('emerged', b.cells_emerged, b.id)
+      + qbCountInput('mated', b.cells_mated, b.id)
+      + qbCountInput('laying', b.cells_laying, b.id)
+    + '</div>'
+    + '<div id="qb-save-status" style="font-size:11px;color:var(--text-l);margin-bottom:14px;text-align:center;min-height:14px;"></div>';
+
+  // Timeline
+  html += '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px;">Timeline</div>';
+
+  if (tl) {
+    tl.forEach(function(stage, idx){
+      var status = getBatchStageStatus(b, stage.key);
+      var isLast = idx === tl.length - 1;
+      var dotBg, dotBorder, titleColor;
+      if (status === 'done')         { dotBg = '#E8F5E9'; dotBorder = '#2E7D32'; titleColor = '#2E7D32'; }
+      else if (status === 'current') { dotBg = '#FFF4E0'; dotBorder = 'var(--honey)'; titleColor = 'var(--honey)'; }
+      else                           { dotBg = '#F5F5F5'; dotBorder = '#E0E0E0'; titleColor = 'var(--text-l)'; }
+
+      var dateRange;
+      if (stage.range[0] === stage.range[1]) {
+        dateRange = qbFormatDate(stage.date);
+      } else {
+        var endD = new Date(graftD); endD.setDate(endD.getDate() + stage.range[1]);
+        dateRange = qbFormatDate(stage.date) + ' \u2013 ' + qbFormatDate(endD);
+      }
+      var statusLabel = status === 'done' ? ' \u00B7 \u2714 Done' : (status === 'current' ? ' \u00B7 due now' : '');
+      var dotContent = status === 'done' ? '\u2714' : stage.icon;
+      var dayLabel = stage.range[0] === stage.range[1] ? ('Day ' + stage.day) : ('Day ' + stage.range[0] + '-' + stage.range[1]);
+
+      html += '<div style="display:flex;gap:12px;padding-bottom:16px;position:relative;">'
+        + (isLast ? '' : '<div style="position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--wax);"></div>')
+        + '<div style="width:32px;height:32px;border-radius:50%;background:' + dotBg + ';border:2px solid ' + dotBorder + ';display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;position:relative;z-index:1;">' + dotContent + '</div>'
+        + '<div style="flex:1;min-width:0;">'
+          + '<div style="font-size:13px;font-weight:800;color:' + titleColor + ';">' + dayLabel + ' \u2014 ' + qbEsc(stage.title) + '</div>'
+          + '<div style="font-size:10px;color:var(--text-l);margin-top:2px;">' + dateRange + qbEsc(statusLabel) + '</div>'
+          + '<div style="font-size:11px;color:var(--text-m);margin-top:4px;line-height:1.5;background:var(--cream);padding:8px 10px;border-radius:8px;border:1px solid var(--wax);">' + qbEsc(stage.note) + '</div>'
+        + '</div>'
+      + '</div>';
+    });
+  }
+
+  // Destination hives placeholder (next build: link queens to hives)
+  html += '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:12px 0 6px;">Destination hives</div>'
+    + '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:14px;">Queen-to-hive linking arrives in the next build. For now, once a queen is laying you can note her destination in the batch notes below.</div>';
+
+  if (b.notes) {
+    html += '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notes</div>'
+      + '<div style="font-size:13px;color:var(--text);line-height:1.5;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;">' + qbEsc(b.notes) + '</div>';
+  }
+
+  if (b.status === 'active') {
+    html += '<button onclick="qbMarkComplete(\'' + qbEsc(b.id) + '\')" style="width:100%;padding:14px;background:#2E7D32;border:none;border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;margin-bottom:8px;">\uD83D\uDC51 Mark batch complete</button>'
+      + '<button onclick="qbMarkFailed(\'' + qbEsc(b.id) + '\')" style="width:100%;padding:12px;background:transparent;border:1px solid #C62828;border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:#C62828;cursor:pointer;margin-bottom:8px;">Mark batch failed</button>';
+  } else {
+    html += '<button onclick="qbReactivate(\'' + qbEsc(b.id) + '\')" style="width:100%;padding:12px;background:transparent;border:1px solid var(--forest);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;color:var(--forest);cursor:pointer;margin-bottom:8px;">Reopen batch</button>';
+  }
+
+  html += '<button onclick="qbDeleteBatch(\'' + qbEsc(b.id) + '\')" style="width:100%;padding:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;margin-bottom:8px;">Delete batch</button>'
+    + '<button onclick="closeModalEl(\'modal-queen-detail\');setTimeout(openQueenRearingList,200);" style="width:100%;padding:12px;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Back to batches</button>';
+
+  return html;
+}
+
+function qbCountInput(field, val, batchId) {
+  var displayVal = (val == null || val === '') ? '' : val;
+  var label = field.charAt(0).toUpperCase() + field.slice(1);
+  return '<div style="flex:1;text-align:center;">'
+    + '<input type="number" value="' + qbEsc(displayVal) + '" min="0" max="500" onchange="qbUpdateCount(\'' + qbEsc(batchId) + '\',\'' + field + '\',this.value)" placeholder="\u2014" style="width:100%;padding:8px 4px;border:1.5px solid var(--wax);border-radius:var(--rs);font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;text-align:center;color:var(--text);box-sizing:border-box;background:white;">'
+    + '<div style="font-size:8px;font-weight:700;color:var(--text-l);text-transform:uppercase;margin-top:3px;letter-spacing:.04em;">' + label + '</div>'
+  + '</div>';
+}
+
+async function qbUpdateCount(batchId, field, value) {
+  var status = document.getElementById('qb-save-status');
+  if (status) { status.textContent = 'Saving...'; status.style.color = 'var(--text-l)'; }
+  var fieldMap = {
+    grafted:'cells_grafted', accepted:'cells_accepted', capped:'cells_capped',
+    transferred:'cells_transferred', emerged:'cells_emerged',
+    mated:'cells_mated', laying:'cells_laying'
+  };
+  var col = fieldMap[field];
+  if (!col) return;
+  var numVal = (value === '' || value == null) ? null : parseInt(value, 10);
+  if (numVal != null && (isNaN(numVal) || numVal < 0)) {
+    if (status) { status.textContent = 'Invalid number'; status.style.color = '#C62828'; }
+    return;
+  }
+  try {
+    var sb = getSupabase();
+    var patch = {}; patch[col] = numVal;
+    var res = await sb.from('queen_batches').update(patch).eq('id', batchId).eq('user_id', _currentUser.id);
+    if (res.error) throw res.error;
+    if (status) {
+      status.textContent = 'Saved \u2713'; status.style.color = '#2E7D32';
+      setTimeout(function(){ if (status.textContent === 'Saved \u2713') status.textContent = ''; }, 1500);
+    }
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+  } catch(e) {
+    console.error('[QR] count update failed', e);
+    if (status) { status.textContent = 'Save failed \u2014 try again'; status.style.color = '#C62828'; }
+  }
+}
+
+async function qbMarkComplete(batchId) {
+  if (!confirm('Mark this batch as complete? You can reopen it later.')) return;
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('queen_batches').update({ status: 'complete' }).eq('id', batchId).eq('user_id', _currentUser.id);
+    if (res.error) throw res.error;
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    openQueenRearingDetail(batchId);
+  } catch(e) { alert('Update failed: ' + (e.message||e)); }
+}
+
+async function qbMarkFailed(batchId) {
+  if (!confirm('Mark this batch as failed? You can reopen it later.')) return;
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('queen_batches').update({ status: 'failed' }).eq('id', batchId).eq('user_id', _currentUser.id);
+    if (res.error) throw res.error;
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    openQueenRearingDetail(batchId);
+  } catch(e) { alert('Update failed: ' + (e.message||e)); }
+}
+
+async function qbReactivate(batchId) {
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('queen_batches').update({ status: 'active' }).eq('id', batchId).eq('user_id', _currentUser.id);
+    if (res.error) throw res.error;
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    openQueenRearingDetail(batchId);
+  } catch(e) { alert('Update failed: ' + (e.message||e)); }
+}
+
+async function qbDeleteBatch(batchId) {
+  if (!confirm('Delete this batch permanently? This cannot be undone.')) return;
+  try {
+    var sb = getSupabase();
+    var res = await sb.from('queen_batches').delete().eq('id', batchId).eq('user_id', _currentUser.id);
+    if (res.error) throw res.error;
+    await syncQueenBatchesFromCloud();
+    try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    closeModalEl('modal-queen-detail');
+    setTimeout(openQueenRearingList, 200);
+  } catch(e) { alert('Delete failed: ' + (e.message||e)); }
+}
+
+// ── Home screen banner ─────────────────────────────────────
+// Shows when a Pro+ user has at least one active batch. Surfaces the
+// most-urgent next action across all active batches. Hides when Free
+// (paywall would just nag) or when no active batches exist.
+function renderHomeQueenRearingBanner() {
+  var el = document.getElementById('home-queen-rearing-banner');
+  if (!el) return;
+
+  var tier = (typeof getUserTier === 'function') ? getUserTier() : 'free';
+  var canUse = tier === 'pro' || tier === 'commercial' || tier === 'founder' || tier === 'trial';
+  if (!canUse) { el.style.display = 'none'; return; }
+
+  var batches = loadQueenBatches();
+  var active = batches.filter(function(b){ return b.status === 'active'; });
+  if (active.length === 0) { el.style.display = 'none'; return; }
+
+  var mostUrgent = null; var minDays = 9999;
+  active.forEach(function(b){
+    var na = getNextAction(b);
+    if (na && na.daysFromNow < minDays) { minDays = na.daysFromNow; mostUrgent = { batch: b, action: na }; }
+  });
+  if (!mostUrgent) { el.style.display = 'none'; return; }
+
+  var dayText = mostUrgent.action.daysFromNow === 0 ? 'today'
+    : mostUrgent.action.daysFromNow < 0 ? (Math.abs(mostUrgent.action.daysFromNow) + 'd overdue')
+    : (mostUrgent.action.daysFromNow + 'd');
+  var urgent = mostUrgent.action.daysFromNow <= 1;
+  var pillBg = urgent ? 'var(--honey)' : '#FFF4E0';
+  var pillColor = urgent ? 'white' : 'var(--honey)';
+
+  el.style.display = 'block';
+  el.innerHTML = '<div onclick="openQueenRearing()" style="margin:8px 16px;padding:12px 14px;background:white;border:1px solid var(--wax);border-left:4px solid var(--honey);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);">'
+    + '<div style="font-size:26px;flex-shrink:0;">\uD83D\uDC51</div>'
+    + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;">Queen rearing \u00B7 ' + active.length + ' active</div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + qbEsc(mostUrgent.action.title) + '</div>'
+      + '<div style="font-size:11px;color:var(--text-l);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + qbEsc(mostUrgent.batch.name) + ' \u00B7 ' + qbFormatDate(mostUrgent.action.date) + '</div>'
+    + '</div>'
+    + '<div style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;background:' + pillBg + ';color:' + pillColor + ';white-space:nowrap;flex-shrink:0;">' + dayText + '</div>'
+  + '</div>';
+}
+
+// Warm the cache on startup so the home banner can render before the
+// first cloud round-trip completes.
+(function qbInit(){
+  try {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('load', function(){
+        setTimeout(function(){
+          try { syncQueenBatchesFromCloud().then(function(){ try { renderHomeQueenRearingBanner(); } catch(e){} }); } catch(e){}
+        }, 800);
+      });
+    }
+  } catch(e){}
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// END QUEEN REARING CALENDAR
+// ═══════════════════════════════════════════════════════════════
+
+
 function openToolsModal() {
   var sheet = document.querySelector('#modal-tools .modal-sheet');
   if (!sheet) return;
@@ -26229,7 +26916,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4ce-15e — Rail: 15a frosted glass + full text. Definitive rail styling: white frosted glass (rgba(255,255,255,0.4), 12px blur), black handle (3px), black dot toggle (●), dark labels (9px, full text), outlined buttons (64px wide, 1px dark border), dark divider line. Combines the 15a glass look Chris approved with wider buttons so APIARY/INSPECT/SAVE display without truncation. Previous: 4ce-15d (wider buttons). Restore point: hivekeeper-beta1-restore-20260503-prephase4ce.html.';
+var HIVEKEEPER_BUILD = '20 May 2026 BST · Phase 4cf-01a — Queen Rearing Calendar (v1). Supabase-backed batch tracker for grafted queens. Three modals (list / new / detail), 8-stage timeline auto-calculated from graft date (graft → accept → capped → transfer → emerge → mate → check eggs → established), editable cell counts at each stage, urgency-sorted next-action banner. Pro+ gated; Free tier hits paywall nudge. Entry points: Settings → Tools → 👑 Queen rearing, and a home-screen banner (visible only when active batches exist). REQUIRES Supabase migration queen_batches_schema.sql to be run before first use. Previous: 4ce-15e (rail buttons frosted glass). Restore point: hivekeeper-beta1-restore-20260520-prephase4cf.html.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
