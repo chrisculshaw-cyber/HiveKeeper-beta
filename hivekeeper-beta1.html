@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260521-1030">
+  <meta name="app-version" content="20260521-1050">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -24728,10 +24728,14 @@ function teCalcDates(productKey, appliedAt) {
 
 // Derive current status from record dates and post-count entry.
 // Pure function — does not mutate the record.
+// Hotfix2 (21 May 2026): now falls back to expected_completion_at when
+// completed_at is null, so treatments whose duration has elapsed
+// auto-flip to 'awaiting_post_count' without requiring a manual
+// "Mark complete" tap. Previously such treatments hid from the home
+// banner (which only surfaces in_progress treatments with PHI > 0)
+// and the dashboard awaiting-post-count flow.
 function teCalcLifecycle(record) {
   var today = new Date(); today.setHours(0,0,0,0);
-  var completed = record.completed_at ? new Date(record.completed_at) : null;
-  if (completed) completed.setHours(0,0,0,0);
 
   if (record.efficacy_percent != null) {
     return record.efficacy_percent < 80 ? 'failed' : 'completed';
@@ -24740,7 +24744,22 @@ function teCalcLifecycle(record) {
     // Post-count entered but not comparable (different method)
     return 'completed';
   }
+
+  // Treat either an explicit completed_at OR an elapsed expected_completion_at
+  // as the trigger for the awaiting-post-count state. This makes the lifecycle
+  // self-advance based on time, matching the auto-complete decision from the
+  // 20 May design discussion (option (a): auto-complete on expected_completion_at
+  // with manual override option).
+  var completed = record.completed_at ? new Date(record.completed_at) : null;
+  if (completed) completed.setHours(0,0,0,0);
   if (completed && today >= completed) return 'awaiting_post_count';
+
+  if (record.expected_completion_at) {
+    var expected = new Date(record.expected_completion_at);
+    expected.setHours(0,0,0,0);
+    if (today >= expected) return 'awaiting_post_count';
+  }
+
   return 'in_progress';
 }
 
@@ -28287,7 +28306,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '10:30 21 May 2026 BST · Phase 4cf-02a hotfix1 — Treatment Efficacy Tracking (v1). HOTFIX1: fixed orphaned comment line at line 19168 (missing // prefix on "to keep the change additive...") that broke JS parsing and prevented login + all handlers from initialising. All Phase 4cf-02a features as before: Supabase-backed varroa treatment record with pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. Entry: hive detail → 🔬 Varroa & Treatments. REQUIRES Supabase migration treatment_efficacy_schema.sql. Previous: 4cf-01a hotfix6 (Queen Rearing v1).';
+var HIVEKEEPER_BUILD = '10:50 21 May 2026 BST · Phase 4cf-02a hotfix2 — Treatment Efficacy Tracking (v1). HOTFIX2: teCalcLifecycle now falls back to expected_completion_at when completed_at is null. Previously a treatment whose duration had elapsed but where the user hadn't manually tapped 'Mark complete' stayed in 'in_progress' forever, hiding from the home banner and the awaiting-post-count flow. Now treatments auto-advance through the lifecycle based on date math (matches 20 May design decision: option (a) auto-complete on expected_completion_at with manual override). HOTFIX1: fixed orphaned comment line at 19168 that broke JS parsing. Phase 4cf-02a features: Supabase-backed varroa treatment record with pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. Entry: hive detail → 🔬 Varroa & Treatments. REQUIRES Supabase migration treatment_efficacy_schema.sql.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
