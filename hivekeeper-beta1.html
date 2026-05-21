@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260521-1215">
+  <meta name="app-version" content="20260521-1240">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -18341,19 +18341,79 @@ function generateReport(id) {
   }
 
   if (id === 'treatment_log') {
-    var treatments = (JSON.parse(localStorage.getItem('hk_treatment_v1')||'[]')).filter(function(v){ return hives.find(function(h){ return h.id === v.hiveId; }); });
-    var rows = treatments.sort(function(a,b){ return new Date(b.date) - new Date(a.date); }).map(function(t) {
+    // Phase 4cf-02a hotfix6 · 21 May 2026 — merges legacy hk_treatment_v1
+    // records with new treatment_efficacy_cache records. Without this, the
+    // report only showed legacy treatments and was blank for new users.
+    var legacyTreatments = (JSON.parse(localStorage.getItem('hk_treatment_v1')||'[]'))
+      .filter(function(t){ return hives.find(function(h){ return h.id === t.hiveId; }); });
+    var teRecords = (JSON.parse(localStorage.getItem('hk_treatment_efficacy_cache')||'[]'))
+      .filter(function(r){ return hives.find(function(h){ return h.id === r.hive_id; }); });
+
+    var rowsArr = [];
+
+    legacyTreatments.forEach(function(t) {
       var hive = hives.find(function(h){ return h.id === t.hiveId; });
-      return '<tr><td style="' + tdStyle + '">' + t.date + '</td>'
-        + '<td style="' + tdStyle + '">' + (hive ? hive.name : '-') + '</td>'
-        + '<td style="' + tdStyle + '">' + (t.product||'-') + '</td>'
-        + '<td style="' + tdStyle + '">' + (t.dose||'-') + '</td>'
-        + '<td style="' + tdStyle + '">' + (t.nextDate||'-') + '</td>'
-        + '<td style="' + tdStyle + '">' + (t.notes||'-') + '</td></tr>';
+      rowsArr.push({
+        date: t.date,
+        hive: hive ? hive.name : '-',
+        product: t.product || '-',
+        dose: t.dose || '-',
+        status: t.nextDate ? ('Next dose: ' + t.nextDate) : '—',
+        notes: t.notes || '-'
+      });
+    });
+
+    teRecords.forEach(function(r) {
+      var hive = hives.find(function(h){ return h.id === r.hive_id; });
+      var productLabel = (typeof TE_PRODUCTS !== 'undefined' && TE_PRODUCTS[r.product])
+        ? (TE_PRODUCTS[r.product].short || TE_PRODUCTS[r.product].label || r.product)
+        : (r.product || '-');
+      var status = '—';
+      if (r.status === 'in_progress') {
+        status = r.expected_completion_at ? ('In progress, completes ' + r.expected_completion_at) : 'In progress';
+      } else if (r.status === 'awaiting_post_count') {
+        status = r.post_count_due_at ? ('Post-count due ' + r.post_count_due_at) : 'Awaiting post-count';
+      } else if (r.status === 'completed') {
+        status = r.efficacy_percent != null
+          ? ('Completed · ' + Math.round(r.efficacy_percent) + '% efficacy')
+          : 'Completed';
+      } else if (r.status === 'failed') {
+        status = r.efficacy_percent != null
+          ? ('Failed · ' + Math.round(r.efficacy_percent) + '% (resistance)')
+          : 'Failed';
+      }
+      rowsArr.push({
+        date: r.applied_at,
+        hive: hive ? hive.name : '-',
+        product: productLabel,
+        dose: r.dose || '-',
+        status: status,
+        notes: r.notes || '-'
+      });
+    });
+
+    rowsArr.sort(function(a,b){ return new Date(b.date) - new Date(a.date); });
+
+    if (rowsArr.length === 0) {
+      return header('Treatment Log')
+        + '<div style="font-family:sans-serif;padding:24px 16px;text-align:center;color:#666;">'
+        + '<div style="font-size:14px;margin-bottom:8px;">No treatments logged yet.</div>'
+        + '<div style="font-size:12px;">Log treatments via the 🔬 Varroa &amp; Treatments section on any hive detail screen.</div>'
+        + '</div>';
+    }
+
+    var rows = rowsArr.map(function(v) {
+      return '<tr><td style="' + tdStyle + '">' + (v.date || '-') + '</td>'
+        + '<td style="' + tdStyle + '">' + v.hive + '</td>'
+        + '<td style="' + tdStyle + '">' + v.product + '</td>'
+        + '<td style="' + tdStyle + '">' + v.dose + '</td>'
+        + '<td style="' + tdStyle + '">' + v.status + '</td>'
+        + '<td style="' + tdStyle + '">' + v.notes + '</td></tr>';
     }).join('');
+
     return header('Treatment Log')
       + '<table style="' + tableStyle + '">'
-      + '<tr><th style="' + thStyle + '">Date</th><th style="' + thStyle + '">Hive</th><th style="' + thStyle + '">Product</th><th style="' + thStyle + '">Dose</th><th style="' + thStyle + '">Next Due</th><th style="' + thStyle + '">Notes</th></tr>'
+      + '<tr><th style="' + thStyle + '">Date</th><th style="' + thStyle + '">Hive</th><th style="' + thStyle + '">Product</th><th style="' + thStyle + '">Dose</th><th style="' + thStyle + '">Status / Next</th><th style="' + thStyle + '">Notes</th></tr>'
       + rows + '</table>';
   }
 
@@ -28519,7 +28579,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '12:15 21 May 2026 BST · Phase 4cf-02a hotfix5 — Treatment Efficacy Tracking (v1). HOTFIX5: (a) reordered hive-detail screen so Treatment / Harvest summary / Log harvest button / Hive image sit ABOVE Inspection history (which can grow long and bury these actions, per Chris feedback). (b) varroa_log report now unifies standalone mite counts (hk_varroa_v1) with pre/post counts from treatment_efficacy, with a Context column. (c) treatment_efficacy report rewritten to read from the new table directly: real pre/post, calculated efficacy %, resistance flag count, summary stats. (d) treatment_efficacy report promoted from Commercial-only to Pro+ (matches feature gating). HOTFIX4: inline post-count form replaces the small "Enter post-count" link and window.prompt. HOTFIX3: escaped inner single quotes in HIVEKEEPER_BUILD. HOTFIX2: teCalcLifecycle falls back to expected_completion_at. HOTFIX1: fixed orphaned comment line at 19168. Phase 4cf-02a features: Supabase-backed varroa treatment record, pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. REQUIRES Supabase migration treatment_efficacy_schema.sql.';
+var HIVEKEEPER_BUILD = '12:40 21 May 2026 BST · Phase 4cf-02a hotfix6 — Treatment Efficacy Tracking (v1). HOTFIX6: Treatment Log report now merges legacy hk_treatment_v1 records with the new treatment_efficacy table so post-Phase-4cf-02a treatments actually appear in the report (was blank for any user who only logged via the new flow). HOTFIX5: reordered hive-detail screen + updated varroa/treatment efficacy reports. HOTFIX4: inline post-count form replaces tiny link + window.prompt. HOTFIX3: escaped inner single quotes in HIVEKEEPER_BUILD. HOTFIX2: teCalcLifecycle falls back to expected_completion_at. HOTFIX1: fixed orphaned comment line at 19168. Phase 4cf-02a features: Supabase-backed varroa treatment record, pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. REQUIRES Supabase migration treatment_efficacy_schema.sql.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
