@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260521-1110">
+  <meta name="app-version" content="20260521-1140">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -25027,9 +25027,23 @@ function teRenderActiveCard(rec) {
   // Next action text
   var nextActionHtml = '';
   if (lifecycle === 'awaiting_post_count') {
-    nextActionHtml = '<div style="font-size:11px;color:var(--text-l);line-height:1.5;padding:0 14px 12px;">'
-      + '\uD83D\uDCCB Post-count due. Take a mite count to calculate efficacy. '
-      + '<a onclick="teEnterPostCount(\'' + teEsc(rec.id) + '\')" style="color:var(--honey);font-weight:700;cursor:pointer;text-decoration:underline;">Enter post-count \u2192</a>'
+    // Hotfix4 (21 May): prominent inline form replaces the tiny link + window.prompt.
+    // Tapping the input or button must stopPropagation or the parent card onclick
+    // opens the detail modal and swallows the interaction.
+    var preMethodLabel = rec.pre_count_method
+      ? ((TE_COUNT_METHODS[rec.pre_count_method] && TE_COUNT_METHODS[rec.pre_count_method].label) || rec.pre_count_method)
+      : '';
+    var promptText = preMethodLabel
+      ? ('Take a mite count using the same method as your pre-count (' + teEsc(preMethodLabel) + ') and enter the result below.')
+      : 'Enter your post-treatment mite count below.';
+    var inlineInputId = 'te-pc-' + rec.id;
+    nextActionHtml = '<div style="margin:0 14px 14px;padding:14px;background:#FFF4DC;border:1px solid #F0DFB8;border-radius:8px;">'
+      + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">\uD83D\uDCCB Post-count needed</div>'
+      + '<div style="font-size:12px;color:var(--text);line-height:1.5;margin-bottom:10px;">' + promptText + '</div>'
+      + '<div style="display:flex;gap:8px;">'
+        + '<input id="' + inlineInputId + '" type="number" min="0" inputmode="numeric" placeholder="Mite count" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\'){event.stopPropagation();teSubmitPostCountInline(\'' + teEsc(rec.id) + '\',\'' + inlineInputId + '\');}" style="flex:1;padding:12px 14px;border:1.5px solid var(--wax);border-radius:8px;font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;">'
+        + '<button onclick="event.stopPropagation();teSubmitPostCountInline(\'' + teEsc(rec.id) + '\',\'' + inlineInputId + '\')" style="padding:12px 18px;background:var(--honey);border:none;border-radius:8px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;white-space:nowrap;">Save \u2192</button>'
+      + '</div>'
     + '</div>';
   } else if (rec.expected_completion_at) {
     var daysToCompletion = Math.round((new Date(rec.expected_completion_at) - Date.now()) / 86400000);
@@ -25363,10 +25377,21 @@ function teRenderDetail(rec) {
       + '<div style="font-size:11px;color:var(--text-l);margin-top:4px;">' + (band === 'poor' ? 'Below 80% suggests mite resistance to this active ingredient.' : 'Treatment reduced mite load.') + '</div>'
     + '</div>';
   } else if (lifecycle === 'awaiting_post_count') {
-    html += '<div style="margin:12px 0;padding:14px;background:#FFF3E0;border-radius:8px;text-align:center;">'
-      + '<div style="font-size:14px;font-weight:800;color:#E65100;">Awaiting post-count</div>'
-      + '<div style="font-size:12px;color:var(--text-m);margin-top:4px;line-height:1.5;">Take a mite count using the same method as your pre-count to calculate efficacy.</div>'
-      + '<button onclick="teEnterPostCount(\'' + teEsc(rec.id) + '\')" style="margin-top:10px;padding:10px 20px;background:var(--honey);border:none;border-radius:8px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;">Enter post-count</button>'
+    // Hotfix4 (21 May): inline form replaces the button + window.prompt.
+    var detailPreMethodLabel = rec.pre_count_method
+      ? ((TE_COUNT_METHODS[rec.pre_count_method] && TE_COUNT_METHODS[rec.pre_count_method].label) || rec.pre_count_method)
+      : '';
+    var detailPromptText = detailPreMethodLabel
+      ? ('Take a mite count using the same method as your pre-count (' + teEsc(detailPreMethodLabel) + ') and enter the result below.')
+      : 'Enter your post-treatment mite count below.';
+    var detailInputId = 'te-pc-det-' + rec.id;
+    html += '<div style="margin:12px 0;padding:16px;background:#FFF4DC;border:1px solid #F0DFB8;border-radius:8px;">'
+      + '<div style="font-size:13px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">\uD83D\uDCCB Post-count needed</div>'
+      + '<div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px;">' + detailPromptText + '</div>'
+      + '<div style="display:flex;gap:10px;">'
+        + '<input id="' + detailInputId + '" type="number" min="0" inputmode="numeric" placeholder="Mite count" onkeydown="if(event.key===\'Enter\') teSubmitPostCountInline(\'' + teEsc(rec.id) + '\',\'' + detailInputId + '\');" style="flex:1;padding:12px 14px;border:1.5px solid var(--wax);border-radius:8px;font-family:\'Syne\',sans-serif;font-size:14px;color:var(--text);background:white;">'
+        + '<button onclick="teSubmitPostCountInline(\'' + teEsc(rec.id) + '\',\'' + detailInputId + '\')" style="padding:12px 20px;background:var(--honey);border:none;border-radius:8px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;white-space:nowrap;">Save \u2192</button>'
+      + '</div>'
     + '</div>';
   } else if (lifecycle === 'in_progress') {
     html += '<div style="margin:12px 0;padding:14px;background:#FFF3E0;border-radius:8px;text-align:center;">'
@@ -25463,51 +25488,99 @@ function teMetaCell(label, value) {
   + '</div>';
 }
 
-// ═════ POST-COUNT ENTRY ════════════════════════════════════════
-async function teEnterPostCount(treatmentId) {
+// ═════ POST-COUNT ENTRY ═════════════════════════════════════
+// Hotfix4 (21 May): replaced window.prompt path with inline-form path.
+// teSubmitPostCountInline reads from a DOM input id (set by the form),
+// validates, and delegates to teApplyPostCount which does the DB write +
+// re-render. teEnterPostCount kept as a thin wrapper for any legacy
+// callers; new code should call teSubmitPostCountInline.
+
+async function teSubmitPostCountInline(treatmentId, inputId) {
+  var input = document.getElementById(inputId);
+  if (!input) {
+    console.warn("[TE] teSubmitPostCountInline: input not found", inputId);
+    return;
+  }
+  var raw = (input.value || "").trim();
+  if (raw === "") {
+    input.focus();
+    if (typeof showToast === "function") showToast("Enter a mite count first");
+    return;
+  }
+  var n = parseInt(raw, 10);
+  if (isNaN(n) || n < 0) {
+    alert("Please enter a valid non-negative number.");
+    input.focus();
+    return;
+  }
+  await teApplyPostCount(treatmentId, n);
+}
+
+async function teApplyPostCount(treatmentId, n) {
   var records = loadTreatmentEfficacy();
   var rec = records.filter(function(r){ return r.id === treatmentId; })[0];
-  if (!rec) return;
+  if (!rec) { alert("Treatment not found."); return; }
 
-  var methodLabel = rec.pre_count_method ? ((TE_COUNT_METHODS[rec.pre_count_method] && TE_COUNT_METHODS[rec.pre_count_method].label) || rec.pre_count_method) : '';
-  var prompt1 = 'Enter post-treatment mite count' + (methodLabel ? ' (use same method as pre: ' + methodLabel + ')' : '') + ':';
-  var raw = window.prompt(prompt1, '');
-  if (raw === null) return;
-  var n = parseInt(raw, 10);
-  if (isNaN(n) || n < 0) { alert('Please enter a valid non-negative number.'); return; }
-
-  // Compute efficacy if methods match
   var preMethod = rec.pre_count_method;
-  var postMethod = preMethod; // assume same method per prompt
-  var efficacy = teCalcEfficacy(rec.pre_count, n, preMethod, postMethod);
+  // Assume post uses same method as pre (inline form does not let user pick).
+  // If pre_method is null (pre_count not entered), efficacy will be null.
+  var efficacy = teCalcEfficacy(rec.pre_count, n, preMethod, preMethod);
   var band = teGetEfficacyBand(efficacy);
-  var comparable = preMethod === postMethod && preMethod != null;
+  var comparable = preMethod != null;
 
   var patch = {
     post_count: n,
-    post_count_method: postMethod,
+    post_count_method: preMethod,
     post_count_sample_size: rec.pre_count_sample_size,
     post_count_date: teTodayISO(),
     efficacy_percent: efficacy,
     efficacy_band: band,
     efficacy_comparable: comparable,
     completed_at: rec.completed_at || rec.expected_completion_at || teTodayISO(),
-    status: efficacy != null && efficacy < 80 ? 'failed' : 'completed'
+    status: efficacy != null && efficacy < 80 ? "failed" : "completed"
   };
 
   try {
     var sb = getSupabase();
-    var res = await sb.from('treatment_efficacy').update(patch).eq('id', treatmentId).eq('user_id', _currentUser.id);
+    var res = await sb.from("treatment_efficacy").update(patch).eq("id", treatmentId).eq("user_id", _currentUser.id);
     if (res.error) throw res.error;
-    if (typeof showToast === 'function') showToast(efficacy != null ? 'Efficacy: ' + Math.round(efficacy) + '%' : 'Post-count saved');
+    if (typeof showToast === "function") {
+      showToast(efficacy != null ? ("Efficacy: " + Math.round(efficacy) + "%") : "Post-count saved");
+    }
     await syncTreatmentEfficacyFromCloud();
-    openTreatmentEfficacyDetail(treatmentId);
+
+    // Re-render whichever screen is currently active.
+    var detailModal = document.getElementById("modal-te-detail");
+    var detailOpen = detailModal && (detailModal.style.display === "flex" || detailModal.classList.contains("active") || (window.getComputedStyle && getComputedStyle(detailModal).display !== "none"));
+    if (detailOpen) {
+      openTreatmentEfficacyDetail(treatmentId);
+    } else if (window._teCurrentHiveId) {
+      openTreatmentEfficacyDashboard(window._teCurrentHiveId);
+    }
     try { renderHiveTreatmentEfficacySection(); } catch(e){}
     try { renderHomeTreatmentEfficacyBanner(); } catch(e){}
   } catch(e) {
-    console.error('[TE] post-count save failed', e);
-    alert('Could not save post-count: ' + (e.message || 'unknown error'));
+    console.error("[TE] post-count save failed", e);
+    alert("Could not save post-count: " + (e.message || "unknown error"));
   }
+}
+
+// Legacy wrapper. Older builds called teEnterPostCount with a window.prompt;
+// kept here so any stale onclick references still work. New code should use
+// the inline-form path via teSubmitPostCountInline.
+async function teEnterPostCount(treatmentId) {
+  var records = loadTreatmentEfficacy();
+  var rec = records.filter(function(r){ return r.id === treatmentId; })[0];
+  if (!rec) return;
+  var methodLabel = rec.pre_count_method
+    ? ((TE_COUNT_METHODS[rec.pre_count_method] && TE_COUNT_METHODS[rec.pre_count_method].label) || rec.pre_count_method)
+    : "";
+  var prompt1 = "Enter post-treatment mite count" + (methodLabel ? (" (use same method as pre: " + methodLabel + ")") : "") + ":";
+  var raw = window.prompt(prompt1, "");
+  if (raw === null) return;
+  var n = parseInt(raw, 10);
+  if (isNaN(n) || n < 0) { alert("Please enter a valid non-negative number."); return; }
+  await teApplyPostCount(treatmentId, n);
 }
 
 // ═════ MARK COMPLETE (manual override) ═════════════════════════
@@ -28306,7 +28379,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '11:10 21 May 2026 BST · Phase 4cf-02a hotfix3 — Treatment Efficacy Tracking (v1). HOTFIX3: escaped inner single quotes in HIVEKEEPER_BUILD string that were terminating the string literal early and breaking sign-in. HOTFIX2: teCalcLifecycle now falls back to expected_completion_at when completed_at is null. Previously a treatment whose duration had elapsed but where the user had not manually tapped "Mark complete" stayed in "in_progress" forever, hiding from the home banner and the awaiting-post-count flow. Now treatments auto-advance through the lifecycle based on date math (matches 20 May design decision: option (a) auto-complete on expected_completion_at with manual override). HOTFIX1: fixed orphaned comment line at 19168 that broke JS parsing. Phase 4cf-02a features: Supabase-backed varroa treatment record with pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. Entry: hive detail → 🔬 Varroa & Treatments. REQUIRES Supabase migration treatment_efficacy_schema.sql.';
+var HIVEKEEPER_BUILD = '11:40 21 May 2026 BST · Phase 4cf-02a hotfix4 — Treatment Efficacy Tracking (v1). HOTFIX4: replaced the small inline "Enter post-count" link and the jarring window.prompt with a prominent inline form (number input + Save button) on both the dashboard active card and the treatment-detail screen. New helpers: teSubmitPostCountInline (reads DOM input id) and teApplyPostCount (does the DB write + re-render). teEnterPostCount retained as a thin wrapper for any stale references. Enter-key submits. Post-count assumed to use same method as pre-count. HOTFIX3: escaped inner single quotes in HIVEKEEPER_BUILD that broke sign-in. HOTFIX2: teCalcLifecycle falls back to expected_completion_at when completed_at is null. HOTFIX1: fixed orphaned comment line at 19168. Phase 4cf-02a features: Supabase-backed varroa treatment record with pre/post mite count pairing, efficacy %, PHI countdown, rotation warnings, NBU threshold alert, resistance flag. Pro+ gated. Entry: hive detail → 🔬 Varroa & Treatments. REQUIRES Supabase migration treatment_efficacy_schema.sql.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
