@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-2300">
+  <meta name="app-version" content="20260522-2330">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -160,8 +160,12 @@ html,body{height:100%;overflow:hidden;background:#0A1A0A;margin:0;padding:0;}
   .msg{max-width:75%;}
 }
 @media(min-width:600px){ .stats-grid{grid-template-columns:repeat(4,1fr);} }
-.screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream)}
-.screen.active{opacity:1;pointer-events:all;transform:translateX(0);z-index:10}
+.screen{position:absolute;inset:0;bottom:var(--nav-h);display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity .25s,transform .25s;background:var(--cream);overflow-x:hidden;}
+.screen.active{opacity:1!important;pointer-events:all!important;transform:translateX(0)!important;z-index:10;left:0!important;right:0!important;width:auto!important;}
+/* 22 May 2026 Phase 3.6 — defensive layout lockdown. The !important rules
+   above override any stuck inline transform that might leave the active
+   screen offset. overflow-x on .screen catches any internal overflow that
+   could push the screen out of position. */
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;max-width:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:80px}
 .scroll-area::-webkit-scrollbar{display:none}
 #bottom-nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--white);border-top:1px solid var(--wax);display:flex;align-items:flex-start;padding-top:8px;box-shadow:0 -4px 20px rgba(26,18,8,.06);z-index:100}
@@ -22952,7 +22956,18 @@ window.HK.Visit = (function() {
     banner.style.display = 'block';
     if (actionRow) {
       actionRow.style.display = 'flex';
-      console.log('[Visit] banner+actions visible · ' + done + '/' + total + ' done · ' + skipped + ' skipped');
+      // 22 May 2026 Phase 3.6 — log screen+banner rect to chase the layout
+      // shift bug. Visible in chrome://inspect.
+      try {
+        var sa = document.querySelector('.screen.active');
+        var saRect = sa ? sa.getBoundingClientRect() : null;
+        var brRect = banner.getBoundingClientRect();
+        var arRect = actionRow.getBoundingClientRect();
+        console.log('[Visit] banner visible · ' + done + '/' + total + ' done · ' + skipped + ' skipped ·',
+          'screen=' + (saRect ? Math.round(saRect.left) + ',' + Math.round(saRect.width) : 'null'),
+          'banner=' + Math.round(brRect.left) + ',' + Math.round(brRect.width),
+          'actions=' + Math.round(arRect.left) + ',' + Math.round(arRect.width));
+      } catch(e) {}
     } else {
       console.warn('[Visit] inspect-visit-actions element not in DOM');
     }
@@ -23126,12 +23141,65 @@ window.HK.Visit = (function() {
       visitsInStorage: loadAll().length,
       bannerInDOM: !!bannerEl,
       bannerDisplay: bannerEl ? bannerEl.style.display : null,
+      bannerRect: bannerEl ? bannerEl.getBoundingClientRect().toJSON() : null,
       actionRowInDOM: !!actionEl,
       actionRowDisplay: actionEl ? actionEl.style.display : null,
+      actionRowRect: actionEl ? actionEl.getBoundingClientRect().toJSON() : null,
       currentScreen: (typeof currentScreen !== 'undefined') ? currentScreen : null,
       currentHiveId: (typeof currentHiveId !== 'undefined') ? currentHiveId : null
     };
     console.log('[Visit Debug]', JSON.stringify(report, null, 2));
+    return report;
+  }
+
+  // 22 May 2026 Phase 3.6 — diagnostic for the layout-shift bug. Dumps
+  // computed styles and rect for the active screen, its #app parent, and
+  // the action row. Call window.HK.Visit.debugScreen() in DevTools and
+  // paste the output to Chris.
+  function debugScreen() {
+    var report = {
+      windowInner: { w: window.innerWidth, h: window.innerHeight },
+      docClient: { w: document.documentElement.clientWidth, h: document.documentElement.clientHeight }
+    };
+    var app = document.getElementById('app');
+    if (app) {
+      var ar = app.getBoundingClientRect();
+      var ac = getComputedStyle(app);
+      report.app = {
+        rect: { left: ar.left, top: ar.top, width: ar.width, height: ar.height, right: ar.right },
+        transform: ac.transform,
+        position: ac.position,
+        margin: ac.margin,
+        padding: ac.padding,
+        width: ac.width,
+        maxWidth: ac.maxWidth
+      };
+    }
+    var active = document.querySelector('.screen.active');
+    if (active) {
+      var sr = active.getBoundingClientRect();
+      var sc = getComputedStyle(active);
+      report.activeScreen = {
+        id: active.id,
+        rect: { left: sr.left, top: sr.top, width: sr.width, height: sr.height, right: sr.right },
+        transform: sc.transform,
+        position: sc.position,
+        inset: sc.inset || (sc.top + ' ' + sc.right + ' ' + sc.bottom + ' ' + sc.left),
+        width: sc.width,
+        inlineTransform: active.style.transform || '(none)'
+      };
+    }
+    var banner = document.getElementById('inspect-visit-banner');
+    if (banner) {
+      var br = banner.getBoundingClientRect();
+      report.banner = { rect: { left: br.left, top: br.top, width: br.width, right: br.right }, display: banner.style.display };
+    }
+    var actions = document.getElementById('inspect-visit-actions');
+    if (actions) {
+      var arect = actions.getBoundingClientRect();
+      report.actions = { rect: { left: arect.left, top: arect.top, width: arect.width, right: arect.right }, display: actions.style.display };
+    }
+    console.log('[Screen Debug]', JSON.stringify(report, null, 2));
     return report;
   }
 
@@ -23150,6 +23218,7 @@ window.HK.Visit = (function() {
     confirmFinishVisit: confirmFinishVisit,
     loadAll: loadAll,
     debug: debug,
+    debugScreen: debugScreen,
     restartVisit: restartVisit,
     dismissRecentFinished: dismissRecentFinished,
     getRecentlyFinishedVisit: getRecentlyFinishedVisit
@@ -30007,7 +30076,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 23:00 — Plan Inspection Phase 3.5 (layout fix + date UX). Visit banner + action row hardened with explicit width:100%, max-width:100%, overflow:hidden, box-sizing:border-box to stop horizontal overflow from shifting sibling .screen translateX() into a stuck state (reported: home screen shifted left after entering Inspect). Inner banner content uses min-width:0 + text-overflow:ellipsis on the progress text + flex-shrink:0 on the VISIT pill and stats. The date card\'s \u201ctap to change\u201d hint is now a prominent honey pill with calendar icon (was a tiny italic line that founders missed). Each day in the 5-day forecast strip is now tappable \u2014 tap to set the planned date to that day, with a press-down scale animation. Subheading on the forecast section says \u201ctap a day to set plan\u201d. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 23:30 — Plan Inspection Phase 3.6 (defensive layout + diagnostic). Phase 3.5 hardening didn\'t fully fix the shift-left bug on the inspect screen, so this build forces .screen.active with !important on transform: translateX(0), left:0, right:0, opacity:1, pointer-events:all. Also adds overflow-x:hidden on .screen. New diagnostic command: window.HK.Visit.debugScreen() dumps the computed style and rect of #app, .screen.active, banner, and action row \u2014 run in DevTools console and paste output to debug. Banner-visible log now includes screen+banner+actions rects on every render. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
