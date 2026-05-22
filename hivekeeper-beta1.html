@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-2100">
+  <meta name="app-version" content="20260522-2130">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -22162,6 +22162,28 @@ function daysAgoText(ts) {
   return d + ' days ago';
 }
 
+// 22 May 2026 Phase 3.2 — Shared Resume CTA renderer. Both Plan and Order
+// tab renderers call this so the resume banner appears regardless of which
+// tab the user lands on. Returns HTML or empty string.
+function renderResumeCTA(data) {
+  if (!window.HK || !window.HK.Visit) return '';
+  var inProgress = window.HK.Visit.getCurrentVisit();
+  if (!inProgress || inProgress.endedAt || !data || !data.apiary) return '';
+  if (inProgress.apiaryId !== data.apiary.id) return '';
+  var done = (inProgress.hivesCompleted || []).length;
+  var skipped = (inProgress.hivesSkipped || []).length;
+  var total = (inProgress.plannedHiveOrder || []).length;
+  var html = '';
+  html += '<div style="margin:14px 22px 0;padding:14px 16px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);border-radius:12px;color:white;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTo(\'s-inspect\')">';
+  html += '<div style="font-size:22px;">▶</div>';
+  html += '<div style="flex:1;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;opacity:0.85;">Visit in progress</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;margin-top:2px;">' + done + ' of ' + total + ' done' + (skipped > 0 ? ' · ' + skipped + ' skipped' : '') + ' — tap to resume</div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
 // ─────────── PLAN TAB CONTENT ───────────
 function renderPlanContent(data) {
   var suggestedDate = new Date(data.suggestedTs);
@@ -22171,22 +22193,8 @@ function renderPlanContent(data) {
 
   var html = '';
 
-  // 22 May 2026 Phase 3.1 — "Resume visit" CTA when one is active.
-  if (window.HK && window.HK.Visit) {
-    var inProgress = window.HK.Visit.getCurrentVisit();
-    if (inProgress && !inProgress.endedAt && inProgress.apiaryId === data.apiary.id) {
-      var done = (inProgress.hivesCompleted || []).length;
-      var skipped = (inProgress.hivesSkipped || []).length;
-      var total = (inProgress.plannedHiveOrder || []).length;
-      html += '<div style="margin:14px 22px 0;padding:14px 16px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);border-radius:12px;color:white;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="goTo(\'s-inspect\')">';
-      html += '<div style="font-size:22px;">▶</div>';
-      html += '<div style="flex:1;">';
-      html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;opacity:0.85;">Visit in progress</div>';
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;margin-top:2px;">' + done + ' of ' + total + ' done' + (skipped > 0 ? ' · ' + skipped + ' skipped' : '') + ' — tap to resume</div>';
-      html += '</div>';
-      html += '</div>';
-    }
-  }
+  // 22 May 2026 Phase 3.2 — Resume CTA via shared helper
+  html += renderResumeCTA(data);
 
 
   // Date card (forest gradient) — tappable to open custom date picker (Phase 3.1)
@@ -22248,7 +22256,7 @@ function renderPlanContent(data) {
       html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text-l);min-width:28px;padding-top:3px;">' + num + '</div>';
       html += '<div style="flex:1;">';
       html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;">' + escapeHtml(hiveName) + '</div>';
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-size:14px;color:var(--text-m);line-height:1.4;font-style:italic;">' + escapeHtml(o.notes) + '</div>';
+      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-size:15px;font-weight:700;color:var(--text);line-height:1.45;font-style:italic;">' + escapeHtml(o.notes) + '</div>';
       if (o.tag) {
         html += '<span style="display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;margin-top:6px;background:' + o.tag.bg + ';color:' + o.tag.color + ';border:1px solid ' + o.tag.border + ';">' + o.tag.label + '</span>';
       }
@@ -22364,6 +22372,11 @@ async function renderPlanForecastStrip(data) {
 function renderPlanOrderContent(data) {
   var html = '';
 
+  // 22 May 2026 Phase 3.2 — Resume CTA on Order tab too. Without this,
+  // a user who left the app while on Order tab returns to Order tab and
+  // doesn't see the resume option.
+  html += renderResumeCTA(data);
+
   // Header description
   var totalHives = data.hives.length;
   var treatments = 0, urgent = 0, feeds = 0;
@@ -22425,7 +22438,7 @@ function renderPlanOrderContent(data) {
         html += '<div style="flex:1;min-width:0;">';
         html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(hiveName) + '</div>';
         if (outstanding) {
-          html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:2px;line-height:1.3;">' + escapeHtml(outstanding.notes.substring(0, 80)) + (outstanding.notes.length > 80 ? '…' : '') + '</div>';
+          html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;font-weight:600;color:var(--text-m);margin-top:3px;line-height:1.35;">' + escapeHtml(outstanding.notes.substring(0, 80)) + (outstanding.notes.length > 80 ? '…' : '') + '</div>';
           if (outstanding.tag) {
             html += '<span style="display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;margin-top:5px;background:' + outstanding.tag.bg + ';color:' + outstanding.tag.color + ';border:1px solid ' + outstanding.tag.border + ';">' + outstanding.tag.label + '</span>';
           }
@@ -29727,7 +29740,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 21:00 — Plan Inspection Phase 3.1 (bug fixes). Visit indicator banner + Skip/Finish action row relocated OUTSIDE inspect-form-content (which is display:none when no hive selected) so they appear reliably whenever a visit is active. Auto-finish bug fixed by tracking hivesCompleted directly on the visit (avoids timing dependency on loadInspections being current with just-saved inspection). Resume visit now has a prominent CTA at top of Plan tab when a visit is in progress. Custom date picker added — tap the date card on Plan tab to choose your own visit date (stored per-apiary in localStorage). Console logging added for diagnostics — call window.HK.Visit.debug() from devtools to dump current state. changeInspectHive is now wrapped to refresh banner on every hive change. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 21:30 — Plan Inspection Phase 3.2 (micro fixes). Resume CTA was only on Plan tab — if you left while on the Order tab, returning kept you on Order with no resume option visible. Extracted to a shared renderResumeCTA helper that both tab renderers call. Now appears at the top of whichever tab you land on. Also bumped the weight + colour of outstanding follow-up notes (Cormorant Garamond italic is now weight 700 at 15px in full text colour, was 400 italic at 14px in muted) so they read as actionable items, not magazine flavour. Order tab preview notes also slightly bolder for consistency. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
