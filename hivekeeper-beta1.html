@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-1900">
+  <meta name="app-version" content="20260522-2000">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2960,6 +2960,8 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
   </div>
+  <!-- Visit indicator banner — shown via JS when in a visit. 22 May 2026 Phase 3. -->
+  <div id="inspect-visit-banner" style="display:none;flex-shrink:0;"></div>
   <div class="scroll-area">
 
     <!-- Empty state: shown when no hive selected. Prevents the form being interacted with.
@@ -3222,6 +3224,14 @@ input[type="checkbox"].hk-chk:checked::after {
          is reachable without scrolling. References to save-inspection-btn
          in saveInspection() and _restoreSaveButtonFromTerminal() are
          defensive and silently no-op without the element. -->
+    <!-- VISIT ACTION ROW — shown only when in a visit. 22 May 2026 Phase 3.
+         Skip records a reason and advances to next planned hive without saving
+         an inspection. Finish ends the visit early. Save button (rail) is the
+         "Save & next" action and is always available. -->
+    <div id="inspect-visit-actions" style="display:none;padding:8px 20px 4px;gap:8px;">
+      <button onclick="window.HK.Visit.openSkipPicker()" style="flex:1;background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">⏭ Skip hive</button>
+      <button onclick="window.HK.Visit.confirmFinishVisit()" style="flex:1;background:var(--forest);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">✓ Finish visit</button>
+    </div>
     <div style="padding:8px 20px 4px;">
       <button onclick="triggerSOS()" style="width:100%;background:#C62828;border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">&#x1F6A8; SOS</button>
     </div>
@@ -4588,6 +4598,48 @@ input[type="checkbox"].hk-chk:checked::after {
 </div>
 
 <!-- ENVIRONMENT SCREEN — nectar calendar + crop spraying -->
+
+<!-- SKIP REASON PICKER MODAL — Phase 3, 22 May 2026.
+     Opened when user taps "Skip hive" in a visit. Canned reasons + Other free text. -->
+<div class="modal-overlay" id="modal-skip-reason" onclick="closeModal(event,'modal-skip-reason')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div class="modal-title" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;">Why skip this hive?</div>
+      <div onclick="closeModalEl('modal-skip-reason')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--text-m);margin-bottom:14px;line-height:1.5;">It'll appear in your visit summary so you can come back to it.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button onclick="window.HK.Visit.submitSkipReason('Bearding')" style="background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+        <span>Bearding</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--text-l);">cluster on entrance</span>
+      </button>
+      <button onclick="window.HK.Visit.submitSkipReason('Queen not found')" style="background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+        <span>Queen not found</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--text-l);">re-check next time</span>
+      </button>
+      <button onclick="window.HK.Visit.submitSkipReason('Couldn&rsquo;t open')" style="background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+        <span>Couldn&rsquo;t open</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--text-l);">bees too defensive</span>
+      </button>
+      <button onclick="window.HK.Visit.submitSkipReason('Weather changed')" style="background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+        <span>Weather changed</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--text-l);">rain or wind picked up</span>
+      </button>
+      <button onclick="window.HK.Visit.submitSkipReason('Time pressure')" style="background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+        <span>Time pressure</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--text-l);">return next visit</span>
+      </button>
+      <button onclick="planSkipReasonOther()" style="background:transparent;border:1px dashed var(--wax);border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--text-m);cursor:pointer;text-align:left;font-style:italic;">
+        Other reason…
+      </button>
+      <div id="skip-reason-other-wrap" style="display:none;margin-top:6px;">
+        <input id="skip-reason-other-input" type="text" placeholder="Type a reason…" style="width:100%;padding:12px 14px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;background:var(--cream);box-sizing:border-box;" />
+        <button onclick="planSkipReasonOtherSubmit()" style="width:100%;margin-top:8px;background:var(--forest);color:var(--cream);border:none;border-radius:var(--rs);padding:14px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- PLAN INSPECTION SCREEN — Phase 1 preview · 22 May 2026
      Founder testing only. Accessed via Settings -> Beta features tile.
@@ -6329,6 +6381,7 @@ function goTo(id){
   if(id==='s-calendar'){ try { renderCalendar(); renderSeasonalTips(); } catch(e){} }
   if(id==='s-market') { try { renderMarketBanner(); } catch(e) {} }
   if(id==='s-plan') { try { renderPlan(); } catch(e) { console.warn('renderPlan:', e); } }
+  if(id==='s-inspect') { try { if (window.HK && window.HK.Visit) window.HK.Visit.renderVisitBanner(); } catch(e) {} }
   if(id==='s-inventory') { try { renderInventory(); } catch(e) { console.warn('renderInventory:', e); } }
   // Sync universal headers
   try { syncUniversalHeaders(id); } catch(e) {}
@@ -14830,10 +14883,36 @@ function saveInspection(){
     // Refresh the home stats so hive counts are current if the user goes home.
     try { renderDashboard(); } catch(e) {}
 
-    // Auto-advance to next hive in the strip after a brief delay.
-    // Finds the next un-inspected hive in the current strip order.
+    // Auto-advance to next hive after a brief delay.
+    // 22 May 2026 Phase 3 — visit-aware. If in a visit, attach the saved
+    // inspection to the visit and advance to the next planned hive (respects
+    // the user's chosen visit order). If all planned hives are handled, the
+    // visit ends automatically. Outside of a visit, fall back to the original
+    // strip-based "next un-inspected chip" behaviour.
     setTimeout(function(){
       try {
+        // ─── VISIT MODE ───
+        if (window.HK && window.HK.Visit && window.HK.Visit.isInVisit()) {
+          // Attach this inspection to the visit
+          try {
+            if (insp && insp.id) {
+              window.HK.Visit.addInspectionToVisit(insp.id, insp.hiveId);
+            }
+          } catch(e) { console.warn('visit: addInspectionToVisit failed', e); }
+          // Update the banner
+          try { window.HK.Visit.renderVisitBanner(); } catch(e) {}
+          // Advance to next planned hive
+          var nextHiveId = window.HK.Visit.findNextHiveInVisit(insp ? insp.hiveId : null);
+          if (nextHiveId) {
+            changeInspectHive(nextHiveId);
+            setTimeout(function(){ try { window.HK.Visit.renderVisitBanner(); } catch(e) {} }, 250);
+            return;
+          }
+          // No more hives — end the visit automatically
+          window.HK.Visit.finishVisit();
+          return;
+        }
+        // ─── NORMAL (NON-VISIT) AUTO-ADVANCE ───
         var sessionHiveIds = (window._sessionInspections || []).map(function(s){ return s.hiveId; });
         var strip = document.getElementById('inspect-hive-strip');
         if (strip) {
@@ -21827,13 +21906,24 @@ var MARKET_LISTINGS = [
 var currentMarketFilter = 'all';
 
 
+// ════════════════════════════════════════════════════════════
+// MODULE: PLAN INSPECTION
+// ────────────────────────────────────────────────────────────
+// Dependencies: getCurrentApiary, loadHives, loadInspections,
+//   fetchForecast14d, flyingVerdict, WMO_EMOJI,
+//   getInspectionCadence, showToast, goTo
+// Public API: renderPlan(), switchPlanTab(), setPlanOrderMode(),
+//   planBeginVisit() [Phase 3 wiring]
+// Storage: window._planActiveTab, window._planOrderMode (session)
+// Markers added 22 May 2026 — Phase 3.
+// ════════════════════════════════════════════════════════════
+
 // ═══════════════════════════════════════════════
-// PLAN INSPECTION — Phase 2 preview · 22 May 2026
+// PLAN INSPECTION — Phase 2/3 preview · 22 May 2026
 // ═══════════════════════════════════════════════
 // Tab-aware version. Two tabs: Plan (kit prep, outstanding, route,
 // forecast) and Order (hive list grouped by row with tags).
-// Begin visit CTA on Plan tab switches to Order tab; Begin inspection
-// CTA on Order tab is still a placeholder (no flow connection yet).
+// Phase 3: Begin inspection now creates a real visit record.
 
 // Active tab state — persists across re-renders within a session.
 if (typeof window._planActiveTab === 'undefined') window._planActiveTab = 'plan';
@@ -22273,7 +22363,7 @@ function renderPlanOrderContent(data) {
 
   // Begin inspection CTA
   html += '<div style="padding:22px;">';
-  html += '<button onclick="planBeginInspectionPlaceholder()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
+  html += '<button onclick="planBeginVisit()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
   html += 'Begin inspection <span style="font-size:18px;">→</span>';
   html += '</button>';
   html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:8px;">In preview — full inspection flow coming soon</div>';
@@ -22294,16 +22384,419 @@ function setPlanOrderMode(mode) {
   renderPlan();
 }
 
-// Placeholder — Phase 3 will connect this to the inspection flow
-function planBeginInspectionPlaceholder() {
+// Phase 3 — connects Begin inspection to the visit flow.
+function planBeginVisit() {
   try {
-    if (typeof showToast === 'function') {
-      showToast('Beta preview — full inspection flow coming soon');
+    if (!window.HK || !window.HK.Visit) {
+      if (typeof showToast === 'function') showToast('Visit system not ready');
+      return;
     }
-    setTimeout(function(){ try { goTo('s-apiary'); } catch(e){} }, 1200);
-  } catch(e) { console.warn('planBeginInspectionPlaceholder:', e); }
+    var data = buildPlanData();
+    if (!data || !data.apiary) {
+      if (typeof showToast === 'function') showToast('Pick an apiary first');
+      return;
+    }
+    if (data.hives.length === 0) {
+      if (typeof showToast === 'function') showToast('No hives in this apiary');
+      return;
+    }
+    var existing = window.HK.Visit.getCurrentVisit();
+    if (existing && existing.apiaryId === data.apiary.id && !existing.endedAt) {
+      if (typeof showToast === 'function') showToast('Resuming visit in progress');
+      setTimeout(function(){ try { goTo('s-inspect'); } catch(e){} }, 400);
+      return;
+    }
+    if (existing && !existing.endedAt) {
+      if (!confirm('A visit is already in progress at a different apiary. End it and start a new one?')) return;
+      window.HK.Visit.endVisit('switched-apiaries');
+    }
+    var plannedOrder = [];
+    data.rowKeys.forEach(function(rk){
+      data.rowGroups[rk].forEach(function(h){ plannedOrder.push(h.id); });
+    });
+    var visit = window.HK.Visit.startVisit(data.apiary.id, plannedOrder);
+    if (!visit) {
+      if (typeof showToast === 'function') showToast('Could not start visit');
+      return;
+    }
+    if (plannedOrder.length > 0) {
+      currentHiveId = plannedOrder[0];
+    }
+    if (typeof showToast === 'function') showToast('Visit started · ' + plannedOrder.length + ' hives');
+    setTimeout(function(){ try { goTo('s-inspect'); } catch(e){} }, 400);
+  } catch(e) {
+    console.error('planBeginVisit error:', e);
+    if (typeof showToast === 'function') showToast('Could not start visit');
+  }
 }
 
+// Backwards-compat shim (Phase 1/2 referenced this name)
+function planBeginInspectionPlaceholder() {
+  planBeginVisit();
+}
+
+// ════════════════════════════════════════════════════════════
+// END MODULE: PLAN INSPECTION
+// ════════════════════════════════════════════════════════════
+
+
+
+// ════════════════════════════════════════════════════════════
+// MODULE: VISIT INSPECTION
+// ────────────────────────────────────────────────────────────
+// Tracks the lifecycle of a "visit" — a trip to an apiary that may
+// contain multiple per-hive inspections. Visits are stored in
+// localStorage (hk_visits as array, hk_current_visit_id as pointer).
+// One visit can be active at a time per device.
+//
+// A visit is a saved record. The Plan view is a live projection of
+// current state. Plans are NOT saved as entities; only visits are.
+//
+// Dependencies: showToast, goTo, openModalEl, closeModalEl,
+//   currentHiveId (global), changeInspectHive
+// Public API: window.HK.Visit.{
+//   startVisit(apiaryId, plannedOrder), endVisit(reason),
+//   getCurrentVisit(), isInVisit(),
+//   addInspectionToVisit(insp), addSkipToVisit(hiveId, reason),
+//   findNextHiveInVisit(), renderVisitBanner(),
+//   openSkipPicker(), submitSkipReason(reason)
+// }
+// Storage: localStorage keys hk_visits, hk_current_visit_id
+// Added: 22 May 2026 · Phase 3 of Plan Inspection.
+// ════════════════════════════════════════════════════════════
+window.HK = window.HK || {};
+window.HK.Visit = (function() {
+  var VISITS_KEY = 'hk_visits';
+  var CURRENT_VISIT_KEY = 'hk_current_visit_id';
+
+  function loadAll() {
+    try {
+      var raw = localStorage.getItem(VISITS_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch(e) { return []; }
+  }
+
+  function saveAll(arr) {
+    try { localStorage.setItem(VISITS_KEY, JSON.stringify(arr || [])); return true; }
+    catch(e) { console.warn('saveAll visits failed:', e); return false; }
+  }
+
+  function getCurrentVisitId() {
+    try { return localStorage.getItem(CURRENT_VISIT_KEY) || null; } catch(e) { return null; }
+  }
+
+  function setCurrentVisitId(id) {
+    try {
+      if (id) localStorage.setItem(CURRENT_VISIT_KEY, id);
+      else localStorage.removeItem(CURRENT_VISIT_KEY);
+    } catch(e) {}
+  }
+
+  function getCurrentVisit() {
+    var id = getCurrentVisitId();
+    if (!id) return null;
+    var visits = loadAll();
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === id) return visits[i];
+    }
+    return null;
+  }
+
+  function isInVisit() {
+    var v = getCurrentVisit();
+    return !!(v && !v.endedAt);
+  }
+
+  function startVisit(apiaryId, plannedHiveOrder) {
+    if (!apiaryId) return null;
+    var id = 'visit_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    var visit = {
+      id: id,
+      apiaryId: apiaryId,
+      startedAt: Date.now(),
+      endedAt: null,
+      plannedHiveOrder: Array.isArray(plannedHiveOrder) ? plannedHiveOrder.slice() : [],
+      inspectionsCompleted: [],
+      hivesSkipped: [],
+      notes: '',
+      endReason: null
+    };
+    var visits = loadAll();
+    visits.push(visit);
+    if (!saveAll(visits)) return null;
+    setCurrentVisitId(id);
+    return visit;
+  }
+
+  function endVisit(reason) {
+    var visit = getCurrentVisit();
+    if (!visit) return null;
+    var visits = loadAll();
+    var idx = -1;
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visit.id) { idx = i; break; }
+    }
+    if (idx === -1) return null;
+    visits[idx].endedAt = Date.now();
+    visits[idx].endReason = reason || 'completed';
+    saveAll(visits);
+    setCurrentVisitId(null);
+    return visits[idx];
+  }
+
+  function addInspectionToVisit(inspectionId, hiveId) {
+    var visit = getCurrentVisit();
+    if (!visit) return false;
+    var visits = loadAll();
+    var idx = -1;
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visit.id) { idx = i; break; }
+    }
+    if (idx === -1) return false;
+    if (!Array.isArray(visits[idx].inspectionsCompleted)) visits[idx].inspectionsCompleted = [];
+    // Avoid duplicates
+    if (visits[idx].inspectionsCompleted.indexOf(inspectionId) === -1) {
+      visits[idx].inspectionsCompleted.push(inspectionId);
+    }
+    // Remove from skipped if it was there (user came back to it)
+    if (Array.isArray(visits[idx].hivesSkipped) && hiveId) {
+      visits[idx].hivesSkipped = visits[idx].hivesSkipped.filter(function(s){ return s.hiveId !== hiveId; });
+    }
+    saveAll(visits);
+    return true;
+  }
+
+  function addSkipToVisit(hiveId, reason) {
+    var visit = getCurrentVisit();
+    if (!visit) return false;
+    var visits = loadAll();
+    var idx = -1;
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visit.id) { idx = i; break; }
+    }
+    if (idx === -1) return false;
+    if (!Array.isArray(visits[idx].hivesSkipped)) visits[idx].hivesSkipped = [];
+    // Replace existing skip for this hive if present
+    visits[idx].hivesSkipped = visits[idx].hivesSkipped.filter(function(s){ return s.hiveId !== hiveId; });
+    visits[idx].hivesSkipped.push({
+      hiveId: hiveId,
+      reason: reason || 'Other',
+      skippedAt: Date.now()
+    });
+    saveAll(visits);
+    return true;
+  }
+
+  // Find the next hive in the planned order that hasn't been inspected or skipped yet.
+  function findNextHiveInVisit(currentHiveId) {
+    var visit = getCurrentVisit();
+    if (!visit || !Array.isArray(visit.plannedHiveOrder)) return null;
+    // Build the set of "done" hive IDs (inspected this visit)
+    var doneHiveIds = {};
+    if (Array.isArray(visit.inspectionsCompleted) && typeof loadInspections === 'function') {
+      var allInsps = loadInspections();
+      visit.inspectionsCompleted.forEach(function(iid){
+        for (var i = 0; i < allInsps.length; i++) {
+          if (allInsps[i].id === iid) {
+            doneHiveIds[allInsps[i].hiveId] = true;
+            break;
+          }
+        }
+      });
+    }
+    // Hives skipped THIS visit are also considered "handled"
+    var skippedHiveIds = {};
+    if (Array.isArray(visit.hivesSkipped)) {
+      visit.hivesSkipped.forEach(function(s){ skippedHiveIds[s.hiveId] = true; });
+    }
+    // Find the next planned hive that's neither done nor skipped
+    // Start search after currentHiveId if provided
+    var startIdx = 0;
+    if (currentHiveId) {
+      for (var j = 0; j < visit.plannedHiveOrder.length; j++) {
+        if (visit.plannedHiveOrder[j] === currentHiveId) { startIdx = j + 1; break; }
+      }
+    }
+    for (var k = startIdx; k < visit.plannedHiveOrder.length; k++) {
+      var hid = visit.plannedHiveOrder[k];
+      if (!doneHiveIds[hid] && !skippedHiveIds[hid]) return hid;
+    }
+    // Wrap to start in case user jumped around — find any pending
+    for (var m = 0; m < startIdx; m++) {
+      var hid2 = visit.plannedHiveOrder[m];
+      if (!doneHiveIds[hid2] && !skippedHiveIds[hid2]) return hid2;
+    }
+    return null;
+  }
+
+  // Update the visit banner UI on inspect screen
+  function renderVisitBanner() {
+    var banner = document.getElementById('inspect-visit-banner');
+    var actionRow = document.getElementById('inspect-visit-actions');
+    if (!banner) return;
+    var visit = getCurrentVisit();
+    if (!visit || visit.endedAt) {
+      banner.style.display = 'none';
+      if (actionRow) actionRow.style.display = 'none';
+      return;
+    }
+    // Compute progress
+    var total = (visit.plannedHiveOrder || []).length;
+    var done = 0;
+    if (Array.isArray(visit.inspectionsCompleted) && typeof loadInspections === 'function') {
+      var allInsps = loadInspections();
+      var doneIds = {};
+      visit.inspectionsCompleted.forEach(function(iid){
+        for (var i = 0; i < allInsps.length; i++) {
+          if (allInsps[i].id === iid) { doneIds[allInsps[i].hiveId] = true; break; }
+        }
+      });
+      // Count unique hives, only those in planned order
+      visit.plannedHiveOrder.forEach(function(hid){
+        if (doneIds[hid]) done++;
+      });
+    }
+    var skipped = (visit.hivesSkipped || []).length;
+    var progressText = 'Hive ' + Math.min(done + skipped + 1, total) + ' of ' + total;
+    if (done + skipped >= total) progressText = 'All ' + total + ' hives handled';
+    var pieces = [];
+    pieces.push(done + ' done');
+    if (skipped > 0) pieces.push(skipped + ' skipped');
+    banner.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);color:white;">' +
+        '<span style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.18);padding:3px 8px;border-radius:8px;">VISIT</span>' +
+        '<span style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:14px;flex:1;">' + progressText + '</span>' +
+        '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.85);">' + pieces.join(' · ') + '</span>' +
+      '</div>';
+    banner.style.display = 'block';
+    if (actionRow) actionRow.style.display = 'flex';
+  }
+
+  // Skip reason picker — opens the modal
+  function openSkipPicker() {
+    var modal = document.getElementById('modal-skip-reason');
+    if (modal) {
+      // Reset the Other text field
+      var otherInput = document.getElementById('skip-reason-other-input');
+      if (otherInput) otherInput.value = '';
+      var otherWrap = document.getElementById('skip-reason-other-wrap');
+      if (otherWrap) otherWrap.style.display = 'none';
+      if (typeof openModalEl === 'function') openModalEl('modal-skip-reason');
+      else modal.style.display = 'flex';
+    }
+  }
+
+  // Called when user picks a canned reason or submits Other
+  function submitSkipReason(reason) {
+    if (!reason) reason = 'Other';
+    var hiveId = (typeof currentHiveId !== 'undefined') ? currentHiveId : null;
+    if (!hiveId) {
+      if (typeof showToast === 'function') showToast('No hive selected to skip');
+      return;
+    }
+    var ok = addSkipToVisit(hiveId, reason);
+    if (!ok) {
+      if (typeof showToast === 'function') showToast('Could not record skip');
+      return;
+    }
+    if (typeof closeModalEl === 'function') closeModalEl('modal-skip-reason');
+    if (typeof showToast === 'function') showToast('Hive skipped · ' + reason);
+    // Advance to next planned hive
+    setTimeout(function(){
+      var next = findNextHiveInVisit(hiveId);
+      if (next && typeof changeInspectHive === 'function') {
+        changeInspectHive(next);
+        setTimeout(renderVisitBanner, 200);
+      } else {
+        // All done — end visit
+        finishVisit();
+      }
+    }, 300);
+  }
+
+  // Called by the Finish Visit button or when all hives are handled
+  function finishVisit() {
+    var visit = getCurrentVisit();
+    if (!visit) return;
+    var done = (visit.inspectionsCompleted || []).length;
+    var skipped = (visit.hivesSkipped || []).length;
+    endVisit('completed');
+    // Hide the banner and action row immediately
+    var banner = document.getElementById('inspect-visit-banner');
+    if (banner) banner.style.display = 'none';
+    var actionRow = document.getElementById('inspect-visit-actions');
+    if (actionRow) actionRow.style.display = 'none';
+    if (typeof showToast === 'function') {
+      showToast('Visit complete · ' + done + ' inspected' + (skipped > 0 ? (' · ' + skipped + ' skipped') : ''));
+    }
+    setTimeout(function(){
+      try {
+        window._planActiveTab = 'plan';
+        goTo('s-plan');
+      } catch(e) {}
+    }, 1200);
+  }
+
+  // Confirm finish — called by the Finish Visit button
+  function confirmFinishVisit() {
+    var visit = getCurrentVisit();
+    if (!visit) return;
+    var total = (visit.plannedHiveOrder || []).length;
+    var done = 0;
+    if (Array.isArray(visit.inspectionsCompleted) && typeof loadInspections === 'function') {
+      var allInsps = loadInspections();
+      var doneIds = {};
+      visit.inspectionsCompleted.forEach(function(iid){
+        for (var i = 0; i < allInsps.length; i++) {
+          if (allInsps[i].id === iid) { doneIds[allInsps[i].hiveId] = true; break; }
+        }
+      });
+      visit.plannedHiveOrder.forEach(function(hid){ if (doneIds[hid]) done++; });
+    }
+    var skipped = (visit.hivesSkipped || []).length;
+    var remaining = total - done - skipped;
+    if (remaining > 0) {
+      if (!confirm('Finish visit with ' + remaining + ' hive' + (remaining === 1 ? '' : 's') + ' still to inspect? They\'ll appear in your next visit\'s plan.')) return;
+    }
+    finishVisit();
+  }
+
+  return {
+    startVisit: startVisit,
+    endVisit: endVisit,
+    getCurrentVisit: getCurrentVisit,
+    isInVisit: isInVisit,
+    addInspectionToVisit: addInspectionToVisit,
+    addSkipToVisit: addSkipToVisit,
+    findNextHiveInVisit: findNextHiveInVisit,
+    renderVisitBanner: renderVisitBanner,
+    openSkipPicker: openSkipPicker,
+    submitSkipReason: submitSkipReason,
+    finishVisit: finishVisit,
+    confirmFinishVisit: confirmFinishVisit,
+    loadAll: loadAll
+  };
+})();
+
+// Handler for "Other" reason — toggles the text input visible
+function planSkipReasonOther() {
+  var wrap = document.getElementById('skip-reason-other-wrap');
+  if (wrap) wrap.style.display = 'block';
+  var input = document.getElementById('skip-reason-other-input');
+  if (input) input.focus();
+}
+
+function planSkipReasonOtherSubmit() {
+  var input = document.getElementById('skip-reason-other-input');
+  var reason = (input && input.value || '').trim() || 'Other';
+  window.HK.Visit.submitSkipReason(reason);
+}
+
+// ════════════════════════════════════════════════════════════
+// END MODULE: VISIT INSPECTION
+// ════════════════════════════════════════════════════════════
 
 function renderMarketplace() {
   // 7 May 2026 Phase 4ce-13j — marketplace gated until real listings flow ships.
@@ -29121,7 +29614,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 19:00 — Plan Inspection Phase 2. Adds tab structure (Plan | Order) to s-plan screen. Plan tab now shows a 5-day weather forecast strip centred on the suggested visit date (PLAN badge on the suggested day, using existing fetchForecast14d + flyingVerdict for beekeeping-aware verdicts). Order tab shows hives grouped by row with last-inspection notes, derived tags (Treatment, Urgent, Feed, Check from keyword heuristic on notes), Auto/Custom toggle (custom is stub — drag-to-reorder deferred to Phase 3). Suggested visit date now respects getInspectionCadence() (default 7). Begin visit on Plan tab → switches to Order tab. Begin inspection on Order tab is still placeholder toast. Apiary repaint fix v3 from earlier still in place. Phase 4cf-02a Treatment Efficacy still active. No nav changes, no data writes, no schema changes.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 20:00 — Plan Inspection Phase 3. Visits are now real saved records (localStorage hk_visits + hk_current_visit_id). Begin inspection on Order tab creates a visit, sets the first planned hive, navigates to s-inspect. Visit indicator banner appears at top of inspect screen showing progress (X done, Y skipped). New action row in inspect with Skip and Finish visit buttons (shown only when in a visit). Skip opens a reason picker modal with five canned reasons plus Other (free text). Auto-advance after save is now visit-aware — respects planned order, ends visit automatically when all hives are handled. MODULE markers added around Plan code; new VISIT INSPECTION module under window.HK.Visit namespace (first proper module in the codebase). Phase 4 will add the full Visit Summary screen, past visits list, and Supabase sync. Apiary repaint fix v3, Phase 4cf-02a Treatment Efficacy, all earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
