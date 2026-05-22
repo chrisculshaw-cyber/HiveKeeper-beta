@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-2130">
+  <meta name="app-version" content="20260522-2230">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -22162,6 +22162,142 @@ function daysAgoText(ts) {
   return d + ' days ago';
 }
 
+// 22 May 2026 Phase 3.3 — Custom hive order helpers.
+// Per-apiary saved order. Stored as array of hive IDs. Auto-syncs with
+// the current hive set: new hives appended, removed hives filtered.
+
+function planGetCustomOrderRaw(apiaryId) {
+  if (!apiaryId) return null;
+  try {
+    var raw = localStorage.getItem('hk_plan_custom_order_' + apiaryId);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function planSetCustomOrderRaw(apiaryId, hiveIds) {
+  if (!apiaryId) return;
+  try { localStorage.setItem('hk_plan_custom_order_' + apiaryId, JSON.stringify(hiveIds || [])); } catch(e) {}
+}
+
+// Returns hive objects in custom order, reconciled with current hives.
+// If no custom order is saved, returns hives in auto-order (row-based).
+function planGetCustomOrderHives(data) {
+  if (!data || !data.apiary) return [];
+  var saved = planGetCustomOrderRaw(data.apiary.id);
+  var hivesById = {};
+  data.hives.forEach(function(h){ hivesById[h.id] = h; });
+
+  if (!saved || !saved.length) {
+    // No saved order — fall back to auto (row-based)
+    var auto = [];
+    data.rowKeys.forEach(function(rk){
+      data.rowGroups[rk].forEach(function(h){ auto.push(h); });
+    });
+    return auto;
+  }
+
+  // Reconcile: keep saved order, but only for currently-present hives.
+  var result = [];
+  var seen = {};
+  saved.forEach(function(hid){
+    if (hivesById[hid]) {
+      result.push(hivesById[hid]);
+      seen[hid] = true;
+    }
+  });
+  // Append any hives that exist now but weren't in the saved order
+  data.hives.forEach(function(h){
+    if (!seen[h.id]) result.push(h);
+  });
+  return result;
+}
+
+function planMoveHiveUp(idx) {
+  var data = buildPlanData();
+  if (!data || !data.apiary) return;
+  var ordered = planGetCustomOrderHives(data);
+  if (idx <= 0 || idx >= ordered.length) return;
+  var tmp = ordered[idx - 1];
+  ordered[idx - 1] = ordered[idx];
+  ordered[idx] = tmp;
+  planSetCustomOrderRaw(data.apiary.id, ordered.map(function(h){ return h.id; }));
+  renderPlan();
+}
+
+function planMoveHiveDown(idx) {
+  var data = buildPlanData();
+  if (!data || !data.apiary) return;
+  var ordered = planGetCustomOrderHives(data);
+  if (idx < 0 || idx >= ordered.length - 1) return;
+  var tmp = ordered[idx + 1];
+  ordered[idx + 1] = ordered[idx];
+  ordered[idx] = tmp;
+  planSetCustomOrderRaw(data.apiary.id, ordered.map(function(h){ return h.id; }));
+  renderPlan();
+}
+
+function planResetCustomOrder() {
+  var data = buildPlanData();
+  if (!data || !data.apiary) return;
+  if (!confirm('Reset to auto order? Your custom order will be lost.')) return;
+  try { localStorage.removeItem('hk_plan_custom_order_' + data.apiary.id); } catch(e) {}
+  if (typeof showToast === 'function') showToast('Reset to auto order');
+  renderPlan();
+}
+
+// 22 May 2026 Phase 3.4 — "Just finished" CTA renderer.
+// Shows for up to 60 min after a visit ends. Lets user restart if they
+// finished by mistake, or dismiss to acknowledge the end was intentional.
+function renderRecentFinishedCTA(data) {
+  if (!window.HK || !window.HK.Visit) return '';
+  if (!data || !data.apiary) return '';
+  var recent = window.HK.Visit.getRecentlyFinishedVisit(data.apiary.id);
+  if (!recent) return '';
+  var done = (recent.hivesCompleted || []).length;
+  var skipped = (recent.hivesSkipped || []).length;
+  var total = (recent.plannedHiveOrder || []).length;
+  var minsAgo = Math.max(1, Math.floor((Date.now() - recent.endedAt) / 60000));
+  var minsLabel = minsAgo === 1 ? '1 min ago' : minsAgo + ' mins ago';
+
+  var html = '';
+  html += '<div style="margin:14px 22px 0;padding:14px 16px;background:var(--cream);border:2px solid var(--honey);border-radius:12px;color:var(--text);">';
+  html += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;">';
+  html += '<div style="font-size:22px;line-height:1;">✓</div>';
+  html += '<div style="flex:1;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;color:var(--honey);">Visit just finished · ' + minsLabel + '</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;margin-top:3px;font-weight:600;">' + done + ' of ' + total + ' done' + (skipped > 0 ? ' · ' + skipped + ' skipped' : '') + '</div>';
+  html += '</div>';
+  html += '<div onclick="planDismissRecentFinished(\'' + recent.id + '\')" style="width:24px;height:24px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--text-m);flex-shrink:0;" title="Dismiss">×</div>';
+  html += '</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);line-height:1.4;margin-bottom:10px;">Finished by mistake? Restart to reopen the visit \u2014 your saves and skips stay put.</div>';
+  html += '<button onclick="planRestartVisit(\'' + recent.id + '\')" style="width:100%;background:var(--honey);color:white;border:none;padding:12px;border-radius:8px;font-family:\'Syne\',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;">Restart visit ↺</button>';
+  html += '</div>';
+  return html;
+}
+
+// Restart handler — re-opens the visit and navigates back to inspect.
+function planRestartVisit(visitId) {
+  if (!window.HK || !window.HK.Visit) return;
+  var restored = window.HK.Visit.restartVisit(visitId);
+  if (!restored) {
+    if (typeof showToast === 'function') showToast('Could not restart — already too long ago, or another visit is active');
+    return;
+  }
+  if (typeof showToast === 'function') showToast('Visit restarted');
+  // Restore currentHiveId to next un-handled hive
+  var nextHiveId = window.HK.Visit.findNextHiveInVisit(null);
+  if (nextHiveId) {
+    currentHiveId = nextHiveId;
+  }
+  setTimeout(function(){ try { goTo('s-inspect'); } catch(e){} }, 400);
+}
+
+function planDismissRecentFinished(visitId) {
+  if (!window.HK || !window.HK.Visit) return;
+  window.HK.Visit.dismissRecentFinished(visitId);
+  renderPlan();
+}
+
 // 22 May 2026 Phase 3.2 — Shared Resume CTA renderer. Both Plan and Order
 // tab renderers call this so the resume banner appears regardless of which
 // tab the user lands on. Returns HTML or empty string.
@@ -22195,6 +22331,8 @@ function renderPlanContent(data) {
 
   // 22 May 2026 Phase 3.2 — Resume CTA via shared helper
   html += renderResumeCTA(data);
+  // 22 May 2026 Phase 3.4 — Just-finished CTA (60 min window)
+  html += renderRecentFinishedCTA(data);
 
 
   // Date card (forest gradient) — tappable to open custom date picker (Phase 3.1)
@@ -22376,6 +22514,8 @@ function renderPlanOrderContent(data) {
   // a user who left the app while on Order tab returns to Order tab and
   // doesn't see the resume option.
   html += renderResumeCTA(data);
+  // 22 May 2026 Phase 3.4 — Just-finished CTA (60 min window)
+  html += renderRecentFinishedCTA(data);
 
   // Header description
   var totalHives = data.hives.length;
@@ -22406,16 +22546,18 @@ function renderPlanOrderContent(data) {
   html += '</div>';
 
   if (!modeAuto) {
-    // Custom mode stub — render the auto list but with drag handles + a notice
-    html += '<div style="margin:8px 22px 16px;padding:12px 14px;background:#FAEEDA;border:1px dashed #C8730A;border-radius:10px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:#854F0B;line-height:1.5;">';
-    html += 'Drag-to-reorder coming in Phase 3. For now, this shows the same order as Auto.';
+    // Phase 3.3 — Custom mode: flat list, arrow buttons to reorder.
+    html += '<div style="margin:8px 22px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">';
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);flex:1;line-height:1.4;">Tap ↑ ↓ to reorder. First hive gets the honey-coloured number — that\'s where you\'ll start.</div>';
+    html += '<button onclick="planResetCustomOrder()" style="background:transparent;border:1px solid var(--wax);border-radius:8px;padding:6px 10px;font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;color:var(--text-m);cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Reset</button>';
     html += '</div>';
   }
 
-  // Hive list grouped by row
-  if (data.rowKeys.length === 0) {
+  // Hive list — grouped (Auto) or flat (Custom)
+  if (data.hives.length === 0) {
     html += '<div style="padding:40px 22px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text-l);font-size:15px;">No hives in this apiary yet.</div>';
-  } else {
+  } else if (modeAuto) {
+    // ─── AUTO MODE: grouped by row ───
     var globalNum = 0;
     data.rowKeys.forEach(function(rk) {
       var rowHives = data.rowGroups[rk];
@@ -22424,7 +22566,6 @@ function renderPlanOrderContent(data) {
       html += (rk === 'Unassigned' ? 'Unassigned' : 'Row ' + rk);
       html += '<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-l);font-style:normal;letter-spacing:0.1em;">' + rowHives.length + ' HIVE' + (rowHives.length === 1 ? '' : 'S') + '</span>';
       html += '</div>';
-
       rowHives.forEach(function(hive, idx) {
         globalNum++;
         var hiveName = hive.name || ('Hive ' + (hive.number || ''));
@@ -22432,7 +22573,6 @@ function renderPlanOrderContent(data) {
         var isFirst = globalNum === 1;
         var numBg = isFirst ? 'var(--honey)' : 'var(--wax)';
         var numColor = isFirst ? 'var(--cream)' : 'var(--text)';
-
         html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;' + (idx < rowHives.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
         html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + numColor + ';background:' + numBg + ';border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;">' + globalNum + '</div>';
         html += '<div style="flex:1;min-width:0;">';
@@ -22446,13 +22586,44 @@ function renderPlanOrderContent(data) {
           html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:2px;">Routine check</div>';
         }
         html += '</div>';
-        if (!modeAuto) {
-          html += '<div style="color:var(--text-l);font-size:16px;padding:4px;cursor:grab;">⋮⋮</div>';
-        }
         html += '</div>';
       });
       html += '</div>';
     });
+  } else {
+    // ─── CUSTOM MODE: flat list with up/down arrows ───
+    var ordered = planGetCustomOrderHives(data);
+    html += '<div style="padding:0 22px;">';
+    ordered.forEach(function(hive, idx) {
+      var hiveName = hive.name || ('Hive ' + (hive.number || ''));
+      var outstanding = data.outstandingByHiveId[hive.id];
+      var isFirst = idx === 0;
+      var numBg = isFirst ? 'var(--honey)' : 'var(--wax)';
+      var numColor = isFirst ? 'var(--cream)' : 'var(--text)';
+      var canUp = idx > 0;
+      var canDown = idx < ordered.length - 1;
+      var rowName = (hive.row !== null && hive.row !== undefined && hive.row !== '') ? ('Row ' + hive.row) : 'Unassigned';
+
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;' + (idx < ordered.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
+      // Number disc
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + numColor + ';background:' + numBg + ';border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;">' + (idx + 1) + '</div>';
+      // Name + meta + tag
+      html += '<div style="flex:1;min-width:0;">';
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(hiveName) + '</div>';
+      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:2px;">' + rowName;
+      if (outstanding && outstanding.tag) {
+        html += ' · <span style="display:inline-block;padding:1px 7px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;background:' + outstanding.tag.bg + ';color:' + outstanding.tag.color + ';border:1px solid ' + outstanding.tag.border + ';vertical-align:middle;">' + outstanding.tag.label + '</span>';
+      }
+      html += '</div>';
+      html += '</div>';
+      // Arrow buttons
+      html += '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">';
+      html += '<button onclick="planMoveHiveUp(' + idx + ')" ' + (canUp ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canUp ? 'var(--cream)' : 'transparent') + ';color:' + (canUp ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canUp ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canUp ? '1' : '0.35') + ';">↑</button>';
+      html += '<button onclick="planMoveHiveDown(' + idx + ')" ' + (canDown ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canDown ? 'var(--cream)' : 'transparent') + ';color:' + (canDown ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canDown ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canDown ? '1' : '0.35') + ';">↓</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
   }
 
   // Begin inspection CTA
@@ -22504,10 +22675,18 @@ function planBeginVisit() {
       if (!confirm('A visit is already in progress at a different apiary. End it and start a new one?')) return;
       window.HK.Visit.endVisit('switched-apiaries');
     }
-    var plannedOrder = [];
-    data.rowKeys.forEach(function(rk){
-      data.rowGroups[rk].forEach(function(h){ plannedOrder.push(h.id); });
-    });
+    // 22 May 2026 Phase 3.3 — respect the active order mode.
+    // If user chose Custom and reordered hives, use their order. Otherwise
+    // fall back to auto (row-based, L-R within each row).
+    var plannedOrder;
+    if (window._planOrderMode === 'custom') {
+      plannedOrder = planGetCustomOrderHives(data).map(function(h){ return h.id; });
+    } else {
+      plannedOrder = [];
+      data.rowKeys.forEach(function(rk){
+        data.rowGroups[rk].forEach(function(h){ plannedOrder.push(h.id); });
+      });
+    }
     var visit = window.HK.Visit.startVisit(data.apiary.id, plannedOrder);
     if (!visit) {
       if (typeof showToast === 'function') showToast('Could not start visit');
@@ -22815,7 +22994,7 @@ window.HK.Visit = (function() {
     var actionRow = document.getElementById('inspect-visit-actions');
     if (actionRow) actionRow.style.display = 'none';
     if (typeof showToast === 'function') {
-      showToast('Visit complete · ' + done + ' inspected' + (skipped > 0 ? (' · ' + skipped + ' skipped') : ''));
+      showToast('Visit complete · ' + done + ' inspected' + (skipped > 0 ? (' · ' + skipped + ' skipped') : '') + ' · restart on Plan if needed');
     }
     setTimeout(function(){
       try {
@@ -22847,6 +23026,72 @@ window.HK.Visit = (function() {
       if (!confirm('Finish visit with ' + remaining + ' hive' + (remaining === 1 ? '' : 's') + ' still to inspect? They\'ll appear in your next visit\'s plan.')) return;
     }
     finishVisit();
+  }
+
+  // 22 May 2026 Phase 3.4 — restart accidentally-ended visit.
+  // Re-opens a visit that's been finished within the last 60 minutes.
+  // Clears endedAt, restores it as the current visit, returns it.
+  function restartVisit(visitId) {
+    var visits = loadAll();
+    var idx = -1;
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) { idx = i; break; }
+    }
+    if (idx === -1) return null;
+    // Only allow restart if ended within last 60 minutes
+    if (visits[idx].endedAt && (Date.now() - visits[idx].endedAt) > 60 * 60 * 1000) {
+      console.warn('[Visit] restartVisit: visit ended more than 60 minutes ago, refusing restart');
+      return null;
+    }
+    // Refuse if there's a different active visit
+    var currentId = getCurrentVisitId();
+    if (currentId && currentId !== visitId) {
+      var current = null;
+      for (var k = 0; k < visits.length; k++) {
+        if (visits[k].id === currentId) { current = visits[k]; break; }
+      }
+      if (current && !current.endedAt) {
+        console.warn('[Visit] restartVisit: another visit is already active');
+        return null;
+      }
+    }
+    visits[idx].endedAt = null;
+    visits[idx].endReason = null;
+    visits[idx].restartedAt = Date.now();
+    saveAll(visits);
+    setCurrentVisitId(visitId);
+    return visits[idx];
+  }
+
+  // Hide the "just finished" CTA for a specific visit (user has acknowledged
+  // the end was intentional).
+  function dismissRecentFinished(visitId) {
+    var visits = loadAll();
+    var idx = -1;
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) { idx = i; break; }
+    }
+    if (idx === -1) return false;
+    visits[idx].endDismissedAt = Date.now();
+    saveAll(visits);
+    return true;
+  }
+
+  // Returns the most recent ended visit for an apiary, if ended within
+  // 60 min AND not dismissed. Else null.
+  function getRecentlyFinishedVisit(apiaryId) {
+    if (!apiaryId) return null;
+    var visits = loadAll();
+    var match = null;
+    for (var i = 0; i < visits.length; i++) {
+      var v = visits[i];
+      if (v.apiaryId !== apiaryId) continue;
+      if (!v.endedAt) continue;
+      if (v.endDismissedAt) continue;
+      if ((Date.now() - v.endedAt) > 60 * 60 * 1000) continue;
+      if (!match || v.endedAt > match.endedAt) match = v;
+    }
+    return match;
   }
 
   // 22 May 2026 Phase 3.1 — diagnostic helper. Call window.HK.Visit.debug()
@@ -22885,7 +23130,10 @@ window.HK.Visit = (function() {
     finishVisit: finishVisit,
     confirmFinishVisit: confirmFinishVisit,
     loadAll: loadAll,
-    debug: debug
+    debug: debug,
+    restartVisit: restartVisit,
+    dismissRecentFinished: dismissRecentFinished,
+    getRecentlyFinishedVisit: getRecentlyFinishedVisit
   };
 })();
 
@@ -29740,7 +29988,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 21:30 — Plan Inspection Phase 3.2 (micro fixes). Resume CTA was only on Plan tab — if you left while on the Order tab, returning kept you on Order with no resume option visible. Extracted to a shared renderResumeCTA helper that both tab renderers call. Now appears at the top of whichever tab you land on. Also bumped the weight + colour of outstanding follow-up notes (Cormorant Garamond italic is now weight 700 at 15px in full text colour, was 400 italic at 14px in muted) so they read as actionable items, not magazine flavour. Order tab preview notes also slightly bolder for consistency. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 22:30 — Plan Inspection Phase 3.4 — restart accidentally-finished visit. If you tap Finish by mistake, the Plan and Order tabs now show a Just-finished CTA for up to 60 minutes with a Restart button. Tap Restart \u2192 visit re-opens, state preserved (completed list, skipped list, planned order all kept), nav back to inspect. Dismiss with the small \u00d7 if the end was intentional. Finish toast also mentions the restart option. New API methods: HK.Visit.restartVisit(), dismissRecentFinished(), getRecentlyFinishedVisit(). All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
