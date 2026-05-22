@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-2230">
+  <meta name="app-version" content="20260522-2300">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2963,11 +2963,13 @@ input[type="checkbox"].hk-chk:checked::after {
   <!-- Visit indicator banner + action row — both outside scroll-area and
        outside the gated form-content, so they appear reliably whenever a
        visit is in progress regardless of hive selection state.
-       22 May 2026 Phase 3.1. -->
-  <div id="inspect-visit-banner" style="display:none;flex-shrink:0;"></div>
-  <div id="inspect-visit-actions" style="display:none;flex-shrink:0;padding:8px 16px;gap:8px;background:var(--cream);border-bottom:1px solid var(--wax);">
-    <button onclick="window.HK.Visit.openSkipPicker()" style="flex:1;background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">⏭ Skip hive</button>
-    <button onclick="window.HK.Visit.confirmFinishVisit()" style="flex:1;background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">✓ Finish visit</button>
+       22 May 2026 Phase 3.1 (Phase 3.5 — added overflow safety after a
+       layout-shift bug where horizontal overflow in this region pushed
+       sibling .screen translateX() into a stuck state). -->
+  <div id="inspect-visit-banner" style="display:none;flex-shrink:0;width:100%;max-width:100%;overflow:hidden;box-sizing:border-box;"></div>
+  <div id="inspect-visit-actions" style="display:none;flex-shrink:0;width:100%;max-width:100%;overflow:hidden;box-sizing:border-box;padding:8px 16px;gap:8px;background:var(--cream);border-bottom:1px solid var(--wax);">
+    <button onclick="window.HK.Visit.openSkipPicker()" style="flex:1;min-width:0;background:var(--warm);border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">⏭ Skip hive</button>
+    <button onclick="window.HK.Visit.confirmFinishVisit()" style="flex:1;min-width:0;background:var(--forest);border:none;border-radius:var(--rs);padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;">✓ Finish visit</button>
   </div>
   <div class="scroll-area">
 
@@ -22090,6 +22092,23 @@ function planClearCustomDate(apiaryId) {
   renderPlan();
 }
 
+// 22 May 2026 Phase 3.5 — Set the plan date by tapping a forecast day.
+// daysFromToday is the offset from now (0 = today, 1 = tomorrow, etc).
+function planSetDateFromForecast(daysFromToday) {
+  var data = buildPlanData();
+  if (!data || !data.apiary) return;
+  var date = new Date();
+  date.setDate(date.getDate() + daysFromToday);
+  date.setHours(12, 0, 0, 0); // noon to avoid TZ edge cases
+  var yyyy = date.getFullYear();
+  var mm = String(date.getMonth() + 1).padStart(2, '0');
+  var dd = String(date.getDate()).padStart(2, '0');
+  setPlanCustomDate(data.apiary.id, yyyy + '-' + mm + '-' + dd);
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  if (typeof showToast === 'function') showToast('Plan set to ' + dayNames[date.getDay()] + ' ' + date.getDate());
+  renderPlan();
+}
+
 function renderPlan() {
   try {
     var contentEl = document.getElementById('plan-content');
@@ -22335,9 +22354,9 @@ function renderPlanContent(data) {
   html += renderRecentFinishedCTA(data);
 
 
-  // Date card (forest gradient) — tappable to open custom date picker (Phase 3.1)
+  // Date card (forest gradient) — tappable to open custom date picker (Phase 3.5 — more visible hint)
   html += '<div onclick="openPlanDatePicker()" style="margin:18px 22px;background:linear-gradient(135deg,var(--forest) 0%,var(--forest-m) 100%);color:var(--cream);border-radius:14px;padding:22px;position:relative;overflow:hidden;cursor:pointer;">';
-  html += '<div style="position:absolute;top:14px;right:16px;font-size:11px;color:rgba(250,246,238,0.5);font-family:\'Cormorant Garamond\',serif;font-style:italic;">tap to change ›</div>';
+  html += '<div style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:5px;font-size:9px;font-family:\'Syne\',sans-serif;font-weight:700;letter-spacing:0.1em;color:var(--cream);background:var(--honey);padding:5px 10px;border-radius:20px;text-transform:uppercase;box-shadow:0 1px 3px rgba(0,0,0,0.18);"><span style="font-size:11px;">📅</span> Change</div>';
   html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgba(250,246,238,0.6);margin-bottom:6px;">Suggested · ' + dayName + '</div>';
   html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:38px;line-height:1;margin-bottom:12px;font-weight:500;">' + dayNum + ' ' + monthName + '</div>';
   var customNote = data.isCustomDate ? ' · <span style="color:var(--honey-l);font-weight:600;">custom date</span>' : '';
@@ -22355,7 +22374,7 @@ function renderPlanContent(data) {
 
   // Forecast strip — placeholder, filled async by renderPlanForecastStrip
   html += '<div id="plan-forecast-strip" style="margin:0 22px 18px;">';
-  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--honey);margin-bottom:8px;">5-day forecast around visit</div>';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--honey);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;"><span>5-day forecast around visit</span><span style="font-family:\'Cormorant Garamond\',serif;font-style:italic;text-transform:none;letter-spacing:0;color:var(--text-l);font-size:11px;font-weight:500;">tap a day to set plan</span></div>';
   html += '<div id="plan-forecast-rows" style="display:flex;gap:6px;">';
   html += '<div style="flex:1;text-align:center;padding:18px 0;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-l);">Loading forecast…</div>';
   html += '</div>';
@@ -22489,7 +22508,7 @@ async function renderPlanForecastStrip(data) {
       var cardBg = isSuggested ? 'var(--warm)' : 'var(--cream)';
       var cardBorder = isSuggested ? '2px solid var(--honey)' : '1px solid var(--wax)';
 
-      html += '<div style="flex:1;min-width:0;text-align:center;padding:10px 4px;background:' + cardBg + ';border:' + cardBorder + ';border-radius:10px;position:relative;">';
+      html += '<div onclick="planSetDateFromForecast(' + i + ')" style="flex:1;min-width:0;text-align:center;padding:10px 4px;background:' + cardBg + ';border:' + cardBorder + ';border-radius:10px;position:relative;cursor:pointer;transition:transform 0.1s;" onmousedown="this.style.transform=\'scale(0.96)\'" onmouseup="this.style.transform=\'\'" ontouchstart="this.style.transform=\'scale(0.96)\'" ontouchend="this.style.transform=\'\'">';
       if (isSuggested) {
         html += '<div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--honey);color:white;font-family:\'Syne\',sans-serif;font-size:8px;font-weight:800;letter-spacing:0.08em;padding:1px 6px;border-radius:6px;white-space:nowrap;">PLAN</div>';
       }
@@ -22925,10 +22944,10 @@ window.HK.Visit = (function() {
     pieces.push(done + ' done');
     if (skipped > 0) pieces.push(skipped + ' skipped');
     banner.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);color:white;">' +
-        '<span style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.18);padding:3px 8px;border-radius:8px;">VISIT</span>' +
-        '<span style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:14px;flex:1;">' + progressText + '</span>' +
-        '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.85);">' + pieces.join(' · ') + '</span>' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);color:white;width:100%;box-sizing:border-box;overflow:hidden;">' +
+        '<span style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;background:rgba(255,255,255,0.18);padding:3px 8px;border-radius:8px;flex-shrink:0;">VISIT</span>' +
+        '<span style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + progressText + '</span>' +
+        '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:rgba(255,255,255,0.85);flex-shrink:0;white-space:nowrap;">' + pieces.join(' · ') + '</span>' +
       '</div>';
     banner.style.display = 'block';
     if (actionRow) {
@@ -29988,7 +30007,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 22:30 — Plan Inspection Phase 3.4 — restart accidentally-finished visit. If you tap Finish by mistake, the Plan and Order tabs now show a Just-finished CTA for up to 60 minutes with a Restart button. Tap Restart \u2192 visit re-opens, state preserved (completed list, skipped list, planned order all kept), nav back to inspect. Dismiss with the small \u00d7 if the end was intentional. Finish toast also mentions the restart option. New API methods: HK.Visit.restartVisit(), dismissRecentFinished(), getRecentlyFinishedVisit(). All earlier features still in place.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 23:00 — Plan Inspection Phase 3.5 (layout fix + date UX). Visit banner + action row hardened with explicit width:100%, max-width:100%, overflow:hidden, box-sizing:border-box to stop horizontal overflow from shifting sibling .screen translateX() into a stuck state (reported: home screen shifted left after entering Inspect). Inner banner content uses min-width:0 + text-overflow:ellipsis on the progress text + flex-shrink:0 on the VISIT pill and stats. The date card\'s \u201ctap to change\u201d hint is now a prominent honey pill with calendar icon (was a tiny italic line that founders missed). Each day in the 5-day forecast strip is now tappable \u2014 tap to set the planned date to that day, with a press-down scale animation. Subheading on the forecast section says \u201ctap a day to set plan\u201d. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
