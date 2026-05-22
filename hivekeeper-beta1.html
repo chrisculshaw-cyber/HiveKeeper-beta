@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260522-1800">
+  <meta name="app-version" content="20260522-1900">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -4617,9 +4617,14 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
     </div>
   </div>
+  <!-- TAB BAR — sticky below header, sits on cream background -->
+  <div style="flex-shrink:0;background:var(--cream);border-bottom:1px solid var(--wax);display:flex;">
+    <button id="plan-tab-btn-plan" onclick="switchPlanTab('plan')" style="flex:1;background:transparent;border:none;padding:14px 8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-l);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;">Plan</button>
+    <button id="plan-tab-btn-order" onclick="switchPlanTab('order')" style="flex:1;background:transparent;border:none;padding:14px 8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-l);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.15s;">Order</button>
+  </div>
   <div class="scroll-area">
     <div id="plan-content" style="padding-bottom:60px;">
-      <!-- populated by renderPlan() -->
+      <!-- populated by renderPlan() — content varies by active tab -->
     </div>
   </div>
 </div>
@@ -21823,200 +21828,165 @@ var currentMarketFilter = 'all';
 
 
 // ═══════════════════════════════════════════════
-// PLAN INSPECTION — Phase 1 preview · 22 May 2026
+// PLAN INSPECTION — Phase 2 preview · 22 May 2026
 // ═══════════════════════════════════════════════
-// Renders the inspection planning screen for founder testing.
-// Reads real data from loadInspections() and loadHives() — outstanding
-// follow-ups are inspections with nextInspectionNotes set but not marked
-// done (same query the home dashboard badge uses).
+// Tab-aware version. Two tabs: Plan (kit prep, outstanding, route,
+// forecast) and Order (hive list grouped by row with tags).
+// Begin visit CTA on Plan tab switches to Order tab; Begin inspection
+// CTA on Order tab is still a placeholder (no flow connection yet).
+
+// Active tab state — persists across re-renders within a session.
+if (typeof window._planActiveTab === 'undefined') window._planActiveTab = 'plan';
+
+function switchPlanTab(name) {
+  window._planActiveTab = name;
+  renderPlan();
+  // Scroll the plan content back to top on tab switch
+  try {
+    var sa = document.querySelector('#s-plan .scroll-area');
+    if (sa) sa.scrollTop = 0;
+  } catch(e) {}
+}
+
+// Map a free-text follow-up note to a category tag for visual grouping.
+// Heuristic keyword matching — not perfect but good enough for Phase 2.
+function planTagForNote(noteText) {
+  var t = String(noteText || '').toLowerCase();
+  if (/swarm\s*cell|artificial\s*swarm|\bas\b|queen\s*cell|swarming/.test(t)) return { label: 'Urgent', bg: 'rgba(184,106,75,0.15)', color: '#8F4F38', border: 'rgba(143,79,56,0.3)' };
+  if (/apiguard|varroa|treat|oxalic|formic|thymol|amitraz/.test(t)) return { label: 'Treatment', bg: 'rgba(200,115,10,0.18)', color: '#A87327', border: 'rgba(168,115,39,0.3)' };
+  if (/fondant|feed|syrup|stores|sugar/.test(t)) return { label: 'Feed', bg: 'rgba(92,111,79,0.15)', color: '#43543A', border: 'rgba(67,84,58,0.3)' };
+  if (/queen|brood|egg/.test(t)) return { label: 'Check', bg: 'rgba(143,128,96,0.12)', color: '#8F8060', border: 'rgba(143,128,96,0.3)' };
+  return null;
+}
+
+// Build the shared data object used by both tabs. Single source of truth.
+function buildPlanData() {
+  var apiary = (typeof getCurrentApiary === 'function') ? getCurrentApiary() : null;
+  if (!apiary) return null;
+  var allHives = (typeof loadHives === 'function') ? loadHives() : [];
+  var allInspections = (typeof loadInspections === 'function') ? loadInspections() : [];
+  var apiaryHives = allHives.filter(function(h){ return h && h.apiaryId === apiary.id; });
+  var apiaryHiveIds = apiaryHives.map(function(h){ return h.id; });
+
+  // Outstanding: per-hive latest inspection with nextInspectionNotes unfinished
+  var outstandingByHiveId = {};
+  apiaryHives.forEach(function(hive){
+    var hiveInsps = allInspections
+      .filter(function(i){
+        return i && i.hiveId === hive.id &&
+               i.nextInspectionNotes &&
+               (i.nextInspectionNotes || '').trim() &&
+               !i.nextInspectionNotesDoneAt;
+      })
+      .sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
+    if (hiveInsps.length > 0) {
+      var latest = hiveInsps[0];
+      outstandingByHiveId[hive.id] = {
+        notes: (latest.nextInspectionNotes || '').trim(),
+        inspectedAt: latest.inspectedAt,
+        tag: planTagForNote(latest.nextInspectionNotes)
+      };
+    }
+  });
+  var outstanding = apiaryHives
+    .filter(function(h){ return outstandingByHiveId[h.id]; })
+    .map(function(h){
+      return {
+        hive: h,
+        notes: outstandingByHiveId[h.id].notes,
+        inspectedAt: outstandingByHiveId[h.id].inspectedAt,
+        tag: outstandingByHiveId[h.id].tag
+      };
+    })
+    .sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
+
+  // Last visit + suggested next
+  var apiaryInsps = allInspections
+    .filter(function(i){ return i && apiaryHiveIds.indexOf(i.hiveId) !== -1; })
+    .sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
+  var lastVisitTs = apiaryInsps.length > 0 ? apiaryInsps[0].inspectedAt : null;
+  var daysSinceLast = lastVisitTs ? Math.floor((Date.now() - lastVisitTs) / 86400000) : null;
+  var cadence = (typeof getInspectionCadence === 'function') ? getInspectionCadence() : 7;
+  var suggestedTs = lastVisitTs ? (lastVisitTs + cadence * 86400000) : Date.now();
+  var daysToSuggested = Math.ceil((suggestedTs - Date.now()) / 86400000);
+
+  // Group by row
+  var rowGroups = {};
+  apiaryHives.forEach(function(h){
+    var row = (h.row !== null && h.row !== undefined && h.row !== '') ? String(h.row) : 'Unassigned';
+    if (!rowGroups[row]) rowGroups[row] = [];
+    rowGroups[row].push(h);
+  });
+  var rowKeys = Object.keys(rowGroups).sort(function(a,b){
+    if (a === 'Unassigned') return 1;
+    if (b === 'Unassigned') return -1;
+    var aNum = parseInt(a.replace(/[^0-9]/g,''), 10);
+    var bNum = parseInt(b.replace(/[^0-9]/g,''), 10);
+    if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+    return a.localeCompare(b);
+  });
+  // Sort hives within each row by name
+  rowKeys.forEach(function(rk){
+    rowGroups[rk].sort(function(a,b){
+      var an = (a.name || '').toLowerCase();
+      var bn = (b.name || '').toLowerCase();
+      if (an < bn) return -1;
+      if (an > bn) return 1;
+      return 0;
+    });
+  });
+
+  return {
+    apiary: apiary,
+    hives: apiaryHives,
+    outstanding: outstanding,
+    outstandingByHiveId: outstandingByHiveId,
+    lastVisitTs: lastVisitTs,
+    daysSinceLast: daysSinceLast,
+    suggestedTs: suggestedTs,
+    daysToSuggested: daysToSuggested,
+    cadence: cadence,
+    rowGroups: rowGroups,
+    rowKeys: rowKeys
+  };
+}
+
+// Top-level entry point — dispatches to the active tab's content
 function renderPlan() {
   try {
     var contentEl = document.getElementById('plan-content');
     var labelEl = document.getElementById('plan-apiary-label');
-    var titleEl = document.getElementById('plan-screen-title-hdr');
-    var subEl = document.getElementById('plan-screen-sub');
     if (!contentEl) return;
 
-    var apiary = (typeof getCurrentApiary === 'function') ? getCurrentApiary() : null;
-    if (labelEl) labelEl.textContent = (apiary && apiary.name) ? apiary.name : 'My Apiary';
+    var data = buildPlanData();
+    if (labelEl) labelEl.textContent = (data && data.apiary && data.apiary.name) ? data.apiary.name : 'My Apiary';
 
-    if (!apiary) {
-      contentEl.innerHTML = '<div style="padding:40px 24px;text-align:center;color:var(--text-l);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;">No apiary selected. Pick an apiary first.</div>';
+    // Update tab button visual state
+    var planBtn = document.getElementById('plan-tab-btn-plan');
+    var orderBtn = document.getElementById('plan-tab-btn-order');
+    var activeStyle = function(btn) { btn.style.color = 'var(--forest)'; btn.style.borderBottomColor = 'var(--honey)'; };
+    var inactiveStyle = function(btn) { btn.style.color = 'var(--text-l)'; btn.style.borderBottomColor = 'transparent'; };
+    if (planBtn && orderBtn) {
+      if (window._planActiveTab === 'order') {
+        activeStyle(orderBtn); inactiveStyle(planBtn);
+      } else {
+        activeStyle(planBtn); inactiveStyle(orderBtn);
+      }
+    }
+
+    if (!data) {
+      contentEl.innerHTML = renderPlanPreviewBanner() +
+        '<div style="padding:40px 24px;text-align:center;color:var(--text-l);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;">No apiary selected. Pick an apiary first.</div>';
       return;
     }
 
-    var allHives = (typeof loadHives === 'function') ? loadHives() : [];
-    var allInspections = (typeof loadInspections === 'function') ? loadInspections() : [];
-
-    var apiaryHives = allHives.filter(function(h){ return h && h.apiaryId === apiary.id; });
-    var apiaryHiveIds = apiaryHives.map(function(h){ return h.id; });
-
-    // Outstanding follow-ups: latest inspection per hive where nextInspectionNotes
-    // exists and nextInspectionNotesDoneAt is falsy
-    var outstanding = [];
-    apiaryHives.forEach(function(hive){
-      var hiveInsps = allInspections
-        .filter(function(i){
-          return i && i.hiveId === hive.id &&
-                 i.nextInspectionNotes &&
-                 (i.nextInspectionNotes || '').trim() &&
-                 !i.nextInspectionNotesDoneAt;
-        })
-        .sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
-      if (hiveInsps.length > 0) {
-        var latest = hiveInsps[0];
-        outstanding.push({
-          hive: hive,
-          notes: (latest.nextInspectionNotes || '').trim(),
-          inspectedAt: latest.inspectedAt
-        });
-      }
-    });
-    // Sort outstanding by inspection date (most recent first)
-    outstanding.sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
-
-    // Last visit in this apiary = most recent inspection
-    var apiaryInsps = allInspections
-      .filter(function(i){ return i && apiaryHiveIds.indexOf(i.hiveId) !== -1; })
-      .sort(function(a,b){ return (b.inspectedAt||0) - (a.inspectedAt||0); });
-    var lastVisitTs = apiaryInsps.length > 0 ? apiaryInsps[0].inspectedAt : null;
-    var daysSinceLast = lastVisitTs ? Math.floor((Date.now() - lastVisitTs) / 86400000) : null;
-
-    // Suggested next visit: 7 days after last, or today if no prior visits
-    var suggestedTs = lastVisitTs ? (lastVisitTs + 7 * 86400000) : Date.now();
-    var suggestedDate = new Date(suggestedTs);
-    var daysToSuggested = Math.ceil((suggestedTs - Date.now()) / 86400000);
-    var dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][suggestedDate.getDay()];
-    var monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][suggestedDate.getMonth()];
-    var dayNum = suggestedDate.getDate();
-
-    // Group hives by row
-    var rowGroups = {};
-    apiaryHives.forEach(function(h){
-      var row = (h.row !== null && h.row !== undefined && h.row !== '') ? String(h.row) : 'Unassigned';
-      if (!rowGroups[row]) rowGroups[row] = [];
-      rowGroups[row].push(h);
-    });
-    var rowKeys = Object.keys(rowGroups).sort(function(a,b){
-      if (a === 'Unassigned') return 1;
-      if (b === 'Unassigned') return -1;
-      var aNum = parseInt(a.replace(/[^0-9]/g,''), 10);
-      var bNum = parseInt(b.replace(/[^0-9]/g,''), 10);
-      if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
-      return a.localeCompare(b);
-    });
-
-    // Helper: format "X days ago"
-    function daysAgo(ts) {
-      if (!ts) return 'never';
-      var d = Math.floor((Date.now() - ts) / 86400000);
-      if (d === 0) return 'today';
-      if (d === 1) return 'yesterday';
-      return d + ' days ago';
-    }
-
-    // Helper: HTML-escape
-    function esc(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // Build HTML — uses existing fonts + CSS variables to match app aesthetic
-    var html = '';
-
-    // Preview banner
-    html += '<div style="background:#FAEEDA;border-bottom:1px solid #E8D5A8;padding:10px 22px;text-align:center;font-family:\'Syne\',sans-serif;font-size:11px;color:#854F0B;font-weight:600;letter-spacing:.04em;">';
-    html += '🧪 PREVIEW — your feedback shapes this feature';
-    html += '</div>';
-
-    // Date card (forest gradient, prominent)
-    html += '<div style="margin:18px 22px;background:linear-gradient(135deg,var(--forest) 0%,var(--forest-m) 100%);color:var(--cream);border-radius:14px;padding:22px;position:relative;overflow:hidden;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgba(250,246,238,0.6);margin-bottom:6px;">Suggested · ' + dayName + '</div>';
-    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:38px;line-height:1;margin-bottom:12px;font-weight:500;">' + dayNum + ' ' + monthName + '</div>';
-    if (lastVisitTs) {
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:rgba(250,246,238,0.8);line-height:1.5;">' +
-              (daysToSuggested === 0 ? 'Today' : (daysToSuggested > 0 ? daysToSuggested + ' days from today' : Math.abs(daysToSuggested) + ' days overdue')) +
-              ' · ' + daysSinceLast + ' days since last inspection</div>';
+    if (window._planActiveTab === 'order') {
+      contentEl.innerHTML = renderPlanPreviewBanner() + renderPlanOrderContent(data);
     } else {
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:rgba(250,246,238,0.8);line-height:1.5;">No previous inspections yet for this apiary.</div>';
+      contentEl.innerHTML = renderPlanPreviewBanner() + renderPlanContent(data);
+      // Asynchronously fetch + populate the forecast strip without blocking initial render
+      setTimeout(function(){ renderPlanForecastStrip(data); }, 50);
     }
-    html += '</div>';
-
-    // At-a-glance stats row
-    html += '<div style="display:flex;gap:10px;margin:0 22px 18px;">';
-    html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
-    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + outstanding.length + '</div>';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Follow-ups</div>';
-    html += '</div>';
-    html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
-    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + apiaryHives.length + '</div>';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Hives</div>';
-    html += '</div>';
-    html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
-    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + (daysSinceLast !== null ? daysSinceLast + 'd' : '—') + '</div>';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Since visit</div>';
-    html += '</div>';
-    html += '</div>';
-
-    // Outstanding section
-    html += '<div style="padding:0 22px;">';
-    html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;border-bottom:1px solid var(--wax);padding-bottom:8px;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--text);">Outstanding from last visit</div>';
-    html += '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--text-l);font-weight:500;">' + outstanding.length + (outstanding.length === 1 ? ' item' : ' items') + '</div>';
-    html += '</div>';
-
-    if (outstanding.length === 0) {
-      html += '<div style="padding:24px 0;text-align:center;color:var(--text-l);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:15px;">No outstanding follow-ups. Quiet visit ahead.</div>';
-    } else {
-      outstanding.forEach(function(o, idx) {
-        var num = String(idx + 1).padStart(2, '0');
-        var hiveName = o.hive.name || ('Hive ' + (o.hive.number || ''));
-        html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;' + (idx < outstanding.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
-        html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text-l);min-width:28px;padding-top:3px;">' + num + '</div>';
-        html += '<div style="flex:1;">';
-        html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;">' + esc(hiveName) + '</div>';
-        html += '<div style="font-family:\'Cormorant Garamond\',serif;font-size:14px;color:var(--text-m);line-height:1.4;font-style:italic;">' + esc(o.notes) + '</div>';
-        html += '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-l);margin-top:5px;">noted ' + daysAgo(o.inspectedAt) + '</div>';
-        html += '</div>';
-        html += '</div>';
-      });
-    }
-    html += '</div>';
-
-    // Route block
-    html += '<div style="margin:18px 22px;padding:18px 0;text-align:center;border-top:1px solid var(--wax);border-bottom:1px solid var(--wax);">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--honey);margin-bottom:10px;">Suggested route</div>';
-    if (rowKeys.length === 0) {
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:15px;color:var(--text-l);">No hives in this apiary yet.</div>';
-    } else if (rowKeys.length === 1 && rowKeys[0] === 'Unassigned') {
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:17px;color:var(--text);line-height:1.3;">All hives unassigned · order as you go</div>';
-      html += '<div style="font-size:12px;color:var(--text-l);font-style:italic;font-family:\'Cormorant Garamond\',serif;margin-top:6px;">Set hive rows in Apiary Settings to enable route ordering</div>';
-    } else {
-      var routeParts = rowKeys.map(function(r){
-        return (r === 'Unassigned' ? 'Unassigned' : 'Row ' + r) + ' <span style="color:var(--honey);margin:0 4px;">(' + rowGroups[r].length + ')</span>';
-      });
-      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.4;">';
-      html += routeParts.join(' <span style="color:var(--honey);">→</span> ');
-      html += '</div>';
-      html += '<div style="font-size:12px;color:var(--text-l);font-style:italic;font-family:\'Cormorant Garamond\',serif;margin-top:8px;">Left to right within each row</div>';
-    }
-    html += '</div>';
-
-    // Begin visit CTA (placeholder for Phase 1)
-    html += '<div style="padding:0 22px;margin-bottom:24px;">';
-    html += '<button onclick="planBeginVisitPlaceholder()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
-    html += 'Begin visit <span style="font-size:18px;">→</span>';
-    html += '</button>';
-    html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:8px;">In preview — full inspection flow coming soon</div>';
-    html += '</div>';
-
-    // Feedback prompt
-    html += '<div style="margin:8px 22px 24px;padding:14px 16px;background:#FAEEDA;border:1px dashed #C8730A;border-radius:10px;text-align:center;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:#854F0B;letter-spacing:0.06em;margin-bottom:6px;">YOUR FEEDBACK WELCOME</div>';
-    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);line-height:1.5;">';
-    html += 'Does seeing all outstanding follow-ups in one place help you plan? What would make this more useful for your real apiary visits? Send Chris a message — every reply shapes the next iteration.';
-    html += '</div></div>';
-
-    contentEl.innerHTML = html;
   } catch(e) {
     console.error('renderPlan error:', e);
     var fallback = document.getElementById('plan-content');
@@ -22026,15 +21996,314 @@ function renderPlan() {
   }
 }
 
-// Phase 1 placeholder — Begin visit doesn't yet connect to the inspect flow.
-function planBeginVisitPlaceholder() {
+function renderPlanPreviewBanner() {
+  return '<div style="background:#FAEEDA;border-bottom:1px solid #E8D5A8;padding:10px 22px;text-align:center;font-family:\'Syne\',sans-serif;font-size:11px;color:#854F0B;font-weight:600;letter-spacing:.04em;">' +
+         '🧪 PREVIEW — your feedback shapes this feature' +
+         '</div>';
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function daysAgoText(ts) {
+  if (!ts) return 'never';
+  var d = Math.floor((Date.now() - ts) / 86400000);
+  if (d === 0) return 'today';
+  if (d === 1) return 'yesterday';
+  return d + ' days ago';
+}
+
+// ─────────── PLAN TAB CONTENT ───────────
+function renderPlanContent(data) {
+  var suggestedDate = new Date(data.suggestedTs);
+  var dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][suggestedDate.getDay()];
+  var monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][suggestedDate.getMonth()];
+  var dayNum = suggestedDate.getDate();
+
+  var html = '';
+
+  // Date card (forest gradient)
+  html += '<div style="margin:18px 22px;background:linear-gradient(135deg,var(--forest) 0%,var(--forest-m) 100%);color:var(--cream);border-radius:14px;padding:22px;position:relative;overflow:hidden;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:rgba(250,246,238,0.6);margin-bottom:6px;">Suggested · ' + dayName + '</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:38px;line-height:1;margin-bottom:12px;font-weight:500;">' + dayNum + ' ' + monthName + '</div>';
+  if (data.lastVisitTs) {
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:rgba(250,246,238,0.8);line-height:1.5;">' +
+            (data.daysToSuggested === 0 ? 'Today' : (data.daysToSuggested > 0 ? data.daysToSuggested + ' days from today' : Math.abs(data.daysToSuggested) + ' days overdue')) +
+            ' · ' + data.daysSinceLast + ' days since last inspection · ' + data.cadence + '-day cadence</div>';
+  } else {
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:rgba(250,246,238,0.8);line-height:1.5;">No previous inspections yet for this apiary.</div>';
+  }
+  html += '</div>';
+
+  // Forecast strip — placeholder, filled async by renderPlanForecastStrip
+  html += '<div id="plan-forecast-strip" style="margin:0 22px 18px;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--honey);margin-bottom:8px;">5-day forecast around visit</div>';
+  html += '<div id="plan-forecast-rows" style="display:flex;gap:6px;">';
+  html += '<div style="flex:1;text-align:center;padding:18px 0;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-l);">Loading forecast…</div>';
+  html += '</div>';
+  html += '</div>';
+
+  // At-a-glance stats
+  html += '<div style="display:flex;gap:10px;margin:0 22px 18px;">';
+  html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + data.outstanding.length + '</div>';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Follow-ups</div>';
+  html += '</div>';
+  html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + data.hives.length + '</div>';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Hives</div>';
+  html += '</div>';
+  html += '<div style="flex:1;background:var(--warm);padding:12px 14px;border-radius:10px;border:1px solid var(--wax);">';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:3px;">' + (data.daysSinceLast !== null ? data.daysSinceLast + 'd' : '—') + '</div>';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Since visit</div>';
+  html += '</div>';
+  html += '</div>';
+
+  // Outstanding section
+  html += '<div style="padding:0 22px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;border-bottom:1px solid var(--wax);padding-bottom:8px;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--text);">Outstanding from last visit</div>';
+  html += '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--text-l);font-weight:500;">' + data.outstanding.length + (data.outstanding.length === 1 ? ' item' : ' items') + '</div>';
+  html += '</div>';
+
+  if (data.outstanding.length === 0) {
+    html += '<div style="padding:24px 0;text-align:center;color:var(--text-l);font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:15px;">No outstanding follow-ups. Quiet visit ahead.</div>';
+  } else {
+    data.outstanding.forEach(function(o, idx) {
+      var num = String(idx + 1).padStart(2, '0');
+      var hiveName = o.hive.name || ('Hive ' + (o.hive.number || ''));
+      html += '<div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;' + (idx < data.outstanding.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text-l);min-width:28px;padding-top:3px;">' + num + '</div>';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;">' + escapeHtml(hiveName) + '</div>';
+      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-size:14px;color:var(--text-m);line-height:1.4;font-style:italic;">' + escapeHtml(o.notes) + '</div>';
+      if (o.tag) {
+        html += '<span style="display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;margin-top:6px;background:' + o.tag.bg + ';color:' + o.tag.color + ';border:1px solid ' + o.tag.border + ';">' + o.tag.label + '</span>';
+      }
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-l);margin-top:5px;">noted ' + daysAgoText(o.inspectedAt) + '</div>';
+      html += '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+
+  // Route block
+  html += '<div style="margin:18px 22px;padding:18px 0;text-align:center;border-top:1px solid var(--wax);border-bottom:1px solid var(--wax);">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:var(--honey);margin-bottom:10px;">Suggested route</div>';
+  if (data.rowKeys.length === 0) {
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:15px;color:var(--text-l);">No hives in this apiary yet.</div>';
+  } else if (data.rowKeys.length === 1 && data.rowKeys[0] === 'Unassigned') {
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:17px;color:var(--text);line-height:1.3;">All hives unassigned · order as you go</div>';
+    html += '<div style="font-size:12px;color:var(--text-l);font-style:italic;font-family:\'Cormorant Garamond\',serif;margin-top:6px;">Set hive rows in Apiary Settings to enable route ordering</div>';
+  } else {
+    var routeParts = data.rowKeys.map(function(r){
+      return (r === 'Unassigned' ? 'Unassigned' : 'Row ' + r) + ' <span style="color:var(--honey);margin:0 4px;">(' + data.rowGroups[r].length + ')</span>';
+    });
+    html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:18px;color:var(--text);line-height:1.4;">';
+    html += routeParts.join(' <span style="color:var(--honey);">→</span> ');
+    html += '</div>';
+    html += '<div style="font-size:12px;color:var(--text-l);font-style:italic;font-family:\'Cormorant Garamond\',serif;margin-top:8px;">Left to right within each row</div>';
+  }
+  html += '</div>';
+
+  // Continue to order CTA
+  html += '<div style="padding:0 22px;margin-bottom:24px;">';
+  html += '<button onclick="switchPlanTab(\'order\')" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
+  html += 'Continue to order <span style="font-size:18px;">→</span>';
+  html += '</button>';
+  html += '</div>';
+
+  // Feedback prompt
+  html += '<div style="margin:8px 22px 24px;padding:14px 16px;background:#FAEEDA;border:1px dashed #C8730A;border-radius:10px;text-align:center;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:#854F0B;letter-spacing:0.06em;margin-bottom:6px;">YOUR FEEDBACK WELCOME</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);line-height:1.5;">';
+  html += 'Does this view help you plan? Try the <strong>Order</strong> tab next. Reply with what would make this more useful.';
+  html += '</div></div>';
+
+  return html;
+}
+
+// Async forecast renderer — fetches 14-day forecast and renders 5 days
+// centred on the suggested visit date (never showing the past).
+async function renderPlanForecastStrip(data) {
+  var rowsEl = document.getElementById('plan-forecast-rows');
+  if (!rowsEl) return;
+  try {
+    if (typeof fetchForecast14d !== 'function') {
+      rowsEl.innerHTML = '<div style="flex:1;text-align:center;padding:14px 0;font-size:12px;color:var(--text-l);">Forecast unavailable</div>';
+      return;
+    }
+    var forecast = await fetchForecast14d();
+    var fd = forecast && forecast.daily;
+    if (!fd || !fd.temperature_2m_max) {
+      rowsEl.innerHTML = '<div style="flex:1;text-align:center;padding:14px 0;font-size:12px;color:var(--text-l);">Forecast unavailable</div>';
+      return;
+    }
+
+    var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var maxDays = fd.temperature_2m_max.length;
+    // Centre 5 days on the suggested date, but never start before today
+    var rawStart = data.daysToSuggested - 2;
+    var startIdx = Math.max(0, rawStart);
+    var endIdx = Math.min(maxDays - 1, startIdx + 4);
+    // If end is clamped, try to shift start back so we still get 5 days
+    if (endIdx - startIdx < 4) {
+      startIdx = Math.max(0, endIdx - 4);
+    }
+
+    var today = new Date();
+    var suggestedIdx = data.daysToSuggested; // 0 = today, etc.
+
+    var html = '';
+    for (var i = startIdx; i <= endIdx; i++) {
+      var date = new Date(today); date.setDate(date.getDate() + i);
+      var dayLabel = i === 0 ? 'Today' : i === 1 ? 'Tmrw' : dayNames[date.getDay()];
+      var maxT = Math.round(fd.temperature_2m_max[i]);
+      var minT = Math.round(fd.temperature_2m_min[i]);
+      var code = fd.weathercode[i];
+      var precip = fd.precipitation_sum ? fd.precipitation_sum[i] : 0;
+      var windKmh = fd.windspeed_10m_max ? fd.windspeed_10m_max[i] : 0;
+      var icon = (typeof WMO_EMOJI !== 'undefined' && WMO_EMOJI[code]) ? WMO_EMOJI[code] : '\uD83C\uDF21\uFE0F';
+      var v = (typeof flyingVerdict === 'function') ? flyingVerdict(maxT, windKmh, precip, { rainThreshold: 1 }) : { label: '', cls: 'good' };
+      var pillBg = v.cls === 'great' ? '#E8F3E0' : v.cls === 'good' ? '#E8F3E0' : v.cls === 'marginal' ? '#FFF6E1' : '#FBE9E7';
+      var pillColor = v.cls === 'great' ? '#1B5E20' : v.cls === 'good' ? '#2D5016' : v.cls === 'marginal' ? '#7A5C00' : '#8B2E00';
+      var isSuggested = (i === suggestedIdx);
+      var cardBg = isSuggested ? 'var(--warm)' : 'var(--cream)';
+      var cardBorder = isSuggested ? '2px solid var(--honey)' : '1px solid var(--wax)';
+
+      html += '<div style="flex:1;min-width:0;text-align:center;padding:10px 4px;background:' + cardBg + ';border:' + cardBorder + ';border-radius:10px;position:relative;">';
+      if (isSuggested) {
+        html += '<div style="position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--honey);color:white;font-family:\'Syne\',sans-serif;font-size:8px;font-weight:800;letter-spacing:0.08em;padding:1px 6px;border-radius:6px;white-space:nowrap;">PLAN</div>';
+      }
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;">' + dayLabel + '</div>';
+      html += '<div style="font-size:20px;line-height:1;margin-bottom:4px;">' + icon + '</div>';
+      html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--text);font-weight:500;margin-bottom:4px;">' + maxT + '\u00B0/' + minT + '\u00B0</div>';
+      html += '<div style="display:inline-block;background:' + pillBg + ';color:' + pillColor + ';border-radius:8px;padding:1px 5px;font-size:8px;font-weight:700;letter-spacing:0.04em;">' + v.label + '</div>';
+      html += '</div>';
+    }
+    rowsEl.innerHTML = html;
+  } catch(e) {
+    console.warn('plan forecast strip error:', e);
+    rowsEl.innerHTML = '<div style="flex:1;text-align:center;padding:14px 0;font-size:12px;color:var(--text-l);">Forecast unavailable — check connection</div>';
+  }
+}
+
+// ─────────── ORDER TAB CONTENT ───────────
+function renderPlanOrderContent(data) {
+  var html = '';
+
+  // Header description
+  var totalHives = data.hives.length;
+  var treatments = 0, urgent = 0, feeds = 0;
+  data.outstanding.forEach(function(o){
+    if (o.tag) {
+      if (o.tag.label === 'Treatment') treatments++;
+      else if (o.tag.label === 'Urgent') urgent++;
+      else if (o.tag.label === 'Feed') feeds++;
+    }
+  });
+  var estMinutes = totalHives * 8; // rough heuristic
+  var estLabel = estMinutes >= 60 ? (Math.floor(estMinutes/60) + 'h' + (estMinutes%60 ? ' ' + (estMinutes%60) + 'm' : '')) : (estMinutes + 'm');
+
+  // Toggle
+  if (typeof window._planOrderMode === 'undefined') window._planOrderMode = 'auto';
+  var modeAuto = window._planOrderMode === 'auto';
+  html += '<div style="display:flex;background:var(--wax);margin:18px 22px;border-radius:10px;padding:4px;">';
+  html += '<button onclick="setPlanOrderMode(\'auto\')" style="flex:1;background:' + (modeAuto ? 'var(--cream)' : 'transparent') + ';border:none;padding:10px 6px;font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:' + (modeAuto ? 'var(--text)' : 'var(--text-l)') + ';cursor:pointer;border-radius:8px;' + (modeAuto ? 'box-shadow:0 1px 3px rgba(0,0,0,0.08);' : '') + '">Auto · by row</button>';
+  html += '<button onclick="setPlanOrderMode(\'custom\')" style="flex:1;background:' + (!modeAuto ? 'var(--cream)' : 'transparent') + ';border:none;padding:10px 6px;font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:' + (!modeAuto ? 'var(--text)' : 'var(--text-l)') + ';cursor:pointer;border-radius:8px;' + (!modeAuto ? 'box-shadow:0 1px 3px rgba(0,0,0,0.08);' : '') + '">Custom · drag</button>';
+  html += '</div>';
+
+  // Stats summary
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:0 22px;margin-bottom:8px;">';
+  html += '<div style="text-align:center;padding:8px 0;"><div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:4px;">' + treatments + '</div><div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Treatments</div></div>';
+  html += '<div style="text-align:center;padding:8px 0;"><div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:' + (urgent > 0 ? '#8F4F38' : 'var(--text)') + ';line-height:1;margin-bottom:4px;">' + urgent + '</div><div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Urgent</div></div>';
+  html += '<div style="text-align:center;padding:8px 0;"><div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;color:var(--text);line-height:1;margin-bottom:4px;">~' + estLabel + '</div><div style="font-family:\'Syne\',sans-serif;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:var(--text-l);">Est. time</div></div>';
+  html += '</div>';
+
+  if (!modeAuto) {
+    // Custom mode stub — render the auto list but with drag handles + a notice
+    html += '<div style="margin:8px 22px 16px;padding:12px 14px;background:#FAEEDA;border:1px dashed #C8730A;border-radius:10px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:#854F0B;line-height:1.5;">';
+    html += 'Drag-to-reorder coming in Phase 3. For now, this shows the same order as Auto.';
+    html += '</div>';
+  }
+
+  // Hive list grouped by row
+  if (data.rowKeys.length === 0) {
+    html += '<div style="padding:40px 22px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;color:var(--text-l);font-size:15px;">No hives in this apiary yet.</div>';
+  } else {
+    var globalNum = 0;
+    data.rowKeys.forEach(function(rk) {
+      var rowHives = data.rowGroups[rk];
+      html += '<div style="padding:4px 22px 8px;">';
+      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:16px;color:var(--honey);padding:16px 0 8px;border-bottom:1px solid var(--wax);margin-bottom:4px;display:flex;justify-content:space-between;align-items:baseline;">';
+      html += (rk === 'Unassigned' ? 'Unassigned' : 'Row ' + rk);
+      html += '<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text-l);font-style:normal;letter-spacing:0.1em;">' + rowHives.length + ' HIVE' + (rowHives.length === 1 ? '' : 'S') + '</span>';
+      html += '</div>';
+
+      rowHives.forEach(function(hive, idx) {
+        globalNum++;
+        var hiveName = hive.name || ('Hive ' + (hive.number || ''));
+        var outstanding = data.outstandingByHiveId[hive.id];
+        var isFirst = globalNum === 1;
+        var numBg = isFirst ? 'var(--honey)' : 'var(--wax)';
+        var numColor = isFirst ? 'var(--cream)' : 'var(--text)';
+
+        html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 0;' + (idx < rowHives.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
+        html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + numColor + ';background:' + numBg + ';border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;">' + globalNum + '</div>';
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(hiveName) + '</div>';
+        if (outstanding) {
+          html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:2px;line-height:1.3;">' + escapeHtml(outstanding.notes.substring(0, 80)) + (outstanding.notes.length > 80 ? '…' : '') + '</div>';
+          if (outstanding.tag) {
+            html += '<span style="display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;margin-top:5px;background:' + outstanding.tag.bg + ';color:' + outstanding.tag.color + ';border:1px solid ' + outstanding.tag.border + ';">' + outstanding.tag.label + '</span>';
+          }
+        } else {
+          html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:2px;">Routine check</div>';
+        }
+        html += '</div>';
+        if (!modeAuto) {
+          html += '<div style="color:var(--text-l);font-size:16px;padding:4px;cursor:grab;">⋮⋮</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+  }
+
+  // Begin inspection CTA
+  html += '<div style="padding:22px;">';
+  html += '<button onclick="planBeginInspectionPlaceholder()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
+  html += 'Begin inspection <span style="font-size:18px;">→</span>';
+  html += '</button>';
+  html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:8px;">In preview — full inspection flow coming soon</div>';
+  html += '</div>';
+
+  // Feedback prompt
+  html += '<div style="margin:0 22px 24px;padding:14px 16px;background:#FAEEDA;border:1px dashed #C8730A;border-radius:10px;text-align:center;">';
+  html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:#854F0B;letter-spacing:0.06em;margin-bottom:6px;">YOUR FEEDBACK WELCOME</div>';
+  html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);line-height:1.5;">';
+  html += 'Does the row-based order match how you actually work the apiary? Would you use Auto, or would you reorder?';
+  html += '</div></div>';
+
+  return html;
+}
+
+function setPlanOrderMode(mode) {
+  window._planOrderMode = mode;
+  renderPlan();
+}
+
+// Placeholder — Phase 3 will connect this to the inspection flow
+function planBeginInspectionPlaceholder() {
   try {
     if (typeof showToast === 'function') {
       showToast('Beta preview — full inspection flow coming soon');
     }
     setTimeout(function(){ try { goTo('s-apiary'); } catch(e){} }, 1200);
-  } catch(e) { console.warn('planBeginVisitPlaceholder:', e); }
+  } catch(e) { console.warn('planBeginInspectionPlaceholder:', e); }
 }
+
 
 function renderMarketplace() {
   // 7 May 2026 Phase 4ce-13j — marketplace gated until real listings flow ships.
@@ -28852,7 +29121,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '22 May 2026 BST · 18:00 — Plan Inspection Phase 1 preview. New s-plan screen accessible from Settings > Beta features > Plan Inspection tile (no bottom-nav button by design — founder testing only). Reads real outstanding follow-ups from inspections where nextInspectionNotes is set but not marked done. Shows suggested next visit date (last visit + 7 days), at-a-glance stats, follow-up list with hive names and notes, row-based route suggestion. Begin visit CTA is a placeholder toast returning to apiary — no flow connection yet. Uses existing fonts (Cormorant Garamond italic, Syne, DM Mono) and CSS variables. No data writes, no schema changes, no nav changes. Apiary repaint fix v3 from earlier (17:00 build) still in place. Phase 4cf-02a Treatment Efficacy still active.';
+var HIVEKEEPER_BUILD = '22 May 2026 BST · 19:00 — Plan Inspection Phase 2. Adds tab structure (Plan | Order) to s-plan screen. Plan tab now shows a 5-day weather forecast strip centred on the suggested visit date (PLAN badge on the suggested day, using existing fetchForecast14d + flyingVerdict for beekeeping-aware verdicts). Order tab shows hives grouped by row with last-inspection notes, derived tags (Treatment, Urgent, Feed, Check from keyword heuristic on notes), Auto/Custom toggle (custom is stub — drag-to-reorder deferred to Phase 3). Suggested visit date now respects getInspectionCadence() (default 7). Begin visit on Plan tab → switches to Order tab. Begin inspection on Order tab is still placeholder toast. Apiary repaint fix v3 from earlier still in place. Phase 4cf-02a Treatment Efficacy still active. No nav changes, no data writes, no schema changes.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
