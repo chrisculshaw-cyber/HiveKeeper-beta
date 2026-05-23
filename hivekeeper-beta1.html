@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523-1100">
+  <meta name="app-version" content="20260523-1300">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -1984,6 +1984,21 @@ input[type="checkbox"].hk-chk:checked::after {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/openlocationcode/1.0.4/openlocationcode.min.js"></script>
 </head>
 <body>
+<!-- UPDATE CHECK BANNER — 23 May 2026.
+     Shows once per day after 9am if a new version is available.
+     Hidden by default; revealed by HK.UpdateCheck.run() if newer
+     version is detected. Position fixed at top, max-width matches #app. -->
+<div id="update-banner" style="display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:linear-gradient(90deg,#854F0B 0%,#A87327 100%);color:white;z-index:99999;box-shadow:0 2px 8px rgba(0,0,0,0.2);box-sizing:border-box;">
+  <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;">
+    <div style="font-size:20px;flex-shrink:0;">🆕</div>
+    <div style="flex:1;min-width:0;line-height:1.3;">
+      <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;opacity:0.85;">New version available</div>
+      <div id="update-banner-detail" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;font-weight:600;margin-top:1px;">Tap refresh for the latest build</div>
+    </div>
+    <button onclick="window.HK.UpdateCheck.dismiss()" style="background:transparent;border:none;color:rgba(255,255,255,0.7);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;padding:6px 10px;cursor:pointer;letter-spacing:0.04em;flex-shrink:0;">Later</button>
+    <button onclick="window.HK.UpdateCheck.applyUpdate()" style="background:white;color:#854F0B;border:none;padding:8px 14px;border-radius:8px;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;flex-shrink:0;">Refresh</button>
+  </div>
+</div>
 <!-- AUTH OVERLAY (28 April 2026 Phase 4m — hero pass)
      Visual upgrade over 4k cleanup: honeycomb backdrop, honey glow behind
      logo, glassmorphism form panel, richer gradient with warm top, float
@@ -15565,7 +15580,18 @@ applyColourBlindMode();
 updateApiaryNameDisplays();
 // ── STARTUP — auth handles app initialisation ──
 window.addEventListener('resize',()=>{ if(currentScreen==='s-apiary') renderMap(); });
-window.addEventListener('load', function() { initAuth(); });
+window.addEventListener('load', function() {
+  initAuth();
+  // 23 May 2026 — run update check on app load (after 9am, once per day)
+  try { if (window.HK && window.HK.UpdateCheck) window.HK.UpdateCheck.run(); } catch(e) {}
+});
+// Also re-check when the app becomes visible — catches users who had
+// the app open through 9am (e.g. opened at 8am, brought to foreground at 10am).
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    try { if (window.HK && window.HK.UpdateCheck) window.HK.UpdateCheck.run(); } catch(e) {}
+  }
+});
 
 // ═══════════════════════════════════════════════
 // LIVE WEATHER — Open-Meteo API (free, no key)
@@ -15626,6 +15652,156 @@ function flyingVerdict(temp, windKmh, rain, opts) {
 }
 
 
+
+// ════════════════════════════════════════════════════════════
+// MODULE: UPDATE CHECK — 23 May 2026
+// ────────────────────────────────────────────────────────────
+// Once-per-day version check. Fires after 9am local time. If a newer
+// version is found at /version.json, shows the update banner.
+//
+// Dependencies: none (vanilla fetch + localStorage)
+// Public API: window.HK.UpdateCheck.{ run, dismiss, applyUpdate }
+// Storage: localStorage.hk_last_update_check (timestamp)
+// Server requirement: NONE — fetches index.html with Range header to
+// extract the app-version meta tag. No separate file to maintain.
+// ════════════════════════════════════════════════════════════
+window.HK = window.HK || {};
+window.HK.UpdateCheck = (function() {
+  var CHECK_HOUR = 9; // local time
+  var LAST_CHECK_KEY = 'hk_last_update_check';
+
+  function getCurrentVersion() {
+    try {
+      var meta = document.querySelector('meta[name="app-version"]');
+      return meta ? meta.content : null;
+    } catch(e) { return null; }
+  }
+
+  function shouldCheckNow() {
+    var now = new Date();
+    var today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CHECK_HOUR, 0, 0);
+    if (now < today9am) {
+      console.log('[UpdateCheck] Before ' + CHECK_HOUR + 'am, skipping');
+      return false;
+    }
+    var lastCheck = parseInt(localStorage.getItem(LAST_CHECK_KEY) || '0', 10);
+    if (lastCheck >= today9am.getTime()) {
+      console.log('[UpdateCheck] Already checked today after ' + CHECK_HOUR + 'am, skipping');
+      return false;
+    }
+    return true;
+  }
+
+  function showBanner(remoteData, currentVersion) {
+    var banner = document.getElementById('update-banner');
+    var detail = document.getElementById('update-banner-detail');
+    if (!banner) return;
+    var msg = 'Tap refresh for the latest build';
+    if (remoteData.build) {
+      msg = remoteData.build;
+    } else if (remoteData.version) {
+      // Format version like 20260523-1100 -> "23 May · 11:00"
+      var m = remoteData.version.match(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/);
+      if (m) {
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        msg = parseInt(m[3], 10) + ' ' + months[parseInt(m[2], 10) - 1] + ' \u00b7 ' + m[4] + ':' + m[5];
+      } else {
+        msg = remoteData.version;
+      }
+    }
+    if (detail) detail.textContent = msg;
+    banner.style.display = 'block';
+    console.log('[UpdateCheck] Banner shown · current=' + currentVersion + ' remote=' + remoteData.version);
+  }
+
+  // 23 May 2026 Phase 1.1 — fetch index.html directly via HTTP Range
+  // request (first 4KB only, where the meta tag lives) instead of a
+  // separate version.json. Zero additional files to maintain on deploy.
+  function run() {
+    try {
+      if (!shouldCheckNow()) return;
+      var currentVersion = getCurrentVersion();
+      if (!currentVersion) {
+        console.warn('[UpdateCheck] No app-version meta tag found, skipping');
+        return;
+      }
+      // Cache-bust + Range header. Range returns 206 with first 4KB on
+      // hosts that support it (most static hosts); on hosts that don\'t,
+      // we get 200 with the full body, which still contains the meta tag
+      // near the top (~2MB total, but rare).
+      var url = window.location.pathname.replace(/\/$/, '') + '/?cb=' + Date.now();
+      // If pathname is just "/", use "/?cb=..."
+      if (window.location.pathname === '/') url = '/?cb=' + Date.now();
+      fetch(url, {
+        cache: 'no-store',
+        headers: { 'Range': 'bytes=0-4095' }
+      })
+        .then(function(r) {
+          if (!r.ok && r.status !== 206) {
+            // Fall back to a normal fetch if Range failed
+            return fetch(url, { cache: 'no-store' }).then(function(r2) {
+              if (!r2.ok) throw new Error('HTTP ' + r2.status);
+              return r2.text();
+            });
+          }
+          return r.text();
+        })
+        .then(function(text) {
+          localStorage.setItem(LAST_CHECK_KEY, Date.now().toString());
+          var match = text.match(/<meta\s+name=["']app-version["']\s+content=["']([^"']+)["']/);
+          if (!match) {
+            console.warn('[UpdateCheck] No app-version meta tag in remote HTML');
+            return;
+          }
+          var remoteVersion = match[1];
+          if (remoteVersion === currentVersion) {
+            console.log('[UpdateCheck] Already on latest: ' + currentVersion);
+            return;
+          }
+          console.log('[UpdateCheck] New version detected: ' + remoteVersion + ' (currently ' + currentVersion + ')');
+          showBanner({ version: remoteVersion }, currentVersion);
+        })
+        .catch(function(e) {
+          console.warn('[UpdateCheck] Fetch failed:', e.message || e);
+        });
+    } catch(e) {
+      console.warn('[UpdateCheck] run error:', e);
+    }
+  }
+
+  function dismiss() {
+    var banner = document.getElementById('update-banner');
+    if (banner) banner.style.display = 'none';
+    // Don\'t reset lastCheck — they\'ll be re-prompted tomorrow
+  }
+
+  function applyUpdate() {
+    try {
+      // Best effort: clear any caches if the API is available, then reload.
+      if ('caches' in window) {
+        caches.keys().then(function(keys) {
+          return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+        }).finally(function() {
+          window.location.reload();
+        });
+      } else {
+        window.location.reload();
+      }
+    } catch(e) {
+      window.location.reload();
+    }
+  }
+
+  return {
+    run: run,
+    dismiss: dismiss,
+    applyUpdate: applyUpdate
+  };
+})();
+// ════════════════════════════════════════════════════════════
+// END MODULE: UPDATE CHECK
+// ════════════════════════════════════════════════════════════
+
 // ════════════════════════════════════════════════════════════
 // MODULE: SWARM RISK — 23 May 2026 Phase 1
 // ────────────────────────────────────────────────────────────
@@ -15645,6 +15821,20 @@ function flyingVerdict(temp, windKmh, rain, opts) {
 window.HK = window.HK || {};
 window.HK.SwarmRisk = (function() {
 
+  // 23 May 2026 Phase 1.1 — separate threshold for "swarming-suitable day"
+  // vs "flying-suitable day". Bees can fly at 12C but won\'t actually
+  // swarm unless it\'s 17C+, calm, and dry. The old algorithm counted
+  // 13-14C days as "good" and so failed to detect buildup during a typical
+  // UK cool May (chilly but flyable). This is the corrected threshold.
+  function isSwarmingDay(temp, windKmh, rain) {
+    if (temp === null || temp === undefined) return false;
+    var windMph = Math.round((windKmh || 0) * 0.621371);
+    if (temp < 17) return false;          // too cool for proper swarming activity
+    if ((rain || 0) > 1) return false;    // too wet (daily total >1mm)
+    if (windMph > 15) return false;       // too windy (swarms need calm)
+    return true;
+  }
+
   // Returns swarm risk for today based on the past 7 days + today\'s weather.
   // forecast: result of fetchForecast14d() — must include past_days=7
   function compute(forecast) {
@@ -15661,80 +15851,85 @@ window.HK.SwarmRisk = (function() {
       todayIdx = 7;
     }
 
-    // Today\'s verdict
+    // Today\'s verdict — still use flyingVerdict for the user-facing summary
     var todayVerdict = flyingVerdict(
       daily.temperature_2m_max[todayIdx],
       daily.windspeed_10m_max[todayIdx],
       daily.precipitation_sum[todayIdx],
       { rainThreshold: 1 }
     );
-    var todayIsGood = todayVerdict.cls === 'great' || todayVerdict.cls === 'good';
+    // But for swarm logic, use the stricter isSwarmingDay threshold (17C+ etc).
+    var todayIsSwarming = isSwarmingDay(
+      daily.temperature_2m_max[todayIdx],
+      daily.windspeed_10m_max[todayIdx],
+      daily.precipitation_sum[todayIdx]
+    );
 
-    // Past 7 days buildup — count days bees couldn\'t fly
+    // Past 7 days buildup — count days that were NOT swarming-suitable.
+    // (Previously counted flyable-but-not-warm-enough days as fine; fixed.)
     var buildupDays = 0;
     var totalChecked = 0;
     var startIdx = Math.max(0, todayIdx - 7);
     for (var i = startIdx; i < todayIdx; i++) {
       if (daily.temperature_2m_max[i] === null || daily.temperature_2m_max[i] === undefined) continue;
       totalChecked++;
-      var v = flyingVerdict(
-        daily.temperature_2m_max[i],
-        daily.windspeed_10m_max[i],
-        daily.precipitation_sum[i],
-        { rainThreshold: 1 }
-      );
-      if (v.cls === 'poor' || v.cls === 'marginal') {
+      if (!isSwarmingDay(daily.temperature_2m_max[i], daily.windspeed_10m_max[i], daily.precipitation_sum[i])) {
         buildupDays++;
       }
     }
 
-    // Tomorrow\'s verdict — used to detect "first of a multi-day window"
-    var tomorrowIsGood = false;
-    if (todayIdx + 1 < daily.time.length && daily.temperature_2m_max[todayIdx + 1] !== null) {
-      var tv = flyingVerdict(
+    // Tomorrow: is it also swarming-suitable? (used for multi-day window detection)
+    var tomorrowIsSwarming = false;
+    if (todayIdx + 1 < daily.time.length) {
+      tomorrowIsSwarming = isSwarmingDay(
         daily.temperature_2m_max[todayIdx + 1],
         daily.windspeed_10m_max[todayIdx + 1],
-        daily.precipitation_sum[todayIdx + 1],
-        { rainThreshold: 1 }
+        daily.precipitation_sum[todayIdx + 1]
       );
-      tomorrowIsGood = tv.cls === 'great' || tv.cls === 'good';
     }
-    // Yesterday\'s verdict — if yesterday was already good, swarm pressure released yesterday
-    var yesterdayWasGood = false;
-    if (todayIdx >= 1 && daily.temperature_2m_max[todayIdx - 1] !== null) {
-      var yv = flyingVerdict(
+    // Yesterday: did pressure already release yesterday?
+    var yesterdayWasSwarming = false;
+    if (todayIdx >= 1) {
+      yesterdayWasSwarming = isSwarmingDay(
         daily.temperature_2m_max[todayIdx - 1],
         daily.windspeed_10m_max[todayIdx - 1],
-        daily.precipitation_sum[todayIdx - 1],
-        { rainThreshold: 1 }
+        daily.precipitation_sum[todayIdx - 1]
       );
-      yesterdayWasGood = yv.cls === 'great' || yv.cls === 'good';
     }
+    // Legacy names for return object compat
+    var todayIsGood = todayIsSwarming;
+    var tomorrowIsGood = tomorrowIsSwarming;
+    var yesterdayWasGood = yesterdayWasSwarming;
 
     // Season check (months are 0-indexed in JS Date: April=3, June=5, July=6)
     var month = today.getMonth();
     var inSeason = month >= 3 && month <= 6; // April-July
     var peakSeason = month === 4 || month === 5; // May-June
 
-    // Risk calculation
+    // 23 May 2026 Phase 1.1 — recalibrated to the new isSwarmingDay thresholds.
+    // Typical UK May/June can have 5-7 non-swarming days per week even when
+    // generally "nice" weather. Threshold shifted: very_high triggers at 5+
+    // (was 6+), high at 4+, elevated at 3+, moderate at 2+.
     var level = 'low';
     if (!inSeason) {
       level = 'low';
-    } else if (!todayIsGood) {
-      // Bees can\'t fly today — pressure still building but no release
+    } else if (!todayIsSwarming) {
+      // Not warm enough today for actual swarming — pressure still pent-up but no release
       level = buildupDays >= 4 ? 'moderate' : 'low';
-    } else if (yesterdayWasGood && buildupDays <= 1) {
-      // Pressure already released yesterday — diminishing risk
+    } else if (yesterdayWasSwarming && buildupDays <= 2) {
+      // Yesterday was already swarmy and there\'s low buildup — pressure released
       level = peakSeason ? 'moderate' : 'low';
     } else {
-      // Today is good and there\'s buildup
-      if (buildupDays >= 6 && peakSeason && todayVerdict.cls === 'great' && !yesterdayWasGood) {
+      // Today is swarming-suitable and there\'s buildup
+      if (buildupDays >= 5 && peakSeason && !yesterdayWasSwarming) {
         level = 'very_high';
-      } else if (buildupDays >= 5 && peakSeason) {
+      } else if (buildupDays >= 4 && peakSeason) {
         level = 'high';
       } else if (buildupDays >= 3 && inSeason) {
         level = 'elevated';
-      } else if (peakSeason || buildupDays >= 2) {
+      } else if (buildupDays >= 2 && (peakSeason || inSeason)) {
+        level = 'moderate';
+      } else if (peakSeason) {
         level = 'moderate';
       } else {
         level = 'low';
@@ -15770,17 +15965,17 @@ window.HK.SwarmRisk = (function() {
   function getSummary(risk) {
     var lvl = risk.level;
     if (lvl === 'very_high') {
-      return 'First properly warm day after ' + risk.buildupDays + ' days of poor flying weather. Concentrated swarming likely today, especially 11am-3pm.';
+      return 'First properly warm day (17\u00B0C+) after ' + risk.buildupDays + ' cool/unsuitable days. Concentrated swarming likely today, especially 11am-3pm.';
     }
     if (lvl === 'high') {
-      return 'Strong swarm pressure after ' + risk.buildupDays + ' days of cool/wet weather. Today\'s the release day — peak 11am-3pm.';
+      return 'Strong swarm pressure — ' + risk.buildupDays + ' of past 7 days too cool for swarming. Today\'s warm enough to release.';
     }
     if (lvl === 'elevated') {
-      return 'Building swarm pressure after ' + risk.buildupDays + ' poor flying days. Some colonies may swarm today.';
+      return 'Building swarm pressure — ' + risk.buildupDays + ' recent days unsuitable for swarming. Some colonies may release today.';
     }
     if (lvl === 'moderate') {
-      if (!risk.todayIsGood) return 'Pressure building — bees can\'t release today (weather too poor). Watch for the next good day.';
-      if (risk.yesterdayWasGood) return 'Yesterday released most pressure. Continued watch.';
+      if (!risk.todayIsGood) return 'Pressure building — today still too cool/windy/wet for swarming. Watch for the next warm day.';
+      if (risk.yesterdayWasGood) return 'Yesterday was warm too — most pressure already released. Continued watch.';
       return 'Some swarm pressure for the season. Standard watch.';
     }
     if (!risk.inSeason) return 'Outside primary UK swarm season (April–July).';
@@ -15884,7 +16079,7 @@ window.HK.SwarmRisk = (function() {
         // "Why" — the trust-builder
         html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;font-style:italic;">';
         html += '<strong style="font-style:normal;color:var(--text-m);">Why?</strong> ';
-        html += risk.buildupDays + ' of past ' + risk.totalChecked + ' days were too cold/wet/windy to fly. ';
+        html += risk.buildupDays + ' of past ' + risk.totalChecked + ' days were too cool/wet/windy for swarming (under 17\u00B0C, rain, or strong wind). ';
         html += 'Today: ' + risk.todayTemp + '°C, ' + risk.todayWindMph + 'mph wind';
         if (risk.todayRain) html += ', ' + risk.todayRain.toFixed(1) + 'mm rain';
         html += '. Verdict: ' + risk.todayVerdict.label + '.';
@@ -30376,7 +30571,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 BST · 11:00 — Swarm Risk Phase 1. New card on the home dashboard, sibling to Forage Conditions. Calculates swarm pressure from past 7 days buildup (via Open-Meteo past_days=7) + today\'s flying verdict + UK calendar season (April-July primary, May-June peak). Five levels: low/moderate/elevated/high/very_high — each with severity colour, summary, action list, BBKA Swarm Collector subsection, and a Why? trust-builder line. Today (23 May 2026) is the demo case: long cool spell followed by warm sunny day = textbook High/Very High swarm pressure release. fetchForecast14d cache key bumped from v1 to v2 to invalidate caches lacking past-day data. Plan tab integration and push notifications come later. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '23 May 2026 BST · 13:00 — Swarm Risk + Update Check Phase 1.1 (both calibrated). Swarm Risk: previous algorithm used flyingVerdict thresholds which counted 12-14C as fine, missing the fact that bees won\'t actually swarm under ~17C. New isSwarmingDay() helper uses 17C+ / wind <=15mph / rain <=1mm as the real swarming threshold. Level boundaries recalibrated: very_high at 5+ buildup days (was 6+), high at 4+, elevated at 3+. Summary and Why? text updated to say \"too cool for swarming\" rather than \"too cold to fly\". Update Check: dropped version.json requirement. Now fetches the first 4KB of index.html with HTTP Range header and parses the app-version meta tag. Zero additional files to maintain on deploy. Falls back to full HTML fetch if Range isn\'t supported by the host. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
