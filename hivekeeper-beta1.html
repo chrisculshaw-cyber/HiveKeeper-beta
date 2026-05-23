@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523j">
+  <meta name="app-version" content="20260523k">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -10012,6 +10012,61 @@ function saveEquipmentFromModal() {
   };
 
   if (_equipmentEditingId) {
+    // 23 May 2026 build k — reconcile direct Quantity-field edits with the
+    // three-state breakdown. Previously the user typing 10 in Quantity had
+    // no effect because equipmentToRow rebuilds quantity = ready+refurb+unusable.
+    // Now: compute the delta and redistribute.
+    //   Delta > 0 (added stock)   → add to quantityReady
+    //   Delta < 0 (removed stock) → subtract from ready first, then refurb, then unusable
+    var existing = loadEquipmentRaw().find(function(x){ return x.id === _equipmentEditingId; });
+    if (existing) {
+      var oldReady    = typeof existing.quantityReady    === 'number' ? existing.quantityReady    : (existing.quantity || 0);
+      var oldRefurb   = typeof existing.quantityRefurb   === 'number' ? existing.quantityRefurb   : 0;
+      var oldUnusable = typeof existing.quantityUnusable === 'number' ? existing.quantityUnusable : 0;
+      var oldTotal = oldReady + oldRefurb + oldUnusable;
+      var newTotal = quantity;
+      var delta = newTotal - oldTotal;
+      if (delta !== 0) {
+        var nReady = oldReady, nRefurb = oldRefurb, nUnusable = oldUnusable;
+        if (delta > 0) {
+          nReady += delta;
+        } else {
+          var remove = -delta;
+          var fromReady = Math.min(nReady, remove);
+          nReady -= fromReady; remove -= fromReady;
+          if (remove > 0) {
+            var fromRefurb = Math.min(nRefurb, remove);
+            nRefurb -= fromRefurb; remove -= fromRefurb;
+          }
+          if (remove > 0) {
+            var fromUnusable = Math.min(nUnusable, remove);
+            nUnusable -= fromUnusable;
+          }
+        }
+        patch.quantityReady    = nReady;
+        patch.quantityRefurb   = nRefurb;
+        patch.quantityUnusable = nUnusable;
+        // Log the delta to the audit trail so Recent activity reflects it.
+        try {
+          var movements = loadMovements();
+          movements.push({
+            id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('mv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+            equipmentId: _equipmentEditingId,
+            delta: delta,
+            reason: 'Quantity edited directly (was ' + oldTotal + ', now ' + newTotal + ')',
+            actionType: 'manual',
+            relatedId: null,
+            stateFrom: null,
+            stateTo: delta > 0 ? 'ready' : (oldReady > 0 ? 'ready' : (oldRefurb > 0 ? 'refurb' : 'unusable')),
+            createdAt: new Date().toISOString()
+          });
+          saveMovementsLocal(movements);
+          if (getUserId() && (typeof isOnline !== 'function' || isOnline())) {
+            try { pushMovements().catch(function(){}); } catch(e) {}
+          }
+        } catch(e) { console.warn('[quantity-edit log]', e); }
+      }
+    }
     updateEquipment(_equipmentEditingId, patch);
     showToast('Updated \u2713');
   } else {
@@ -30976,7 +31031,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build j — Consolidated Saturday build. Inventory: recent activity shortened to 5 items (was 20); items added via the equipment modal now write a movement record (\u201cInitial stock \u2014 <name> added\u201d) so they appear in the audit log, paired jar/lid auto-add logged too. New \u201cHive entrance\u201d category in Hive parts. New Frame type dimension on frames (Brood / 14×12 brood / Super / Other) shown only when category = frame; existing frames show \u201c(type not set)\u201d until categorised. Soft delete for equipment and harvests: deletes set deleted_at instead of removing rows; Recover affordance at the bottom of the inventory list and below the harvest list; tap any harvest row to delete (was no delete UI before); detailed confirm dialog with qty + location for equipment. Required migrations: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS frame_role TEXT, ALTER TABLE equipment ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ, ALTER TABLE harvests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build k — Equipment modal Quantity field now actually persists. Previously typing a new number into Quantity (instead of using Adjust Stock +/- buttons) had no effect on save because equipmentToRow rebuilds quantity = ready+refurb+unusable, ignoring the typed value. Now: when editing an existing item, the delta between typed Quantity and the existing total is computed and redistributed \u2014 positive delta adds to Ready; negative delta subtracts from Ready first, then Refurb, then Unusable. Audit log records the change. Builds g through j still included (frame role, equipment + harvest soft delete with Recover affordances, Hive entrance category, shorter Recent activity, initial-stock logging). Required migrations: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS frame_role TEXT; ALTER TABLE equipment ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ; ALTER TABLE harvests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
