@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523k">
+  <meta name="app-version" content="20260523l">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -5072,18 +5072,28 @@ input[type="checkbox"].hk-chk:checked::after {
       <div id="eq-state-actions" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
 
-    <!-- 29 April 2026 Phase 4bf — quick stock adjustment with audit log.
-         Hidden on add (no equipment to adjust yet). On edit, lets the keeper
-         consume / restock with a reason recorded to inventory_movements. -->
-    <div id="eq-use-panel" style="display:none;margin-bottom:14px;padding:12px;background:#FAEEDA;border-radius:var(--rs);">
-      <div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Adjust stock</div>
-      <div style="display:flex;gap:6px;margin-bottom:8px;">
-        <button onclick="quickAdjust(-1)" style="flex:1;padding:10px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">&minus; Use 1</button>
-        <button onclick="quickAdjust(1)" style="flex:1;padding:10px;background:white;color:#2a6448;border:1.5px solid #2a6448;border-radius:var(--rs);font-size:13px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">+ Restock 1</button>
+    <!-- 23 May 2026 build l — Stock Change panel. Replaces the previous
+         quick-adjust + bulk-adjust split. One bulk-aware row: amount stepper,
+         reason dropdown, two action buttons with dynamic labels (e.g.
+         "- Use 22" / "+ Add 22"). Default amount is 1 so the common case
+         is still one tap. -->
+    <div id="eq-use-panel" style="display:none;margin-bottom:14px;padding:14px;background:#FAEEDA;border-radius:var(--rs);">
+      <div style="font-size:11px;font-weight:800;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">&#x26A1; Stock change</div>
+
+      <!-- Amount stepper -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Amount</div>
+        <div style="display:inline-flex;align-items:center;background:white;border:1.5px solid var(--wax);border-radius:var(--rs);overflow:hidden;">
+          <button onclick="stockStepper(-1)" style="width:40px;height:42px;background:transparent;border:none;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text-m);cursor:pointer;">&minus;</button>
+          <input id="eq-stock-amount" type="number" value="1" min="1" oninput="renderStockChangeButtons()" style="width:60px;text-align:center;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#2a6448;background:transparent;border:none;outline:none;padding:0;">
+          <button onclick="stockStepper(1)" style="width:40px;height:42px;background:transparent;border:none;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text-m);cursor:pointer;">+</button>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input type="number" id="eq-adjust-amount" placeholder="amount" style="flex:1;padding:8px 10px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;box-sizing:border-box;">
-        <select class="hk-select" id="eq-adjust-reason" style="flex:1.5;border-radius:var(--rs);font-size:12px;font-family:'Syne',sans-serif;box-sizing:border-box;padding:8px;">
+
+      <!-- Reason -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Reason</div>
+        <select class="hk-select" id="eq-stock-reason" style="width:100%;padding:11px;border:1.5px solid var(--wax);border-radius:var(--rs);font-size:13px;font-family:'Syne',sans-serif;background:white;box-sizing:border-box;">
           <option value="Used in apiary">Used in apiary</option>
           <option value="Bottled honey">Bottled honey</option>
           <option value="Lost / damaged">Lost / damaged</option>
@@ -5093,8 +5103,12 @@ input[type="checkbox"].hk-chk:checked::after {
           <option value="Restock — found / returned">Restock — found / returned</option>
           <option value="Other">Other</option>
         </select>
-        <button onclick="customAdjust(true)" style="padding:8px 10px;background:#B83228;color:white;border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Use</button>
-        <button onclick="customAdjust(false)" style="padding:8px 10px;background:#2a6448;color:white;border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;">Add</button>
+      </div>
+
+      <!-- Action buttons with dynamic labels -->
+      <div style="display:flex;gap:8px;">
+        <button id="eq-stock-use-btn" onclick="applyStockChange(-1)" style="flex:1;padding:13px;background:white;color:#B83228;border:1.5px solid #B83228;border-radius:var(--rs);font-size:13px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;">&minus; Use 1</button>
+        <button id="eq-stock-add-btn" onclick="applyStockChange(1)" style="flex:1;padding:13px;background:white;color:#2a6448;border:1.5px solid #2a6448;border-radius:var(--rs);font-size:13px;font-weight:800;font-family:'Syne',sans-serif;cursor:pointer;">+ Add 1</button>
       </div>
     </div>
 
@@ -9956,10 +9970,13 @@ function editEquipment(id) {
   // 29 April 2026 Phase 4bf — show use-panel on edit, reset its inputs
   var usePanel = document.getElementById('eq-use-panel');
   if (usePanel) usePanel.style.display = 'block';
-  var amt = document.getElementById('eq-adjust-amount');
-  if (amt) amt.value = '';
-  var rsn = document.getElementById('eq-adjust-reason');
-  if (rsn) rsn.value = 'Used in apiary';
+  // 23 May 2026 build l — reset the new Stock Change panel inputs and
+  // refresh button labels so they read "- Use 1" / "+ Add 1" on open.
+  var stockAmt = document.getElementById('eq-stock-amount');
+  if (stockAmt) stockAmt.value = 1;
+  var stockReason = document.getElementById('eq-stock-reason');
+  if (stockReason) stockReason.value = 'Used in apiary';
+  try { renderStockChangeButtons(); } catch(e) {}
   // 30 April 2026 Phase 4bm — render state breakdown + transition actions
   try { renderEquipmentStatePanel(it); } catch(e) {}
   _onEquipCategoryChange();
@@ -10115,14 +10132,42 @@ function saveEquipmentFromModal() {
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
-// 29 April 2026 Phase 4bf — quick stock adjustment helpers from the modal.
-// Both call applyEquipmentMovement which writes to the inventory_movements
-// audit log AND updates equipment.quantity in one step.
+// 23 May 2026 build l — Stock Change handlers. Replaces quickAdjust (±1
+// buttons) and customAdjust (bulk row) — both now route through
+// applyStockChange which reads the new amount stepper + reason dropdown.
 
-function quickAdjust(delta) {
+// Adjust the stepper value. Clamps at 1 (must be a positive amount).
+function stockStepper(delta) {
+  var inp = document.getElementById('eq-stock-amount');
+  if (!inp) return;
+  var v = parseInt(inp.value, 10);
+  if (isNaN(v)) v = 1;
+  v = Math.max(1, v + delta);
+  inp.value = v;
+  renderStockChangeButtons();
+}
+
+// Update the Use/Add button labels to reflect the current stepper amount.
+// "- Use 1" / "+ Add 1"  -> "- Use 22" / "+ Add 22" etc.
+function renderStockChangeButtons() {
+  var inp = document.getElementById('eq-stock-amount');
+  var amt = inp ? Math.max(1, parseInt(inp.value, 10) || 1) : 1;
+  var useBtn = document.getElementById('eq-stock-use-btn');
+  var addBtn = document.getElementById('eq-stock-add-btn');
+  if (useBtn) useBtn.innerHTML = '− Use ' + amt;
+  if (addBtn) addBtn.innerHTML = '+ Add ' + amt;
+}
+
+// Apply the stock change. direction = -1 (Use) or +1 (Add). Reads amount +
+// reason from the panel, writes a single inventory_movements row via the
+// existing applyEquipmentMovement primitive.
+function applyStockChange(direction) {
   if (!_equipmentEditingId) return;
-  var reasonEl = document.getElementById('eq-adjust-reason');
-  var reason = reasonEl ? reasonEl.value : (delta < 0 ? 'Used in apiary' : 'Restock — bought more');
+  var amtEl = document.getElementById('eq-stock-amount');
+  var reasonEl = document.getElementById('eq-stock-reason');
+  var amount = amtEl ? Math.max(1, parseInt(amtEl.value, 10) || 1) : 1;
+  var reason = reasonEl ? reasonEl.value : (direction < 0 ? 'Used in apiary' : 'Restock — bought more');
+  var delta = direction * amount;
   var newQty = applyEquipmentMovement(_equipmentEditingId, delta, {
     reason: reason,
     actionType: 'manual'
@@ -10131,13 +10176,29 @@ function quickAdjust(delta) {
     showToast('Cannot — would go below zero');
     return;
   }
+  // Sync the hidden Quantity field so save-from-modal sees the new total.
   var qtyEl = document.getElementById('eq-quantity');
   if (qtyEl) qtyEl.value = newQty;
-  showToast(delta < 0 ? 'Used 1 \u2713' : 'Added 1 \u2713');
+  showToast((direction < 0 ? 'Used ' : 'Added ') + amount + ' ✓');
+  // Reset stepper to 1 after a successful change (back to common-case default)
+  if (amtEl) { amtEl.value = 1; renderStockChangeButtons(); }
+  // Re-render the state panel so the breakdown numbers update live
+  var fresh = loadEquipment().find(function(x){ return x.id === _equipmentEditingId; });
+  if (fresh) {
+    try { renderEquipmentStatePanel(fresh); } catch(e) {}
+  }
   try { renderInventory(); } catch(e) {}
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+}
+
+// Back-compat shim — anything still calling quickAdjust(±1) routes through
+// the new pipeline. (Should be unreferenced after build l but kept for safety.)
+function quickAdjust(delta) {
+  var amtEl = document.getElementById('eq-stock-amount');
+  if (amtEl) amtEl.value = 1;
+  applyStockChange(delta > 0 ? 1 : -1);
 }
 
 // 30 April 2026 Phase 4bm — Equipment state breakdown + transition UI.
@@ -10247,30 +10308,12 @@ function transitionStock(from, to) {
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
 }
 
+// 23 May 2026 build l — back-compat shim. The old customAdjust(isUse) used
+// the now-removed eq-adjust-amount + eq-adjust-reason inputs. Anything still
+// calling it just runs an applyStockChange with amount 1 in the requested
+// direction. (Should be unreferenced after build l.)
 function customAdjust(isUse) {
-  if (!_equipmentEditingId) return;
-  var amtEl = document.getElementById('eq-adjust-amount');
-  var reasonEl = document.getElementById('eq-adjust-reason');
-  var amt = parseInt(amtEl ? amtEl.value : '', 10);
-  if (isNaN(amt) || amt <= 0) { showToast('Enter a positive amount'); return; }
-  var delta = isUse ? -amt : amt;
-  var reason = reasonEl ? reasonEl.value : (isUse ? 'Used in apiary' : 'Restock — bought more');
-  var newQty = applyEquipmentMovement(_equipmentEditingId, delta, {
-    reason: reason,
-    actionType: 'manual'
-  });
-  if (newQty === null) {
-    showToast('Cannot — would go below zero');
-    return;
-  }
-  var qtyEl = document.getElementById('eq-quantity');
-  if (qtyEl) qtyEl.value = newQty;
-  if (amtEl) amtEl.value = '';
-  showToast(isUse ? ('Used ' + amt + ' \u2713') : ('Added ' + amt + ' \u2713'));
-  try { renderInventory(); } catch(e) {}
-  try { renderHomeDashboard(); } catch(e) {}
-  try { renderHomeLowStockBanner(); } catch(e) {}
-  try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  applyStockChange(isUse ? -1 : 1);
 }
 
 function confirmDeleteEquipment() {
@@ -31031,7 +31074,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build k — Equipment modal Quantity field now actually persists. Previously typing a new number into Quantity (instead of using Adjust Stock +/- buttons) had no effect on save because equipmentToRow rebuilds quantity = ready+refurb+unusable, ignoring the typed value. Now: when editing an existing item, the delta between typed Quantity and the existing total is computed and redistributed \u2014 positive delta adds to Ready; negative delta subtracts from Ready first, then Refurb, then Unusable. Audit log records the change. Builds g through j still included (frame role, equipment + harvest soft delete with Recover affordances, Hive entrance category, shorter Recent activity, initial-stock logging). Required migrations: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS frame_role TEXT; ALTER TABLE equipment ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ; ALTER TABLE harvests ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build l — Equipment modal stock change redesign (first step). The two competing adjustment controls (quick ±1 buttons + bulk row with amount+reason) are now one bulk-aware Stock Change panel: amount stepper, reason dropdown, two action buttons whose labels reflect the current amount (\"− Use 22\" / \"+ Add 22\"). Default amount is 1 so the common case stays one tap; bulk operations (\"I bought 22 frames\") now take three taps instead of 23. Old quickAdjust/customAdjust kept as back-compat shims that route through the new applyStockChange. No Supabase migration required. Hero stock display, state action pills, Details expander, and Add-mode More-options expander are queued for follow-up builds. Inventory page redesign also queued (build m).';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
