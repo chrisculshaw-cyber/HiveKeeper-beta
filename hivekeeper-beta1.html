@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523s">
+  <meta name="app-version" content="20260523t">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -4493,11 +4493,14 @@ input[type="checkbox"].hk-chk:checked::after {
           <span style="font-size:24px;">📋</span>
           <span>Plan inspection</span>
         </button>
-        <button onclick="closeModalEl('modal-settings');setTimeout(function(){startVoiceCommands();},200);" style="flex:1;background:linear-gradient(135deg,#854F0B,#A87327);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;">
-          <span style="position:absolute;top:6px;right:8px;font-size:8px;font-weight:800;background:rgba(255,255,255,0.18);color:white;border-radius:10px;padding:2px 6px;letter-spacing:.05em;">PREVIEW</span>
-          <span style="font-size:24px;">🎙</span>
-          <span>Voice commands</span>
-        </button>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+          <button onclick="closeModalEl('modal-settings');setTimeout(function(){startVoiceCommands();},200);" style="background:linear-gradient(135deg,#854F0B,#A87327);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;">
+            <span style="position:absolute;top:6px;right:8px;font-size:8px;font-weight:800;background:rgba(255,255,255,0.18);color:white;border-radius:10px;padding:2px 6px;letter-spacing:.05em;">PREVIEW</span>
+            <span style="font-size:24px;">🎙</span>
+            <span>Voice commands</span>
+          </button>
+          <button id="voice-autostart-toggle" onclick="toggleVoiceAutostart()" style="background:#8C7B5F;border:none;border-radius:8px;padding:6px 8px;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:white;cursor:pointer;letter-spacing:.04em;">Auto-start: OFF</button>
+        </div>
       </div>
 
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Help &amp; community</div>
@@ -31687,7 +31690,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build s — Voice command mode Phase 1. New \"Voice commands\" tile in Settings → Beta features. Tap to enter listening mode: a honey-gradient pill appears top-centre with a pulsing mic icon. Six starter commands via Web Speech API (local, no Whisper round-trip): \"go home\" → home, \"apiary\" → apiary, \"start inspection\" → inspect, \"save\" → saveInspection, \"close\" → dismiss topmost modal, \"stop listening\" → exit. Audio feedback via browser SpeechSynthesis (\"Opening apiary\", \"Saved\", etc). Auto-exits after 3 minutes of silence. iOS Safari uses webkitSpeechRecognition; browsers without Web Speech API show a friendly alert. No Supabase migration required.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build t — Voice commands polish on top of build s. Three fixes: (1) speakBack no longer calls speechSynthesis.cancel() before speak — known iOS Safari silent-failure pattern. Now pre-warms voices via getVoices() and logs to console for debug visibility. (2) Apiary switching: \"switch to <name>\", \"change to <name>\", \"open apiary <name>\" fuzzy-match against apiary names and call switchApiary(). (3) Auto-start on app open: new toggle below the Voice commands tile in Settings. When enabled, attaches a one-shot listener on first user interaction after page load so iOS gesture requirement is satisfied invisibly. Toggle state synced via MutationObserver on modal-settings. No Supabase migration required.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35201,6 +35204,30 @@ function handleVoiceCommand(text) {
     }
     return;
   }
+  // 23 May 2026 build t — apiary switching. Patterns:
+  //   "switch to <name>", "change to <name>", "open apiary <name>",
+  //   "go to apiary <name>", "change apiary to <name>".
+  // Fuzzy match: case-insensitive substring against apiary names.
+  var apiaryMatch = t.match(/(?:switch to|change to|change apiary to|open apiary|go to apiary)\s+(.+?)[\.\?!,]?$/i);
+  if (apiaryMatch) {
+    var query = apiaryMatch[1].trim().toLowerCase();
+    var apiaries = (typeof loadApiaries === 'function') ? loadApiaries() : [];
+    // Try exact match first, then substring.
+    var hit = apiaries.find(function(a) { return a.name && a.name.toLowerCase() === query; })
+           || apiaries.find(function(a) { return a.name && a.name.toLowerCase().indexOf(query) !== -1; });
+    if (hit) {
+      if (typeof switchApiary === 'function') {
+        switchApiary(hit.id);
+      } else {
+        try { localStorage.setItem('hk_current_apiary', hit.id); } catch (e) {}
+      }
+      speakBack('Switched to ' + hit.name);
+    } else {
+      speakBack('I could not find an apiary called ' + query);
+    }
+    return;
+  }
+
   if (/\b(close|cancel|dismiss|never mind)\b/.test(t)) {
     var modals = document.querySelectorAll('.modal-overlay.active');
     if (modals.length) {
@@ -35222,14 +35249,23 @@ function handleVoiceCommand(text) {
 function speakBack(msg) {
   if (!('speechSynthesis' in window)) return;
   try {
-    window.speechSynthesis.cancel();
+    // 23 May 2026 build t — do NOT call speechSynthesis.cancel() here.
+    // On iOS Safari, cancel()-immediately-followed-by-speak() is a known
+    // silent-failure pattern: the cancel event queues, the speak fires
+    // first and gets discarded. Just queue the new utterance instead.
     var u = new SpeechSynthesisUtterance(msg);
     u.lang = 'en-GB';
-    u.volume = 0.9;
+    u.volume = 1.0;
     u.rate = 1.1;
     u.pitch = 1.0;
+    // Pre-warm: some browsers load voices async on first request.
+    // Calling getVoices() before speak ensures the engine is ready.
+    try { window.speechSynthesis.getVoices(); } catch (e) {}
     window.speechSynthesis.speak(u);
-  } catch (e) { /* ignore */ }
+    console.log('speakBack:', msg);
+  } catch (e) {
+    console.warn('speakBack failed:', e);
+  }
 }
 
 function showVoiceIndicator() {
@@ -35251,6 +35287,74 @@ function resetSilenceTimer() {
     }
   }, _voiceCmd.silenceTimeoutMs);
 }
+
+// ─── VOICE AUTO-START ON APP OPEN (build t) ─────────────────
+// iOS Safari blocks speech recognition without a user gesture, so true
+// background-on-launch isn't possible. The middle ground: attach a one-shot
+// listener on first user interaction after page load. When the user taps
+// anywhere, voice commands fire up. Toggleable via hk_voice_autostart pref.
+
+function toggleVoiceAutostart() {
+  var current = localStorage.getItem('hk_voice_autostart') === '1';
+  var next = !current;
+  localStorage.setItem('hk_voice_autostart', next ? '1' : '0');
+  speakBack(next ? 'Auto-start enabled. Voice commands will start on next app open.' : 'Auto-start disabled.');
+  var btn = document.getElementById('voice-autostart-toggle');
+  if (btn) {
+    btn.textContent = next ? 'Auto-start: ON' : 'Auto-start: OFF';
+    btn.style.background = next ? '#2a6448' : '#8C7B5F';
+  }
+  return next;
+}
+
+function _armVoiceAutostartOnFirstGesture() {
+  if (localStorage.getItem('hk_voice_autostart') !== '1') return;
+  var fired = false;
+  function onFirstGesture(e) {
+    if (fired) return;
+    fired = true;
+    document.removeEventListener('touchend', onFirstGesture, true);
+    document.removeEventListener('click', onFirstGesture, true);
+    document.removeEventListener('keydown', onFirstGesture, true);
+    // Brief delay so the user's tap settles before we start recognition.
+    setTimeout(function() { startVoiceCommands(); }, 250);
+  }
+  document.addEventListener('touchend', onFirstGesture, true);
+  document.addEventListener('click', onFirstGesture, true);
+  document.addEventListener('keydown', onFirstGesture, true);
+}
+
+window.addEventListener('load', function() {
+  // Defer to next tick so other load handlers complete first.
+  setTimeout(_armVoiceAutostartOnFirstGesture, 100);
+});
+
+// ─── VOICE AUTOSTART TOGGLE STATE REFLECTION (build t) ──────────
+// Whenever the settings modal opens, sync the autostart toggle button's
+// label and colour to match localStorage. Hook into the modal opener.
+function _syncVoiceAutostartToggle() {
+  var btn = document.getElementById('voice-autostart-toggle');
+  if (!btn) return;
+  var on = localStorage.getItem('hk_voice_autostart') === '1';
+  btn.textContent = on ? 'Auto-start: ON' : 'Auto-start: OFF';
+  btn.style.background = on ? '#2a6448' : '#8C7B5F';
+}
+// Sync on app load, and whenever the settings modal becomes visible.
+window.addEventListener('load', function() {
+  setTimeout(_syncVoiceAutostartToggle, 500);
+});
+// Use a MutationObserver on the modal so we don't have to patch every
+// settings-open call site.
+(function() {
+  var settings = document.getElementById('modal-settings');
+  if (!settings || !window.MutationObserver) return;
+  var obs = new MutationObserver(function() {
+    if (settings.classList.contains('active')) {
+      _syncVoiceAutostartToggle();
+    }
+  });
+  obs.observe(settings, { attributes: true, attributeFilter: ['class'] });
+})();
 
 // ── UPDATE ALL APIARY NAME DISPLAYS ─────────────────────
 function updateApiaryNameDisplays() {
