@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523-1300">
+  <meta name="app-version" content="20260523-1500">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2647,6 +2647,13 @@ input[type="checkbox"].hk-chk:checked::after {
         <div id="ah-content">
           <div style="text-align:center;padding:16px;font-size:12px;color:var(--text-l);">Loading...</div>
         </div>
+      </div>
+      <!-- AH expand affordance footer — 23 May Phase 1.3.
+           Same pattern as Swarm Risk card. Whole row tappable.
+           toggleAHPanel updates text/arrow on toggle. -->
+      <div id="ah-expand-footer" onclick="toggleAHPanel()" style="padding:11px 16px;background:var(--cream);border-top:1px solid var(--wax);display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:0 0 var(--rs) var(--rs);">
+        <div id="ah-expand-footer-label" style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--forest);">Tap for full sightings list</div>
+        <div id="ah-expand-footer-arrow" style="color:var(--forest);font-size:14px;font-weight:700;transition:transform 0.2s;">▼</div>
       </div>
     </div>
 
@@ -16014,6 +16021,16 @@ window.HK.SwarmRisk = (function() {
     return null;
   }
 
+  // 23 May 2026 Phase 1.2 — compact-by-default. Tap card to expand.
+  // Mirrors the Asian Hornet Watch toggle pattern. State on window so
+  // it persists across re-renders within the session.
+  if (typeof window._swarmRiskExpanded === 'undefined') window._swarmRiskExpanded = false;
+
+  function toggleExpanded() {
+    window._swarmRiskExpanded = !window._swarmRiskExpanded;
+    render();
+  }
+
   function render() {
     var card = document.getElementById('swarm-risk-card');
     var body = document.getElementById('swarm-risk-body');
@@ -16027,62 +16044,103 @@ window.HK.SwarmRisk = (function() {
         var actions = getActions(risk);
         var collectorActions = getCollectorActions(risk);
         var isHigh = risk.level === 'high' || risk.level === 'very_high';
+        var isLow = risk.level === 'low';
+        var expanded = window._swarmRiskExpanded;
 
-        // Style the card border based on severity
         card.style.borderColor = cfg.border;
         card.style.borderWidth = isHigh ? '2px' : '1px';
         card.style.display = 'block';
+        if (!isLow) {
+          card.style.cursor = 'pointer';
+          card.onclick = function(e) {
+            if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+            toggleExpanded();
+          };
+        } else {
+          card.style.cursor = '';
+          card.onclick = null;
+        }
 
         var html = '';
-        // Title row with severity badge
+        // Title row + chevron
         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">';
-        html += '<div style="font-size:12px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">🐝 Swarm risk</div>';
+        html += '<div style="font-size:12px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;">\uD83D\uDC1D Swarm risk</div>';
+        html += '<div style="display:flex;align-items:center;gap:8px;">';
         html += '<div style="background:' + cfg.bg + ';color:' + cfg.text + ';border:1px solid ' + cfg.border + ';padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;">' + cfg.label + '</div>';
-        html += '</div>';
+        if (!isLow) {
+          html += '<div style="color:var(--text-l);font-size:14px;transition:transform 0.2s;' + (expanded ? 'transform:rotate(180deg);' : '') + '">\u25BC</div>';
+        }
+        html += '</div></div>';
 
-        // Low: single-line collapsed
-        if (risk.level === 'low') {
+        // LOW: single-line, no expand
+        if (isLow) {
           html += '<div style="font-size:13px;color:var(--text-m);line-height:1.45;">' + summary + '</div>';
           body.innerHTML = html;
           return;
         }
 
-        // Moderate+: expanded
-        html += '<div style="font-size:14px;color:var(--text);line-height:1.45;font-weight:500;margin-bottom:10px;">' + summary + '</div>';
-
-        // Peak window highlight (high+ only)
+        // Peak window — visible in compact for high+
         if (isHigh) {
-          html += '<div style="background:' + cfg.bg + ';border:1px solid ' + cfg.border + ';border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">';
-          html += '<div style="font-size:18px;">⏰</div>';
+          html += '<div style="background:' + cfg.bg + ';border:1px solid ' + cfg.border + ';border-radius:8px;padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;">';
+          html += '<div style="font-size:18px;">\u23F0</div>';
           html += '<div><div style="font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:' + cfg.text + ';">Peak window</div>';
-          html += '<div style="font-family:\'DM Mono\',monospace;font-size:13px;font-weight:600;color:' + cfg.text + ';">11am — 3pm</div></div>';
+          html += '<div style="font-family:\'DM Mono\',monospace;font-size:13px;font-weight:600;color:' + cfg.text + ';">11am \u2014 3pm</div></div>';
           html += '</div>';
         }
 
-        // Action list
+        // For moderate/elevated (no peak window), show summary in compact
+        if (!isHigh) {
+          html += '<div style="font-size:13px;color:var(--text-m);line-height:1.45;">' + summary + '</div>';
+        }
+
+        // COMPACT: tap-to-expand footer (replaces previous dashed italic hint —
+        // 23 May Phase 1.3, founders couldn't see the previous affordance)
+        if (!expanded) {
+          html += '<div style="margin:12px -14px -14px;padding:11px 16px;background:var(--cream);border-top:1px solid var(--wax);display:flex;align-items:center;justify-content:space-between;border-radius:0 0 var(--rs) var(--rs);">';
+          html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:' + cfg.accent + ';">Tap for details</div>';
+          html += '<div style="color:' + cfg.accent + ';font-size:14px;font-weight:700;">▼</div>';
+          html += '</div>';
+          body.innerHTML = html;
+          return;
+        }
+
+        // EXPANDED: full content
+
+        // Prominent summary for high+ (was subdued/hidden in compact)
+        if (isHigh) {
+          html += '<div style="font-size:14px;color:var(--text);line-height:1.45;font-weight:500;margin:10px 0 0;">' + summary + '</div>';
+        }
+
+        // Actions
         if (actions.length) {
-          html += '<div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-l);margin:10px 0 6px;">What to do</div>';
+          html += '<div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-l);margin:14px 0 6px;">What to do</div>';
           html += '<ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text);line-height:1.5;">';
           actions.forEach(function(a){ html += '<li style="margin-bottom:3px;">' + a + '</li>'; });
           html += '</ul>';
         }
 
-        // Collector section
+        // Collector
         if (collectorActions) {
           html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--wax);">';
-          html += '<div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:' + cfg.accent + ';margin-bottom:6px;">🚨 BBKA Swarm Collector</div>';
+          html += '<div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:' + cfg.accent + ';margin-bottom:6px;">\uD83D\uDEA8 BBKA Swarm Collector</div>';
           html += '<ul style="margin:0;padding-left:20px;font-size:13px;color:var(--text);line-height:1.5;">';
           collectorActions.forEach(function(a){ html += '<li style="margin-bottom:3px;">' + a + '</li>'; });
           html += '</ul></div>';
         }
 
-        // "Why" — the trust-builder
+        // Why?
         html += '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--wax);font-size:11px;color:var(--text-l);line-height:1.5;font-style:italic;">';
         html += '<strong style="font-style:normal;color:var(--text-m);">Why?</strong> ';
         html += risk.buildupDays + ' of past ' + risk.totalChecked + ' days were too cool/wet/windy for swarming (under 17\u00B0C, rain, or strong wind). ';
-        html += 'Today: ' + risk.todayTemp + '°C, ' + risk.todayWindMph + 'mph wind';
+        html += 'Today: ' + risk.todayTemp + '\u00B0C, ' + risk.todayWindMph + 'mph wind';
         if (risk.todayRain) html += ', ' + risk.todayRain.toFixed(1) + 'mm rain';
         html += '. Verdict: ' + risk.todayVerdict.label + '.';
+        html += '</div>';
+
+        // Tap-to-collapse footer (matches compact-state affordance)
+        html += '<div style="margin:14px -14px -14px;padding:11px 16px;background:var(--cream);border-top:1px solid var(--wax);display:flex;align-items:center;justify-content:space-between;border-radius:0 0 var(--rs) var(--rs);">';
+        html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:' + cfg.accent + ';">Tap to collapse</div>';
+        html += '<div style="color:' + cfg.accent + ';font-size:14px;font-weight:700;">▲</div>';
         html += '</div>';
 
         body.innerHTML = html;
@@ -20654,6 +20712,11 @@ function toggleAHPanel() {
   AH_PANEL_OPEN = !AH_PANEL_OPEN;
   body.style.display = AH_PANEL_OPEN ? 'block' : 'none';
   if(arrow) arrow.style.transform = AH_PANEL_OPEN ? 'rotate(180deg)' : 'rotate(0deg)';
+  // 23 May Phase 1.3 — also update the bottom expand-footer affordance
+  var footLabel = document.getElementById('ah-expand-footer-label');
+  var footArrow = document.getElementById('ah-expand-footer-arrow');
+  if (footLabel) footLabel.textContent = AH_PANEL_OPEN ? 'Tap to collapse' : 'Tap for full sightings list';
+  if (footArrow) footArrow.textContent = AH_PANEL_OPEN ? '▲' : '▼';
 }
 
 // Ensure AH body is closed on load
@@ -30571,7 +30634,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 BST · 13:00 — Swarm Risk + Update Check Phase 1.1 (both calibrated). Swarm Risk: previous algorithm used flyingVerdict thresholds which counted 12-14C as fine, missing the fact that bees won\'t actually swarm under ~17C. New isSwarmingDay() helper uses 17C+ / wind <=15mph / rain <=1mm as the real swarming threshold. Level boundaries recalibrated: very_high at 5+ buildup days (was 6+), high at 4+, elevated at 3+. Summary and Why? text updated to say \"too cool for swarming\" rather than \"too cold to fly\". Update Check: dropped version.json requirement. Now fetches the first 4KB of index.html with HTTP Range header and parses the app-version meta tag. Zero additional files to maintain on deploy. Falls back to full HTML fetch if Range isn\'t supported by the host. All earlier features still in place.';
+var HIVEKEEPER_BUILD = '23 May 2026 BST · 15:00 — Affordance fix for expandable cards (Swarm Risk + Asian Hornet Watch). Previous compact card had a subtle dashed-line italic hint that founders couldn\'t see. Replaced with a proper button-like footer bar: full-width row at the bottom of the card, cream background, uppercase Syne label in the card\'s accent colour, chevron arrow on the right. Text toggles between \"Tap for details / Tap to collapse\" for Swarm Risk and \"Tap for full sightings list / Tap to collapse\" for AH Watch. Both cards now have the same affordance pattern. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
