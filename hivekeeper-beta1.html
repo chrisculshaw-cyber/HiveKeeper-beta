@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523g">
+  <meta name="app-version" content="20260523h">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -4896,6 +4896,19 @@ input[type="checkbox"].hk-chk:checked::after {
 
 
 <!-- 29 April 2026 Phase 4ay — Add/Edit honey jar stock modal -->
+<!-- 23 May 2026 build h — Recover Deleted Equipment modal -->
+<div class="modal-overlay" id="modal-recover-equipment" onclick="closeModal(event,'modal-recover-equipment')">
+  <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title" style="margin:0;">♻️ Recover deleted equipment</div>
+      <div onclick="closeModalEl('modal-recover-equipment')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">✕</div>
+    </div>
+    <div style="font-size:13px;color:var(--text-m);line-height:1.5;margin-bottom:14px;">Tap an item to restore it to your inventory. Items remain here until you permanently remove them.</div>
+    <div id="recover-equipment-list" style="max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-honey-stock-edit" onclick="closeModal(event,'modal-honey-stock-edit')">
   <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;">
     <div class="modal-handle"></div>
@@ -8013,6 +8026,9 @@ var EQUIPMENT_CATEGORIES = [
   { key: 'comb_honey_frame',    label: 'Comb honey frame',   group: 'Products' },
   { key: 'candle',              label: 'Candle',             group: 'Products' },
   { key: 'nuc_box',             label: 'Nuc box',            group: 'Hive parts' },
+  // 23 May 2026 build h — entrance category (entrance block, mouseguard, wasp guard).
+  // Use the Custom name field on the modal to differentiate types within.
+  { key: 'entrance',            label: 'Hive entrance',      group: 'Hive parts' },
   { key: 'other',               label: 'Other (custom)',     group: 'Other' }
 ];
 
@@ -8047,7 +8063,7 @@ function getFrameRoleLabel(key) {
 // Categories where the hive type matters — i.e. items that are
 // physically different per hive system. Items that span all systems
 // (smokers, gloves, jars, treatments, candles) don't need this dimension.
-var CATEGORIES_NEEDING_HIVE_TYPE = ['brood_box','super','frame','queen_excluder','crown_board','floor','roof','foundation_sheet','nuc_box'];
+var CATEGORIES_NEEDING_HIVE_TYPE = ['brood_box','super','frame','queen_excluder','crown_board','floor','roof','foundation_sheet','nuc_box','entrance'];
 
 function categoryNeedsHiveType(catKey) {
   return CATEGORIES_NEEDING_HIVE_TYPE.indexOf(catKey) !== -1;
@@ -8060,9 +8076,19 @@ function getEquipmentCategoryLabel(key) {
   return key;
 }
 
-function loadEquipment() {
+// 23 May 2026 build h — soft-delete refactor. Three load functions:
+//   loadEquipmentRaw()      — everything in localStorage (use for writes)
+//   loadEquipment()         — only undeleted items (use for display + business logic)
+//   loadDeletedEquipment()  — only soft-deleted items (use for recovery UI)
+function loadEquipmentRaw() {
   try { return JSON.parse(localStorage.getItem('hk_equipment_v1') || '[]'); }
   catch(e) { return []; }
+}
+function loadEquipment() {
+  return loadEquipmentRaw().filter(function(it) { return !it.deletedAt; });
+}
+function loadDeletedEquipment() {
+  return loadEquipmentRaw().filter(function(it) { return !!it.deletedAt; });
 }
 
 function saveEquipment(items) {
@@ -8105,6 +8131,9 @@ function equipmentToRow(it, uid) {
     // 23 May 2026 build g — frame_role for category === 'frame'.
     // Requires Supabase migration: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS frame_role TEXT;
     frame_role: it.frameRole || null,
+    // 23 May 2026 build h — soft delete timestamp. null = active.
+    // Requires migration: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    deleted_at: it.deletedAt || null,
     created_at: it.createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -8155,6 +8184,8 @@ async function pullEquipment() {
       hiveType: r.hive_type || null,
       // 23 May 2026 build g — frame role dimension
       frameRole: r.frame_role || null,
+      // 23 May 2026 build h — soft-delete timestamp
+      deletedAt: r.deleted_at || null,
       createdAt: r.created_at
     };
   });
@@ -8162,7 +8193,9 @@ async function pullEquipment() {
 }
 
 function addEquipment(item) {
-  var items = loadEquipment();
+  // 23 May 2026 build h — use Raw so deleted items aren\'t inadvertently
+  // dropped from the cache when we write the array back.
+  var items = loadEquipmentRaw();
   item.id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : ('eq_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
   item.createdAt = new Date().toISOString();
   // 30 April 2026 Phase 4bm — default new items to ready-state for the
@@ -8181,7 +8214,8 @@ function addEquipment(item) {
 }
 
 function updateEquipment(id, patch) {
-  var items = loadEquipment();
+  // 23 May 2026 build h — use Raw so deleted items aren\'t stripped.
+  var items = loadEquipmentRaw();
   var idx = items.findIndex(function(it) { return it.id === id; });
   if (idx < 0) return null;
   items[idx] = Object.assign({}, items[idx], patch);
@@ -8189,12 +8223,78 @@ function updateEquipment(id, patch) {
   return items[idx];
 }
 
+// 23 May 2026 build h — SOFT DELETE.
+// Previously this was a hard DELETE FROM equipment which caused real data
+// loss (audit log showed 3 orphan equipment IDs in Chris\'s 23 May backup).
+// Now sets deleted_at = now() and leaves the row intact. Recoverable via
+// the Recover Deleted Items view on the inventory screen.
 function deleteEquipmentById(id) {
-  var items = loadEquipment().filter(function(it) { return it.id !== id; });
+  var items = loadEquipmentRaw();
+  var idx = items.findIndex(function(it) { return it.id === id; });
+  if (idx === -1) return;
+  items[idx].deletedAt = new Date().toISOString();
   saveEquipment(items);
-  if (getUserId() && isOnline()) {
-    try { getSupabase().from('equipment').delete().eq('id', id).then(function(){}); }
-    catch(e) {}
+}
+
+// 23 May 2026 build h — clear the soft-delete flag, item reappears in inventory.
+function restoreEquipmentById(id) {
+  var items = loadEquipmentRaw();
+  var idx = items.findIndex(function(it) { return it.id === id; });
+  if (idx === -1) return;
+  items[idx].deletedAt = null;
+  saveEquipment(items);
+}
+
+// 23 May 2026 build h — render + open the Recover Deleted Equipment modal.
+function renderRecoverEquipment() {
+  var listEl = document.getElementById('recover-equipment-list');
+  if (!listEl) return;
+  var deleted = loadDeletedEquipment();
+  // Most recent first
+  deleted.sort(function(a, b) {
+    return (b.deletedAt || '').localeCompare(a.deletedAt || '');
+  });
+  if (!deleted.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:24px 12px;color:var(--text-l);font-size:13px;">No deleted items.</div>';
+    return;
+  }
+  var esc = function(t){ return (t||'').replace(/[<>&"\']/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]; }); };
+  listEl.innerHTML = deleted.map(function(it) {
+    var qty = it.quantity || 0;
+    var catLabel = getEquipmentCategoryLabel(it.category) || 'Item';
+    var label = catLabel;
+    if (it.hiveType) label = it.hiveType + ' ' + catLabel.toLowerCase();
+    if (it.name) label = it.name;
+    if (it.category === 'frame' && it.frameRole) {
+      var roleLabel = getFrameRoleLabel(it.frameRole);
+      if (roleLabel) label += ' — ' + roleLabel;
+    }
+    var loc = _equipLocationLabel(it.location);
+    var when = it.deletedAt ? new Date(it.deletedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
+    return '<div style="background:white;border:1px solid var(--wax);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">'
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + esc(label) + '</div>'
+        + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;">Qty: ' + qty + (loc ? ' · ' + esc(loc) : '') + (when ? ' · deleted ' + when : '') + '</div>'
+      + '</div>'
+      + '<button onclick="restoreEquipmentFromList(\'' + esc(it.id) + '\')" style="background:var(--forest);color:var(--cream);border:none;border-radius:var(--rs);padding:8px 14px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;flex-shrink:0;">Restore</button>'
+    + '</div>';
+  }).join('');
+}
+
+function openRecoverEquipment() {
+  renderRecoverEquipment();
+  openModalEl('modal-recover-equipment');
+}
+
+function restoreEquipmentFromList(id) {
+  restoreEquipmentById(id);
+  showToast('Restored ✓');
+  renderRecoverEquipment();
+  renderInventory();
+  try { renderHomeLowStockBanner(); } catch(e) {}
+  // Close the modal if no more deleted items remain
+  if (loadDeletedEquipment().length === 0) {
+    closeModalEl('modal-recover-equipment');
   }
 }
 
@@ -9613,6 +9713,17 @@ function renderInventory() {
     + '</div>';
   }).join('');
 
+  // 23 May 2026 build h — recover deleted items affordance at the bottom of
+  // the list. Only shown when there are soft-deleted items. Clear cue that
+  // deletes are reversible.
+  var deletedCount = loadDeletedEquipment().length;
+  if (deletedCount > 0) {
+    html += '<div onclick="openRecoverEquipment()" style="margin-top:12px;padding:11px 14px;background:var(--cream);border:1px dashed var(--wax);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;justify-content:space-between;">'
+      + '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">♻️</span><span style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-m);">Recover ' + deletedCount + ' deleted item' + (deletedCount === 1 ? '' : 's') + '</span></div>'
+      + '<span style="color:var(--text-l);font-size:14px;">›</span>'
+    + '</div>';
+  }
+
   listEl.innerHTML = html;
 
   // 29 April 2026 Phase 4bf — render recent activity below the list
@@ -10055,10 +10166,21 @@ function customAdjust(isUse) {
 
 function confirmDeleteEquipment() {
   if (!_equipmentEditingId) return;
-  if (!confirm('Delete this equipment record?')) return;
+  // 23 May 2026 build h — detailed confirm with quantity + location + recovery hint.
+  // Prevents accidental deletion of large stock and reassures that it\'s recoverable.
+  var it = loadEquipmentRaw().find(function(x){ return x.id === _equipmentEditingId; });
+  if (!it) return;
+  var qty = it.quantity || 0;
+  var label = qty + ' ';
+  if (it.hiveType) label += it.hiveType + ' ';
+  label += (it.name || getEquipmentCategoryLabel(it.category) || 'item').toLowerCase();
+  if (qty !== 1 && !/s$/.test(label.trim())) label += 's';
+  var loc = _equipLocationLabel(it.location);
+  if (loc) label += ' at ' + loc;
+  if (!confirm('Delete ' + label + '?\n\nYou can restore it from \u201cRecover deleted items\u201d at the bottom of the inventory screen.')) return;
   deleteEquipmentById(_equipmentEditingId);
   closeEquipmentModal();
-  showToast('Deleted');
+  showToast('Deleted — recover from inventory screen');
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
@@ -30707,7 +30829,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build g — Frame role dimension. Inventory frames now have a Frame type field (Brood / 14×12 brood / Super / Other) shown only when category === \'frame\'. Same pattern as the existing hive_type dimension. Existing frame items without a role display as \"(type not set)\" \u2014 no auto-migration, no data deleted. Requires Supabase migration before deploy: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS frame_role TEXT; First build using the new alphanumeric version format (no wall-clock times). All earlier features still in place.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build h — Soft delete for equipment + Hive entrance category. Equipment deletes are now soft (sets deleted_at timestamp instead of removing the row). Confirm dialog shows the actual quantity and location of what\'s being deleted, plus recovery hint. Inventory screen shows a \u201cRecover N deleted items\u201d affordance at the bottom when there are soft-deleted rows. Modal lists deleted items with Restore buttons. New \u201cHive entrance\u201d category added to the equipment categories list (group: Hive parts, requires hive type like brood boxes and supers). Requires Supabase migration: ALTER TABLE equipment ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ. All earlier features still in place.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
