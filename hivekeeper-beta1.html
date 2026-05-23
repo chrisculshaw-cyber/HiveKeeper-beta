@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523r">
+  <meta name="app-version" content="20260523s">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -1434,6 +1434,48 @@ html, body { overscroll-behavior: none; }
   font-size: 22px !important;
   color: #5C4A2F !important;
   padding: 4px 6px !important;
+}
+
+/* 23 May 2026 build s — Voice command mode visual indicator.
+   Floating pill at top centre, pulsing mic icon, dismiss ×.
+   Uses safe-area-inset-top so it sits below the iOS notch. */
+#voice-cmd-indicator {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top, 14px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #C8730A 0%, #E29028 100%);
+  color: white;
+  padding: 9px 14px;
+  border-radius: 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(200, 115, 10, 0.45);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  gap: 10px;
+}
+#voice-cmd-indicator.active { display: flex; }
+#voice-cmd-indicator .vc-mic {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  animation: voicePulse 1.4s ease-in-out infinite;
+}
+#voice-cmd-indicator .vc-stop {
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.85;
+  cursor: pointer;
+  padding: 0 2px;
+  font-weight: 800;
+}
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
 }
 #side-rail:active { cursor: grabbing; }
 #side-rail-handle {
@@ -4451,7 +4493,11 @@ input[type="checkbox"].hk-chk:checked::after {
           <span style="font-size:24px;">📋</span>
           <span>Plan inspection</span>
         </button>
-        <div style="flex:1;"></div>
+        <button onclick="closeModalEl('modal-settings');setTimeout(function(){startVoiceCommands();},200);" style="flex:1;background:linear-gradient(135deg,#854F0B,#A87327);border:none;border-radius:var(--rs);padding:14px 10px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;">
+          <span style="position:absolute;top:6px;right:8px;font-size:8px;font-weight:800;background:rgba(255,255,255,0.18);color:white;border-radius:10px;padding:2px 6px;letter-spacing:.05em;">PREVIEW</span>
+          <span style="font-size:24px;">🎙</span>
+          <span>Voice commands</span>
+        </button>
       </div>
 
       <div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;">Help &amp; community</div>
@@ -31641,7 +31687,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build r — Chevron direction fix on top of build q. The side-rail tuck caret was pointing the wrong way: had \"‹\" when expanded (suggesting motion left, but the rail moves right to tuck), and \"›\" when tucked. Now correctly shows \"›\" when expanded (tap to push it right off-screen) and \"‹\" when tucked (tap to pull it back left into view). All three write sites updated: initial HTML attribute, toggleSideRail() swap logic, and the load handler restore path. No Supabase migration required.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build s — Voice command mode Phase 1. New \"Voice commands\" tile in Settings → Beta features. Tap to enter listening mode: a honey-gradient pill appears top-centre with a pulsing mic icon. Six starter commands via Web Speech API (local, no Whisper round-trip): \"go home\" → home, \"apiary\" → apiary, \"start inspection\" → inspect, \"save\" → saveInspection, \"close\" → dismiss topmost modal, \"stop listening\" → exit. Audio feedback via browser SpeechSynthesis (\"Opening apiary\", \"Saved\", etc). Auto-exits after 3 minutes of silence. iOS Safari uses webkitSpeechRecognition; browsers without Web Speech API show a friendly alert. No Supabase migration required.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35020,6 +35066,191 @@ window.addEventListener('load', function() {
     }
   }
 });
+
+
+// ─── VOICE COMMAND MODE (Phase 1) ──────────────────────
+// 23 May 2026 build s — Beta feature accessible from Settings → Beta tiles.
+// Web Speech API for local recognition (no Whisper round-trip needed for
+// these short commands). Six starter verbs that map straight to existing
+// JS functions. Audio feedback via browser SpeechSynthesis. Auto-exits
+// after 3 minutes of silence to save battery.
+//
+// Phase 2 will extend this into form-filling within the Inspect screen.
+// Phase 3 adds Worker AI fallback for unmatched commands.
+// Phase 4 is the full conversational inspection mode.
+
+var _voiceCmd = {
+  active: false,
+  recognition: null,
+  silenceTimer: null,
+  silenceTimeoutMs: 180000,
+  restartGuard: false
+};
+
+function startVoiceCommands() {
+  if (_voiceCmd.active) {
+    speakBack('Already listening');
+    return;
+  }
+  var Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    alert('Voice commands need a browser with Web Speech API support. Try Chrome, Edge, or Safari 14+.');
+    return;
+  }
+  try {
+    _voiceCmd.recognition = new Recognition();
+  } catch (e) {
+    alert('Voice commands could not start: ' + (e.message || e));
+    return;
+  }
+  _voiceCmd.recognition.continuous = true;
+  _voiceCmd.recognition.interimResults = false;
+  _voiceCmd.recognition.lang = 'en-GB';
+  _voiceCmd.recognition.maxAlternatives = 1;
+
+  _voiceCmd.recognition.onresult = function(event) {
+    var last = event.results[event.results.length - 1];
+    if (last && last[0] && last[0].transcript) {
+      handleVoiceCommand(last[0].transcript);
+      resetSilenceTimer();
+    }
+  };
+
+  _voiceCmd.recognition.onerror = function(event) {
+    if (event.error === 'no-speech' || event.error === 'aborted') return;
+    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+      stopVoiceCommands();
+      alert('Microphone permission denied. Enable mic access in your browser/app settings and try again.');
+      return;
+    }
+    console.warn('Voice command error:', event.error);
+  };
+
+  _voiceCmd.recognition.onend = function() {
+    if (_voiceCmd.active && !_voiceCmd.restartGuard) {
+      _voiceCmd.restartGuard = true;
+      setTimeout(function() {
+        _voiceCmd.restartGuard = false;
+        if (_voiceCmd.active && _voiceCmd.recognition) {
+          try { _voiceCmd.recognition.start(); } catch (e) { /* ignore */ }
+        }
+      }, 200);
+    }
+  };
+
+  try {
+    _voiceCmd.recognition.start();
+  } catch (e) {
+    alert('Voice commands could not start: ' + (e.message || e));
+    return;
+  }
+  _voiceCmd.active = true;
+  showVoiceIndicator();
+  resetSilenceTimer();
+  speakBack('Listening for commands');
+}
+
+function stopVoiceCommands() {
+  _voiceCmd.active = false;
+  if (_voiceCmd.silenceTimer) {
+    clearTimeout(_voiceCmd.silenceTimer);
+    _voiceCmd.silenceTimer = null;
+  }
+  if (_voiceCmd.recognition) {
+    try { _voiceCmd.recognition.stop(); } catch (e) { /* ignore */ }
+    try { _voiceCmd.recognition.abort(); } catch (e) { /* ignore */ }
+    _voiceCmd.recognition = null;
+  }
+  hideVoiceIndicator();
+  speakBack('Stopped listening');
+}
+
+function handleVoiceCommand(text) {
+  var t = (text || '').toLowerCase().trim();
+  if (!t) return;
+
+  if (/\b(stop listening|stop voice|exit voice|stop the voice)\b/.test(t)) {
+    stopVoiceCommands();
+    return;
+  }
+  if (/\b(go to home|home screen|main menu|dashboard|go home)\b/.test(t)) {
+    if (typeof goTo === 'function') goTo('s-home');
+    speakBack('Opening home');
+    return;
+  }
+  if (/\b(apiary|my hives|all hives|go to apiary)\b/.test(t)) {
+    if (typeof goTo === 'function') goTo('s-apiary');
+    speakBack('Opening apiary');
+    return;
+  }
+  if (/\b(start inspection|new inspection|inspect)\b/.test(t)) {
+    if (typeof startFreshInspection === 'function') {
+      startFreshInspection();
+    } else if (typeof goTo === 'function') {
+      goTo('s-inspect');
+    }
+    speakBack('Starting inspection');
+    return;
+  }
+  if (/\b(save inspection|save and finish|save it|save)\b/.test(t)) {
+    if (typeof saveInspection === 'function') {
+      saveInspection();
+      speakBack('Saved');
+    } else {
+      speakBack('Save not available here');
+    }
+    return;
+  }
+  if (/\b(close|cancel|dismiss|never mind)\b/.test(t)) {
+    var modals = document.querySelectorAll('.modal-overlay.active');
+    if (modals.length) {
+      var top = modals[modals.length - 1];
+      if (typeof closeModalEl === 'function' && top.id) {
+        closeModalEl(top.id);
+      } else {
+        top.classList.remove('active');
+      }
+      speakBack('Closed');
+    } else {
+      speakBack('Nothing to close');
+    }
+    return;
+  }
+  // Unrecognised — stay silent. Most ambient speech is not a command.
+}
+
+function speakBack(msg) {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(msg);
+    u.lang = 'en-GB';
+    u.volume = 0.9;
+    u.rate = 1.1;
+    u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* ignore */ }
+}
+
+function showVoiceIndicator() {
+  var el = document.getElementById('voice-cmd-indicator');
+  if (el) el.classList.add('active');
+}
+
+function hideVoiceIndicator() {
+  var el = document.getElementById('voice-cmd-indicator');
+  if (el) el.classList.remove('active');
+}
+
+function resetSilenceTimer() {
+  if (_voiceCmd.silenceTimer) clearTimeout(_voiceCmd.silenceTimer);
+  _voiceCmd.silenceTimer = setTimeout(function() {
+    if (_voiceCmd.active) {
+      speakBack('Stopping after silence');
+      stopVoiceCommands();
+    }
+  }, _voiceCmd.silenceTimeoutMs);
+}
 
 // ── UPDATE ALL APIARY NAME DISPLAYS ─────────────────────
 function updateApiaryNameDisplays() {
@@ -41331,5 +41562,13 @@ window.__renderDebugDialog = function(text) {
 };
 </script>
 <!-- ═══ DEBUG-OS-END ═══ -->
+
+<!-- 23 May 2026 build s — Voice command mode indicator. Hidden by
+     default; .active class makes it visible. -->
+<div id="voice-cmd-indicator" role="status" aria-live="polite">
+  <span class="vc-mic">🎙</span>
+  <span id="voice-cmd-text">Listening…</span>
+  <span class="vc-stop" onclick="stopVoiceCommands()" title="Stop listening">×</span>
+</div>
 </body>
 </html>
