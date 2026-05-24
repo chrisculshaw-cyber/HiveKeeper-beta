@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260523x">
+  <meta name="app-version" content="20260523y">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -31705,7 +31705,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '23 May 2026 · build x — Wake lock for voice mode. Reuses the existing acquireWakeLock/releaseWakeLock helpers that already power the Inspect screen. Screen stays on the entire time voice mode is active. Lock acquired in startVoiceCommands() right after successful recognition start; released in stopVoiceCommands() (both manual \"stop listening\" and the 3-min silence auto-exit path, since silence calls stopVoiceCommands). Lock survives the speakInProgress recognition restart cycle since we never call stopVoiceCommands during it. Existing wake-lock intro modal may fire if user hasn\'t seen it this session. No Supabase migration required.';
+var HIVEKEEPER_BUILD = '23 May 2026 · build y — Capacitor native TTS path added to speakBack as PATH A, falling back to Web Speech API (PATH B) when the plugin isn\'t present. Native TTS uses Android\'s android.speech.tts.TextToSpeech / iOS\'s AVSpeechSynthesizer through @capacitor-community/text-to-speech — different audio path from the Web Speech API, so the mic-mutex that silences Chrome Android TTS doesn\'t apply. Until \"npm install @capacitor-community/text-to-speech && npx cap sync\" runs on the Capacitor project, PATH A is a no-op and behaviour is identical to build x. After install + sync + native rebuild, native TTS kicks in automatically (no JS changes needed). No Supabase migration required.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35389,14 +35389,44 @@ function _voiceVibrate() {
 }
 
 function speakBack(msg) {
+  console.log('speakBack:', msg);
+
+  // 23 May 2026 build y — Two-path TTS.
+  // PATH A: Capacitor native @capacitor-community/text-to-speech plugin.
+  //   Uses Android's android.speech.tts.TextToSpeech and iOS's
+  //   AVSpeechSynthesizer directly. Doesn't conflict with the mic the
+  //   way Web Speech API SpeechSynthesis does on Chrome Android.
+  //   Requires `npm install @capacitor-community/text-to-speech` and
+  //   `npx cap sync` on the Capacitor project. Until then this branch
+  //   is a no-op and we fall through to PATH B.
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech) {
+    try {
+      window.Capacitor.Plugins.TextToSpeech.speak({
+        text: msg,
+        lang: 'en-GB',
+        rate: 1.0,
+        pitch: 1.0,
+        volume: 1.0,
+        category: 'ambient'
+      }).then(function() {
+        console.log('Capacitor TTS spoke:', msg);
+      }).catch(function(e) {
+        console.warn('Capacitor TTS speak failed:', e);
+      });
+      return;
+    } catch (e) {
+      console.warn('Capacitor TTS path threw, falling back to Web Speech:', e);
+    }
+  }
+
+  // PATH B: Web Speech API (browser PWA, and Capacitor builds that don't
+  // yet have the plugin installed). On Android Chrome this may be silently
+  // dropped while SpeechRecognition holds the mic — visual toast carries
+  // the feedback in that case.
   if (!('speechSynthesis' in window)) return;
-  // Bonus TTS — may be silently dropped on Android while the mic is held.
-  // Visual toast (in voiceFeedback) is the primary feedback channel.
   try {
-    // Resume in case the synth was paused (Chrome backgrounded etc).
     try { window.speechSynthesis.resume(); } catch (e) {}
 
-    // Voice selection — fall back from en-GB to any English to default.
     var voices = [];
     try { voices = window.speechSynthesis.getVoices() || []; } catch (e) {}
     var preferred = voices.find(function(v) { return /en[-_]GB/i.test(v.lang); })
@@ -35433,7 +35463,7 @@ function speakBack(msg) {
 
     window.speechSynthesis.speak(u);
   } catch (e) {
-    console.warn('speakBack failed:', e);
+    console.warn('speakBack PATH B failed:', e);
     _voiceCmd.speakInProgress = false;
   }
 }
