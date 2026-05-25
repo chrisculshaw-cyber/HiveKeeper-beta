@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260525e">
+  <meta name="app-version" content="20260525f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -3084,7 +3084,21 @@ input[type="checkbox"].hk-chk:checked::after {
     <!-- Empty state: shown when no hive selected. Prevents the form being interacted with.
          SOS button remains accessible — a lone worker in trouble must be able to
          trigger SOS even if they haven't yet selected a hive. -->
-    <div id="inspect-empty-state" style="display:none;padding:40px 24px 20px;text-align:center;">
+    <!-- 25 May 2026 build f — voice inspection banner. Shown when conversational
+     inspection is active. Displays current hive, queue progress, and quick exit. -->
+<div id="voice-inspection-banner" style="display:none;background:linear-gradient(135deg,var(--forest),#2a6448);color:white;padding:12px 14px;border-radius:var(--rs);margin-bottom:12px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;">&#x1F3A4; Voice inspecting</div>
+      <div id="voice-inspection-hive-name" style="font-size:17px;font-weight:800;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">&mdash;</div>
+      <div id="voice-inspection-progress" style="font-size:11px;opacity:.85;margin-top:1px;">Hive 0 of 0</div>
+    </div>
+    <button onclick="endVoiceInspection()" style="background:rgba(255,255,255,0.18);border:none;border-radius:var(--rs);padding:10px 14px;font-family:&apos;Syne&apos;,sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;flex-shrink:0;">End</button>
+  </div>
+  <div id="voice-inspection-state" style="font-size:11px;margin-top:6px;opacity:.92;">Ready</div>
+</div>
+
+<div id="inspect-empty-state" style="display:none;padding:40px 24px 20px;text-align:center;">
       <div style="font-size:72px;line-height:1;margin-bottom:16px;">&#x1F41D;</div>
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:8px;">No active hives</div>
       <p style="font-size:14px;color:var(--text-l);line-height:1.6;margin:0 auto 20px;max-width:320px;">Add a hive to your apiary first, or <b>Scan QR</b> if your hive has a HiveKeeper sticker.</p>
@@ -4360,7 +4374,24 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
-  <div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
+  <!-- 25 May 2026 build f — SOS voice prompt modal. Opened when user shouts an SOS phrase.
+     Big touch fallbacks for users who can't speak clearly mid-emergency. 15s timeout
+     defaults to message (matches existing tap-button behaviour). -->
+<div class="modal-overlay" id="modal-sos-prompt" onclick="closeModal(event,'modal-sos-prompt')" style="z-index:10001;">
+  <div class="modal-sheet" style="max-width:420px;padding:24px;text-align:center;">
+    <div style="font-size:48px;line-height:1;margin-bottom:8px;">&#x1F198;</div>
+    <div style="font-size:22px;font-weight:800;color:#C62828;margin-bottom:8px;">SOS</div>
+    <div style="font-size:15px;color:var(--text);margin-bottom:20px;line-height:1.5;">Call or message your emergency contact?</div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;">
+      <button onclick="_sosResolvePrompt(&apos;call&apos;)" style="flex:1;background:#2D5016;border:none;border-radius:var(--rs);padding:18px;font-family:&apos;Syne&apos;,sans-serif;font-size:16px;font-weight:800;color:white;cursor:pointer;">&#x1F4DE; Call</button>
+      <button onclick="_sosResolvePrompt(&apos;message&apos;)" style="flex:1;background:#C62828;border:none;border-radius:var(--rs);padding:18px;font-family:&apos;Syne&apos;,sans-serif;font-size:16px;font-weight:800;color:white;cursor:pointer;">&#x1F4AC; Message</button>
+    </div>
+    <button onclick="_sosResolvePrompt(&apos;cancel&apos;)" style="width:100%;background:transparent;border:1px solid var(--wax);border-radius:var(--rs);padding:12px;font-family:&apos;Syne&apos;,sans-serif;font-size:13px;color:var(--text-l);cursor:pointer;">Cancel</button>
+    <div id="sos-prompt-countdown" style="font-size:11px;color:var(--text-l);margin-top:10px;"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-settings" onclick="closeModal(event,'modal-settings')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
       <div class="modal-handle"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0;">
@@ -31705,7 +31736,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '25 May 2026 · build e — Voice navigation expansion. New commands: "calendar / schedule / diary" → calendar, "AI / ask / chat / assistant" → AI, "market / marketplace / shop" → marketplace, "forage / nectar map / flowers / crops / spraying" → forage, "inventory / stock / supplies / equipment" → inventory, "plan / planner / swarm risk / weekly plan" → plan tab, "settings / preferences / account / cog" → settings modal (opens with sign-out and plan badge populated). Plus "stop / stop listening / stop voice / exit voice / done" to exit voice mode by voice command, and "help / what can I say" speaks the available commands aloud. Pre-warm list extended from 11 to 17 phrases so all new "Opening X" confirmations play instantly from cache. Hive-by-name ("open hive Daisy") deliberately deferred — needs disambiguation across apiaries and conflicts with existing apiary-switch pattern. Conversational TTS for inspections planned separately (HIV-15 phase 4).';
+var HIVEKEEPER_BUILD = '25 May 2026 · build f — Two big additions. (1) Voice SOS: shouting "SOS" / "send SOS" / "emergency SOS" / "help help help" / "call for help" bypasses the wake-phrase gate and the inspecting-mode lock, opens a call/message prompt with big touch fallbacks. Voice response "call" dials the emergency contact via tel: link; "message" fires existing triggerSOS() (SMS + WhatsApp). 15s silence defaults to message (safer than blocking a real emergency). Bare "SOS" alone is NOT enough — must pair with "send", "emergency", or be the triple "help help help". (2) Conversational inspection (HIV-15a): "start inspection" now enters a new "inspecting" voice-mode sub-state that locks out navigation commands. Iterates through current apiary\'s active hives in name order. Per hive: prompts user to describe, accumulates utterances, hits Worker v20 inspection_extract route with the transcript, re-prompts for missing or low-confidence critical fields (queenSeen, broodFrames, stores, swarmCells), then asks for save confirmation — only accepting "save" when extraction is complete. "skip" with reason, "discard" to restart hive, "end inspection" to exit. Notes textarea on Inspect screen is populated live so user can scroll to see the running transcript. Inspect command split: "open inspect" / "inspect screen" / bare "inspect" navigates only; "start inspection" / "begin inspection" / "voice inspection" enters conversational mode. Pre-warm extended from 17 to ~25 phrases for instant prompt playback.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35109,6 +35140,511 @@ var _voiceCmd = {
   speakInProgress: false     // build v — pause recognition during TTS
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// VOICE SOS (build f) — call/message prompt before firing emergency
+// ═══════════════════════════════════════════════════════════════════
+// Tap-button SOS sends a message instantly with no confirm step.
+// Voice SOS opens a call/message prompt because the user has the time
+// and motor-availability to indicate the preferred channel by voice.
+// 15s silence defaults to MESSAGE (matches existing tap-button behaviour)
+// so a user who can\'t articulate clearly still gets help out.
+
+var _sosPrompt = { active: false, timeoutId: null, countdownId: null, countdownSec: 0 };
+
+function triggerVoiceSOS() {
+  // If a prompt is already open, ignore (don\'t stack)
+  if (_sosPrompt.active) return;
+
+  // Check that an emergency contact is configured
+  var contact = (typeof loadSOSContact === 'function') ? loadSOSContact() : {};
+  if (!contact || (!contact.number && !contact.whatsapp)) {
+    voiceFeedback('No emergency contact set. Open settings to add one.');
+    return;
+  }
+
+  _sosPrompt.active = true;
+  _sosPrompt.countdownSec = 15;
+
+  // Pause voice command recognition restart cycle so the prompt prompt
+  // TTS doesn\'t collide with active recognition. The handleVoiceCommand
+  // routing at top of the file already directs utterances to _sosResolvePrompt.
+  try {
+    if (typeof openModalEl === 'function') openModalEl('modal-sos-prompt');
+  } catch (e) { console.warn('SOS prompt modal open failed:', e); }
+
+  voiceFeedback('Call or message your emergency contact?');
+
+  // Visual countdown so the user sees the default-to-message timer
+  function _updateCountdown() {
+    var el = document.getElementById('sos-prompt-countdown');
+    if (el) el.textContent = 'Defaulting to message in ' + _sosPrompt.countdownSec + 's';
+    _sosPrompt.countdownSec -= 1;
+    if (_sosPrompt.countdownSec < 0) {
+      try { clearInterval(_sosPrompt.countdownId); } catch (e) {}
+      _sosPrompt.countdownId = null;
+    }
+  }
+  _updateCountdown();
+  _sosPrompt.countdownId = setInterval(_updateCountdown, 1000);
+
+  // 15-second auto-default to MESSAGE — the worst case is one
+  // accidental SMS to a known contact. The alternative (no action) is
+  // catastrophic if it was real.
+  _sosPrompt.timeoutId = setTimeout(function() {
+    if (_sosPrompt.active) _sosResolvePrompt('message');
+  }, 15000);
+}
+
+function _sosResolvePrompt(action) {
+  if (!_sosPrompt.active) return;
+  _sosPrompt.active = false;
+  try { clearTimeout(_sosPrompt.timeoutId); } catch (e) {}
+  try { clearInterval(_sosPrompt.countdownId); } catch (e) {}
+  _sosPrompt.timeoutId = null;
+  _sosPrompt.countdownId = null;
+  try {
+    if (typeof closeModalEl === 'function') closeModalEl('modal-sos-prompt');
+  } catch (e) {}
+
+  if (action === 'call') {
+    var contact = (typeof loadSOSContact === 'function') ? loadSOSContact() : {};
+    var num = (contact && (contact.number || contact.whatsapp)) ? (contact.number || contact.whatsapp) : '';
+    if (!num) {
+      voiceFeedback('No emergency contact set. Open settings to add one.');
+      return;
+    }
+    voiceFeedback('Calling emergency contact');
+    setTimeout(function() {
+      try {
+        window.location.href = 'tel:' + num.replace(/[^0-9+]/g, '');
+      } catch (e) { console.error('tel: link failed:', e); }
+    }, 600); // tiny delay so the TTS announces before the dialer opens
+  } else if (action === 'message') {
+    voiceFeedback('Sending S O S');
+    setTimeout(function() {
+      try {
+        if (typeof triggerSOS === 'function') triggerSOS();
+      } catch (e) { console.error('triggerSOS failed:', e); }
+    }, 600);
+  } else { // cancel
+    voiceFeedback('Cancelled');
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// CONVERSATIONAL INSPECTION MODE (build f, HIV-15a)
+// ═══════════════════════════════════════════════════════════════════
+// State machine for voice-driven inspection of every active hive in the
+// current apiary. The user describes each hive freely; Worker v20\'s
+// inspection_extract route parses out structured fields and flags any
+// missing/low-confidence critical ones for follow-up. Only when the
+// extraction is complete does the system accept a "save" command.
+
+var _voiceInspection = {
+  active: false,
+  state: 'idle',
+  // States: idle, announcing, awaiting_description, processing,
+  //   awaiting_followup, awaiting_save_confirm, awaiting_skip_reason
+  apiaryId: null,
+  apiaryName: '',
+  hivesQueue: [],          // array of hive objects pending
+  currentHive: null,
+  currentIndex: 0,         // 0-based position in original queue length
+  queueLength: 0,
+  transcriptBuffer: '',    // accumulating utterances within this hive
+  lastUtteranceAt: 0,
+  silenceTimer: null,
+  extraction: null,        // last extraction result from Worker
+  pendingPrompt: null      // which critical field is being prompted (queenSeen | broodFrames | stores | swarmCells)
+};
+
+var _VOICE_INSPECTION_SILENCE_MS = 4000; // pause length to mark end-of-description
+
+function startVoiceInspection() {
+  if (_voiceInspection.active) {
+    voiceFeedback('Already inspecting');
+    return;
+  }
+
+  // Resolve current apiary
+  var apiaries = (typeof loadApiaries === 'function') ? loadApiaries() : [];
+  var apiary = apiaries.find(function(a) { return a.id === currentApiaryId; });
+  if (!apiary) {
+    voiceFeedback('No apiary selected', {error: true});
+    return;
+  }
+
+  // Find active hives in this apiary
+  var allHives = (typeof loadHives === 'function') ? loadHives() : [];
+  var queue = allHives.filter(function(h) {
+    return h.apiaryId === apiary.id && h.status === 'active' && !h.isHidden;
+  }).sort(function(a, b) {
+    return (a.name || '').localeCompare(b.name || '');
+  });
+
+  if (!queue.length) {
+    voiceFeedback('No active hives in this apiary');
+    return;
+  }
+
+  // Navigate to Inspect screen if not already there
+  if (typeof currentScreen !== 'undefined' && currentScreen !== 's-inspect') {
+    try {
+      if (typeof goTo === 'function') goTo('s-inspect');
+    } catch (e) {}
+  }
+
+  _voiceInspection.active = true;
+  _voiceInspection.state = 'announcing';
+  _voiceInspection.apiaryId = apiary.id;
+  _voiceInspection.apiaryName = apiary.name || '';
+  _voiceInspection.hivesQueue = queue.slice();
+  _voiceInspection.queueLength = queue.length;
+  _voiceInspection.currentIndex = 0;
+  _voiceInspection.currentHive = queue[0];
+  _voiceInspection.transcriptBuffer = '';
+  _voiceInspection.extraction = null;
+  _voiceInspection.pendingPrompt = null;
+
+  _updateInspectionBanner();
+
+  // Announce and prompt for first hive
+  var intro = 'Inspecting ' + (apiary.name || 'apiary') + '. ' + queue.length + ' hive' + (queue.length === 1 ? '' : 's') + '. First: ' + queue[0].name + '. Tell me about it.';
+  voiceFeedback(intro);
+  _voiceInspection.state = 'awaiting_description';
+  _voiceInspection.lastUtteranceAt = Date.now();
+  _setInspectionStateLabel('Listening… describe ' + queue[0].name);
+}
+
+function endVoiceInspection(opts) {
+  opts = opts || {};
+  if (!_voiceInspection.active) return;
+  _voiceInspection.active = false;
+  _voiceInspection.state = 'idle';
+  try { clearTimeout(_voiceInspection.silenceTimer); } catch (e) {}
+  _voiceInspection.silenceTimer = null;
+  _updateInspectionBanner();
+  if (!opts.silent) {
+    voiceFeedback(opts.complete ? 'All hives done' : 'Inspection ended');
+  }
+}
+
+function _updateInspectionBanner() {
+  var banner = document.getElementById('voice-inspection-banner');
+  if (!banner) return;
+  if (!_voiceInspection.active) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = 'block';
+  var nameEl = document.getElementById('voice-inspection-hive-name');
+  var progEl = document.getElementById('voice-inspection-progress');
+  if (nameEl) nameEl.textContent = (_voiceInspection.currentHive && _voiceInspection.currentHive.name) || '—';
+  if (progEl) progEl.textContent = 'Hive ' + (_voiceInspection.currentIndex + 1) + ' of ' + _voiceInspection.queueLength;
+}
+
+function _setInspectionStateLabel(label) {
+  var el = document.getElementById('voice-inspection-state');
+  if (el) el.textContent = label || '';
+}
+
+function handleInspectionUtterance(t, raw) {
+  // First: check for in-mode commands that override description capture
+  // These are checked first because they\'re short, distinctive, and
+  // user-intentional (vs free-form description content).
+
+  // "end inspection" exits the whole session
+  if (/\b(end inspection|stop inspection|finish inspection|cancel inspection|exit inspection|end voice inspection)\b/.test(t)) {
+    endVoiceInspection();
+    return;
+  }
+
+  // Different command sets per state
+  if (_voiceInspection.state === 'awaiting_save_confirm') {
+    if (/\b(save|yes save|save it|yes|confirm|next)\b/.test(t)) {
+      _saveCurrentVoiceInspection();
+      return;
+    }
+    if (/\b(skip|skip this|skip this hive|skip hive)\b/.test(t)) {
+      _enterSkipReasonState();
+      return;
+    }
+    if (/\b(discard|start over|restart|redo)\b/.test(t)) {
+      _discardCurrentInspection();
+      return;
+    }
+    if (/\b(repeat|say again|what)\b/.test(t)) {
+      if (_voiceInspection.extraction && _voiceInspection.extraction.summary) {
+        voiceFeedback(_voiceInspection.extraction.summary + '. Say save or edit.');
+      }
+      return;
+    }
+    // Anything else — treat as additional description, re-extract
+    _appendAndReExtract(raw);
+    return;
+  }
+
+  if (_voiceInspection.state === 'awaiting_skip_reason') {
+    // Whatever the user says becomes the skip reason
+    _recordSkipAndAdvance(raw.trim() || 'Skipped (no reason given)');
+    return;
+  }
+
+  if (_voiceInspection.state === 'awaiting_followup' || _voiceInspection.state === 'awaiting_description') {
+    // Accumulate transcript, reset silence timer
+    if (_voiceInspection.transcriptBuffer) {
+      _voiceInspection.transcriptBuffer += ' ' + raw;
+    } else {
+      _voiceInspection.transcriptBuffer = raw;
+    }
+    _voiceInspection.lastUtteranceAt = Date.now();
+
+    // Reset silence timer
+    try { clearTimeout(_voiceInspection.silenceTimer); } catch (e) {}
+    _voiceInspection.silenceTimer = setTimeout(function() {
+      _processInspectionDescription();
+    }, _VOICE_INSPECTION_SILENCE_MS);
+
+    _setInspectionStateLabel('Listening… (' + _voiceInspection.transcriptBuffer.length + ' chars)');
+    return;
+  }
+}
+
+function _processInspectionDescription() {
+  if (!_voiceInspection.active) return;
+  if (!_voiceInspection.transcriptBuffer || _voiceInspection.transcriptBuffer.trim().length < 3) {
+    // Nothing meaningful captured; remain in awaiting_description
+    _setInspectionStateLabel('Listening… describe ' + (_voiceInspection.currentHive ? _voiceInspection.currentHive.name : 'this hive'));
+    return;
+  }
+
+  _voiceInspection.state = 'processing';
+  _setInspectionStateLabel('Processing…');
+
+  var payload = {
+    type: 'inspection_extract',
+    transcript: _voiceInspection.transcriptBuffer,
+    hiveName: (_voiceInspection.currentHive && _voiceInspection.currentHive.name) || '',
+    apiaryName: _voiceInspection.apiaryName || ''
+  };
+  if (_voiceInspection.extraction && _voiceInspection.extraction.fields) {
+    payload.priorExtraction = _voiceInspection.extraction;
+  }
+
+  fetch('https://flat-bird-f269.chris-culshaw.workers.dev/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('extract HTTP ' + r.status);
+    return r.json();
+  }).then(function(data) {
+    if (!_voiceInspection.active) return;
+    var ext = data.extraction;
+    if (!ext) throw new Error('no extraction in response');
+    _voiceInspection.extraction = ext;
+
+    // Populate the inspect-notes textarea so the user can scroll/see the running transcript
+    try {
+      var notesEl = document.getElementById('inspect-notes');
+      if (notesEl) notesEl.value = (ext.fields && ext.fields.freeText) || _voiceInspection.transcriptBuffer;
+    } catch (e) {}
+
+    // Decide next state based on missing/low-confidence
+    var needs = (ext.missingCritical || []).concat(ext.lowConfidence || []);
+    if (needs.length) {
+      // Prompt for the first missing/low field
+      _voiceInspection.state = 'awaiting_followup';
+      _voiceInspection.pendingPrompt = needs[0];
+      _voiceInspection.transcriptBuffer = ''; // start fresh for the follow-up answer
+      _promptForField(needs[0]);
+    } else {
+      // Everything captured at adequate confidence — read back summary
+      _voiceInspection.state = 'awaiting_save_confirm';
+      _voiceInspection.transcriptBuffer = '';
+      var summary = ext.summary || ((_voiceInspection.currentHive && _voiceInspection.currentHive.name) + ' captured');
+      voiceFeedback(summary + '. Say save to continue, or edit to change.');
+      _setInspectionStateLabel('Ready to save. Say "save" or "skip"');
+    }
+  }).catch(function(err) {
+    console.error('inspection_extract failed:', err);
+    if (!_voiceInspection.active) return;
+    voiceFeedback('Could not process. Please describe again.', {error: true});
+    _voiceInspection.state = 'awaiting_description';
+    _voiceInspection.transcriptBuffer = '';
+    _setInspectionStateLabel('Listening… describe ' + (_voiceInspection.currentHive ? _voiceInspection.currentHive.name : ''));
+  });
+}
+
+function _appendAndReExtract(rawText) {
+  if (!rawText) return;
+  if (_voiceInspection.transcriptBuffer) {
+    _voiceInspection.transcriptBuffer += ' ' + rawText;
+  } else {
+    _voiceInspection.transcriptBuffer = rawText;
+  }
+  _voiceInspection.state = 'awaiting_description';
+  _processInspectionDescription();
+}
+
+function _promptForField(fieldName) {
+  var prompts = {
+    queenSeen: 'Did you see the queen?',
+    broodFrames: 'How many frames of brood?',
+    stores: 'What is the stores level?',
+    swarmCells: 'Any swarm cells?'
+  };
+  var msg = prompts[fieldName] || ('Tell me about ' + fieldName);
+  voiceFeedback(msg);
+  _setInspectionStateLabel(msg);
+}
+
+function _saveCurrentVoiceInspection() {
+  var hive = _voiceInspection.currentHive;
+  var ext = _voiceInspection.extraction;
+  if (!hive || !ext) {
+    voiceFeedback('Nothing to save', {error: true});
+    return;
+  }
+
+  // Map extraction fields to inspection record schema
+  var f = ext.fields || {};
+  var queenSeenVal = null;
+  if (f.queenSeen === 'yes') queenSeenVal = true;
+  else if (f.queenSeen === 'no') queenSeenVal = false;
+  else if (f.queenSeen === 'eggs_seen') queenSeenVal = false; // didn\'t actually see her, just inferred
+  else queenSeenVal = null;
+
+  var storesVal = (f.stores && f.stores !== 'unknown') ? f.stores : null;
+  var swarmRiskVal = null;
+  if (f.swarmCells === 'present') swarmRiskVal = 'high';
+  else if (f.swarmCells === 'absent') swarmRiskVal = 'none';
+
+  var temperVal = null;
+  if (f.temperament === 'calm') temperVal = 'calm';
+  else if (f.temperament === 'normal') temperVal = 'good';
+  else if (f.temperament === 'nervous') temperVal = 'nervous';
+  else if (f.temperament === 'defensive') temperVal = 'defensive';
+
+  var varroaVal = null;
+  if (f.varroaSeen === false) varroaVal = 'none';
+  else if (f.varroaSeen === true) varroaVal = 'low'; // weak signal — only "saw varroa" without count
+
+  var notesText = (f.freeText || '').trim();
+  if (ext.summary) notesText = ext.summary + (notesText ? ('\n\n' + notesText) : '');
+
+  var record = {
+    id: 'vinsp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+    hiveId: hive.id,
+    inspectedAt: Date.now(),
+    inspectedBy: (typeof getDisplayName === 'function' && getDisplayName()) || 'Voice inspection',
+    queenSeen: queenSeenVal,
+    queenFrame: null,
+    broodFrames: (typeof f.broodFrames === 'number') ? f.broodFrames : null,
+    storesLevel: storesVal,
+    swarmRisk: swarmRiskVal,
+    varroaLevel: varroaVal,
+    temper: temperVal,
+    notes: notesText,
+    healthScore: null,
+    syncStatus: 'pending',
+    photos: [],
+    voiceInspection: true
+  };
+
+  // Append to local store — same pattern as saveInspection() but bypassing the form
+  try {
+    var all = (typeof loadInspections === 'function') ? loadInspections() : [];
+    all.push(record);
+    if (typeof saveInspections === 'function') saveInspections(all);
+  } catch (e) {
+    console.error('voice-save inspection failed:', e);
+    voiceFeedback('Save failed', {error: true});
+    return;
+  }
+
+  voiceFeedback('Hive saved');
+  _advanceToNextHive();
+}
+
+function _enterSkipReasonState() {
+  _voiceInspection.state = 'awaiting_skip_reason';
+  _voiceInspection.transcriptBuffer = '';
+  voiceFeedback('Reason for skipping?');
+  _setInspectionStateLabel('Awaiting skip reason');
+}
+
+function _recordSkipAndAdvance(reason) {
+  var hive = _voiceInspection.currentHive;
+  if (hive) {
+    var record = {
+      id: 'vinsp-skip-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+      hiveId: hive.id,
+      inspectedAt: Date.now(),
+      inspectedBy: (typeof getDisplayName === 'function' && getDisplayName()) || 'Voice inspection',
+      queenSeen: null,
+      queenFrame: null,
+      broodFrames: null,
+      storesLevel: null,
+      swarmRisk: null,
+      varroaLevel: null,
+      temper: null,
+      notes: 'Skipped: ' + reason,
+      healthScore: null,
+      syncStatus: 'pending',
+      photos: [],
+      voiceInspection: true,
+      skipped: true
+    };
+    try {
+      var all = (typeof loadInspections === 'function') ? loadInspections() : [];
+      all.push(record);
+      if (typeof saveInspections === 'function') saveInspections(all);
+    } catch (e) { console.error('skip record save failed:', e); }
+  }
+  _advanceToNextHive();
+}
+
+function _discardCurrentInspection() {
+  _voiceInspection.transcriptBuffer = '';
+  _voiceInspection.extraction = null;
+  _voiceInspection.pendingPrompt = null;
+  _voiceInspection.state = 'awaiting_description';
+  voiceFeedback('Discarded. Tell me about ' + (_voiceInspection.currentHive ? _voiceInspection.currentHive.name : 'this hive') + ' again.');
+  _setInspectionStateLabel('Listening… (restarted)');
+}
+
+function _advanceToNextHive() {
+  // Clean per-hive state
+  _voiceInspection.transcriptBuffer = '';
+  _voiceInspection.extraction = null;
+  _voiceInspection.pendingPrompt = null;
+  try { clearTimeout(_voiceInspection.silenceTimer); } catch (e) {}
+  _voiceInspection.silenceTimer = null;
+
+  _voiceInspection.currentIndex += 1;
+  var nextHive = _voiceInspection.hivesQueue[_voiceInspection.currentIndex];
+  if (!nextHive) {
+    // All done
+    endVoiceInspection({complete: true});
+    return;
+  }
+  _voiceInspection.currentHive = nextHive;
+  _voiceInspection.state = 'awaiting_description';
+  _updateInspectionBanner();
+
+  // Clear notes textarea for the next hive
+  try {
+    var notesEl = document.getElementById('inspect-notes');
+    if (notesEl) notesEl.value = '';
+  } catch (e) {}
+
+  voiceFeedback('Next: ' + nextHive.name + '. Tell me about it.');
+  _voiceInspection.lastUtteranceAt = Date.now();
+  _setInspectionStateLabel('Listening… describe ' + nextHive.name);
+}
+
 function startVoiceCommands() {
   if (_voiceCmd.active) {
     voiceFeedback('Already listening');
@@ -35219,7 +35755,49 @@ function handleVoiceCommand(text) {
   console.log('[voice] heard:', JSON.stringify(raw), '→', JSON.stringify(t), 'mode=' + _voiceCmd.mode);
   if (!t) return;
 
-  // "stop listening" works in ANY mode — always honour it.
+  // 25 May 2026 build f — SOS detection BEFORE anything else.
+  // Bypasses wake-phrase gate AND inspecting-mode lock so a beekeeper in
+  // genuine trouble can summon help regardless of what state the app is in.
+  // Mitigations against false triggers:
+  //   - bare "SOS" alone won\'t fire (too easy to hit in casual conversation)
+  //   - must be paired with "send" / "emergency" / "call for help"
+  //   - OR the explicit triple "help help help" (rare in normal speech)
+  // Triggers triggerVoiceSOS() which opens the call/message prompt rather
+  // than firing the existing triggerSOS() directly — voice gives users a
+  // choice that the tap-only button cannot.
+  if (/\b(send\s+s\s*o\s*s|emergency\s+s\s*o\s*s|call\s+for\s+help|s\s*o\s*s\s+(?:send|emergency|now|please))\b/.test(t)
+      || /\bhelp\s+help\s+help\b/.test(t)) {
+    console.log('[voice] SOS triggered by:', JSON.stringify(t));
+    if (typeof triggerVoiceSOS === 'function') triggerVoiceSOS();
+    return;
+  }
+
+  // 25 May 2026 build f — SOS prompt response handling. When the call/
+  // message prompt is open, route the user\'s utterance there exclusively.
+  if (typeof _sosPrompt !== 'undefined' && _sosPrompt && _sosPrompt.active) {
+    if (/\b(call|phone|ring|dial)\b/.test(t)) {
+      _sosResolvePrompt('call');
+    } else if (/\b(message|text|sms|send message|send text)\b/.test(t)) {
+      _sosResolvePrompt('message');
+    } else if (/\b(cancel|never mind|stop|abort|nevermind)\b/.test(t)) {
+      _sosResolvePrompt('cancel');
+    }
+    // Anything else: stay in prompt, wait for a valid response or timeout.
+    return;
+  }
+
+  // 25 May 2026 build f — conversational inspection mode lock. When active,
+  // route ALL utterances to the inspection handler. Navigation commands and
+  // most other commands are deliberately suppressed so the beekeeper can
+  // dictate freely without accidentally triggering navigation.
+  if (typeof _voiceInspection !== 'undefined' && _voiceInspection && _voiceInspection.active) {
+    if (typeof handleInspectionUtterance === 'function') {
+      handleInspectionUtterance(t, raw);
+    }
+    return;
+  }
+
+  // "stop listening" works in ANY mode (outside SOS prompt and inspecting) — always honour it.
   if (/\b(stop listening|stop voice|exit voice|stop the voice|stop hivekeeper)\b/.test(t)) {
     stopVoiceCommands();
     return;
@@ -35272,13 +35850,21 @@ function handleVoiceCommand(text) {
     voiceFeedback('Opening apiary');
     return;
   }
-  if (/\b(start inspection|new inspection|begin inspection|inspect|inspection|inspect hive|inspect now)\b/.test(t)) {
-    if (typeof startFreshInspection === 'function') {
-      startFreshInspection();
-    } else if (typeof goTo === 'function') {
-      goTo('s-inspect');
+  // 25 May 2026 build f — inspect command split into nav vs action.
+  // "open inspect" / "inspect screen" / bare "inspect" → navigation only.
+  // "start inspection" / "begin inspection" / "voice inspection" → enters
+  // conversational inspection mode (handled by startVoiceInspection()).
+  if (/\b(start voice inspection|start inspection|new inspection|begin inspection|voice inspection|conversational inspection)\b/.test(t)) {
+    if (typeof startVoiceInspection === 'function') {
+      startVoiceInspection();
+    } else {
+      voiceFeedback('Voice inspection not available', {error: true});
     }
-    voiceFeedback('Starting inspection');
+    return;
+  }
+  if (/\b(open inspect|inspect screen|show inspect|inspect tab|go to inspect|inspect page)\b/.test(t) || t === 'inspect' || t === 'inspection') {
+    if (typeof goTo === 'function') goTo('s-inspect');
+    voiceFeedback('Opening inspect');
     return;
   }
   if (/\b(save inspection|save and finish|save it|save)\b/.test(t)) {
@@ -35299,7 +35885,7 @@ function handleVoiceCommand(text) {
     return;
   }
   if (/\b(help|what can i say|what commands|list commands|available commands|voice help|voice commands)\b/.test(t)) {
-    voiceFeedback('Try home, apiary, inspect, calendar, A I, market, forage, inventory, plan, settings, save, or close');
+    voiceFeedback('Try home, apiary, calendar, A I, market, forage, inventory, plan, settings, start inspection, or in emergency say send S O S');
     return;
   }
   if (/\b(calendar|calender|schedule|diary|my schedule|show calendar|open calendar|what's coming up|what's next)\b/.test(t)) {
@@ -35602,6 +36188,7 @@ var _TTS_PREWARM_PHRASES = [
   'Yes',
   'Opening home',
   'Opening apiary',
+  'Opening inspect',
   'Opening calendar',
   'Opening AI assistant',
   'Opening marketplace',
@@ -35609,14 +36196,30 @@ var _TTS_PREWARM_PHRASES = [
   'Opening inventory',
   'Opening plan',
   'Opening settings',
-  'Starting inspection',
   'Saved',
   'Closed',
   'Stopped listening',
   'Already listening',
   'Nothing to close',
   'Save not available here',
-  'Stopping after silence'
+  'Stopping after silence',
+  // SOS prompts
+  'Call or message your emergency contact?',
+  'No emergency contact set. Open settings to add one.',
+  'Sending S O S',
+  'Calling emergency contact',
+  // Inspection prompts
+  'Tell me about this hive',
+  'Did you see the queen?',
+  'How many frames of brood?',
+  'What is the stores level?',
+  'Any swarm cells?',
+  'Say save to continue, or edit to change',
+  'Reason for skipping?',
+  'Hive saved',
+  'All hives done',
+  'Inspection ended',
+  'No active hives in this apiary'
 ];
 var _ttsPreWarmStarted = false;
 
