@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260525c">
+  <meta name="app-version" content="20260525d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -31705,7 +31705,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '25 May 2026 · build c — Fix voice "go home" / "dashboard" being silently blocked after navigating to Apiary or Inspect. The goTo() guard at line 6508 suppresses programmatic goTo(\'s-home\') for 15s after the user navigates away, unless _userOnHome is true (the bottom-nav Home button flips that flag inline before calling goTo). The voice handler was just calling goTo(\'s-home\') without flipping the flag, so it tripped the guard. One-line fix: voice handler now mirrors the nav button (_userOnHome = true; goTo(\'s-home\')). Linear HIV-6 closed. Architectural refactor (userInitiated flag on goTo) tracked separately as HIV-78. Build b TTS audio path unchanged.';
+var HIVEKEEPER_BUILD = '25 May 2026 · build d — Pre-warm TTS cache when voice mode starts. After the initial "Say hivekeeper to wake" is fetched (which seeds the cache itself), a background pre-warm fetches 11 other common phrases ("Yes", "Opening home", "Opening apiary", "Starting inspection", "Saved", "Closed", "Stopped listening", etc.) with 100ms throttle between requests. By the time the user wakes with "hivekeeper" and gives a command, all common confirmations are cached and play instantly with zero network latency. Best-effort and silent on failure — real speakBack calls still work normally if pre-warm fails. Idempotent via _ttsPreWarmStarted flag. ~150 chars total fetched, negligible against Google\'s 1M/month free WaveNet tier.';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35180,6 +35180,10 @@ function startVoiceCommands() {
     if (typeof acquireWakeLock === 'function') acquireWakeLock();
   } catch (e) { console.warn('voice wake lock failed:', e); }
   voiceFeedback('Say hivekeeper to wake');
+  // 25 May 2026 build d — pre-warm common confirmations so the
+  // first real voice command plays instantly from cache. Fire-and-forget;
+  // does NOT block voice mode start.
+  try { _prewarmTtsCache(); } catch (e) { console.warn('TTS pre-warm threw:', e); }
 }
 
 function stopVoiceCommands() {
@@ -35525,6 +35529,65 @@ async function _playWorkerTTS(msg) {
     _resumeRecognition();
     throw playErr;
   }
+}
+
+// 25 May 2026 build d — pre-warm common TTS phrases when voice mode
+// is enabled. By the time the user wakes the system with "hivekeeper"
+// and issues a command, the common confirmations are already in the
+// blob URL cache and play with zero network latency.
+//
+// Order matters: "Say hivekeeper to wake" is excluded from this list
+// because it\'s already fetched by the initial voiceFeedback() call in
+// startVoiceCommands() — the cache check inside _playWorkerTTS catches
+// it on the second call anyway, but excluding here saves a redundant
+// fetch in the rare race-condition where pre-warm starts before the
+// initial fetch completes.
+//
+// Best-effort: silent on failure. Real speakBack calls still work if
+// pre-warm fails (network blip, Worker hiccup, etc.) because they hit
+// the network themselves with proper fallback to PATH B.
+var _TTS_PREWARM_PHRASES = [
+  'Yes',
+  'Opening home',
+  'Opening apiary',
+  'Starting inspection',
+  'Saved',
+  'Closed',
+  'Stopped listening',
+  'Already listening',
+  'Nothing to close',
+  'Save not available here',
+  'Stopping after silence'
+];
+var _ttsPreWarmStarted = false;
+
+async function _prewarmTtsCache() {
+  if (_ttsPreWarmStarted) return;
+  _ttsPreWarmStarted = true;
+  console.log('[TTS pre-warm] starting, ' + _TTS_PREWARM_PHRASES.length + ' phrases');
+  var warmed = 0;
+  for (var i = 0; i < _TTS_PREWARM_PHRASES.length; i++) {
+    var phrase = _TTS_PREWARM_PHRASES[i];
+    if (_ttsCache.has(phrase)) continue;
+    try {
+      var r = await fetch('https://flat-bird-f269.chris-culshaw.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'tts', text: phrase })
+      });
+      if (r.ok) {
+        var blob = await r.blob();
+        var url = URL.createObjectURL(blob);
+        _ttsAddToCache(phrase, url);
+        warmed += 1;
+      }
+    } catch (e) {
+      // Silent — pre-warm is best-effort
+    }
+    // Polite throttle between fetches
+    await new Promise(function(resolve) { setTimeout(resolve, 100); });
+  }
+  console.log('[TTS pre-warm] done, ' + warmed + ' fetched, ' + _ttsCache.size + ' total cached');
 }
 
 function _speakBackWebAPI(msg) {
