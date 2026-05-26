@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526ah">
+  <meta name="app-version" content="20260526ai">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -32430,6 +32430,10 @@ function _confirmColonyDepartedInner() {
   // the final saveHives. Was: clearHiveQuarantine's internal saveHives
   // was clobbered by the outer saveHives at the end. restoreRow:false
   // makes the helper skip its internal row write.
+  //
+  // HIV-37 build ai — _qRecOnDepart also drives the quarantine info in
+  // the give-away email so the recipient knows if the colony is still
+  // in its BBKA quarantine window.
   var _qRecOnDepart = null;
   try { _qRecOnDepart = clearHiveQuarantine(hive.id, { restoreRow: false }); } catch(e) {}
   if (_qRecOnDepart && _qRecOnDepart.originalRow !== undefined && hive.row === 'Quarantine') {
@@ -32520,9 +32524,10 @@ function _confirmColonyDepartedInner() {
         // occupation of this container. _sessionRec was set above when
         // _archiveCurrentSession ran.
         var _emailSession = _sessionRec || null;
+        var _emailQuarantine = _qRecOnDepart || null;  // HIV-37 build ai
         // Fire after a short delay so the main toast/render lands first
         setTimeout(function(){
-          _sendColonyHandoverEmail(hive, _giveEmail, _giveName, dateStr, notes, _emailSession)
+          _sendColonyHandoverEmail(hive, _giveEmail, _giveName, dateStr, notes, _emailSession, _emailQuarantine)
             .then(function(ok){
               if (ok) showToast('📧 Record sent to ' + _giveEmail);
               else showToast('⚠️ Email send failed — record saved locally');
@@ -32540,7 +32545,7 @@ function _confirmColonyDepartedInner() {
 // HIV-37 build af — build the record payload and POST to flat-bird-f269
 // with type: 'colony_handover_email'. The Worker formats the HTML email
 // and sends via Resend. Returns true on 2xx, false otherwise.
-async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, notes, sessionRec) {
+async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, notes, sessionRec, quarantineRec) {
   if (!hive || !toEmail) return false;
 
   // Sender name (from auth metadata or local override)
@@ -32635,6 +32640,32 @@ async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, n
     }
   }
 
+  // HIV-37 build ai — quarantine status block. Tells the recipient
+  // if the colony is still in its BBKA quarantine window. _daysUntilYmd
+  // uses local-date math so the count is accurate.
+  var quarantinePayload = null;
+  if (quarantineRec && quarantineRec.until) {
+    var qDaysLeft = (typeof _daysUntilYmd === 'function') ? _daysUntilYmd(quarantineRec.until) : 0;
+    var qTotalDays = null;
+    if (quarantineRec.startedAt) {
+      var qStartYmd = quarantineRec.startedAt.split('T')[0];
+      // total days = days between start and until (both local midnight)
+      try {
+        var qStartMs = (typeof _ymdToLocalDate === 'function') ? _ymdToLocalDate(qStartYmd).getTime() : new Date(qStartYmd).getTime();
+        var qEndMs = (typeof _ymdToLocalDate === 'function') ? _ymdToLocalDate(quarantineRec.until).getTime() : new Date(quarantineRec.until).getTime();
+        qTotalDays = Math.max(1, Math.round((qEndMs - qStartMs) / 86400000));
+      } catch(e) { qTotalDays = null; }
+    }
+    quarantinePayload = {
+      was_set: true,
+      total_days: qTotalDays,
+      days_remaining: qDaysLeft,
+      until: quarantineRec.until,
+      started_at: quarantineRec.startedAt || null,
+      still_active: qDaysLeft >= 0
+    };
+  }
+
   var payload = {
     type: 'colony_handover_email',
     to_email: toEmail,
@@ -32658,7 +32689,8 @@ async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, n
       inspections: sessionInspections.slice().sort(function(a,b){ return (b.inspected_at||0) - (a.inspected_at||0); })
     },
     handover_date: dateStr || new Date().toISOString().split('T')[0],
-    notes: notes || null
+    notes: notes || null,
+    quarantine: quarantinePayload
   };
 
   try {
@@ -34006,7 +34038,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build ah';
+var HIVEKEEPER_BUILD = '26 May 2026 build ai';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
