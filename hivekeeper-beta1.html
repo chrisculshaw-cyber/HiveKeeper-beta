@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526ac">
+  <meta name="app-version" content="20260526ad">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -3144,6 +3144,10 @@ input[type="checkbox"].hk-chk:checked::after {
     <!-- Hive context banner — cover photo (left) + stack diagram (right).
          Shows when any hive is selected. Filled by populateHiveSelector(). -->
     <div id="inspect-hive-context-banner" style="display:none;margin:10px 20px 0;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);overflow:hidden;box-shadow:var(--shadow);"></div>
+    <!-- HIV-93 build ad — quarantine timeline banner on the inspect screen.
+         Shows "Day N of M quarantine — safe from [date]" when the selected
+         hive has active quarantine. Populated by populateHiveSelector. -->
+    <div id="inspect-quarantine-banner" style="display:none;margin:10px 20px 0;padding:10px 14px;background:#E8F5E9;border:1px solid #C8E6C9;border-left:4px solid #2E7D32;border-radius:var(--rs);"></div>
 
     <div id="inspect-history-panel" style="display:none;margin:10px 0 0;background:var(--white);border-radius:var(--r);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;">
       <div style="padding:10px 14px;background:var(--forest);display:flex;align-items:center;justify-content:space-between;">
@@ -13934,10 +13938,11 @@ function renderHiveDetail(){
   // Brood/supers pill (stack diagram shows this), Hide chip (moved into Edit
   // modal danger zone).
   var honeyTotal = getHoneyTotal(hive.id);
-  // HIV-93 build ab — quarantine chip if active.
+  // HIV-93 build ad — quarantine chip if active (via helper store).
   var _quarantineChipHtml = '';
-  if (hive.quarantineUntil) {
-    var _qEndMs = new Date(hive.quarantineUntil).getTime();
+  var _qRec = getHiveQuarantine(hive.id);
+  if (_qRec) {
+    var _qEndMs = new Date(_qRec.until).getTime();
     var _qToday = new Date(); _qToday.setHours(0,0,0,0);
     var _qDaysRemain = Math.ceil((_qEndMs - _qToday.getTime()) / 86400000);
     if (_qDaysRemain >= 0) {
@@ -16134,14 +16139,14 @@ function saveInspection(){
     // hive.waxMoth kept in sync for legacy reads.
     hives[hi].pests = insp.pests.slice();
     hives[hi].waxMoth = insp.waxMoth;
-    // HIV-93 build ab — implicit quarantine lift. If the keeper has
-    // chosen to inspect, the quarantine ends. Clear it.
-    if (hives[hi].quarantineUntil) {
-      console.log('[saveInspection] clearing quarantine on hive ' + hives[hi].id + ' (was ' + hives[hi].quarantineUntil + ')');
-      hives[hi].quarantineUntil = null;
-      hives[hi].quarantineStartedAt = null;
-    }
     saveHives(hives);
+    // HIV-93 build ad — implicit quarantine lift via helper. Restores
+    // the hive's original row (the row it was in before being moved to
+    // Quarantine on catch).
+    try {
+      var _qrec = clearHiveQuarantine(hives[hi].id);
+      if (_qrec) console.log('[saveInspection] cleared quarantine on hive ' + hives[hi].id);
+    } catch(e) { console.warn('quarantine clear on inspect:', e); }
   }
   // Toast handled by _finaliseAndNavigate
   // ─── IMMEDIATE LOCAL-SAVE CONFIRMATION (27 April 2026 — Pattern 1 fix) ───
@@ -19609,6 +19614,35 @@ function populateHiveSelector(){
   var hive=currentHiveId?loadHives().find(function(h){return h.id===currentHiveId;}):null;
   var nameEl=document.getElementById('inspect-hive-selected-name');
   if(nameEl) nameEl.textContent=hive?hive.name:'Select a hive...';
+
+  // HIV-93 build ad — quarantine timeline banner on inspect screen.
+  try {
+    var _qBan = document.getElementById('inspect-quarantine-banner');
+    if (_qBan) {
+      var _qRec = hive ? getHiveQuarantine(hive.id) : null;
+      if (_qRec) {
+        var _qStartMs = new Date(_qRec.startedAt || _qRec.until).getTime();
+        var _qEndMs = new Date(_qRec.until).getTime();
+        var _qNow = Date.now();
+        var _qTotalDays = Math.max(1, Math.round((_qEndMs - _qStartMs) / 86400000));
+        var _qDayN = Math.min(_qTotalDays, Math.max(1, Math.ceil((_qNow - _qStartMs) / 86400000)));
+        var _qEndStr = new Date(_qRec.until).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+        _qBan.innerHTML =
+          '<div style="display:flex;align-items:center;gap:10px;">'
+            + '<div style="font-size:20px;flex-shrink:0;">&#x1F6E1;&#xFE0F;</div>'
+            + '<div style="flex:1;min-width:0;">'
+              + '<div style="font-size:10px;font-weight:800;color:#2E7D32;text-transform:uppercase;letter-spacing:.04em;">Quarantine</div>'
+              + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:1px;">Day ' + _qDayN + ' of ' + _qTotalDays + ' &middot; safe to inspect from ' + _qEndStr + '</div>'
+              + '<div style="font-size:11px;color:var(--text-l);margin-top:2px;font-style:italic;">BBKA recommends waiting. Saving an inspection will lift the quarantine.</div>'
+            + '</div>'
+          + '</div>';
+        _qBan.style.display = 'block';
+      } else {
+        _qBan.style.display = 'none';
+        _qBan.innerHTML = '';
+      }
+    }
+  } catch(e) { console.warn('inspect quarantine banner failed:', e); }
 
   // Combined context banner — cover photo thumbnail (if present) on the left,
   // stack diagram + caption on the right. Replaces the previous two-stacked
@@ -28181,22 +28215,25 @@ function renderHomeQuarantineBanner() {
   catch(e) { hideAll(); return; }
   if (!hives || !hives.length) { hideAll(); return; }
 
-  var now = Date.now();
   var todayStart = new Date(); todayStart.setHours(0,0,0,0);
   var todayMs = todayStart.getTime();
-  var active = hives.filter(function(h){
-    if (!h.quarantineUntil) return false;
-    var end = new Date(h.quarantineUntil).getTime();
-    return end >= todayMs; // still active up to and including the end day
+  // Walk hives, asking the quarantine store for each. getHiveQuarantine
+  // returns null for expired records (and purges them as a side effect).
+  var active = [];
+  hives.forEach(function(h){
+    var rec = getHiveQuarantine(h.id);
+    if (rec) active.push({ hive: h, rec: rec });
   });
   if (!active.length) { hideAll(); return; }
 
   // Most urgent = closest end date
   active.sort(function(a,b){
-    return new Date(a.quarantineUntil).getTime() - new Date(b.quarantineUntil).getTime();
+    return new Date(a.rec.until).getTime() - new Date(b.rec.until).getTime();
   });
-  var urgent = active[0];
-  var endMs = new Date(urgent.quarantineUntil).getTime();
+  var urgentEntry = active[0];
+  var urgent = urgentEntry.hive;
+  urgent.quarantineUntil = urgentEntry.rec.until; // local shim for the rest of the function
+  var endMs = new Date(urgentEntry.rec.until).getTime();
   var daysRemaining = Math.ceil((endMs - todayMs) / 86400000);
   var dayText, isUrgent;
   if (daysRemaining <= 0) { dayText = 'ends today'; isUrgent = true; }
@@ -31747,6 +31784,161 @@ function getHoneyTotal(hiveId) {
 // the source nuc/box as a reusable empty container.
 // ═══════════════════════════════════════════════════════════════
 
+// HIV-93 build ad — quarantine state lives in its own localStorage key so
+// it survives pullFromSupabase (which wipes localStorage except for keys
+// in keysToKeep). hk_quarantine_v1 is listed there. Shape:
+//   { [hiveId]: { until: 'YYYY-MM-DD', startedAt: ISO, originalRow: '...' } }
+var QUARANTINE_KEY = 'hk_quarantine_v1';
+
+function loadQuarantines() {
+  try {
+    var raw = localStorage.getItem(QUARANTINE_KEY);
+    if (!raw) return {};
+    var obj = JSON.parse(raw);
+    return (obj && typeof obj === 'object') ? obj : {};
+  } catch(e) { return {}; }
+}
+
+function saveQuarantines(obj) {
+  try { localStorage.setItem(QUARANTINE_KEY, JSON.stringify(obj || {})); }
+  catch(e) { console.warn('saveQuarantines failed:', e); }
+}
+
+// Returns the quarantine record for a hive if it's still active (end date
+// hasn't passed). Auto-purges expired records on read. Returns null if
+// none active.
+function getHiveQuarantine(hiveId) {
+  if (!hiveId) return null;
+  var all = loadQuarantines();
+  var rec = all[hiveId];
+  if (!rec || !rec.until) return null;
+  var endMs = new Date(rec.until).getTime();
+  var today = new Date(); today.setHours(0,0,0,0);
+  if (endMs < today.getTime()) {
+    // Auto-expire — remove and restore row if any.
+    delete all[hiveId];
+    saveQuarantines(all);
+    if (rec.originalRow !== undefined) {
+      try { _restoreHiveRow(hiveId, rec.originalRow); } catch(e) {}
+    }
+    return null;
+  }
+  return rec;
+}
+
+// Set quarantine. opts: { startedAt, originalRow, moveToQuarantineRow }
+// When moveToQuarantineRow true, ensures a 'Quarantine' row exists in the
+// hive's apiary and moves the hive there. Saves the prior row as
+// originalRow so we can restore on clear.
+function setHiveQuarantine(hiveId, untilIso, opts) {
+  if (!hiveId || !untilIso) return;
+  opts = opts || {};
+  var all = loadQuarantines();
+  var rec = all[hiveId] || {};
+  rec.until = untilIso;
+  rec.startedAt = opts.startedAt || rec.startedAt || new Date().toISOString();
+  if (opts.originalRow !== undefined) rec.originalRow = opts.originalRow;
+
+  if (opts.moveToQuarantineRow) {
+    try {
+      var hives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives();
+      var hi = hives.findIndex(function(h){ return h.id === hiveId; });
+      if (hi >= 0) {
+        if (rec.originalRow === undefined) {
+          rec.originalRow = hives[hi].row || null;
+        }
+        _ensureQuarantineRowExists(hives[hi].apiaryId);
+        hives[hi].row = 'Quarantine';
+        saveHives(hives);
+      }
+    } catch(e) { console.warn('setHiveQuarantine row move failed:', e); }
+  }
+
+  all[hiveId] = rec;
+  saveQuarantines(all);
+}
+
+// Clear quarantine. Returns the cleared record (so callers can read
+// originalRow if they need it). Automatically restores the hive's row
+// to the original (unless restoreRow:false in opts).
+function clearHiveQuarantine(hiveId, opts) {
+  if (!hiveId) return null;
+  opts = opts || {};
+  var all = loadQuarantines();
+  var rec = all[hiveId];
+  if (!rec) return null;
+  delete all[hiveId];
+  saveQuarantines(all);
+  if (opts.restoreRow !== false && rec.originalRow !== undefined) {
+    try { _restoreHiveRow(hiveId, rec.originalRow); } catch(e) {}
+  }
+  return rec;
+}
+
+// Restore a hive's row to a previous value. Handles row=null (no row).
+function _restoreHiveRow(hiveId, originalRow) {
+  var hives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives();
+  var hi = hives.findIndex(function(h){ return h.id === hiveId; });
+  if (hi >= 0 && hives[hi].row === 'Quarantine') {
+    hives[hi].row = originalRow || null;
+    saveHives(hives);
+  }
+}
+
+// Ensure a 'Quarantine' row exists in the given apiary. Rows are stored
+// per-apiary under hk_rows_<apiaryId>. We bypass loadRows()/saveRows()
+// here because those use currentApiaryId implicitly and we want to
+// target a specific apiary (which is almost always the current one,
+// but being explicit avoids subtle bugs).
+function _ensureQuarantineRowExists(apiaryId) {
+  if (!apiaryId) return;
+  var key = 'hk_rows_' + apiaryId;
+  var stored;
+  try { stored = JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch(e) { stored = []; }
+  if (!Array.isArray(stored)) stored = [];
+  var has = stored.some(function(r){
+    return (r && (r.name === 'Quarantine' || r.id === 'Quarantine'));
+  });
+  if (!has) {
+    stored.push({ id: 'Quarantine', name: 'Quarantine' });
+    try { localStorage.setItem(key, JSON.stringify(stored)); } catch(e) {}
+    // Fire push to sync the row addition.
+    try { if (getUserId() && typeof pushRows === 'function') pushRows().catch(function(){}); }
+    catch(e) {}
+  }
+}
+
+// Migration — if any hive still has the legacy fields from build ab,
+// copy to the new store and null them. Idempotent; safe to run every load.
+function _migrateLegacyQuarantine() {
+  try {
+    var hives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives();
+    var all = loadQuarantines();
+    var changed = false;
+    hives.forEach(function(h){
+      if (h.quarantineUntil) {
+        if (!all[h.id]) {
+          all[h.id] = {
+            until: h.quarantineUntil,
+            startedAt: h.quarantineStartedAt || new Date().toISOString(),
+            originalRow: undefined
+          };
+          changed = true;
+        }
+        h.quarantineUntil = null;
+        h.quarantineStartedAt = null;
+      }
+    });
+    if (changed) {
+      saveQuarantines(all);
+      saveHives(hives);
+    }
+  } catch(e) { console.warn('_migrateLegacyQuarantine:', e); }
+}
+// Run once after a short delay so loadHives is ready.
+setTimeout(_migrateLegacyQuarantine, 1500);
+
 function _hiveOriginSwarmCatches(hiveId) {
   // Returns all swarm_catch records logged against this hive id
   // (sorted newest-first). A hive with swarm_catches is a container
@@ -32009,12 +32201,9 @@ function _confirmColonyDepartedInner() {
   hive.status = newStatus;
   hive.queenStatus = 'absent';
   hive.storesLevel = null;
-  // HIV-93 build ab — colony departed cancels any active quarantine.
-  if (hive.quarantineUntil) {
-    console.log('[confirmColonyDeparted] clearing quarantine on hive ' + hive.id);
-    hive.quarantineUntil = null;
-    hive.quarantineStartedAt = null;
-  }
+  // HIV-93 build ad — colony departed cancels any active quarantine
+  // and restores the hive's original row via the helper.
+  try { clearHiveQuarantine(hive.id); } catch(e) {}
   hive.notes = (hive.notes ? hive.notes + '\n' : '') + auditNote;
   hives[hi] = hive;
   saveHives(hives);
@@ -32231,18 +32420,19 @@ function _confirmPlaceSwarmInner() {
   // the stripped values rather than the swarm's actual queen/stores state.
   var srcQueen = source.queenStatus;
   var srcStores = source.storesLevel;
-  // HIV-93 build ab — also capture quarantine state to transfer to dest.
-  var srcQuarantineUntil = source.quarantineUntil || null;
-  var srcQuarantineStartedAt = source.quarantineStartedAt || null;
+  // HIV-93 build ad — capture quarantine state from the helper store
+  // so we can transfer it to dest. Source's row restoration is handled
+  // implicitly by clearHiveQuarantine below.
+  var _srcQRec = getHiveQuarantine(source.id);
 
   // 2. Source hive becomes an empty container — ready for reuse.
   //    Keep its swarm_catch history. Strip the colony-specific properties.
   source.status = 'empty';
   source.queenStatus = 'absent';
   source.storesLevel = null;
-  // HIV-93 build ab — quarantine moves with the colony; strip from source.
-  source.quarantineUntil = null;
-  source.quarantineStartedAt = null;
+  // HIV-93 build ad — clear quarantine from source (will also restore
+  // source's original row to where the empty container should live).
+  try { clearHiveQuarantine(source.id); } catch(e) {}
   source.notes = (source.notes || '') +
     (source.notes ? '\n' : '') +
     'Swarm placed in ' + destName + ' on ' + new Date(now).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + '.';
@@ -32253,12 +32443,16 @@ function _confirmPlaceSwarmInner() {
   dest.status = 'active';
   dest.queenStatus = srcQueen || dest.queenStatus || 'unknown';
   dest.storesLevel = srcStores || dest.storesLevel || 'low';
-  // HIV-93 build ab — transfer quarantine to dest. The colony being
-  // quarantined is now in dest, so the reminder follows it.
-  if (srcQuarantineUntil) {
-    dest.quarantineUntil = srcQuarantineUntil;
-    dest.quarantineStartedAt = srcQuarantineStartedAt;
-    console.log('[confirmPlaceSwarm] quarantine transferred to dest ' + dest.id + ' (until ' + srcQuarantineUntil + ')');
+  // HIV-93 build ad — transfer quarantine to dest via the helper.
+  // Dest is NOT moved to the Quarantine row (it's a placed colony with
+  // its own physical position in the apiary); the chip + home banner
+  // surface the state.
+  if (_srcQRec && _srcQRec.until) {
+    setHiveQuarantine(dest.id, _srcQRec.until, {
+      startedAt: _srcQRec.startedAt,
+      moveToQuarantineRow: false
+    });
+    console.log('[confirmPlaceSwarm] quarantine transferred to dest ' + dest.id + ' (until ' + _srcQRec.until + ')');
   }
   // hiveType marker — colony is now "from-swarm" origin at this position
   dest.hiveType = dest.hiveType || 'swarm_prime';
@@ -32594,10 +32788,9 @@ function _saveSwarmCatchInner() {
     } catch(e) { console.warn('reuse-hive status update failed:', e); }
   }
 
-  // HIV-93 build ab — quarantine reminder. If toggled on, write the
-  // end date onto the hive. Applies whether the hive was auto-created
-  // or reused. quarantineUntil is the date (no time) the colony is
-  // safe to inspect from. quarantineStartedAt is for diagnostics.
+  // HIV-93 build ad — quarantine via the helper (stored in hk_quarantine_v1,
+  // survives cloud pulls) and move the new nuc to a 'Quarantine' row in
+  // the apiary so it sits visually with other quarantined colonies.
   try {
     var qToggle = document.getElementById('swarm-quarantine-toggle');
     if (qToggle && qToggle.checked) {
@@ -32607,14 +32800,11 @@ function _saveSwarmCatchInner() {
       var catchDateMs = new Date(date).getTime();
       var endMs = catchDateMs + qDays * 86400000;
       var endIso = new Date(endMs).toISOString().split('T')[0]; // YYYY-MM-DD
-      var hivesQ = loadHives(true);
-      var hiQ = hivesQ.findIndex(function(h){ return h.id === hiveId; });
-      if (hiQ >= 0) {
-        hivesQ[hiQ].quarantineUntil = endIso;
-        hivesQ[hiQ].quarantineStartedAt = new Date().toISOString();
-        saveHives(hivesQ);
-        console.log('[saveSwarmCatch] quarantine set: ' + endIso + ' (' + qDays + 'd) on hive ' + hiveId);
-      }
+      setHiveQuarantine(hiveId, endIso, {
+        startedAt: new Date().toISOString(),
+        moveToQuarantineRow: true
+      });
+      console.log('[saveSwarmCatch] quarantine set: ' + endIso + ' (' + qDays + 'd) on hive ' + hiveId + ', moved to Quarantine row');
     }
   } catch(e) { console.warn('quarantine set failed:', e); }
 
@@ -33351,7 +33541,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build ac';
+var HIVEKEEPER_BUILD = '26 May 2026 build ad';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -34666,6 +34856,8 @@ async function pullFromSupabase() {
         'hk_ref_code','hk_referral_bonus',
         'hk_last_screen','hk_screen_diag','hk_trial_start',
         'hk_apiary_view_mode','hk_wake_lock_intro_suppress',
+        // HIV-93 build ad — quarantine state survives cloud pulls.
+        'hk_quarantine_v1',
         // 7 May 2026 Phase 4ce-13o — haptic feedback preference must survive
         // pulls or every sign-in resets the user's choice.
         'hk_haptic_enabled',
@@ -42685,17 +42877,15 @@ function startInspection() {
 
 function startInspectionFromHive() {
   // currentHiveId already set from viewHive()
-  // HIV-93 build ab — soft warning if this hive is in quarantine.
-  // Keeper can choose to inspect anyway (overrides + implicitly clears
-  // quarantine via the saveInspection lift) or wait.
+  // HIV-93 build ad — soft warning if this hive is in quarantine.
+  // getHiveQuarantine returns null if expired (and auto-purges).
   if (currentHiveId) {
     try {
-      var _qHive = loadHives().find(function(h){ return h.id === currentHiveId; });
-      if (_qHive && _qHive.quarantineUntil) {
-        var _qEndMs = new Date(_qHive.quarantineUntil).getTime();
-        var _qToday = new Date(); _qToday.setHours(0,0,0,0);
-        if (_qEndMs >= _qToday.getTime()) {
-          openQuarantineWarning(_qHive);
+      var _qRec = getHiveQuarantine(currentHiveId);
+      if (_qRec) {
+        var _qHive = loadHives().find(function(h){ return h.id === currentHiveId; });
+        if (_qHive) {
+          openQuarantineWarning(_qHive, _qRec);
           return; // wait for user choice
         }
       }
@@ -42715,11 +42905,14 @@ function _proceedToInspectScreen() {
   }, 100);
 }
 
-function openQuarantineWarning(hive) {
+function openQuarantineWarning(hive, rec) {
+  // rec param added in build ad; fall back to lookup if not provided.
+  if (!rec) rec = getHiveQuarantine(hive.id);
+  if (!rec) return; // nothing to warn about
   var body = document.getElementById('quarantine-warning-body');
   if (body) {
-    var endStr = new Date(hive.quarantineUntil).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
-    var endMs = new Date(hive.quarantineUntil).getTime();
+    var endStr = new Date(rec.until).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    var endMs = new Date(rec.until).getTime();
     var today = new Date(); today.setHours(0,0,0,0);
     var daysRemaining = Math.ceil((endMs - today.getTime()) / 86400000);
     var daysText = daysRemaining === 0 ? 'today' : daysRemaining === 1 ? 'tomorrow' : daysRemaining + ' days';
