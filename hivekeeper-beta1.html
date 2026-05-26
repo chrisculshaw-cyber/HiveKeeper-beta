@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526m">
+  <meta name="app-version" content="20260526n">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -3779,8 +3779,21 @@ input[type="checkbox"].hk-chk:checked::after {
 
       <div style="margin-bottom:12px;">
         <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Hive to put in</label>
-        <select id="swarm-hive-select" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;">
+        <select id="swarm-hive-select" onchange="onSwarmHiveSelectChange()" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;">
           <option value="">-- Create new hive automatically --</option>
+        </select>
+      </div>
+
+      <div id="swarm-housing-wrap" style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Currently housed in</label>
+        <select id="swarm-housing" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;box-sizing:border-box;background:white;">
+          <option value="nuc" selected>Nuc box</option>
+          <option value="national">National brood box</option>
+          <option value="commercial">Commercial brood box</option>
+          <option value="langstroth">Langstroth brood box</option>
+          <option value="wbc">WBC</option>
+          <option value="top-bar">Top bar</option>
+          <option value="warre">Warré</option>
         </select>
       </div>
 
@@ -3795,6 +3808,11 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
         <span style="font-size:14px;color:var(--text);font-weight:600;">Queen seen</span>
         <input type="checkbox" id="swarm-queen" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Photo (optional)</label>
+        <div id="swarm-photo-area"></div>
       </div>
 
       <div style="margin-bottom:20px;">
@@ -31353,6 +31371,84 @@ function getHoneyTotal(hiveId) {
 // SWARM CATCH LOGGING
 // ═══════════════════════════════════════════════
 
+// 26 May 2026 build n — HIV-74b: swarm photo capture + housing picker.
+// Photo carried from the swarm modal into the synthesised inspection on
+// the destination hive. Single photo to keep collection UX fast; can
+// expand to multi-photo later if Chris wants the inspection screen's
+// full strip pattern here.
+var _swarmPhoto = null; // { dataUrl, uploadPromise, url } or null
+
+function _swarmAddPhoto() {
+  // Match the existing addPhoto() gating — Pro/Commercial/founder only.
+  if (typeof getUserTier === 'function' && getUserTier() === 'free' &&
+      (typeof isFoundingBeekeeper !== 'function' || !isFoundingBeekeeper())) {
+    if (typeof showPaywallNudge === 'function' &&
+        showPaywallNudge('photos', 'Photos are part of Pro. Tap to upgrade.')) return;
+    if (typeof showUpgradeModal === 'function') showUpgradeModal('photos');
+    return;
+  }
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,.jpg,.jpeg,.png,.heic,.heif';
+  // On mobile, default to rear camera. Desktop ignores `capture`.
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+    input.capture = 'environment';
+  }
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.onchange = function(e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) { document.body.removeChild(input); return; }
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      _swarmPhoto = { dataUrl: ev.target.result, uploadPromise: null, url: null };
+      _swarmRenderPhotoArea();
+    };
+    reader.readAsDataURL(file);
+    document.body.removeChild(input);
+  };
+  input.click();
+}
+
+function _swarmRemovePhoto() {
+  _swarmPhoto = null;
+  _swarmRenderPhotoArea();
+}
+
+function _swarmRenderPhotoArea() {
+  var area = document.getElementById('swarm-photo-area');
+  if (!area) return;
+  if (_swarmPhoto && _swarmPhoto.dataUrl) {
+    area.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--wax);' +
+      'border-radius:var(--rs);background:white;">' +
+        '<img src="' + _swarmPhoto.dataUrl + '" style="width:64px;height:64px;object-fit:cover;' +
+        'border-radius:8px;flex-shrink:0;">' +
+        '<div style="flex:1;font-size:12px;color:var(--text-l);">Photo ready &mdash; will attach to inspection on save</div>' +
+        '<button onclick="_swarmRemovePhoto()" style="background:transparent;border:1px solid var(--wax);' +
+        'border-radius:8px;padding:6px 10px;font-size:12px;color:var(--text);cursor:pointer;' +
+        'font-family:\'Syne\',sans-serif;">Remove</button>' +
+      '</div>';
+  } else {
+    area.innerHTML =
+      '<div onclick="_swarmAddPhoto()" style="padding:16px;border:1.5px dashed var(--wax);' +
+      'border-radius:var(--rs);text-align:center;cursor:pointer;background:var(--cream);">' +
+        '<div style="font-size:22px;">📷</div>' +
+        '<div style="font-size:12px;color:var(--text-l);margin-top:4px;font-weight:600;">Tap to capture or upload</div>' +
+      '</div>';
+  }
+}
+
+// 26 May 2026 build n — toggle housing picker visibility based on hive-select.
+// Only relevant when auto-creating a new hive; if user picks an existing hive,
+// that hive already has its own boxType and the picker is hidden.
+function onSwarmHiveSelectChange() {
+  var sel = document.getElementById('swarm-hive-select');
+  var wrap = document.getElementById('swarm-housing-wrap');
+  if (!sel || !wrap) return;
+  wrap.style.display = (sel.value === '') ? 'block' : 'none';
+}
+
 function openSwarmCatchModal() {
   var hives = loadHives();
   var hiveOptions = hives.map(function(h){
@@ -31371,6 +31467,13 @@ function openSwarmCatchModal() {
   var qcb = document.getElementById('swarm-queen');
   if (qcb) qcb.checked = false;
   _renderSwarmQueenToggle();
+
+  // 26 May 2026 build n — reset housing picker default and photo state.
+  var housing = document.getElementById('swarm-housing');
+  if (housing) housing.value = 'nuc';
+  _swarmPhoto = null;
+  _swarmRenderPhotoArea();
+  onSwarmHiveSelectChange();
 
   openModalEl('modal-swarm-catch');
 }
@@ -31409,6 +31512,11 @@ function saveSwarmCatch() {
   var queenSeen = document.getElementById('swarm-queen').checked;
   var notes = document.getElementById('swarm-notes').value.trim();
   var source = document.getElementById('swarm-source').value;
+  // 26 May 2026 build n — HIV-74b. Housing picker drives the auto-created
+  // hive's boxType so swarm catches visually render correctly (nuc by default,
+  // not the National brood that the previous hardcoded 'brood' value mapped to).
+  var housingEl = document.getElementById('swarm-housing');
+  var housing = (housingEl && housingEl.value) ? housingEl.value : 'nuc';
 
   if (!date) { showToast('Please set a date'); return; }
 
@@ -31424,8 +31532,13 @@ function saveSwarmCatch() {
       id: uid(),
       name: 'Swarm catch ' + new Date(date).toLocaleDateString('en-GB', {day:'numeric',month:'short'}),
       status: 'active',
-      hiveType: 'national',
-      boxType: 'brood',
+      // 26 May 2026 build n — HIV-74b. Was hardcoded hiveType:'national',
+      // boxType:'brood' (and 'brood' isn't even in the canonical boxTypes list,
+      // so render fell through to National brood look). Now driven by the
+      // housing picker so swarm catches render as nucs (the common case for
+      // BBKA collectors) or as the chosen brood-box variant.
+      hiveType: (housing === 'nuc') ? 'nuc' : 'national',
+      boxType: housing,
       broodBoxes: 1,
       supers: 0,
       queenStatus: queenSeen ? 'queen present' : 'unknown',
@@ -31494,8 +31607,12 @@ function saveSwarmCatch() {
   // creation path uses uid(); this one slipped through. Surfaced via
   // Dave's beta sync-issues report.
   var inspections = loadInspections();
-  inspections.push({
-    id: uid(),
+  // 26 May 2026 build n — HIV-74b. Capture inspection id BEFORE push so we
+  // can retrospectively attach the uploaded photo URL once the upload
+  // resolves (mirrors the addPhotoToStrip retro-attach pattern at ~L14987).
+  var inspId = uid();
+  var inspRecord = {
+    id: inspId,
     hiveId: hiveId,
     inspectedAt: new Date(date).getTime(),
     inspectedBy: 'HiveKeeper',
@@ -31504,10 +31621,56 @@ function saveSwarmCatch() {
     broodFrames: parseInt(frames) || 0,
     storesLevel: 'low',
     swarmRisk: 'low',
-    healthScore: 60
-  });
+    healthScore: 60,
+    photos: [],
+    photoUrls: [],
+    photoLabels: []
+  };
+
+  // 26 May 2026 build n — HIV-74b. If the user attached a swarm photo,
+  // embed the dataUrl into inspection.photos immediately (so it renders
+  // even offline) and fire the cloud upload async. When upload resolves,
+  // retrospectively attach the URL to photoUrls + photoLabels so the
+  // synced record points to cloud storage rather than carrying the blob.
+  if (_swarmPhoto && _swarmPhoto.dataUrl) {
+    var swarmPhotoLabel = 'Swarm at collection';
+    inspRecord.photos.push({
+      dataUrl: _swarmPhoto.dataUrl,
+      analysed: false,
+      url: null,
+      label: swarmPhotoLabel
+    });
+    try {
+      if (typeof uploadSinglePhoto === 'function' && typeof getUserId === 'function' && getUserId()) {
+        var capturedDataUrl = _swarmPhoto.dataUrl;
+        uploadSinglePhoto(capturedDataUrl, hiveId, 0, swarmPhotoLabel).then(function(url) {
+          if (!url) return;
+          var allInsp = loadInspections();
+          var rec = allInsp.find(function(i){ return i.id === inspId; });
+          if (!rec) return;
+          rec.photoUrls = rec.photoUrls || [];
+          if (rec.photoUrls.indexOf(url) === -1) {
+            rec.photoUrls.push(url);
+            rec.photoLabels = rec.photoLabels || [];
+            rec.photoLabels.push(swarmPhotoLabel);
+            // Also update the in-memory photo entry's .url so the local
+            // viewer can switch from dataUrl to cloud URL.
+            if (rec.photos && rec.photos.length) rec.photos[0].url = url;
+            saveInspections(allInsp);
+            if (typeof pushInspections === 'function') pushInspections().catch(function(){});
+            if (window._hkDiag) console.log('[swarm-photo] retro-attached url to inspection', inspId);
+          }
+        }).catch(function(e){ console.warn('swarm photo upload failed:', e); });
+      }
+    } catch (e) { console.warn('swarm photo upload setup failed:', e); }
+  }
+
+  inspections.push(inspRecord);
   saveInspections(inspections);
-  
+
+  // Reset photo state so the next swarm capture starts clean.
+  _swarmPhoto = null;
+
   closeModalEl('modal-swarm-catch');
   showToast('🐝 Swarm catch logged');
   // 7 May 2026 Phase 4ce-13p — Tier 1 confirmation haptic.
@@ -32019,7 +32182,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build m';
+var HIVEKEEPER_BUILD = '26 May 2026 build n';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
