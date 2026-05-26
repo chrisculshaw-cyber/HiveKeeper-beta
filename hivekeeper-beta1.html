@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526a">
+  <meta name="app-version" content="20260526b">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -29543,6 +29543,50 @@ function encodePlusCode(lat, lng, codeLength) {
   }
 }
 
+// 26 May 2026 build b — Centralised external-URL opener that fixes voice-SOS
+// silent-fail. The Median wrapper (and Android WebView generally) suppresses
+// window.open() and synthetic <a>.click() when there is no user-gesture context
+// on the call stack — which is the case for any voice-triggered action, since
+// the speech recognition callback runs async from any user input. These methods
+// fail SILENTLY: no exception, just no intent fired. The previous three-tier
+// fallback tried them first and set success=true on no-throw, so the Median
+// bridge (which works in any context) was never reached. New priority order:
+// 1) Median bridge — works gesture or async, routes tel:/sms:/https: natively
+// 2) Synthetic anchor click — web-PWA fallback for users not in Median
+// 3) location.href — last resort, loses HiveKeeper foreground state
+function _openExternalUrl(url, contextLabel) {
+  contextLabel = contextLabel || "external URL";
+  // Method 1: Median JS bridge — works in any execution context.
+  if (window.median && window.median.share && typeof window.median.share.openExternalUrl === "function") {
+    try {
+      window.median.share.openExternalUrl({ url: url });
+      console.log("[" + contextLabel + "] opened via Median bridge:", url);
+      return true;
+    } catch (e) { console.warn("[" + contextLabel + "] median bridge threw:", e); }
+  }
+  // Method 2: synthetic anchor click — works only in user-gesture context.
+  try {
+    var link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("target", "_system");
+    link.style.position = "absolute";
+    link.style.left = "-9999px";
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(function() { try { document.body.removeChild(link); } catch(e) {} }, 200);
+    console.log("[" + contextLabel + "] opened via synthetic anchor:", url);
+    return true;
+  } catch (e) { console.warn("[" + contextLabel + "] synthetic anchor threw:", e); }
+  // Method 3: last resort — direct navigation.
+  try {
+    window.location.href = url;
+    return true;
+  } catch (e) {
+    console.error("[" + contextLabel + "] all open methods failed:", e);
+    return false;
+  }
+}
+
 // 25 May 2026 build m — SOS press-hold interaction model.
 // Tap (release < 1500ms): fires triggerSOS() — message path (Option B: one channel only).
 // Long-press (held >= 1500ms): fires sosCallContact() — dials emergency contact via the
@@ -29610,31 +29654,11 @@ function sosCallContact() {
   }
   showToast("\uD83D\uDCDE Calling emergency contact...");
   var sanitised = String(num).replace(/[^0-9+]/g, "");
-  var telUrl = "tel:" + sanitised;
-  var success = false;
-  // Method 1: synthetic anchor click (most reliable in Median WebView)
-  try {
-    var link = document.createElement("a");
-    link.href = telUrl;
-    link.setAttribute("target", "_system");
-    link.style.position = "absolute";
-    link.style.left = "-9999px";
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(function() { try { document.body.removeChild(link); } catch(e){} }, 200);
-    success = true;
-  } catch (e) { console.warn("SOS call: synthetic anchor click failed:", e); }
-  // Method 2: Median JS bridge fallback
-  if (!success && window.median && window.median.share && typeof window.median.share.openExternalUrl === "function") {
-    try {
-      window.median.share.openExternalUrl({ url: telUrl });
-      success = true;
-    } catch (e) { console.warn("SOS call: median bridge failed:", e); }
-  }
-  // Method 3: classic location.href as last resort
-  if (!success) {
-    try { window.location.href = telUrl; } catch (e) { console.error("SOS call: all methods failed", e); }
-  }
+  // 26 May 2026 build b — single call to _openExternalUrl (Median bridge first).
+  // Press-hold path is user-gesture context so synthetic anchor would work
+  // here too, but the helper consolidates logic and is identical-or-better
+  // on every path.
+  _openExternalUrl("tel:" + sanitised, "SOS call (hold)");
 }
 
 function triggerSOS() {
@@ -29758,20 +29782,21 @@ function triggerSOS() {
 }
 
 function sendSOSMessages(contact, message) {
-  // 26 May 2026 build o — Option B with WhatsApp-priority. WhatsApp first
-  // because that is the channel Chris and most UK beekeepers actually use;
-  // SMS as fallback only when no WhatsApp configured. Still one channel per
-  // press (no dual-fire focus-steal race).
+  // 26 May 2026 build b — Option B with WhatsApp-priority, now routed through
+  // _openExternalUrl so the voice-trigger path actually fires (was silently
+  // blocked by WebView gesture gate). WhatsApp first, SMS as fallback.
   if (contact.whatsapp) {
     var cleanWA = contact.whatsapp.replace(/[\s\-\(\)]/g, '');
     if (cleanWA.startsWith('0')) cleanWA = '44' + cleanWA.substring(1);
-    window.open('https://wa.me/' + cleanWA + '?text=' + encodeURIComponent(message), '_blank');
+    var waUrl = 'https://wa.me/' + cleanWA + '?text=' + encodeURIComponent(message);
+    _openExternalUrl(waUrl, 'SOS WhatsApp');
     showToast('\uD83D\uDEA8 SOS sent via WhatsApp \u2713');
     return;
   }
   if (contact.number) {
     var cleanSMS = contact.number.replace(/\s/g, '');
-    window.open('sms:' + cleanSMS + '?body=' + encodeURIComponent(message), '_blank');
+    var smsUrl = 'sms:' + cleanSMS + '?body=' + encodeURIComponent(message);
+    _openExternalUrl(smsUrl, 'SOS SMS');
     showToast('\uD83D\uDEA8 SOS sent via SMS \u2713');
     return;
   }
@@ -31825,7 +31850,7 @@ var POLICY_VERSION = '2.0';
 // Single source of truth for the build version string. Update this on every
 // release. Both the auth-screen stamp and the Settings build chip read it.
 // Format: "HH:MM DD Month YYYY · Phase X — short description"
-var HIVEKEEPER_BUILD = '26 May 2026 build a';
+var HIVEKEEPER_BUILD = '26 May 2026 build b';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35303,38 +35328,13 @@ function _sosResolvePrompt(action) {
       return;
     }
     voiceFeedback('Calling emergency contact');
-    // 25 May 2026 build g — replaced window.location.href = 'tel:...' with
-    // the <a> element click pattern, which Median webview routes through to
-    // the native dialer reliably. (window.location.href was being silently
-    // swallowed.) Also tries window.median.share.openExternalUrl as a final
-    // fallback if the synthetic click is intercepted.
+    // 26 May 2026 build b — uses _openExternalUrl (Median bridge first) so
+    // voice-triggered call actually fires. Previous synthetic-anchor-first
+    // pattern silently failed when no user-gesture context was on the stack,
+    // which is always the case for speech-recognition callbacks.
     var sanitised = num.replace(/[^0-9+]/g, '');
     setTimeout(function() {
-      var telUrl = 'tel:' + sanitised;
-      var success = false;
-      // Method 1: synthetic anchor click (most reliable in WebViews)
-      try {
-        var link = document.createElement('a');
-        link.href = telUrl;
-        link.setAttribute('target', '_system');
-        link.style.position = 'absolute';
-        link.style.left = '-9999px';
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(function() { try { document.body.removeChild(link); } catch(e){} }, 200);
-        success = true;
-      } catch (e) { console.warn('SOS call: synthetic anchor click failed:', e); }
-      // Method 2: Median JS bridge fallback
-      if (!success && window.median && window.median.share && typeof window.median.share.openExternalUrl === 'function') {
-        try {
-          window.median.share.openExternalUrl({ url: telUrl });
-          success = true;
-        } catch (e) { console.warn('SOS call: median bridge failed:', e); }
-      }
-      // Method 3: classic location.href as last resort
-      if (!success) {
-        try { window.location.href = telUrl; } catch (e) { console.error('SOS call: all methods failed', e); }
-      }
+      _openExternalUrl('tel:' + sanitised, 'SOS call (voice)');
     }, 600); // tiny delay so the TTS announces before the dialer opens
   } else if (action === 'message') {
     voiceFeedback('Sending S O S');
