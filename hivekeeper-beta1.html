@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526r">
+  <meta name="app-version" content="20260526s">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -31677,6 +31677,8 @@ function setColonyDepartedReason(reason) {
 }
 
 function confirmColonyDeparted() {
+  try { if (typeof hkVibrate === 'function') hkVibrate([20]); } catch(_e) {}
+  console.log('[confirmColonyDeparted] tap', new Date().toISOString());
   if (!_colonyDepartedReason) { showToast('Pick what happened first'); return; }
   if (!currentHiveId) { showToast('No hive selected'); return; }
   var reason = _colonyDepartedReason;
@@ -31871,6 +31873,8 @@ function _selectPlaceDest(hiveId) {
 }
 
 function confirmPlaceSwarm() {
+  try { if (typeof hkVibrate === 'function') hkVibrate([20]); } catch(_e) {}
+  console.log('[confirmPlaceSwarm] tap', new Date().toISOString());
   if (!_selectedPlaceDestId) { showToast('Pick a destination hive'); return; }
   var sourceId = currentHiveId;
   var destId = _selectedPlaceDestId;
@@ -32152,6 +32156,12 @@ function _renderSwarmQueenToggle() {
 }
 
 function saveSwarmCatch() {
+  // 26 May 2026 build s — immediate tap feedback (haptic + log) BEFORE
+  // any logic runs. If the save subsequently fails, the user at least
+  // knows the tap registered. The debug overlay captures the log so
+  // field diagnosis is possible without devtools.
+  try { if (typeof hkVibrate === 'function') hkVibrate([20]); } catch(_e) {}
+  console.log('[saveSwarmCatch] tap', new Date().toISOString());
   var date = document.getElementById('swarm-date').value;
   var location = document.getElementById('swarm-location').value.trim();
   var hiveId = document.getElementById('swarm-hive-select').value;
@@ -32340,12 +32350,14 @@ function saveSwarmCatch() {
 
   inspections.push(inspRecord);
   saveInspections(inspections);
+  console.log('[saveSwarmCatch] inspections saved, closing modal');
 
   // Reset photo state so the next swarm capture starts clean.
   _swarmPhoto = null;
 
   closeModalEl('modal-swarm-catch');
   showToast('🐝 Swarm catch logged');
+  console.log('[saveSwarmCatch] done');
   // 7 May 2026 Phase 4ce-13p — Tier 1 confirmation haptic.
   hkVibrate([40, 60, 40]);
   renderDashboard();
@@ -32855,7 +32867,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build r';
+var HIVEKEEPER_BUILD = '26 May 2026 build s';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
