@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526ag">
+  <meta name="app-version" content="20260526ah">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2816,6 +2816,13 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
     </div>
+    <!-- HIV-93 build ah — Quarantine section. Moved above Equipment &
+         Honey (prime real estate just below Priority alerts) because
+         it's action-critical. All tiers, not Pro-gated. -->
+    <div id="home-quarantine-section" style="display:none;">
+      <div class="section-head" style="margin-top:14px;"><div class="section-title">Quarantine</div></div>
+      <div id="home-quarantine-banner"></div>
+    </div>
     <!-- 29 April 2026 Phase 4be — Equipment & Honey replaces what used to be
          the Active hives section. The old section duplicated the Apiary screen
          and added little; the inventory dashboard surfaces real value here.
@@ -2841,13 +2848,6 @@ input[type="checkbox"].hk-chk:checked::after {
     <div id="home-te-section" style="display:none;">
       <div class="section-head" style="margin-top:14px;"><div class="section-title">Varroa &amp; Treatments</div></div>
       <div id="home-te-banner"></div>
-    </div>
-    <!-- HIV-93 build ab — Quarantine section. Same shape as Queen Rearing
-         and Varroa &amp; Treatments. renderHomeQuarantineBanner() toggles
-         display. All tiers (not Pro-gated — core safety feature). -->
-    <div id="home-quarantine-section" style="display:none;">
-      <div class="section-head" style="margin-top:14px;"><div class="section-title">Quarantine</div></div>
-      <div id="home-quarantine-banner"></div>
     </div>
     <div class="section-head" style="margin-top:14px;"><div class="section-title">Reports</div></div>
     <div class="hive-scroll" style="grid-template-columns:repeat(3,1fr);">
@@ -14044,6 +14044,7 @@ function renderHiveDetail(){
   // render the catch as a hero section above the timeline. Suppresses the
   // redundant swarm-catch timeline card later in this function.
   try { renderSwarmHeroSection(hive); } catch(e) { console.warn('[swarm-hero]:', e); }
+  try { renderNucHistorySection(hive); } catch(e) { console.warn('[nuc-history]:', e); }
 
   // Timeline
   const tlEl = document.getElementById('hive-timeline');
@@ -31977,6 +31978,89 @@ function _migrateLegacyQuarantine() {
 // Run once after a short delay so loadHives is ready.
 setTimeout(_migrateLegacyQuarantine, 1500);
 
+// HIV-74 build ah — session archive helper. Snapshots the current
+// occupation of a container into hive.pastSessions[] so when a colony
+// departs/transfers, the next occupant starts fresh and the previous
+// inspections + metadata are preserved as read-only history.
+//
+// opts: {
+//   endReason: 'given' | 'absconded' | 'died' | 'transferred' | 'unknown',
+//   endedAt: ms timestamp,
+//   recipient: { name, email } | null (for 'given'),
+//   cause: string | null (for 'died'),
+//   destinationHiveId: string | null (for 'transferred'),
+//   removeInspections: bool (default true — set false for 'transferred'
+//     where inspections move to dest rather than disappear)
+// }
+//
+// Returns the session record (also pushed onto hive.pastSessions).
+function _archiveCurrentSession(hive, opts) {
+  if (!hive || !hive.id) return null;
+  opts = opts || {};
+  var endReason = opts.endReason || 'unknown';
+  var endedAt = opts.endedAt || Date.now();
+  var removeFromStore = opts.removeInspections !== false;
+
+  var allInsps = loadInspections();
+  var hiveInsps = allInsps
+    .filter(function(i){ return i.hiveId === hive.id; })
+    .sort(function(a,b){ return (a.inspectedAt||0) - (b.inspectedAt||0); });
+
+  // Identify catch info from the earliest 'Swarm caught.' inspection.
+  var catchInsp = hiveInsps.find(function(i){
+    return i.notes && i.notes.indexOf('Swarm caught.') === 0;
+  });
+  var catchInfo = null;
+  if (catchInsp) {
+    // Parse the notes string we synthesised in saveSwarmCatch.
+    var locMatch = catchInsp.notes.match(/Location:\s*([^.]+)/);
+    var framesMatch = catchInsp.notes.match(/Frames:\s*([^.]+)/);
+    var sourceMatch = catchInsp.notes.match(/Source:\s*([^.]+)/);
+    catchInfo = {
+      date: catchInsp.inspectedAt,
+      location: locMatch ? locMatch[1].trim() : null,
+      frames: framesMatch ? framesMatch[1].trim() : null,
+      source: sourceMatch ? sourceMatch[1].trim() : null,
+      queenSeen: catchInsp.queenSeen || false
+    };
+  }
+
+  var session = {
+    id: (typeof uid === 'function') ? uid() : ('s_' + Date.now()),
+    startedAt: catchInsp ? catchInsp.inspectedAt : (hiveInsps[0] ? hiveInsps[0].inspectedAt : endedAt),
+    endedAt: endedAt,
+    endReason: endReason,
+    catchInfo: catchInfo,
+    inspections: hiveInsps  // full embedded records — read-only snapshot
+  };
+  if (opts.recipient) session.recipient = opts.recipient;
+  if (opts.cause) session.cause = opts.cause;
+  if (opts.destinationHiveId) session.destinationHiveId = opts.destinationHiveId;
+
+  // Push to hive.pastSessions (mutates the passed hive ref)
+  hive.pastSessions = (hive.pastSessions || []).concat([session]);
+
+  if (removeFromStore && hiveInsps.length > 0) {
+    var keptIds = {};
+    hiveInsps.forEach(function(i){ keptIds[i.id] = true; });
+    var remaining = allInsps.filter(function(i){ return !keptIds[i.id]; });
+    saveInspections(remaining);
+    // Best-effort: queue deletes for Supabase so cloud also clears.
+    // Inspection rows survive in the past_sessions JSON on the hive.
+    try {
+      if (typeof getUserId === 'function' && getUserId() && typeof queueOfflineSave === 'function') {
+        // Note: queueOfflineSave is for upserts; cloud-side delete needs
+        // a separate path. For now we leave the rows in the cloud and
+        // rely on the local archive — they re-appear if pull happens
+        // before we add a delete-queue. Flagged for follow-up.
+      }
+    } catch(e) {}
+  }
+
+  console.log('[_archiveCurrentSession] archived ' + hiveInsps.length + ' inspections on hive ' + hive.id + ' (reason: ' + endReason + ')');
+  return session;
+}
+
 function _hiveOriginSwarmCatches(hiveId) {
   // Returns all swarm_catch records logged against this hive id
   // (sorted newest-first). A hive with swarm_catches is a container
@@ -31985,6 +32069,105 @@ function _hiveOriginSwarmCatches(hiveId) {
   return loadSwarmCatches(hiveId).slice().sort(function(a,b){
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
+}
+
+// HIV-74 build ah — Past occupants section. Lists hive.pastSessions[]
+// as collapsible entries with summary line + full inspection details
+// inside an expandable block. Read-only history; the active colony's
+// data lives in the main timeline above.
+function renderNucHistorySection(hive) {
+  var host = document.getElementById('hive-detail-content');
+  if (!host) return;
+  var sessions = (hive.pastSessions || []).slice();
+  if (!sessions.length) return;
+
+  // Newest first
+  sessions.sort(function(a,b){ return (b.endedAt||0) - (a.endedAt||0); });
+
+  function reasonLabel(r) {
+    return {
+      'given': '🚚 Given away',
+      'absconded': '🪽 Absconded',
+      'died': '💀 Died',
+      'transferred': '➡️ Transferred to another container',
+      'unknown': '📦 Auto-archived on reuse'
+    }[r] || r;
+  }
+  function fmtDate(ms) {
+    if (!ms) return '—';
+    try { return new Date(ms).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}); }
+    catch(e) { return String(ms); }
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]; }); }
+
+  var html = '<div style="margin:18px 16px 0;">'
+    + '<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Nuc history &middot; ' + sessions.length + ' past occupant' + (sessions.length === 1 ? '' : 's') + '</div>';
+
+  sessions.forEach(function(s, idx){
+    var startStr = fmtDate(s.startedAt);
+    var endStr = fmtDate(s.endedAt);
+    var insps = (s.inspections || []).slice().sort(function(a,b){ return (a.inspectedAt||0) - (b.inspectedAt||0); });
+    var summary = reasonLabel(s.endReason)
+      + ' &middot; ' + startStr + ' → ' + endStr
+      + ' &middot; ' + insps.length + ' inspection' + (insps.length === 1 ? '' : 's');
+
+    html += '<details style="margin-bottom:8px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);">'
+      + '<summary style="padding:10px 12px;cursor:pointer;font-size:13px;color:var(--text);user-select:none;">' + summary + '</summary>'
+      + '<div style="padding:0 12px 12px 12px;">';
+
+    // Catch info
+    if (s.catchInfo) {
+      html += '<div style="font-size:12px;color:var(--text-m);margin-top:8px;padding:8px;background:white;border-radius:6px;">'
+        + '<strong>Catch:</strong> ' + fmtDate(s.catchInfo.date)
+        + (s.catchInfo.location ? ' &middot; ' + esc(s.catchInfo.location) : '')
+        + (s.catchInfo.source ? ' &middot; source: ' + esc(s.catchInfo.source) : '')
+        + (s.catchInfo.frames ? ' &middot; ' + esc(s.catchInfo.frames) + ' frames' : '')
+        + '</div>';
+    }
+
+    // Recipient (give-away)
+    if (s.endReason === 'given' && s.recipient) {
+      var rname = s.recipient.name || '';
+      var remail = s.recipient.email || '';
+      var rstr = [rname, remail].filter(Boolean).join(' &middot; ') || 'unspecified';
+      html += '<div style="font-size:12px;color:var(--text-m);margin-top:6px;padding:8px;background:white;border-radius:6px;"><strong>Given to:</strong> ' + esc(rstr.replace(/&middot;/g, '·')).replace(/·/g, '&middot;') + '</div>';
+    }
+    if (s.endReason === 'died' && s.cause) {
+      html += '<div style="font-size:12px;color:var(--text-m);margin-top:6px;padding:8px;background:white;border-radius:6px;"><strong>Suspected cause:</strong> ' + esc(s.cause) + '</div>';
+    }
+    if (s.endReason === 'transferred' && s.destinationHiveId) {
+      html += '<div style="font-size:12px;color:var(--text-m);margin-top:6px;padding:8px;background:white;border-radius:6px;"><strong>Transferred to hive:</strong> ' + esc(s.destinationHiveId.slice(0, 8)) + '...</div>';
+    }
+
+    // Inspections
+    if (insps.length) {
+      html += '<div style="font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercase;letter-spacing:.04em;margin-top:10px;margin-bottom:6px;">Inspection log</div>';
+      insps.forEach(function(i){
+        var iDate = fmtDate(i.inspectedAt);
+        var bits = [];
+        if (i.queenSeen) bits.push('queen seen');
+        if (typeof i.broodFrames !== 'undefined' && i.broodFrames !== null) bits.push(i.broodFrames + ' brood frames');
+        if (i.storesLevel) bits.push('stores: ' + i.storesLevel);
+        if (i.swarmRisk) bits.push('swarm risk: ' + i.swarmRisk);
+        if (typeof i.healthScore !== 'undefined' && i.healthScore !== null) bits.push('health ' + i.healthScore + '/100');
+        html += '<div style="font-size:12px;color:var(--text);margin-bottom:6px;padding:8px;background:white;border-radius:6px;border-left:3px solid var(--honey);">'
+          + '<div style="font-weight:700;">' + iDate + (i.inspectedBy ? ' &middot; ' + esc(i.inspectedBy) : '') + '</div>'
+          + (bits.length ? '<div style="margin-top:2px;color:var(--text-m);">' + esc(bits.join(' &middot; ')).replace(/&amp;middot;/g, '&middot;') + '</div>' : '')
+          + (i.notes ? '<div style="margin-top:4px;font-style:italic;color:var(--text-m);">' + esc(i.notes) + '</div>' : '')
+          + '</div>';
+      });
+    } else {
+      html += '<div style="font-size:12px;color:var(--text-l);margin-top:8px;font-style:italic;">No inspections recorded for this occupation.</div>';
+    }
+
+    html += '</div></details>';
+  });
+
+  html += '</div>';
+
+  // Append to existing hive-detail-content
+  var existing = host.innerHTML;
+  host.innerHTML = existing + html;
 }
 
 function renderSwarmHeroSection(hive) {
@@ -32242,13 +32425,36 @@ function _confirmColonyDepartedInner() {
 
   if (notes) auditNote += ' ' + notes;
 
+  // HIV-93 build ah — clear quarantine FIRST and capture originalRow
+  // so we can apply row restoration to the local `hive` ref before
+  // the final saveHives. Was: clearHiveQuarantine's internal saveHives
+  // was clobbered by the outer saveHives at the end. restoreRow:false
+  // makes the helper skip its internal row write.
+  var _qRecOnDepart = null;
+  try { _qRecOnDepart = clearHiveQuarantine(hive.id, { restoreRow: false }); } catch(e) {}
+  if (_qRecOnDepart && _qRecOnDepart.originalRow !== undefined && hive.row === 'Quarantine') {
+    hive.row = _qRecOnDepart.originalRow || null;
+  }
+
+  // HIV-74 build ah — archive the current session before mutating hive
+  // state. Snapshot inspections + metadata into hive.pastSessions, then
+  // remove the inspections from the main store so the hive is clean
+  // for any future occupant.
+  var _sessionRec = null;
+  try {
+    _sessionRec = _archiveCurrentSession(hive, {
+      endReason: reason,
+      endedAt: new Date(dateStr).getTime(),
+      recipient: (reason === 'given') ? { name: name || null, email: email || null } : null,
+      cause: (reason === 'died') ? (typeof cause !== 'undefined' ? cause : null) : null,
+      removeInspections: true
+    });
+  } catch(e) { console.warn('[confirmColonyDeparted] session archive failed:', e); }
+
   // Update hive state
   hive.status = newStatus;
   hive.queenStatus = 'absent';
   hive.storesLevel = null;
-  // HIV-93 build ad — colony departed cancels any active quarantine
-  // and restores the hive's original row via the helper.
-  try { clearHiveQuarantine(hive.id); } catch(e) {}
   hive.notes = (hive.notes ? hive.notes + '\n' : '') + auditNote;
   hives[hi] = hive;
   saveHives(hives);
@@ -32309,9 +32515,14 @@ function _confirmColonyDepartedInner() {
       var _giveEmail = (_giveEmailEl && _giveEmailEl.value) ? _giveEmailEl.value.trim() : '';
       var _giveName = (_giveNameEl && _giveNameEl.value) ? _giveNameEl.value.trim() : '';
       if (_giveEmail) {
+        // HIV-37 build ah — capture the just-archived session so the
+        // email contains the FULL inspection history from this colony's
+        // occupation of this container. _sessionRec was set above when
+        // _archiveCurrentSession ran.
+        var _emailSession = _sessionRec || null;
         // Fire after a short delay so the main toast/render lands first
         setTimeout(function(){
-          _sendColonyHandoverEmail(hive, _giveEmail, _giveName, dateStr, notes)
+          _sendColonyHandoverEmail(hive, _giveEmail, _giveName, dateStr, notes, _emailSession)
             .then(function(ok){
               if (ok) showToast('📧 Record sent to ' + _giveEmail);
               else showToast('⚠️ Email send failed — record saved locally');
@@ -32329,7 +32540,7 @@ function _confirmColonyDepartedInner() {
 // HIV-37 build af — build the record payload and POST to flat-bird-f269
 // with type: 'colony_handover_email'. The Worker formats the HTML email
 // and sends via Resend. Returns true on 2xx, false otherwise.
-async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, notes) {
+async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, notes, sessionRec) {
   if (!hive || !toEmail) return false;
 
   // Sender name (from auth metadata or local override)
@@ -32382,6 +32593,48 @@ async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, n
     }
   } catch(e) {}
 
+  // HIV-37 build ah — if a session record was provided (the just-
+  // archived session), use its inspections + catch info for accuracy
+  // and to include the full inspection history. The Worker (v23+)
+  // renders this as a chronological table in the email body.
+  var sessionInspections = [];
+  if (sessionRec && Array.isArray(sessionRec.inspections)) {
+    sessionInspections = sessionRec.inspections.map(function(i){
+      return {
+        inspected_at: i.inspectedAt || null,
+        inspected_by: i.inspectedBy || null,
+        queen_seen: !!i.queenSeen,
+        brood_frames: (typeof i.broodFrames !== 'undefined') ? i.broodFrames : null,
+        stores_level: i.storesLevel || null,
+        swarm_risk: i.swarmRisk || null,
+        health_score: (typeof i.healthScore !== 'undefined' && i.healthScore !== null) ? i.healthScore : null,
+        notes: i.notes || null,
+        // photo URLs only (not data URLs — too heavy for email payload)
+        photo_urls: (i.photoUrls && Array.isArray(i.photoUrls)) ? i.photoUrls.slice(0, 3) : []
+      };
+    });
+    // Override provenance with session catchInfo if present (more reliable
+    // than the hiveOriginSwarmCatches lookup which can race with renders).
+    if (sessionRec.catchInfo) {
+      provenance = {
+        type: 'swarm',
+        caught_date: sessionRec.catchInfo.date ? new Date(sessionRec.catchInfo.date).toISOString() : null,
+        caught_location: sessionRec.catchInfo.location || null,
+        source: sessionRec.catchInfo.source || null,
+        queen_seen_at_catch: !!sessionRec.catchInfo.queenSeen
+      };
+    }
+    inspectionCount = sessionInspections.length;
+    if (sessionInspections.length) {
+      var lastInspection = sessionInspections.reduce(function(latest, i){
+        return (!latest || (i.inspected_at && i.inspected_at > latest.inspected_at)) ? i : latest;
+      }, null);
+      if (lastInspection && lastInspection.inspected_at) {
+        latestInspectionDate = new Date(lastInspection.inspected_at).toISOString();
+      }
+    }
+  }
+
   var payload = {
     type: 'colony_handover_email',
     to_email: toEmail,
@@ -32400,7 +32653,9 @@ async function _sendColonyHandoverEmail(hive, toEmail, recipientName, dateStr, n
     provenance: provenance,
     history: {
       inspection_count: inspectionCount,
-      latest_inspection_date: latestInspectionDate
+      latest_inspection_date: latestInspectionDate,
+      // HIV-37 build ah — full inspection list (newest first for email rendering)
+      inspections: sessionInspections.slice().sort(function(a,b){ return (b.inspected_at||0) - (a.inspected_at||0); })
     },
     handover_date: dateStr || new Date().toISOString().split('T')[0],
     notes: notes || null
@@ -32560,6 +32815,18 @@ function _confirmPlaceSwarmInner() {
   var nowIso = new Date(now).toISOString();
   var sourceName = source.name;
   var destName = dest.name;
+
+  // HIV-74 build ah — archive source's session before migration.
+  // Inspections WILL move to dest (removeInspections:false), but source
+  // gets a frozen snapshot under pastSessions for chain-of-custody.
+  try {
+    _archiveCurrentSession(source, {
+      endReason: 'transferred',
+      endedAt: now,
+      destinationHiveId: destId,
+      removeInspections: false  // they're about to migrate to dest
+    });
+  } catch(e) { console.warn('[confirmPlaceSwarm] source session archive failed:', e); }
 
   // 1. Reassign all inspections from source to dest.
   var inspections = loadInspections();
@@ -32946,6 +33213,21 @@ function _saveSwarmCatchInner() {
       var hi = existingHives.findIndex(function(h){ return h.id === hiveId; });
       if (hi >= 0) {
         var prevStatus = existingHives[hi].status;
+        // HIV-74 build ah — if this empty/dead container still has
+        // inspections from a previous occupant (legacy data from before
+        // session archive was added), archive them now so the new
+        // colony starts with a clean slate.
+        try {
+          var _leftover = loadInspections().filter(function(i){ return i.hiveId === hiveId; });
+          if (_leftover.length > 0 && (prevStatus === 'empty' || prevStatus === 'dead')) {
+            _archiveCurrentSession(existingHives[hi], {
+              endReason: 'unknown',
+              endedAt: Date.now(),
+              removeInspections: true
+            });
+            console.log('[saveSwarmCatch reuse] archived ' + _leftover.length + ' leftover inspections from previous occupant');
+          }
+        } catch(e) { console.warn('reuse-leftover archive failed:', e); }
         existingHives[hi].status = 'active';
         existingHives[hi].queenStatus = queenSeen ? 'queen present' : 'unknown';
         existingHives[hi].storesLevel = 'low'; // swarm default
@@ -33724,7 +34006,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build ag';
+var HIVEKEEPER_BUILD = '26 May 2026 build ah';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
