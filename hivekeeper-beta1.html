@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526h">
+  <meta name="app-version" content="20260526i">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -6598,7 +6598,7 @@ function goTo(id){
     // 29 April 2026 Phase 4bc — inventory & honey dashboard
     try { renderHomeDashboard(); } catch(e) {}
   }
-  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); /* Claude in Chrome diagnostic 22 May 2026: header content occasionally doesn't paint on Android WebView after screen entry. DOM is correct, but the compositor misses paint. Force a layout+paint flush via rAF + getBoundingClientRect — same pipeline scroll uses to fix the symptom organically. */ requestAnimationFrame(function(){ try { document.body.getBoundingClientRect(); var _hw = document.querySelector('#s-apiary .screen-header-wrap'); if (_hw) _hw.getBoundingClientRect(); } catch(e){} }); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ _redrawMapTiles(); }, 850); setTimeout(function(){ _scrollNudgeApiary(); }, 950); setTimeout(function(){ _logMapContainerState('s-apiary entry +1100ms'); }, 1100); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
+  if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); /* Claude in Chrome diagnostic 22 May 2026: header content occasionally doesn't paint on Android WebView after screen entry. DOM is correct, but the compositor misses paint. Force a layout+paint flush via rAF + getBoundingClientRect — same pipeline scroll uses to fix the symptom organically. */ requestAnimationFrame(function(){ try { document.body.getBoundingClientRect(); var _hw = document.querySelector('#s-apiary .screen-header-wrap'); if (_hw) _hw.getBoundingClientRect(); } catch(e){} }); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ _redrawMapTiles(); }, 850); setTimeout(function(){ _scrollNudgeApiary(); }, 950); setTimeout(function(){ _logMapContainerState('s-apiary entry +1100ms'); }, 1100); setTimeout(function(){ _verifyTilesLoaded('s-apiary entry +2500ms'); }, 2500); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
     // OFFLINE-AWARE MAP LOAD (24 April 2026)
     // If online: pull latest map_positions from Supabase, then render hives.
     // If offline: skip the pull (it would hang/timeout) and render hives from
@@ -25796,6 +25796,7 @@ function switchApiary(id) {
     // state so we can diagnose if this still doesn\u2019t work.
     setTimeout(function(){ _scrollNudgeApiary(); }, 1300);
     setTimeout(function(){ _logMapContainerState('switchApiary +1500ms'); }, 1500);
+    setTimeout(function(){ _verifyTilesLoaded('switchApiary +2500ms'); }, 2500);
     /* Claude in Chrome diagnostic 22 May 2026: header content occasionally doesn't paint
        after apiary switch on Android WebView. DOM is correct, compositor misses paint.
        Force layout+paint flush via rAF + getBoundingClientRect — what scroll does
@@ -32017,7 +32018,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build h';
+var HIVEKEEPER_BUILD = '26 May 2026 build i';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -41994,6 +41995,31 @@ function _scrollNudgeApiary() {
       console.log('[map] scroll nudge applied (was', orig + ', now', sa.scrollTop + ')');
     });
   } catch (e) { console.warn('[map] scroll nudge failed:', e); }
+}
+
+// 26 May 2026 build i — Detect the stuck-tile state (tile elements
+// allocated but none have loaded) and auto-recover via the heavy reset.
+// The diagnostic from build h proved this is what happens on initial app
+// boot for the default apiary: the goTo cascade in onAuthSuccess re-renders
+// faster than the tile fetches can complete, so requests get cancelled and
+// .leaflet-tile-loaded never gets set on any of them. Light redraw can\u2019t
+// fix this because the tile layer thinks it\u2019s already requesting; heavy
+// reset replaces the layer entirely so fresh requests fire from a clean state.
+function _verifyTilesLoaded(label) {
+  if (!_leafletMap) return;
+  try {
+    var c = document.getElementById('leaflet-map');
+    if (!c) return;
+    var tiles = c.querySelectorAll('.leaflet-tile').length;
+    var loaded = c.querySelectorAll('.leaflet-tile-loaded').length;
+    console.log('[map] verify (' + label + '): tiles=' + tiles + ' loaded=' + loaded);
+    if (tiles > 0 && loaded === 0) {
+      console.warn('[map] STUCK STATE detected at ' + label + ' \u2014 tiles allocated but none loaded. Triggering heavy reset.');
+      if (typeof _resetMapTiles === 'function') {
+        _resetMapTiles(false);
+      }
+    }
+  } catch (e) { console.warn('[map] verify failed:', e); }
 }
 
 // 26 May 2026 build h — Container state probe. If the nudge doesn\u2019t
