@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526aa">
+  <meta name="app-version" content="20260526ab">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2842,6 +2842,13 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="section-head" style="margin-top:14px;"><div class="section-title">Varroa &amp; Treatments</div></div>
       <div id="home-te-banner"></div>
     </div>
+    <!-- HIV-93 build ab — Quarantine section. Same shape as Queen Rearing
+         and Varroa &amp; Treatments. renderHomeQuarantineBanner() toggles
+         display. All tiers (not Pro-gated — core safety feature). -->
+    <div id="home-quarantine-section" style="display:none;">
+      <div class="section-head" style="margin-top:14px;"><div class="section-title">Quarantine</div></div>
+      <div id="home-quarantine-banner"></div>
+    </div>
     <div class="section-head" style="margin-top:14px;"><div class="section-title">Reports</div></div>
     <div class="hive-scroll" style="grid-template-columns:repeat(3,1fr);">
       <!-- Session Report — direct jump to today's session with a "Change date range"
@@ -3774,6 +3781,21 @@ input[type="checkbox"].hk-chk:checked::after {
       <div style="margin-bottom:12px;">
         <label style="font-size:11px;font-weight:700;color:var(--text);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;">Date caught</label>
         <input type="date" id="swarm-date" style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-family:Syne,sans-serif;font-size:14px;box-sizing:border-box;">
+      </div>
+
+      <!-- HIV-93 (build ab, 26 May 2026) — Optional quarantine reminder.
+           BBKA recommends not opening a newly-caught swarm for 7-10 days.
+           Toggle defaults OFF (opt-in per catch, keeper decides). -->
+      <div style="margin-bottom:12px;padding:10px 12px;background:var(--cream);border:1px solid var(--wax);border-radius:var(--rs);">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="swarm-quarantine-toggle" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
+          <span style="font-size:13px;color:var(--text);font-family:Syne,sans-serif;flex:1;">🛡️ Add quarantine reminder</span>
+          <select id="swarm-quarantine-days" disabled style="padding:6px 8px;border:1px solid var(--wax);border-radius:8px;font-family:'Syne',sans-serif;font-size:12px;background:white;opacity:.5;">
+            <option value="7" selected>7 days</option>
+            <option value="10">10 days</option>
+          </select>
+        </label>
+        <div style="font-size:10px;color:var(--text-l);margin-top:6px;line-height:1.4;font-style:italic;">BBKA recommends not opening a newly-caught swarm for 7-10 days. You'll see a reminder on the home screen and a warning if you start an inspection early.</div>
       </div>
 
       <div style="margin-bottom:12px;">
@@ -5652,6 +5674,26 @@ input[type="checkbox"].hk-chk:checked::after {
     </div>
   </div>
 
+  <!-- MODAL: QUARANTINE WARNING (HIV-93, build ab, 26 May 2026) -->
+  <div class="modal-overlay" id="modal-quarantine-warning" onclick="closeModal(event,'modal-quarantine-warning')">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:440px;">
+      <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);">🛡️ Colony in quarantine</div>
+        <div onclick="closeModalEl('modal-quarantine-warning')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--text);">&#x2715;</div>
+      </div>
+      <div id="quarantine-warning-body" style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:16px;">
+        <!-- populated by openQuarantineWarning -->
+      </div>
+      <div style="background:var(--cream);border-left:3px solid #2E7D32;padding:10px 12px;border-radius:var(--rs);font-size:12px;color:var(--text-m);line-height:1.5;margin-bottom:16px;font-style:italic;">
+        BBKA guidance: leave a newly-caught swarm undisturbed for 7-10 days so the colony can settle, the queen can start laying, and comb-drawing begins.
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="closeModalEl('modal-quarantine-warning')" style="flex:1;padding:14px;border:1px solid var(--wax);border-radius:var(--rs);background:white;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Wait</button>
+        <button onclick="_proceedWithQuarantineOverride()" style="flex:1;padding:14px;border:none;border-radius:var(--rs);background:var(--honey);color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">Inspect anyway</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PLACE SWARM (build o, 26 May 2026 — HIV-74b+) -->
   <div class="modal-overlay" id="modal-place-swarm" onclick="closeModal(event,'modal-place-swarm')">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-width:480px;max-height:85vh;overflow-y:auto;">
@@ -6803,6 +6845,7 @@ function goTo(id){
     // 29 April 2026 Phase 4aw — inventory low-stock alert on home
     try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
     // 29 April 2026 Phase 4bb — forage conditions on home (moved from Environment)
     try { renderForageConditions(); } catch(e) {}
     // 23 May 2026 — Swarm Risk card alongside forage
@@ -10758,6 +10801,7 @@ function saveEquipmentFromModal() {
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 // 23 May 2026 build m — Stock Change handlers v2.
@@ -10937,6 +10981,7 @@ function applyStockChange(direction) {
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 // 23 May 2026 build n — push a brood/super block onto a hive's stack
@@ -11184,6 +11229,7 @@ function transitionStock(from, to) {
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 // 23 May 2026 build l — back-compat shim. The old customAdjust(isUse) used
@@ -11214,6 +11260,7 @@ function confirmDeleteEquipment() {
   renderInventory();
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -11542,6 +11589,7 @@ function completeBottlingNow() {
   try { renderHomeDashboard(); } catch(e) {}
   try { renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 var _honeyStockEditingId = null;
@@ -13191,6 +13239,7 @@ function saveStackEditor() {
   try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
   try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 function closeStackEditor() {
@@ -13789,6 +13838,7 @@ function saveHiveEditor() {
   try { if (typeof renderHomeDashboard === 'function') renderHomeDashboard(); } catch(e) {}
   try { if (typeof renderHomeLowStockBanner === 'function') renderHomeLowStockBanner(); } catch(e) {}
   try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
 }
 
 function closeHiveEditor() {
@@ -13884,8 +13934,22 @@ function renderHiveDetail(){
   // Brood/supers pill (stack diagram shows this), Hide chip (moved into Edit
   // modal danger zone).
   var honeyTotal = getHoneyTotal(hive.id);
+  // HIV-93 build ab — quarantine chip if active.
+  var _quarantineChipHtml = '';
+  if (hive.quarantineUntil) {
+    var _qEndMs = new Date(hive.quarantineUntil).getTime();
+    var _qToday = new Date(); _qToday.setHours(0,0,0,0);
+    var _qDaysRemain = Math.ceil((_qEndMs - _qToday.getTime()) / 86400000);
+    if (_qDaysRemain >= 0) {
+      var _qLabel = _qDaysRemain === 0 ? 'ends today'
+        : _qDaysRemain === 1 ? '1 day remaining'
+        : _qDaysRemain + ' days remaining';
+      _quarantineChipHtml = '<div class="hive-status-chip" style="color:#2E7D32;border-color:#2E7D32;background:#E8F5E9;font-weight:700;">&#x1F6E1;&#xFE0F; Quarantine — ' + _qLabel + '</div>';
+    }
+  }
   document.getElementById('hive-detail-chips').innerHTML = `
     <div class="chip">${badge.text}</div>
+    ${_quarantineChipHtml}
     <div class="hive-status-chip" onclick="openHiveEditor('${hive.id}')" style="color:white;border-color:var(--honey);background:var(--honey);font-weight:800;cursor:pointer;">
       &#x270F;&#xFE0F; Edit hive
     </div>
@@ -16070,6 +16134,13 @@ function saveInspection(){
     // hive.waxMoth kept in sync for legacy reads.
     hives[hi].pests = insp.pests.slice();
     hives[hi].waxMoth = insp.waxMoth;
+    // HIV-93 build ab — implicit quarantine lift. If the keeper has
+    // chosen to inspect, the quarantine ends. Clear it.
+    if (hives[hi].quarantineUntil) {
+      console.log('[saveInspection] clearing quarantine on hive ' + hives[hi].id + ' (was ' + hives[hi].quarantineUntil + ')');
+      hives[hi].quarantineUntil = null;
+      hives[hi].quarantineStartedAt = null;
+    }
     saveHives(hives);
   }
   // Toast handled by _finaliseAndNavigate
@@ -27826,6 +27897,7 @@ async function qbCreateBatch() {
 
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
 
     closeModalEl('modal-queen-new');
     setTimeout(function(){ openQueenRearingDetail(res.data.id); }, 200);
@@ -27991,6 +28063,7 @@ async function qbUpdateCount(batchId, field, value) {
     }
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
   } catch(e) {
     console.error('[QR] count update failed', e);
     if (status) { status.textContent = 'Save failed \u2014 try again'; status.style.color = '#C62828'; }
@@ -28005,6 +28078,7 @@ async function qbMarkComplete(batchId) {
     if (res.error) throw res.error;
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
     openQueenRearingDetail(batchId);
   } catch(e) { alert('Update failed: ' + (e.message||e)); }
 }
@@ -28017,6 +28091,7 @@ async function qbMarkFailed(batchId) {
     if (res.error) throw res.error;
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
     openQueenRearingDetail(batchId);
   } catch(e) { alert('Update failed: ' + (e.message||e)); }
 }
@@ -28028,6 +28103,7 @@ async function qbReactivate(batchId) {
     if (res.error) throw res.error;
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
     openQueenRearingDetail(batchId);
   } catch(e) { alert('Update failed: ' + (e.message||e)); }
 }
@@ -28040,6 +28116,7 @@ async function qbDeleteBatch(batchId) {
     if (res.error) throw res.error;
     await syncQueenBatchesFromCloud();
     try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e){}
+    try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e){}
     closeModalEl('modal-queen-detail');
     setTimeout(openQueenRearingList, 200);
   } catch(e) { alert('Delete failed: ' + (e.message||e)); }
@@ -28085,6 +28162,61 @@ function renderHomeQueenRearingBanner() {
       + '<div style="font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;">Queen rearing \u00B7 ' + active.length + ' active</div>'
       + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + qbEsc(mostUrgent.action.title) + '</div>'
       + '<div style="font-size:11px;color:var(--text-l);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + qbEsc(mostUrgent.batch.name) + ' \u00B7 ' + qbFormatDate(mostUrgent.action.date) + '</div>'
+    + '</div>'
+    + '<div style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;background:' + pillBg + ';color:' + pillColor + ';white-space:nowrap;flex-shrink:0;">' + dayText + '</div>'
+  + '</div>';
+}
+
+// HIV-93 build ab — Quarantine home banner. Mirrors queen rearing
+// pattern. Shows hives where quarantineUntil > now, with the most
+// urgent (closest end date) surfaced + a days-remaining pill.
+function renderHomeQuarantineBanner() {
+  var el = document.getElementById('home-quarantine-banner');
+  var sec = document.getElementById('home-quarantine-section');
+  if (!el) return;
+  function hideAll(){ if (sec) sec.style.display = 'none'; else el.style.display = 'none'; }
+
+  var hives;
+  try { hives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives(); }
+  catch(e) { hideAll(); return; }
+  if (!hives || !hives.length) { hideAll(); return; }
+
+  var now = Date.now();
+  var todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  var todayMs = todayStart.getTime();
+  var active = hives.filter(function(h){
+    if (!h.quarantineUntil) return false;
+    var end = new Date(h.quarantineUntil).getTime();
+    return end >= todayMs; // still active up to and including the end day
+  });
+  if (!active.length) { hideAll(); return; }
+
+  // Most urgent = closest end date
+  active.sort(function(a,b){
+    return new Date(a.quarantineUntil).getTime() - new Date(b.quarantineUntil).getTime();
+  });
+  var urgent = active[0];
+  var endMs = new Date(urgent.quarantineUntil).getTime();
+  var daysRemaining = Math.ceil((endMs - todayMs) / 86400000);
+  var dayText, isUrgent;
+  if (daysRemaining <= 0) { dayText = 'ends today'; isUrgent = true; }
+  else if (daysRemaining === 1) { dayText = '1 day'; isUrgent = true; }
+  else { dayText = daysRemaining + ' days'; isUrgent = false; }
+  var pillBg = isUrgent ? 'var(--honey)' : '#E8F5E9';
+  var pillColor = isUrgent ? 'white' : '#2E7D32';
+
+  var subText = active.length === 1
+    ? urgent.name + ' · until ' + new Date(urgent.quarantineUntil).toLocaleDateString('en-GB',{day:'numeric',month:'short'})
+    : urgent.name + ' soonest · ' + (active.length - 1) + ' more';
+
+  if (sec) sec.style.display = 'block';
+  el.style.display = 'block';
+  el.innerHTML = '<div onclick="viewHive(\'' + urgent.id + '\')" style="margin:8px 16px;padding:12px 14px;background:white;border:1px solid var(--wax);border-left:4px solid #2E7D32;border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);">'
+    + '<div style="font-size:26px;flex-shrink:0;">🛡️</div>'
+    + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:10px;font-weight:800;color:#2E7D32;text-transform:uppercase;letter-spacing:.04em;">Quarantine · ' + active.length + ' active</div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Safe to inspect from ' + new Date(urgent.quarantineUntil).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + '</div>'
+      + '<div style="font-size:11px;color:var(--text-l);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + subText + '</div>'
     + '</div>'
     + '<div style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:8px;background:' + pillBg + ';color:' + pillColor + ';white-space:nowrap;flex-shrink:0;">' + dayText + '</div>'
   + '</div>';
@@ -30270,6 +30402,7 @@ async function onAuthSuccess() {
           try { renderApiary(); } catch(e) {}
           try { updateApiaryNameDisplays(); } catch(e) {}
           try { if (typeof renderHomeQueenRearingBanner === 'function') renderHomeQueenRearingBanner(); } catch(e) {}
+  try { if (typeof renderHomeQuarantineBanner === 'function') renderHomeQuarantineBanner(); } catch(e) {}
           try { if (typeof renderHomeTreatmentEfficacyBanner === 'function') renderHomeTreatmentEfficacyBanner(); } catch(e) {}
         }
       } catch(e) {
@@ -31876,6 +32009,12 @@ function _confirmColonyDepartedInner() {
   hive.status = newStatus;
   hive.queenStatus = 'absent';
   hive.storesLevel = null;
+  // HIV-93 build ab — colony departed cancels any active quarantine.
+  if (hive.quarantineUntil) {
+    console.log('[confirmColonyDeparted] clearing quarantine on hive ' + hive.id);
+    hive.quarantineUntil = null;
+    hive.quarantineStartedAt = null;
+  }
   hive.notes = (hive.notes ? hive.notes + '\n' : '') + auditNote;
   hives[hi] = hive;
   saveHives(hives);
@@ -32092,12 +32231,18 @@ function _confirmPlaceSwarmInner() {
   // the stripped values rather than the swarm's actual queen/stores state.
   var srcQueen = source.queenStatus;
   var srcStores = source.storesLevel;
+  // HIV-93 build ab — also capture quarantine state to transfer to dest.
+  var srcQuarantineUntil = source.quarantineUntil || null;
+  var srcQuarantineStartedAt = source.quarantineStartedAt || null;
 
   // 2. Source hive becomes an empty container — ready for reuse.
   //    Keep its swarm_catch history. Strip the colony-specific properties.
   source.status = 'empty';
   source.queenStatus = 'absent';
   source.storesLevel = null;
+  // HIV-93 build ab — quarantine moves with the colony; strip from source.
+  source.quarantineUntil = null;
+  source.quarantineStartedAt = null;
   source.notes = (source.notes || '') +
     (source.notes ? '\n' : '') +
     'Swarm placed in ' + destName + ' on ' + new Date(now).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + '.';
@@ -32108,6 +32253,13 @@ function _confirmPlaceSwarmInner() {
   dest.status = 'active';
   dest.queenStatus = srcQueen || dest.queenStatus || 'unknown';
   dest.storesLevel = srcStores || dest.storesLevel || 'low';
+  // HIV-93 build ab — transfer quarantine to dest. The colony being
+  // quarantined is now in dest, so the reminder follows it.
+  if (srcQuarantineUntil) {
+    dest.quarantineUntil = srcQuarantineUntil;
+    dest.quarantineStartedAt = srcQuarantineStartedAt;
+    console.log('[confirmPlaceSwarm] quarantine transferred to dest ' + dest.id + ' (until ' + srcQuarantineUntil + ')');
+  }
   // hiveType marker — colony is now "from-swarm" origin at this position
   dest.hiveType = dest.hiveType || 'swarm_prime';
   dest.notes = (dest.notes || '') +
@@ -32304,6 +32456,25 @@ function openSwarmCatchModal() {
   _swarmRenderPhotoArea();
   onSwarmHiveSelectChange();
 
+  // HIV-93 build ab — reset quarantine toggle + wire the days select
+  // to enable only when toggle is on. Default OFF per spec.
+  var qToggle = document.getElementById('swarm-quarantine-toggle');
+  var qDays = document.getElementById('swarm-quarantine-days');
+  if (qToggle) {
+    qToggle.checked = false;
+    qToggle.onchange = function() {
+      if (qDays) {
+        qDays.disabled = !qToggle.checked;
+        qDays.style.opacity = qToggle.checked ? '1' : '.5';
+      }
+    };
+  }
+  if (qDays) {
+    qDays.value = '7';
+    qDays.disabled = true;
+    qDays.style.opacity = '.5';
+  }
+
   openModalEl('modal-swarm-catch');
 }
 
@@ -32422,6 +32593,30 @@ function _saveSwarmCatchInner() {
       }
     } catch(e) { console.warn('reuse-hive status update failed:', e); }
   }
+
+  // HIV-93 build ab — quarantine reminder. If toggled on, write the
+  // end date onto the hive. Applies whether the hive was auto-created
+  // or reused. quarantineUntil is the date (no time) the colony is
+  // safe to inspect from. quarantineStartedAt is for diagnostics.
+  try {
+    var qToggle = document.getElementById('swarm-quarantine-toggle');
+    if (qToggle && qToggle.checked) {
+      var qDaysEl = document.getElementById('swarm-quarantine-days');
+      var qDays = parseInt(qDaysEl && qDaysEl.value, 10);
+      if (!qDays || (qDays !== 7 && qDays !== 10)) qDays = 7;
+      var catchDateMs = new Date(date).getTime();
+      var endMs = catchDateMs + qDays * 86400000;
+      var endIso = new Date(endMs).toISOString().split('T')[0]; // YYYY-MM-DD
+      var hivesQ = loadHives(true);
+      var hiQ = hivesQ.findIndex(function(h){ return h.id === hiveId; });
+      if (hiQ >= 0) {
+        hivesQ[hiQ].quarantineUntil = endIso;
+        hivesQ[hiQ].quarantineStartedAt = new Date().toISOString();
+        saveHives(hivesQ);
+        console.log('[saveSwarmCatch] quarantine set: ' + endIso + ' (' + qDays + 'd) on hive ' + hiveId);
+      }
+    }
+  } catch(e) { console.warn('quarantine set failed:', e); }
 
   var catch_ = {
     // 5 May 2026 Phase 4ce-11 — was 'swarm_' + Date.now(). Same bug
@@ -33156,7 +33351,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build aa';
+var HIVEKEEPER_BUILD = '26 May 2026 build ab';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -42490,12 +42685,55 @@ function startInspection() {
 
 function startInspectionFromHive() {
   // currentHiveId already set from viewHive()
+  // HIV-93 build ab — soft warning if this hive is in quarantine.
+  // Keeper can choose to inspect anyway (overrides + implicitly clears
+  // quarantine via the saveInspection lift) or wait.
+  if (currentHiveId) {
+    try {
+      var _qHive = loadHives().find(function(h){ return h.id === currentHiveId; });
+      if (_qHive && _qHive.quarantineUntil) {
+        var _qEndMs = new Date(_qHive.quarantineUntil).getTime();
+        var _qToday = new Date(); _qToday.setHours(0,0,0,0);
+        if (_qEndMs >= _qToday.getTime()) {
+          openQuarantineWarning(_qHive);
+          return; // wait for user choice
+        }
+      }
+    } catch(e) { console.warn('quarantine check failed:', e); }
+  }
+  _proceedToInspectScreen();
+}
+
+// HIV-93 build ab — actual inspect-screen entry, called either directly
+// or after the user dismisses the quarantine warning.
+function _proceedToInspectScreen() {
   goTo('s-inspect');
   setTimeout(function(){
     if (currentHiveId) {
       selectHiveFromList(currentHiveId);
     }
   }, 100);
+}
+
+function openQuarantineWarning(hive) {
+  var body = document.getElementById('quarantine-warning-body');
+  if (body) {
+    var endStr = new Date(hive.quarantineUntil).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+    var endMs = new Date(hive.quarantineUntil).getTime();
+    var today = new Date(); today.setHours(0,0,0,0);
+    var daysRemaining = Math.ceil((endMs - today.getTime()) / 86400000);
+    var daysText = daysRemaining === 0 ? 'today' : daysRemaining === 1 ? 'tomorrow' : daysRemaining + ' days';
+    body.innerHTML =
+      '<strong>' + (hive.name || 'This colony') + '</strong> is in quarantine until <strong>' + endStr + '</strong> (' + daysText + ').' +
+      '<br><br>' +
+      'Opening the box early can disturb the colony before it settles, and is more likely to cause absconding.';
+  }
+  openModalEl('modal-quarantine-warning');
+}
+
+function _proceedWithQuarantineOverride() {
+  closeModalEl('modal-quarantine-warning');
+  _proceedToInspectScreen();
 }
 
 function changeHiveRow(hiveId) {
