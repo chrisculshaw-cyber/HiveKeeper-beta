@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526z">
+  <meta name="app-version" content="20260526aa">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -14048,7 +14048,38 @@ function renderHiveDetail(){
         <div class="tl-type">${(insp.notes && insp.notes.indexOf('Swarm caught.') === 0) ? '🐝 Swarm catch' : '📋 Inspection'} · ${insp.inspectedBy}</div>
         <div class="tl-text">${insp.transcript||insp.notes||'No notes'}</div>
         <div class="tl-meta">Health: ${insp.healthScore||'—'}% · Stores: ${insp.storesLevel||'?'}${insp.weather ? ' · ' + insp.weather.icon + ' ' + formatTemp(insp.weather.tempC) + ' ' + insp.weather.condition + (insp.weather.windKph ? ' · ' + formatSpeed(insp.weather.windKph) + ' wind' : (insp.weather.windMph ? ' · ' + insp.weather.windMph + 'mph wind' : '')) : ''}</div>
-        ${insp.photoUrls && insp.photoUrls.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + insp.photoUrls.map(function(url){ var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_'); var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' '); lbl = lbl || 'Frame'; return '<div style="position:relative;cursor:pointer;" onclick="window.open(\'' + url + '\',\'_blank\')" title="' + lbl + '"><img src="' + url + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;"><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + lbl + '</div></div>'; }).join('') + '</div>' : ''}
+        ${(function(){
+          // 26 May 2026 build aa — photo render with dataUrl fallback. If
+          // cloud upload hasn't completed yet, photoUrls is empty but the
+          // dataUrl is still on photos[]. Show that instead so the photo
+          // stays visible after placement migrates the inspection to a
+          // new hive before the upload finishes.
+          var imgs = [];
+          if (insp.photoUrls && insp.photoUrls.length) {
+            insp.photoUrls.forEach(function(url){
+              var urlParts = url.split('/').pop().replace(/\.jpg$|\.png$/,'').split('_');
+              var lbl = urlParts.length > 2 ? urlParts.slice(1,-1).join(' ') : urlParts.join(' ');
+              imgs.push({ src: url, lbl: lbl || 'Frame', cloud: true });
+            });
+          } else if (insp.photos && insp.photos.length) {
+            insp.photos.forEach(function(p){
+              if (!p) return;
+              var src = p.url || p.dataUrl;
+              if (!src) return;
+              imgs.push({ src: src, lbl: p.label || 'Photo', cloud: !!p.url });
+            });
+          }
+          if (!imgs.length) return '';
+          return '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + imgs.map(function(im){
+            var clickAttr = im.cloud ? 'onclick="window.open(\'' + im.src + '\',\'_blank\')"' : '';
+            var localTag = im.cloud ? '' : '<div style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;">local</div>';
+            return '<div style="position:relative;cursor:pointer;" ' + clickAttr + ' title="' + im.lbl + '">' +
+              '<img src="' + im.src + '" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--wax);display:block;">' +
+              localTag +
+              '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);border-radius:0 0 8px 8px;padding:2px 4px;font-size:7px;font-weight:700;color:white;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">' + im.lbl + '</div>' +
+              '</div>';
+          }).join('') + '</div>';
+        })()}
       </div>
     </div>
   `;
@@ -33125,7 +33156,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build z';
+var HIVEKEEPER_BUILD = '26 May 2026 build aa';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
