@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260526s">
+  <meta name="app-version" content="20260526t">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -31807,13 +31807,24 @@ function populateSwarmDestinationList() {
   var listEl = document.getElementById('place-swarm-dest-list');
   var noneEl = document.getElementById('place-swarm-no-dest');
   if (!listEl) return;
-  var hives = loadHives();
-  // Eligible destinations: dead OR empty, ANY apiary, NOT the source itself,
-  // NOT demo hives (those have demo- prefix).
+  // 26 May 2026 build t — use _origLoadHives (cross-apiary) so the picker
+  // shows valid destinations in OTHER apiaries too. Previously scoped to
+  // currentApiaryId by the loadHives wrapper.
+  var hives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives();
+  // Build inspections lookup so we can include fresh boxes (active + no
+  // inspections) as eligible destinations, mirroring build r's filter.
+  var allInsp = loadInspections();
+  var hivesWithInsp = {};
+  allInsp.forEach(function(i){ if (i.hiveId) hivesWithInsp[i.hiveId] = true; });
   var candidates = hives.filter(function(h){
-    return h.id !== currentHiveId
-      && (h.status === 'dead' || h.status === 'empty')
-      && !(h.id || '').toString().startsWith('demo-');
+    if (!h.id) return false;
+    if (h.id === currentHiveId) return false;
+    if (h.id.toString().startsWith('demo-')) return false;
+    if (h.isHidden) return false;
+    var s = h.status;
+    if (s === 'dead' || s === 'empty' || s === 'nuc' || s === 'unclear') return true;
+    if (s === 'active' && !hivesWithInsp[h.id]) return true;
+    return false;
   });
   if (!candidates.length) {
     listEl.innerHTML = '';
@@ -31878,10 +31889,17 @@ function confirmPlaceSwarm() {
   if (!_selectedPlaceDestId) { showToast('Pick a destination hive'); return; }
   var sourceId = currentHiveId;
   var destId = _selectedPlaceDestId;
+  console.log('[confirmPlaceSwarm] sourceId=' + sourceId + ' destId=' + destId);
   if (sourceId === destId) { showToast('Cannot place into itself'); return; }
-  var hives = loadHives();
-  var source = hives.find(function(h){ return h.id === sourceId; });
-  var dest = hives.find(function(h){ return h.id === destId; });
+  // 26 May 2026 build t — loadHives() is scoped to currentApiaryId by the
+  // wrapper at L26180. If the destination is in a DIFFERENT apiary, dest
+  // would be undefined here and the early-return would fire. Use the raw
+  // _origLoadHives to see ALL hives across apiaries.
+  var allHives = (typeof _origLoadHives === 'function') ? _origLoadHives() : loadHives();
+  var source = allHives.find(function(h){ return h.id === sourceId; });
+  var dest = allHives.find(function(h){ return h.id === destId; });
+  console.log('[confirmPlaceSwarm] source found=' + !!source + ' (apiaryId=' + (source && source.apiaryId) + ')');
+  console.log('[confirmPlaceSwarm] dest found=' + !!dest + ' (apiaryId=' + (dest && dest.apiaryId) + ')');
   if (!source || !dest) { showToast('Source or destination not found'); return; }
 
   var now = Date.now();
@@ -31891,6 +31909,15 @@ function confirmPlaceSwarm() {
 
   // 1. Reassign all inspections from source to dest.
   var inspections = loadInspections();
+  console.log('[confirmPlaceSwarm] total inspections in store: ' + inspections.length);
+  var matchingCount = inspections.filter(function(i){ return i.hiveId === sourceId; }).length;
+  console.log('[confirmPlaceSwarm] inspections matching sourceId: ' + matchingCount);
+  if (matchingCount === 0 && inspections.length > 0) {
+    // Show the first few hiveIds we DO see, in case the source got created
+    // with a different id than currentHiveId.
+    var sample = inspections.slice(0, 5).map(function(i){ return i.id.slice(0,8) + '→' + (i.hiveId || 'null').slice(0,8); }).join(', ');
+    console.log('[confirmPlaceSwarm] sample inspection hiveIds: ' + sample);
+  }
   var moved = 0;
   inspections.forEach(function(insp){
     if (insp.hiveId === sourceId) {
@@ -32350,6 +32377,7 @@ function saveSwarmCatch() {
 
   inspections.push(inspRecord);
   saveInspections(inspections);
+  console.log('[saveSwarmCatch] inspection saved: id=' + inspId + ' hiveId=' + hiveId + ' (currentHiveId=' + currentHiveId + ', currentApiaryId=' + currentApiaryId + ')');
   console.log('[saveSwarmCatch] inspections saved, closing modal');
 
   // Reset photo state so the next swarm capture starts clean.
@@ -32867,7 +32895,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '26 May 2026 build s';
+var HIVEKEEPER_BUILD = '26 May 2026 build t';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
