@@ -123,7 +123,14 @@
       HiveKeeper<sup>™</sup>
     </a>
     <div class="nav-links">
-      <a href="/">Home</a>
+      <!-- 28 May 2026 — "Home" link relabelled to "Back to app". For
+           signed-in users hitting /account, "/" is already the PWA, so the
+           destination is correct — only the label was changing. The onclick
+           handler additionally tries window.close() first so users who
+           arrived in a script-opened tab (the native Median app routes
+           openWebAccountSSO through a new tab) get the tab closed and land
+           back on the app, instead of opening a duplicate PWA tab. -->
+      <a href="/" onclick="returnToApp(event)">← Back</a>
       <a href="#" id="signout-link">Sign out</a>
     </div>
   </div>
@@ -810,6 +817,24 @@ document.getElementById('signout-link').addEventListener('click', (e) => {
   e.preventDefault();
   signOut();
 });
+
+// ── Back to app ──────────────────────────────────────────
+// Two paths to get the user back to the HiveKeeper app:
+//   1. The tab was script-opened (native Median app routes openWebAccountSSO
+//      through a fresh tab) — window.close() works and returns focus to
+//      the native app immediately. Best UX.
+//   2. The tab is part of normal browser navigation (PWA users) —
+//      window.close() throws or no-ops, and we fall back to navigating to /
+//      after a short delay (which is the PWA root for signed-in users).
+function returnToApp(e) {
+  if (e) e.preventDefault();
+  try { window.close(); } catch(_) {}
+  // If the tab is still alive 120ms later, close was blocked or no-op;
+  // navigate to the PWA root instead.
+  setTimeout(function() {
+    window.location.href = '/';
+  }, 120);
+}
 
 // ── Helpers ───────────────────────────────────────────────
 function escapeHtml(str) {
