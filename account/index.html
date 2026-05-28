@@ -76,6 +76,19 @@
 .hk-profile-photo-status.ok  { color: var(--success); }
 .hk-profile-photo-status.err { color: var(--amber-urgent); }
 .hk-profile-photo-file { display: none; }
+
+/* Narrow-viewport tuning for the page header. The H1 in account-shared.css
+   is sized for desktop; below ~520px it competes with the avatar + tier pill
+   and wraps awkwardly. Shrink the H1, slightly reduce the avatar, and tighten
+   the gap so the greeting reads on one or two lines instead of four. */
+@media (max-width: 520px) {
+  #greeting { font-size: 34px !important; line-height: 1.1 !important; }
+  .hk-profile-avatar-top { width: 48px; height: 48px; font-size: 24px; }
+}
+@media (max-width: 380px) {
+  #greeting { font-size: 28px !important; }
+  .hk-profile-avatar-top { width: 44px; height: 44px; font-size: 22px; }
+}
 </style>
 </head>
 <body>
@@ -381,8 +394,11 @@ function renderProfile() {
   const userEmail = _session.user.email;
   const profileName = _profile && _profile.name ? _profile.name : null;
 
-  document.getElementById('greeting').innerHTML = profileName
-    ? 'Welcome <em>back</em>, ' + escapeHtml(profileName)
+  // First name only — keeps the H1 to one line on narrow viewports and
+  // matches the app's "Good evening, Chris" greeting pattern.
+  const firstName = profileName ? String(profileName).trim().split(/\s+/)[0] : '';
+  document.getElementById('greeting').innerHTML = firstName
+    ? 'Welcome <em>back</em>, ' + escapeHtml(firstName)
     : 'Welcome <em>back</em>';
 
   document.getElementById('account-email').textContent = userEmail;
