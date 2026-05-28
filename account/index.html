@@ -77,6 +77,40 @@
 .hk-profile-photo-status.err { color: var(--amber-urgent); }
 .hk-profile-photo-file { display: none; }
 
+/* Back pill (top-left of the nav). Replaces the brand block on the account
+   page — same destination as the brand link was (/), so no functional loss,
+   and the pill reads as a clear "exit this page" affordance rather than a
+   branding mark. Secondary outlined style matches the page's existing
+   button language (see the "Change password" outline button below). */
+.hk-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px 7px 12px;
+  background: transparent;
+  color: var(--forest, #1F4E3A);
+  text-decoration: none;
+  border: 1.5px solid var(--forest, #1F4E3A);
+  border-radius: 999px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.hk-back-pill:hover,
+.hk-back-pill:focus-visible {
+  background: var(--forest, #1F4E3A);
+  color: #FFFDF7;
+  outline: none;
+}
+.hk-back-pill:active { transform: scale(0.97); }
+.hk-back-pill .hk-back-arrow {
+  font-size: 15px;
+  line-height: 1;
+}
+
 /* Narrow-viewport page-header layout.
    Root cause of the previous cramped wrap: the outer flex tries to keep the
    FOUNDING BEEKEEPER tier badge on the same row as the content block, leaving
@@ -118,19 +152,19 @@
 
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="brand">
-      <img src="/hivekeeper-icon.png" alt="HiveKeeper">
-      HiveKeeper<sup>™</sup>
+    <!-- 28 May 2026 — Back pill at top-left of the nav. Replaces the brand
+         link, which was just navigating to "/" anyway (same destination as
+         returnToApp's navigation fallback). The pill style reads more
+         clearly as an exit affordance than a branding mark, and removing
+         the brand from this nav doesn't lose anything: the HiveKeeper
+         identity is heavily present elsewhere on the page (welcome card,
+         tier badge, the avatar). returnToApp() tries window.close() first
+         so script-opened tabs (the native Median path) close and return
+         focus to the app; falls back to navigating to "/" otherwise. -->
+    <a href="/" onclick="returnToApp(event)" class="hk-back-pill" aria-label="Back to the app">
+      <span class="hk-back-arrow" aria-hidden="true">←</span> Back
     </a>
     <div class="nav-links">
-      <!-- 28 May 2026 — "Home" link relabelled to "Back to app". For
-           signed-in users hitting /account, "/" is already the PWA, so the
-           destination is correct — only the label was changing. The onclick
-           handler additionally tries window.close() first so users who
-           arrived in a script-opened tab (the native Median app routes
-           openWebAccountSSO through a new tab) get the tab closed and land
-           back on the app, instead of opening a duplicate PWA tab. -->
-      <a href="/" onclick="returnToApp(event)">← Back</a>
       <a href="#" id="signout-link">Sign out</a>
     </div>
   </div>
