@@ -77,17 +77,40 @@
 .hk-profile-photo-status.err { color: var(--amber-urgent); }
 .hk-profile-photo-file { display: none; }
 
-/* Narrow-viewport tuning for the page header. The H1 in account-shared.css
-   is sized for desktop; below ~520px it competes with the avatar + tier pill
-   and wraps awkwardly. Shrink the H1, slightly reduce the avatar, and tighten
-   the gap so the greeting reads on one or two lines instead of four. */
-@media (max-width: 520px) {
-  #greeting { font-size: 34px !important; line-height: 1.1 !important; }
-  .hk-profile-avatar-top { width: 48px; height: 48px; font-size: 24px; }
+/* Narrow-viewport page-header layout.
+   Root cause of the previous cramped wrap: the outer flex tries to keep the
+   FOUNDING BEEKEEPER tier badge on the same row as the content block, leaving
+   only ~130px for the H1 after the avatar + gap on a 412px phone. No H1 size
+   at sensible typography fits "Welcome back, Chris" in that width.
+   Fix: at <=640px, force the tier badge to its own row below the content
+   block (width:100%, order:99 ties it to the end of the wrap). The content
+   block then takes the full container width, giving the H1 room to read on
+   one line. Drop the H1 a notch as belt-and-braces. */
+@media (max-width: 640px) {
+  #tier-badge-wrap {
+    width: 100% !important;
+    order: 99 !important;
+    margin-top: 4px !important;
+  }
+  #greeting {
+    font-size: 32px !important;
+    line-height: 1.15 !important;
+    margin: 0 0 8px !important;
+  }
+  .hk-profile-avatar-top {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 26px !important;
+    margin-top: 6px !important;
+  }
 }
 @media (max-width: 380px) {
   #greeting { font-size: 28px !important; }
-  .hk-profile-avatar-top { width: 44px; height: 44px; font-size: 22px; }
+  .hk-profile-avatar-top {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 22px !important;
+  }
 }
 </style>
 </head>
