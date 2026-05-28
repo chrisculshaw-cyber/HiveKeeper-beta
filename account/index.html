@@ -101,18 +101,21 @@
     <div id="content" style="display:none;">
 
       <!-- Page header with greeting + tier badge.
-           28 May 2026 — small profile avatar inserted to the left of the
-           greeting block, mirroring the app's HOME header composition.
+           28 May 2026 — small profile avatar to the left of the greeting
+           block, mirroring the app's HOME header composition.
            Source bucket: profile-pics on Supabase (shared with the app).
            Initial DOM is the bee fallback; initProfilePhoto() swaps in the
-           user's photo on bootstrap if one exists. -->
+           user's photo on bootstrap if one exists.
+           Layout: avatar top-aligned with a small downward nudge so it
+           visually centres against the H1; explicit margins on eyebrow/H1/p
+           so spacing doesn't depend on shared-CSS defaults. -->
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
-        <div style="display:flex;align-items:center;gap:18px;flex:1;min-width:0;">
-          <div id="hk-profile-avatar-top" class="hk-profile-avatar-top" aria-hidden="true">🐝</div>
-          <div style="min-width:0;">
-            <span class="eyebrow">Your account</span>
-            <h1 id="greeting">Welcome <em>back</em></h1>
-            <p id="account-summary">Manage your subscription, password, and data.</p>
+        <div style="display:flex;align-items:flex-start;gap:22px;flex:1;min-width:0;">
+          <div id="hk-profile-avatar-top" class="hk-profile-avatar-top" aria-hidden="true" style="margin-top:10px;">🐝</div>
+          <div style="min-width:0;flex:1;">
+            <span class="eyebrow" style="display:block;margin-bottom:8px;">Your account</span>
+            <h1 id="greeting" style="margin:0 0 8px;line-height:1.15;">Welcome <em>back</em></h1>
+            <p id="account-summary" style="margin:0;">Manage your subscription, password, and data.</p>
           </div>
         </div>
         <div id="tier-badge-wrap"></div>
