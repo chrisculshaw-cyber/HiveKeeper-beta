@@ -15,6 +15,68 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="/assets/account-shared.css">
+
+<!-- Profile photo styles (28 May 2026; companion to app build h). -->
+<style>
+.hk-profile-avatar-top {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #E89B2A;
+  border: 2px solid rgba(255,255,255,0.55);
+  box-shadow: 0 0 0 1px rgba(184,106,32,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.hk-profile-avatar-top img,
+.hk-profile-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.hk-profile-photo-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hk-profile-card-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #E89B2A;
+  border: 2px solid rgba(255,255,255,0.55);
+  box-shadow: 0 0 0 1px rgba(184,106,32,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 44px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.hk-profile-photo-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.hk-profile-photo-status {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 10px;
+  min-height: 18px;
+}
+.hk-profile-photo-status.ok  { color: var(--success); }
+.hk-profile-photo-status.err { color: var(--amber-urgent); }
+.hk-profile-photo-file { display: none; }
+</style>
 </head>
 <body>
 
@@ -38,12 +100,20 @@
 
     <div id="content" style="display:none;">
 
-      <!-- Page header with greeting + tier badge -->
+      <!-- Page header with greeting + tier badge.
+           28 May 2026 — small profile avatar inserted to the left of the
+           greeting block, mirroring the app's HOME header composition.
+           Source bucket: profile-pics on Supabase (shared with the app).
+           Initial DOM is the bee fallback; initProfilePhoto() swaps in the
+           user's photo on bootstrap if one exists. -->
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
-        <div>
-          <span class="eyebrow">Your account</span>
-          <h1 id="greeting">Welcome <em>back</em></h1>
-          <p id="account-summary">Manage your subscription, password, and data.</p>
+        <div style="display:flex;align-items:center;gap:18px;flex:1;min-width:0;">
+          <div id="hk-profile-avatar-top" class="hk-profile-avatar-top" aria-hidden="true">🐝</div>
+          <div style="min-width:0;">
+            <span class="eyebrow">Your account</span>
+            <h1 id="greeting">Welcome <em>back</em></h1>
+            <p id="account-summary">Manage your subscription, password, and data.</p>
+          </div>
         </div>
         <div id="tier-badge-wrap"></div>
       </div>
@@ -89,6 +159,31 @@
         <div id="subscription-rows"></div>
 
         <div id="subscription-actions" style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Profile photo card.
+           Lets the beekeeper choose / replace / remove a profile photo
+           shared with the HiveKeeper mobile app. Uses the same Supabase
+           bucket and path convention as the app (build h):
+             profile-pics/{auth.uid()}/avatar.jpg
+           Square-cropped + scaled to 512×512 JPEG q80 (~40 KB) on the
+           client before upload. Public-read bucket so the app picks up
+           the URL via getPublicUrl + HEAD probe on next sign-in. -->
+      <div class="card">
+        <h2>Profile photo</h2>
+        <p class="card-subtitle">Shown in your HiveKeeper home header. JPG, PNG, or WebP, square-cropped automatically.</p>
+
+        <div class="hk-profile-photo-card">
+          <div id="hk-profile-avatar-card" class="hk-profile-card-avatar" aria-hidden="true">🐝</div>
+          <div style="flex:1;min-width:200px;">
+            <div class="hk-profile-photo-actions">
+              <button type="button" class="btn btn-primary btn-small" id="hk-profile-photo-choose">Choose photo</button>
+              <button type="button" class="btn btn-secondary btn-small" id="hk-profile-photo-remove" style="display:none;">Remove</button>
+            </div>
+            <div class="hk-profile-photo-status" id="hk-profile-photo-status"></div>
+            <input type="file" class="hk-profile-photo-file" id="hk-profile-photo-file" accept="image/jpeg,image/png,image/webp">
+          </div>
+        </div>
       </div>
 
       <!-- Your Details card (editable profile) -->
@@ -273,6 +368,9 @@ async function bootstrap() {
   renderSubscription();
   prefillProfileForm();
   loadAndRenderApiarySharing();
+  // 28 May 2026 — init profile photo manager (fire-and-forget; never
+  // blocks any user-visible bootstrap step).
+  initProfilePhoto(session.user.id);
 }
 
 // ── Render profile section ─────────────────────────────────
@@ -675,6 +773,143 @@ document.getElementById('signout-link').addEventListener('click', (e) => {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+// ─── Profile photo manager ────────────────────────────────
+// Shared with the HiveKeeper mobile app via the profile-pics bucket.
+// Path convention: profile-pics/{uid}/avatar.jpg (one object per user).
+// Uses the existing `sb` Supabase client from /assets/account-shared.js
+// so we share auth state without instantiating a second client.
+
+function _hkSetPhotoStatus(msg, tone) {
+  const el = document.getElementById('hk-profile-photo-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'hk-profile-photo-status' + (tone ? ' ' + tone : '');
+}
+
+function _hkSetPhotoBusy(busy) {
+  const c = document.getElementById('hk-profile-photo-choose');
+  const r = document.getElementById('hk-profile-photo-remove');
+  if (c) c.disabled = busy;
+  if (r) r.disabled = busy;
+}
+
+function _hkRenderProfilePhoto(url) {
+  const top = document.getElementById('hk-profile-avatar-top');
+  const card = document.getElementById('hk-profile-avatar-card');
+  const removeBtn = document.getElementById('hk-profile-photo-remove');
+  if (url) {
+    const safe = String(url).replace(/[&<>"']/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+    if (top)  top.innerHTML  = '<img src="' + safe + '" alt="Profile photo">';
+    if (card) card.innerHTML = '<img src="' + safe + '" alt="Profile photo">';
+    if (removeBtn) removeBtn.style.display = 'inline-block';
+  } else {
+    if (top)  top.innerHTML  = '\u{1F41D}';
+    if (card) card.innerHTML = '\u{1F41D}';
+    if (removeBtn) removeBtn.style.display = 'none';
+  }
+}
+
+// Square-crop centred + scale to 512x512 JPEG q80. Returns Blob, or
+// the original file if any canvas step fails.
+function _hkCropAndCompress(file) {
+  return new Promise(function(resolve) {
+    try {
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const img = new Image();
+        img.onload = function() {
+          try {
+            const side = Math.min(img.width, img.height);
+            const sx = (img.width - side) / 2;
+            const sy = (img.height - side) / 2;
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            canvas.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+            canvas.toBlob(function(blob) { resolve(blob || file); }, 'image/jpeg', 0.8);
+          } catch (e) { resolve(file); }
+        };
+        img.onerror = function() { resolve(file); };
+        img.src = ev.target.result;
+      };
+      reader.onerror = function() { resolve(file); };
+      reader.readAsDataURL(file);
+    } catch (e) { resolve(file); }
+  });
+}
+
+async function initProfilePhoto(uid) {
+  const choose = document.getElementById('hk-profile-photo-choose');
+  const remove = document.getElementById('hk-profile-photo-remove');
+  const file   = document.getElementById('hk-profile-photo-file');
+  if (!choose || !remove || !file) return;
+  if (typeof sb === 'undefined' || !sb || !sb.storage) {
+    console.warn('initProfilePhoto: sb client not available');
+    return;
+  }
+
+  // Probe for existing photo via the deterministic public URL.
+  try {
+    const path = uid + '/avatar.jpg';
+    const pu = sb.storage.from('profile-pics').getPublicUrl(path);
+    const baseUrl = pu && pu.data && pu.data.publicUrl;
+    if (baseUrl) {
+      const probeUrl = baseUrl + '?v=' + Date.now();
+      const res = await fetch(probeUrl, { method: 'HEAD' });
+      if (res && res.ok) _hkRenderProfilePhoto(probeUrl);
+    }
+  } catch (e) { /* silent — keep bee fallback */ }
+
+  choose.addEventListener('click', function() { file.click(); });
+
+  file.addEventListener('change', async function(e) {
+    const picked = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!picked) return;
+    _hkSetPhotoBusy(true);
+    _hkSetPhotoStatus('Preparing photo\u2026');
+    try {
+      const blob = await _hkCropAndCompress(picked);
+      _hkSetPhotoStatus('Uploading\u2026');
+      const path = uid + '/avatar.jpg';
+      const up = await sb.storage.from('profile-pics').upload(path, blob, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+      if (up && up.error) throw up.error;
+      const pu = sb.storage.from('profile-pics').getPublicUrl(path);
+      const url = pu && pu.data && pu.data.publicUrl ? pu.data.publicUrl + '?v=' + Date.now() : null;
+      if (!url) throw new Error('No public URL returned');
+      _hkRenderProfilePhoto(url);
+      _hkSetPhotoStatus('\u2713 Saved \u2014 open the HiveKeeper app to sync to your phone', 'ok');
+      setTimeout(function(){ _hkSetPhotoStatus(''); }, 6000);
+    } catch (err) {
+      console.warn('Profile photo upload failed:', err);
+      _hkSetPhotoStatus((err && err.message) ? err.message : 'Upload failed. Please try again.', 'err');
+    } finally {
+      _hkSetPhotoBusy(false);
+    }
+  });
+
+  remove.addEventListener('click', async function() {
+    if (!confirm('Remove your profile photo?')) return;
+    _hkSetPhotoBusy(true);
+    _hkSetPhotoStatus('Removing\u2026');
+    try {
+      const path = uid + '/avatar.jpg';
+      const del = await sb.storage.from('profile-pics').remove([path]);
+      if (del && del.error) throw del.error;
+      _hkRenderProfilePhoto(null);
+      _hkSetPhotoStatus('Photo removed.', 'ok');
+      setTimeout(function(){ _hkSetPhotoStatus(''); }, 4000);
+    } catch (err) {
+      console.warn('Profile photo remove failed:', err);
+      _hkSetPhotoStatus((err && err.message) ? err.message : 'Could not remove. Please try again.', 'err');
+    } finally {
+      _hkSetPhotoBusy(false);
+    }
+  });
 }
 
 // Boot
