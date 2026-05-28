@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260528g">
+  <meta name="app-version" content="20260528h">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -1089,6 +1089,91 @@ html, body { overscroll-behavior: none; }
 }
 .hk-hdr-cog:hover, .hk-hdr-cog:active {
   background: rgba(255,255,255,0.28);
+}
+/* 28 May 2026 build h — beekeeper profile avatar. Sits at the start of the
+   .hk-hdr-controls cluster as the user's identity mark. 40px (slightly larger
+   than the 36px action buttons) with a honey-tinted ring so it reads as a
+   person mark rather than another action button. Tap opens Settings, where
+   the photo can be uploaded or removed. */
+.hk-hdr-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--honey);
+  border: 2px solid rgba(255,255,255,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.hk-hdr-avatar:hover, .hk-hdr-avatar:active {
+  transform: scale(1.04);
+  border-color: rgba(255,255,255,0.85);
+}
+.hk-hdr-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Settings → Profile photo row. Top of Settings modal as the user's identity.
+   Tap the row to open the file picker. Remove button only renders when a
+   photo is currently set. */
+.settings-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--cream);
+  border-radius: var(--rs);
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid var(--wax);
+}
+.settings-profile-row:hover, .settings-profile-row:active {
+  background: var(--wax);
+}
+.settings-profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--honey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  line-height: 1;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.55);
+}
+.settings-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.settings-profile-remove {
+  background: transparent;
+  border: 1px solid var(--wax);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-l);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.settings-profile-remove:hover, .settings-profile-remove:active {
+  background: var(--wax);
+  color: var(--text);
 }
 /* Row 2: screen title + (optional) help icon. The screen title is the BIG
    thing — the visual anchor that tells the user what they're doing. */
@@ -2409,6 +2494,12 @@ input[type="checkbox"].hk-chk:checked::after {
             <span class="hk-hdr-apiary-chev" id="home-apiary-chev">▾</span>
           </div>
           <div class="hk-hdr-controls">
+            <!-- 28 May 2026 build h — beekeeper profile avatar. Initial DOM is
+                 the bee fallback; renderHomeAvatar() swaps in the user's photo
+                 from localStorage cache on warm starts, and refreshProfilePicFromServer()
+                 reconciles after sign-in. Tap opens Settings; the Profile photo
+                 row at the top of Settings is where upload/remove happens. -->
+            <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();renderSettingsAvatar();" title="Profile photo" id="home-avatar" class="hk-hdr-avatar" aria-label="Profile photo — tap to manage in Settings">🐝</div>
             <div onclick="openModalEl('modal-settings');addSignOutToSettings();updatePlanBadge();" title="Settings" class="hk-hdr-cog" aria-label="Open settings">&#x2699;&#xFE0F;</div>
             <!-- 7 May 2026 Phase 4ce-13t → 4ce-13u — Messages icon with unread badge.
                  Tap opens the in-app messages modal. Badge shows unread count
@@ -2533,6 +2624,14 @@ input[type="checkbox"].hk-chk:checked::after {
                 if (name) {
                   var gr = document.getElementById('home-greeting-row');
                   if (gr) gr.style.visibility = 'visible';
+                }
+                // 28 May 2026 build h — paint cached profile photo early.
+                // Same logic as renderHomeAvatar() but inlined here because the
+                // main script block hasn't run yet at parse time.
+                var avUrl = localStorage.getItem('hk_avatar_url');
+                var avEl = document.getElementById('home-avatar');
+                if (avEl && avUrl) {
+                  avEl.innerHTML = '<img src="' + avUrl + '" alt="Profile photo">';
                 }
               } catch(e) {}
             })();
@@ -4467,6 +4566,23 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="modal-title" onclick="adminSecretTap()" style="user-select:none;">Settings</div>
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
+
+      <!-- 28 May 2026 build h — Profile photo row. Sits above the founding
+           badge since the user's identity should be the first thing they see
+           when opening Settings. Tap the row to choose a photo via the device's
+           native picker (camera or library on iOS/Android via the Median webview).
+           Client-side: square-crop centred, scale to 512×512 JPEG q80
+           (~40KB), then upload to the profile-pics Supabase bucket at
+           {uid}/avatar.jpg. The Remove button only renders when a photo is set. -->
+      <div class="settings-profile-row" onclick="openProfilePicPicker()">
+        <div id="settings-avatar-img" class="settings-profile-avatar">🐝</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--text);">Profile photo</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:3px;line-height:1.4;">Tap to choose &mdash; shown in your home header</div>
+        </div>
+        <button id="settings-avatar-remove" class="settings-profile-remove" style="display:none;" onclick="event.stopPropagation();removeProfilePic();">Remove</button>
+        <input type="file" id="settings-avatar-input" accept="image/*" style="display:none;" onchange="handleProfilePicInput(event)">
+      </div>
 
       <!-- FOUNDING BADGE — promoted to top (it's a reward, deserves prominence) -->
       <div id="founding-badge-section" style="display:none;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;background:#FAEEDA;border:2px solid #BA7517;">
@@ -7629,6 +7745,136 @@ function hkHapticDramatic() {
       navigator.vibrate([180, 80, 180, 80, 180, 80, 450]);
     }
   } catch(_) {}
+}
+
+// 28 May 2026 build h — beekeeper profile photo helpers.
+// Storage: profile-pics bucket on Supabase, keyed at {uid}/avatar.jpg. Bucket
+// is public-read so getPublicUrl works without signed URLs; path-scoped RLS
+// ensures users can only write/delete their own object. The resolved public
+// URL is cached in localStorage as hk_avatar_url with a ?v= cache-buster so
+// warm starts paint the avatar instantly without a network round-trip.
+function getProfilePicUrl() {
+  try { return localStorage.getItem('hk_avatar_url') || null; } catch(_) { return null; }
+}
+function renderHomeAvatar() {
+  var el = document.getElementById('home-avatar');
+  if (!el) return;
+  var url = getProfilePicUrl();
+  if (url) {
+    el.innerHTML = '<img src="' + url + '" alt="Profile photo">';
+  } else {
+    el.innerHTML = '\u{1F41D}';
+  }
+}
+function renderSettingsAvatar() {
+  var el = document.getElementById('settings-avatar-img');
+  if (el) {
+    var url = getProfilePicUrl();
+    el.innerHTML = url ? '<img src="' + url + '" alt="Profile photo">' : '\u{1F41D}';
+  }
+  var rm = document.getElementById('settings-avatar-remove');
+  if (rm) rm.style.display = getProfilePicUrl() ? 'inline-block' : 'none';
+}
+function openProfilePicPicker() {
+  var inp = document.getElementById('settings-avatar-input');
+  if (inp) inp.click();
+}
+function handleProfilePicInput(e) {
+  var file = e && e.target && e.target.files && e.target.files[0];
+  if (file) uploadProfilePic(file);
+  if (e && e.target) e.target.value = '';
+}
+// Square-crop centred + scale to 512×512 JPEG q80. Returns a Blob, or
+// the original file as a fallback if any canvas step fails.
+function _avatarCropAndCompress(file) {
+  return new Promise(function(resolve) {
+    try {
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var img = new Image();
+        img.onload = function() {
+          try {
+            var side = Math.min(img.width, img.height);
+            var sx = (img.width - side) / 2;
+            var sy = (img.height - side) / 2;
+            var canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            canvas.getContext('2d').drawImage(img, sx, sy, side, side, 0, 0, 512, 512);
+            canvas.toBlob(function(blob) { resolve(blob || file); }, 'image/jpeg', 0.8);
+          } catch(_) { resolve(file); }
+        };
+        img.onerror = function() { resolve(file); };
+        img.src = ev.target.result;
+      };
+      reader.onerror = function() { resolve(file); };
+      reader.readAsDataURL(file);
+    } catch(_) { resolve(file); }
+  });
+}
+async function uploadProfilePic(file) {
+  try {
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    if (!uid) { try { showToast('Sign in to upload a photo'); } catch(_) {} return; }
+    try { showToast('Preparing photo\u2026'); } catch(_) {}
+    var blob = await _avatarCropAndCompress(file);
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+    if (!sb) throw new Error('Supabase unavailable');
+    var path = uid + '/avatar.jpg';
+    try { showToast('Uploading\u2026'); } catch(_) {}
+    var up = await sb.storage.from('profile-pics').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (up && up.error) throw up.error;
+    var pu = sb.storage.from('profile-pics').getPublicUrl(path);
+    var url = (pu && pu.data && pu.data.publicUrl) ? (pu.data.publicUrl + '?v=' + Date.now()) : null;
+    if (!url) throw new Error('No public URL returned');
+    try { localStorage.setItem('hk_avatar_url', url); } catch(_) {}
+    try { renderHomeAvatar(); } catch(_) {}
+    try { renderSettingsAvatar(); } catch(_) {}
+    try { showToast('Profile photo updated \u2713'); } catch(_) {}
+  } catch (e) {
+    console.warn('uploadProfilePic:', e);
+    try { showToast('Upload failed \u2014 ' + (e && e.message ? e.message : 'try again')); } catch(_) {}
+  }
+}
+async function removeProfilePic() {
+  try {
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    if (!uid) return;
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+    if (!sb) return;
+    var path = uid + '/avatar.jpg';
+    try { await sb.storage.from('profile-pics').remove([path]); } catch(_) {}
+    try { localStorage.removeItem('hk_avatar_url'); } catch(_) {}
+    try { renderHomeAvatar(); } catch(_) {}
+    try { renderSettingsAvatar(); } catch(_) {}
+    try { showToast('Profile photo removed'); } catch(_) {}
+  } catch (e) {
+    console.warn('removeProfilePic:', e);
+  }
+}
+// Reconcile the cached avatar URL with what's on the server. Called from
+// onAuthSuccess so the home header picks up an avatar set on another device.
+// HEAD-probes the deterministic public URL: 200 caches it, 404 clears cache,
+// network/CORS failures leave whatever's cached alone.
+async function refreshProfilePicFromServer() {
+  try {
+    var uid = (typeof getUserId === 'function') ? getUserId() : null;
+    if (!uid) return;
+    var sb = (typeof getSupabase === 'function') ? getSupabase() : null;
+    if (!sb) return;
+    var path = uid + '/avatar.jpg';
+    var pu = sb.storage.from('profile-pics').getPublicUrl(path);
+    var baseUrl = (pu && pu.data && pu.data.publicUrl) ? pu.data.publicUrl : null;
+    if (!baseUrl) return;
+    var probeUrl = baseUrl + '?v=' + Date.now();
+    var res = await fetch(probeUrl, { method: 'HEAD' });
+    if (res && res.ok) {
+      try { localStorage.setItem('hk_avatar_url', probeUrl); } catch(_) {}
+    } else if (res && res.status === 404) {
+      try { localStorage.removeItem('hk_avatar_url'); } catch(_) {}
+    }
+    try { renderHomeAvatar(); } catch(_) {}
+    try { renderSettingsAvatar(); } catch(_) {}
+  } catch(_) { /* network/auth blip; keep current cache */ }
 }
 
 // 7 May 2026 Phase 4ce-13t — In-app messages.
@@ -30395,6 +30641,10 @@ async function initAuth() {
 
 async function onAuthSuccess() {
   localStorage.setItem('hk_has_signed_in', '1');
+  // 28 May 2026 build h — reconcile profile photo with the server so a
+  // user signing in on a new device picks up an avatar set elsewhere.
+  // Fire-and-forget; never blocks the sign-in flow.
+  try { if (typeof refreshProfilePicFromServer === 'function') refreshProfilePicFromServer(); } catch(e) {}
   // 27 April 2026 Phase 3a — trial starts on first sign-in.
   // Previously: hardcoded 17 April 2026 floor (beta-cohort workaround so all
   // existing testers shared the same trial timing). For launch this would
@@ -34184,7 +34434,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '28 May 2026 build g';
+var HIVEKEEPER_BUILD = '28 May 2026 build h';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
