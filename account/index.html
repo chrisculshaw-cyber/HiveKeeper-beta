@@ -153,14 +153,14 @@
 <nav class="nav">
   <div class="nav-inner">
     <!-- 28 May 2026 — Back pill at top-left of the nav. Replaces the brand
-         link, which was just navigating to "/" anyway (same destination as
-         returnToApp's navigation fallback). The pill style reads more
-         clearly as an exit affordance than a branding mark, and removing
+         link, which was just navigating to "/" anyway. The pill style reads
+         more clearly as an exit affordance than a branding mark, and removing
          the brand from this nav doesn't lose anything: the HiveKeeper
          identity is heavily present elsewhere on the page (welcome card,
-         tier badge, the avatar). returnToApp() tries window.close() first
-         so script-opened tabs (the native Median path) close and return
-         focus to the app; falls back to navigating to "/" otherwise. -->
+         tier badge, the avatar). returnToApp() routes through the Median JS
+         bridge when inside the wrapped native app, then window.close() for
+         script-opened browser tabs, then history.back() for normal browser
+         navigation — see the function's header comment for the full logic. -->
     <a href="/" onclick="returnToApp(event)" class="hk-back-pill" aria-label="Back to the app">
       <span class="hk-back-arrow" aria-hidden="true">←</span> Back
     </a>
@@ -853,20 +853,58 @@ document.getElementById('signout-link').addEventListener('click', (e) => {
 });
 
 // ── Back to app ──────────────────────────────────────────
-// Two paths to get the user back to the HiveKeeper app:
-//   1. The tab was script-opened (native Median app routes openWebAccountSSO
-//      through a fresh tab) — window.close() works and returns focus to
-//      the native app immediately. Best UX.
-//   2. The tab is part of normal browser navigation (PWA users) —
-//      window.close() throws or no-ops, and we fall back to navigating to /
-//      after a short delay (which is the PWA root for signed-in users).
+// Three paths to get the user back to the HiveKeeper app, tried in order:
+//
+//   1. Native Median app — when this page is loaded inside the wrapped
+//      iOS/Android app, the Median JS bridge is available on `window.median`.
+//      Calling its navigation/back handler pops this webview back to the
+//      previous app screen (works for both same-webview and modal-webview
+//      Median configurations). This is what was missing before: the previous
+//      version only tried window.close(), which silently fails inside the
+//      Median webview because the page wasn't opened via window.open(), and
+//      we'd then fall through to navigating "/" — which on signed-out state
+//      lands on the gethivekeeper.com marketing page instead of the app.
+//
+//   2. Script-opened browser tab — when /account was opened via window.open()
+//      from another tab, window.close() succeeds and the OS returns focus to
+//      the previous tab (the PWA).
+//
+//   3. Normal browser navigation — window.close() no-ops; we fall back to
+//      history.back() to land wherever the user came from, and only navigate
+//      to "/" if there's no history to go back to.
 function returnToApp(e) {
-  if (e) e.preventDefault();
-  try { window.close(); } catch(_) {}
-  // If the tab is still alive 120ms later, close was blocked or no-op;
-  // navigate to the PWA root instead.
-  setTimeout(function() {
-    window.location.href = '/';
+  if (e && e.preventDefault) e.preventDefault();
+
+  // 1. Median bridge. Try the typed API first (median-js-bridge style),
+  //    then the URL-scheme runner that older Median builds expose.
+  if (typeof window.median !== 'undefined' && window.median) {
+    try {
+      if (window.median.navigation && typeof window.median.navigation.deviceBack === 'function') {
+        window.median.navigation.deviceBack();
+        return;
+      }
+      if (typeof window.median.run === 'function') {
+        window.median.run('median://navigation/back');
+        return;
+      }
+    } catch (err) {
+      // Fall through to browser paths.
+      console.warn('[returnToApp] median bridge call failed:', err);
+    }
+  }
+
+  // 2. Try closing the tab. Only works if this tab was script-opened.
+  try { window.close(); } catch (_) {}
+
+  // 3. After a short beat, if still here, use history.back() when there is
+  //    history (more likely to land where the user came from than "/", which
+  //    on gethivekeeper.com is the marketing landing for signed-out visitors).
+  setTimeout(function () {
+    if (window.history && window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
   }, 120);
 }
 
