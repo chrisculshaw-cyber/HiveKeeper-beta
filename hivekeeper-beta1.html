@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260528n">
+  <meta name="app-version" content="20260529a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -3162,12 +3162,17 @@ input[type="checkbox"].hk-chk:checked::after {
         </div>
       </div>
       <div class="hk-hdr-context" id="inspect-hive-select-wrap-outer" style="overflow:hidden;">
-        <!-- 20 May 2026 Phase 4ce-14t — Sort toggle + swipeable hive strip -->
-        <div id="inspect-strip-sort" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;">Sort:</span>
-          <button onclick="setHiveStripSort('urgency')" id="strip-sort-urgency" class="strip-sort-btn strip-sort-active" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.2);color:white;cursor:pointer;font-family:'Syne',sans-serif;">⚡ Urgency</button>
-          <button onclick="setHiveStripSort('row')" id="strip-sort-row" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;">📍 By row</button>
-          <button onclick="setHiveStripSort('name')" id="strip-sort-name" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;">Aa Name</button>
+        <!-- 20 May 2026 Phase 4ce-14t — Sort toggle + swipeable hive strip.
+             HIV-105 build a — Added 'Apiary' option (uses listOrder, matching
+             the apiary list/infographic order) as the new default. Row scrolls
+             horizontally on narrow viewports (iPhone SE etc.) so the four
+             buttons plus Sort: label don't get clipped. -->
+        <div id="inspect-strip-sort" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;">Sort:</span>
+          <button onclick="setHiveStripSort('apiary')" id="strip-sort-apiary" class="strip-sort-btn strip-sort-active" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.2);color:white;cursor:pointer;font-family:'Syne',sans-serif;flex-shrink:0;">🐝 Apiary</button>
+          <button onclick="setHiveStripSort('urgency')" id="strip-sort-urgency" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;flex-shrink:0;">⚡ Urgency</button>
+          <button onclick="setHiveStripSort('row')" id="strip-sort-row" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;flex-shrink:0;">📍 By row</button>
+          <button onclick="setHiveStripSort('name')" id="strip-sort-name" class="strip-sort-btn" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-family:'Syne',sans-serif;flex-shrink:0;">Aa Name</button>
         </div>
         <div id="inspect-hive-strip" style="display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;"></div>
         <!-- 20 May 2026 Phase 4ce-14r — Bare compat elements. Only the name
@@ -4563,18 +4568,27 @@ input[type="checkbox"].hk-chk:checked::after {
       <div onclick="closeModalEl('modal-settings')" style="width:32px;height:32px;background:var(--wax);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;color:var(--text);">&#x2715;</div>
     </div>
 
-      <!-- 28 May 2026 build k — Profile photo row is view-only in the app.
-           The photo is uploaded/removed at gethivekeeper.com/account; this row
-           just mirrors whatever's on the server (renderSettingsAvatar reads
-           from the hk_avatar_url cache). Keeping the avatar visible here gives
-           the user feedback that the photo is set, without duplicating the
-           management UI between app and web. -->
-      <div class="settings-profile-row" style="cursor:default;">
+      <!-- 28 May 2026 build o — Profile photo upload restored inside the app.
+           Build k had moved upload to gethivekeeper.com/account on the
+           assumption that the wrapped Median app could close the web tab and
+           return to the app cleanly. In practice the Median webview shows the
+           web page inline and there's no reliable way to "go back to the app"
+           that works across iOS/Android Median versions — the back affordance
+           ended up dumping users on the marketing landing. The simpler answer
+           is to do the upload right here in the app; the file picker works in
+           every WebView, the Supabase storage call is the same client-side
+           SDK either way, and no separate page means no back-button problem
+           to solve. The helpers (openProfilePicPicker, handleProfilePicInput,
+           uploadProfilePic, removeProfilePic, renderSettingsAvatar) are
+           unchanged — only the markup was disabled in build k. -->
+      <input type="file" id="settings-avatar-input" accept="image/*" style="display:none;" onchange="handleProfilePicInput(event)">
+      <div class="settings-profile-row" onclick="openProfilePicPicker()" role="button" tabindex="0" aria-label="Change profile photo">
         <div id="settings-avatar-img" class="settings-profile-avatar">🐝</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:800;color:var(--text);">Profile photo</div>
-          <div style="font-size:11px;color:var(--text-l);margin-top:3px;line-height:1.4;">Manage in your account below</div>
+          <div style="font-size:11px;color:var(--text-l);margin-top:3px;line-height:1.4;">Tap to choose a new photo</div>
         </div>
+        <button type="button" class="settings-profile-remove" onclick="event.stopPropagation(); removeProfilePic();">Remove</button>
       </div>
 
       <!-- FOUNDING BADGE — promoted to top (it's a reward, deserves prominence) -->
@@ -6178,6 +6192,30 @@ try {
 } catch(_e) { try { console.warn('[startup-compact] failed:', _e.message); } catch(_) {} }
 
 function loadHives(){ try{ return JSON.parse(localStorage.getItem(HIVE_KEY))||[]; }catch{ return []; } }
+// HIV-105 build a (29 May 2026) — shared comparator that mirrors the apiary
+// list's sort (see renderApiary line ~12350). The apiary list is the source
+// of truth for hive order — it sorts by `listOrder` (the drag-to-reorder
+// field, backfilled by renderApiary's migration block) with `createdAt` as
+// fallback. Any inspect-flow surface that shows hives in a list must use
+// this same order, or users get the cognitive mismatch reported in HIV-105
+// (they curate a physical layout on the apiary screen, then find a totally
+// different order in the inspect picker / strip).
+//
+// Accepts an optional `getHive` accessor so wrapped objects (e.g. the
+// inspect strip's `{hive, daysSince, overdueDays}` rows) can be sorted
+// without unwrapping first. Mutates the array in place; returns it for
+// chaining convenience.
+function _sortByListOrder(arr, getHive) {
+  if (!getHive) getHive = function(x){ return x; };
+  arr.sort(function(a, b) {
+    var ha = getHive(a), hb = getHive(b);
+    var ao = typeof ha.listOrder === 'number' ? ha.listOrder : 999999;
+    var bo = typeof hb.listOrder === 'number' ? hb.listOrder : 999999;
+    if (ao !== bo) return ao - bo;
+    return (ha.createdAt || 0) - (hb.createdAt || 0);
+  });
+  return arr;
+}
 function saveHives(h){ localStorage.setItem(HIVE_KEY, JSON.stringify(h)); if (getUserId()) pushHives().catch(function(){}); }
 
 // ═══ DRAG-TO-REORDER HIVE LIST ═══
@@ -7188,7 +7226,12 @@ function hideInspectFields() {
 // changeInspectHive(). Active chip scrolls into view.
 // Phase 4ce-14t — Sort toggle: urgency (default), by row, by name.
 // ═══════════════════════════════════════════════════════════════
-var _hiveStripSort = 'urgency'; // 'urgency' | 'row' | 'name'
+// HIV-105 build a — default changed from 'urgency' to 'apiary' so the
+// inspect strip respects the user's drag-to-reorder layout on the apiary
+// list. The previous default (most-overdue-first) didn't match what the
+// user just saw on the apiary screen and felt out-of-order during a real
+// inspection. Urgency / by-row / by-name are still selectable below.
+var _hiveStripSort = 'apiary'; // 'apiary' (default) | 'urgency' | 'row' | 'name'
 
 function setHiveStripSort(mode) {
   _hiveStripSort = mode;
@@ -7235,7 +7278,11 @@ function renderHiveStrip() {
   });
 
   // Sort based on current mode
-  if (_hiveStripSort === 'row') {
+  if (_hiveStripSort === 'apiary') {
+    // HIV-105 build a — mirror the apiary list's listOrder so the inspect
+    // strip shows hives in the same sequence the user curated.
+    _sortByListOrder(hiveData, function(x){ return x.hive; });
+  } else if (_hiveStripSort === 'row') {
     // Sort by row name (natural sort), then by hive name within row
     hiveData.sort(function(a, b) {
       var rowA = (a.hive.row || 'zzz').toLowerCase();
@@ -7248,7 +7295,7 @@ function renderHiveStrip() {
       return (a.hive.name || '').localeCompare(b.hive.name || '', undefined, { numeric: true });
     });
   } else {
-    // Default: urgency — most overdue first
+    // 'urgency' — most overdue first
     hiveData.sort(function(a, b) { return b.overdueDays - a.overdueDays; });
   }
 
@@ -19871,12 +19918,17 @@ function renderHiveListDropdown(){
   rowNames.forEach(function(row){
     var rowHives = hives.filter(function(h){ return h.row === row; });
     if (!rowHives.length) return;
+    // HIV-105 build a — sort hives within each row by listOrder so the
+    // dropdown matches the apiary list's order.
+    _sortByListOrder(rowHives);
     html += '<div style="padding:8px 14px 4px;font-size:10px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.06em;background:var(--honey-pale);border-bottom:1px solid var(--wax);">'+row+'</div>';
     rowHives.forEach(function(h){ html += hiveItem(h); });
   });
 
   var unassigned = hives.filter(function(h){ return !h.row || h.row === ''; });
   if (unassigned.length) {
+    // HIV-105 build a — sort unassigned hives by listOrder too.
+    _sortByListOrder(unassigned);
     if (rowNames.length) html += '<div style="padding:8px 14px 4px;font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.06em;background:var(--honey-pale);border-bottom:1px solid var(--wax);">No row assigned</div>';
     unassigned.forEach(function(h){ html += hiveItem(h); });
   }
@@ -34505,7 +34557,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '28 May 2026 build n';
+var HIVEKEEPER_BUILD = '29 May 2026 build a';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -40476,6 +40528,10 @@ function initCompassInteraction() {
 // ── INSPECTION HIVE PICKER ───────────────────────────────
 function showInspectionHivePicker() {
   var hives = loadHives().filter(function(h){ return !h.isHidden; });
+  // HIV-105 build a — sort by listOrder so the SOS hive picker shows the
+  // same order as the apiary list. Previously rendered in localStorage
+  // insertion order (effectively creation order, ignoring user reordering).
+  _sortByListOrder(hives);
   var sheet = document.querySelector('#modal-sos .modal-sheet');
   if (!sheet) return;
 
