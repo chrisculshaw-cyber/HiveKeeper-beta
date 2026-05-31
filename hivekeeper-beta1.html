@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260530c">
+  <meta name="app-version" content="20260530d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -25054,7 +25054,7 @@ function renderPlanOrderContent(data) {
         html += '<div style="flex:1;min-width:0;">';
         html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(hiveName) + '</div>';
         if (outstanding) {
-          html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;font-weight:600;color:var(--text-m);margin-top:3px;line-height:1.35;">' + escapeHtml(outstanding.notes.substring(0, 80)) + (outstanding.notes.length > 80 ? '…' : '') + '</div>';
+          html += '<div style="font-family:\'Syne\',sans-serif;font-size:15px;font-weight:700;color:#C62828;margin-top:4px;line-height:1.4;">' + escapeHtml(outstanding.notes.substring(0, 80)) + (outstanding.notes.length > 80 ? '…' : '') + '</div>';
           if (outstanding.tag) {
             html += '<span style="display:inline-block;padding:2px 9px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;margin-top:5px;background:' + outstanding.tag.bg + ';color:' + outstanding.tag.color + ';border:1px solid ' + outstanding.tag.border + ';">' + outstanding.tag.label + '</span>';
           }
@@ -25108,7 +25108,15 @@ function renderPlanOrderContent(data) {
   // and leave, trusting the home banner will remind them the day before.
   // Only when the plan is for today (or no date is set) do we offer "Begin
   // inspection" to start the visit now.
-  var _planDate = (typeof getPlanCustomDate === 'function') ? getPlanCustomDate(data.apiary.id) : null;
+  // HIV-130 fix (30 May 2026 build d) — react to the date SHOWN on screen.
+  // data.suggestedTs is already the effective planned date (the custom date if
+  // the user set one, otherwise the cadence-derived suggestion — applied
+  // upstream in renderPlanContent). Previously this read getPlanCustomDate()
+  // directly, so on first open the screen showed a future suggested date but
+  // the Save button didn't appear until the user nudged the picker (which is
+  // what actually wrote the custom date). Using suggestedTs makes the button
+  // match what the user sees.
+  var _planDate = (data && typeof data.suggestedTs === 'number') ? new Date(data.suggestedTs) : null;
   var _isFuturePlan = false;
   if (_planDate && !isNaN(_planDate.getTime())) {
     var _now = new Date();
@@ -25163,7 +25171,21 @@ function planSaveForLater() {
     // screen's drag handlers (hk_plan_custom_order_<id>), so there's nothing
     // extra to save here — the planned visit will open in the right order.
 
+    // Persist the effective planned date so the home reminder banner (which
+    // reads hk_plan_custom_date_<id>) fires. If the user accepted the suggested
+    // date without nudging the picker, no custom date was stored yet — commit it
+    // here from data.suggestedTs (already custom-or-suggested upstream).
     var planDate = (typeof getPlanCustomDate === 'function') ? getPlanCustomDate(data.apiary.id) : null;
+    if ((!planDate || isNaN(planDate.getTime())) && typeof data.suggestedTs === 'number') {
+      var _d = new Date(data.suggestedTs);
+      if (!isNaN(_d.getTime()) && typeof setPlanCustomDate === 'function') {
+        var _yyyy = _d.getFullYear();
+        var _mm = String(_d.getMonth() + 1).padStart(2, '0');
+        var _dd = String(_d.getDate()).padStart(2, '0');
+        setPlanCustomDate(data.apiary.id, _yyyy + '-' + _mm + '-' + _dd);
+        planDate = _d;
+      }
+    }
     var when = (planDate && !isNaN(planDate.getTime()))
       ? planDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
       : 'the planned date';
@@ -34720,7 +34742,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '30 May 2026 build c';
+var HIVEKEEPER_BUILD = '30 May 2026 build d';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
