@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260529b">
+  <meta name="app-version" content="20260530a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -30637,13 +30637,39 @@ async function initAuth() {
   // Supabase puts #access_token=... in the URL after email confirmation
   if (window.location.hash && window.location.hash.includes('access_token')) {
     // Let Supabase process the hash automatically via onAuthStateChange
+    // 30 May 2026 build a — recovery-link fix. A password-reset link returns
+    // with type=recovery in the hash and fires a PASSWORD_RECOVERY event.
+    // Previously we only handled SIGNED_IN/TOKEN_REFRESHED, so a user following
+    // a reset link was silently signed in via the recovery session and NEVER
+    // prompted to set a new password — the token then expired and they were
+    // locked out again. Now we detect recovery (event or type=recovery in hash)
+    // and open the change-password modal so they actually set a new password.
+    var _isRecovery = window.location.hash.indexOf('type=recovery') !== -1;
     sb.auth.onAuthStateChange(function(event, session) {
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        _currentSession = session;
+        _currentUser = session.user;
+        window.history.replaceState({}, document.title, window.location.pathname);
+        // Establish the authenticated (recovery) context, then prompt for a new password.
+        try { onAuthSuccess(); } catch (e) {}
+        setTimeout(function(){
+          if (typeof openChangePassword === 'function') openChangePassword();
+          showToast('Set a new password to finish resetting your account');
+        }, 400);
+      } else if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session) {
         _currentSession = session;
         _currentUser = session.user;
         // Clean up the URL
         window.history.replaceState({}, document.title, window.location.pathname);
         onAuthSuccess();
+        // If this sign-in actually came from a recovery link (some platforms
+        // surface it as SIGNED_IN rather than PASSWORD_RECOVERY), still prompt.
+        if (_isRecovery) {
+          setTimeout(function(){
+            if (typeof openChangePassword === 'function') openChangePassword();
+            showToast('Set a new password to finish resetting your account');
+          }, 400);
+        }
       } else if (event === 'SIGNED_OUT') {
         _currentUser = null;
         _currentSession = null;
@@ -34557,7 +34583,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '29 May 2026 build b';
+var HIVEKEEPER_BUILD = '30 May 2026 build a';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -39584,6 +39610,53 @@ function openAdminPanel() {
   loadAdminDashboard();
 }
 
+// 30 May 2026 build a — admin-triggered password reset.
+// Calls a worker endpoint that re-checks the admin allowlist server-side and
+// issues the standard Supabase reset email to the target address. The password
+// is never set or seen by the admin; the user completes the reset themselves.
+async function adminSendPasswordReset() {
+  if (!isAdminUser()) { showToast('Admin only'); return; }
+  var emailEl = document.getElementById('admin-reset-email');
+  var btn = document.getElementById('admin-reset-btn');
+  var email = emailEl ? emailEl.value.trim() : '';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('Enter a valid email address');
+    return;
+  }
+  if (!_currentSession || !_currentSession.access_token) {
+    showToast('Session expired — sign in again');
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+  try {
+    var resp = await fetch(WORKER_BASE + '/admin-send-reset', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + _currentSession.access_token
+      },
+      body: JSON.stringify({ email: email })
+    });
+    if (resp.ok) {
+      showToast('Reset email sent to ' + email);
+      if (emailEl) emailEl.value = '';
+    } else if (resp.status === 403) {
+      showToast('Not authorised');
+    } else if (resp.status === 404) {
+      showToast('No account found for that email');
+    } else {
+      var msg = '';
+      try { var d = await resp.json(); msg = d && d.error ? (': ' + d.error) : ''; } catch (e) {}
+      showToast('Could not send reset email' + msg);
+    }
+  } catch (e) {
+    console.error('admin reset failed:', e);
+    showToast('Something went wrong — please try again');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Send reset email'; }
+  }
+}
+
 // 4 May 2026 Phase 4ce-5 — SSO entry to web account.
 // Generates a one-time Supabase magic link via the worker, opens it
 // in a new tab. User lands on /account already signed in, no typing.
@@ -39716,6 +39789,19 @@ async function loadAdminDashboard() {
         + '<span style="flex:1;text-align:left;">Your account</span>'
         + '<span style="font-size:14px;opacity:0.85;" aria-label="Opens in a new tab">&#x2197;</span>'
       + '</button>';
+
+    // 30 May 2026 build a — admin password-reset tool. Triggers the NORMAL
+    // Supabase reset email to a target user via the worker (service-role,
+    // server-side admin allowlist re-check). The admin never sees or sets the
+    // user's password — this only sends them the same secure self-service link.
+    html += '<div style="background:var(--card,#fff);border:1px solid var(--wax);border-radius:var(--rs);padding:14px;margin-bottom:14px;">'
+      + '<div style="font-size:11px;font-weight:800;color:var(--honey);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Send password reset</div>'
+      + '<div style="font-size:12px;color:var(--text-l);margin-bottom:10px;">Emails a secure reset link to a locked-out user. You never see or set their password.</div>'
+      + '<input id="admin-reset-email" type="email" placeholder="user@example.com" autocomplete="off" '
+        + 'style="width:100%;padding:12px;border:1px solid var(--wax);border-radius:var(--rs);font-size:14px;font-family:\'Syne\',sans-serif;box-sizing:border-box;margin-bottom:10px;">'
+      + '<button type="button" id="admin-reset-btn" onclick="adminSendPasswordReset()" '
+        + 'style="width:100%;background:var(--honey);border:none;border-radius:var(--rs);padding:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;cursor:pointer;">Send reset email</button>'
+      + '</div>';
 
     // GROUND TRUTH from auth.users (if worker call succeeded)
     if (authStats && authStats.ok) {
