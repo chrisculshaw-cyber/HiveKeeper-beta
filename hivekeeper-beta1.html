@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260530b">
+  <meta name="app-version" content="20260530c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -25102,12 +25102,34 @@ function renderPlanOrderContent(data) {
     html += '</div>';
   }
 
-  // Begin inspection CTA
+  // Begin inspection / Save-for-later CTA
+  // HIV-130 (30 May 2026 build c) — if the apiary has a planned date in the
+  // FUTURE, don't push the user into a live inspection. Let them save the plan
+  // and leave, trusting the home banner will remind them the day before.
+  // Only when the plan is for today (or no date is set) do we offer "Begin
+  // inspection" to start the visit now.
+  var _planDate = (typeof getPlanCustomDate === 'function') ? getPlanCustomDate(data.apiary.id) : null;
+  var _isFuturePlan = false;
+  if (_planDate && !isNaN(_planDate.getTime())) {
+    var _now = new Date();
+    var _todayMid = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate()).getTime();
+    var _planMid = new Date(_planDate.getFullYear(), _planDate.getMonth(), _planDate.getDate()).getTime();
+    _isFuturePlan = _planMid > _todayMid;
+  }
   html += '<div style="padding:22px;">';
-  html += '<button onclick="planBeginVisit()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
-  html += 'Begin inspection <span style="font-size:18px;">→</span>';
-  html += '</button>';
-  html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:8px;">In preview — full inspection flow coming soon</div>';
+  if (_isFuturePlan) {
+    var _planLabel = _planDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    html += '<button onclick="planSaveForLater()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
+    html += 'Save planned inspection <span style="font-size:18px;">✓</span>';
+    html += '</button>';
+    html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:13px;color:var(--text-m);margin-top:10px;line-height:1.45;">Planned for ' + escapeHtml(_planLabel) + '. We\'ll remind you the day before — no need to do anything now.</div>';
+    html += '<button onclick="planBeginVisit()" style="width:100%;background:transparent;color:var(--text-m);border:none;padding:12px;margin-top:6px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Or inspect now →</button>';
+  } else {
+    html += '<button onclick="planBeginVisit()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
+    html += 'Begin inspection <span style="font-size:18px;">→</span>';
+    html += '</button>';
+    html += '<div style="text-align:center;font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:12px;color:var(--text-l);margin-top:8px;">In preview — full inspection flow coming soon</div>';
+  }
   html += '</div>';
 
   // Feedback prompt
@@ -25123,6 +25145,38 @@ function renderPlanOrderContent(data) {
 function setPlanOrderMode(mode) {
   window._planOrderMode = mode;
   renderPlan();
+}
+
+// HIV-130 (30 May 2026 build c) — save a future-dated plan and leave.
+// The planned date is already persisted (getPlanCustomDate / the date picker).
+// This just acknowledges it, persists the chosen hive order so the planned
+// visit opens in the right order when the day comes, and returns the user home
+// where the day-before reminder banner lives. No visit is started.
+function planSaveForLater() {
+  try {
+    var data = buildPlanData();
+    if (!data || !data.apiary) {
+      if (typeof showToast === 'function') showToast('Pick an apiary first');
+      return;
+    }
+    // Note: the chosen hive order is already persisted live by the Plan
+    // screen's drag handlers (hk_plan_custom_order_<id>), so there's nothing
+    // extra to save here — the planned visit will open in the right order.
+
+    var planDate = (typeof getPlanCustomDate === 'function') ? getPlanCustomDate(data.apiary.id) : null;
+    var when = (planDate && !isNaN(planDate.getTime()))
+      ? planDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+      : 'the planned date';
+    if (typeof showToast === 'function') showToast('✓ Planned for ' + when + ' · you\'ll be reminded the day before');
+    // Refresh home so the reminder banner reflects the saved plan, then go there.
+    setTimeout(function(){
+      try { _userOnHome = true; goTo('s-home'); } catch(e) {}
+      try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
+    }, 600);
+  } catch(e) {
+    console.error('planSaveForLater error:', e);
+    if (typeof showToast === 'function') showToast('Could not save the plan');
+  }
 }
 
 // Phase 3 — connects Begin inspection to the visit flow.
@@ -34666,7 +34720,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '30 May 2026 build b';
+var HIVEKEEPER_BUILD = '30 May 2026 build c';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
