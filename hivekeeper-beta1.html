@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260530j">
+  <meta name="app-version" content="20260601a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -26392,6 +26392,37 @@ var currentApiaryId = null;
 function loadApiaries() {
   try { return JSON.parse(localStorage.getItem(APIARY_KEY)) || []; } catch(e) { return []; }
 }
+// HIV-149 (1 June 2026) — unified shared-apiary flag reader. The codebase
+// historically set TWO flags for "this apiary is shared TO me": `sharedWith`
+// (accept-invite paths) and `isShared` (pull-from-cloud self-heal). They were
+// never reconciled, so a row could carry either, both, or neither depending on
+// which code last wrote it. These helpers are the single source of truth from
+// now on: treat an apiary as shared-to-me if EITHER flag is truthy, and write
+// BOTH flags whenever we stamp a row as shared so legacy readers stay correct.
+function apiaryIsShared(a) { return !!(a && (a.isShared || a.sharedWith)); }
+function apiaryShareRole(a) { return (a && a.role) ? a.role : null; }
+// True if the current user may WRITE this apiary's hives/rows (owner or manager).
+function canWriteApiaryStructure(a) {
+  if (!a) return false;
+  if (!apiaryIsShared(a)) return true;            // I own it
+  return apiaryShareRole(a) === 'manager';
+}
+// True if the current user may write INSPECTIONS here (owner, manager, or inspector).
+function canWriteApiaryInspections(a) {
+  if (!a) return false;
+  if (!apiaryIsShared(a)) return true;            // I own it
+  var r = apiaryShareRole(a);
+  return r === 'manager' || r === 'inspector';
+}
+// Stamp a row as shared-to-me, setting BOTH flags + role for forward/back compat.
+function stampSharedApiary(a, role, ownerId, ownerName) {
+  if (!a) return a;
+  a.isShared = true; a.sharedWith = true;
+  if (role) a.role = role;
+  if (ownerId) a.ownerId = ownerId;
+  if (ownerName) a.sharedByName = ownerName;
+  return a;
+}
 function saveApiaries(a) {
   localStorage.setItem(APIARY_KEY, JSON.stringify(a));
   if (!getUserId()) return;
@@ -34812,7 +34843,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '30 May 2026 build j';
+var HIVEKEEPER_BUILD = '1 June 2026 build a';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -35838,13 +35869,21 @@ async function pushHives() {
   var uid = getUserId(); if (!uid) return;
   var hives = JSON.parse(localStorage.getItem('hk_hives_v2') || '[]');
   if (!hives.length) return;
-  // Never push demo data, shared apiary hives, or hives owned by another user
-  var sharedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
-    .filter(function(a){ return a.sharedWith; }).map(function(a){ return a.id; });
+  // HIV-149 (1 June 2026) — was: drop ALL hives in any shared apiary, which is
+  // why a manager-sharee's hive edits never left the device. Now: keep hives I'm
+  // allowed to write — apiaries I own, OR apiaries shared to me as 'manager'.
+  // Build a map of apiaryId -> apiary row so we can check role per hive.
+  var _apById = {};
+  JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
+    .forEach(function(a){ if (a && a.id) _apById[a.id] = a; });
   hives = hives.filter(function(h) {
     if (!h.id || h.id.toString().startsWith('demo-')) return false;
-    if (sharedApiaryIds.indexOf(h.apiaryId) !== -1) return false;
-    if (h.userId && h.userId !== uid) return false;
+    var ap = _apById[h.apiaryId];
+    // If the hive is in a shared apiary, only push when I have manager rights.
+    if (ap && (ap.isShared || ap.sharedWith) && ap.role !== 'manager') return false;
+    // Legacy guard: a hive explicitly stamped with someone else's userId that I
+    // can't write (not a manager apiary) stays local.
+    if (h.userId && h.userId !== uid && !(ap && ap.role === 'manager')) return false;
     return true;
   });
   if (!hives.length) return;
@@ -35874,23 +35913,34 @@ async function pushHives() {
   var { error } = await sb.from('hives').upsert(rows, { onConflict: 'id' });
   if (error) {
     console.warn('Hive push error:', error.message, error.code);
-    // 24 April 2026: don't show raw Postgres error text to users — it's alarming
-    // and unhelpful. Your data is already saved locally (write-first architecture);
-    // the queue will retry automatically. Keep the console log for diagnostics.
-    showToast('A hive couldn\u2019t sync just now — we\u2019ll try again shortly');
-    // 27 April 2026 — Phase 1c: enqueue for the dead-letter store path
-    rows.forEach(function(r){ try { queueOfflineSave('hives', r); } catch(e) {} });
+    // HIV-149 (1 June 2026) — distinguish a PERMISSION rejection (RLS) from a
+    // transient failure. A permission error will NEVER succeed on retry, so the
+    // old "we'll try again shortly" message was actively misleading — it's why a
+    // sharee saw "synced" while the write was silently refused forever. Surface
+    // permission errors honestly so the keeper knows the change didn't save.
+    var _perm = (error.code === '42501') || /row-level security|permission denied|violates row-level/i.test(error.message || '');
+    if (_perm) {
+      showToast('You don\u2019t have permission to change hives in this shared apiary');
+    } else {
+      showToast('A hive couldn\u2019t sync just now — we\u2019ll try again shortly');
+      rows.forEach(function(r){ try { queueOfflineSave('hives', r); } catch(e) {} });
+    }
   }
 }
 
-// Returns set of hive IDs that belong to shared (not owned) apiaries — never push these
+// HIV-149 (1 June 2026) — hive IDs I must NOT push inspections for. A sharee may
+// write inspections when role is manager OR inspector; only viewer/no-role shared
+// apiaries are blocked here. (Hive structure itself is gated separately in pushHives.)
 function getSharedHiveIds() {
-  var sharedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
-    .filter(function(a){ return a.sharedWith; })
+  var blockedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
+    .filter(function(a){
+      if (!(a.isShared || a.sharedWith)) return false;       // I own it -> not blocked
+      return !(a.role === 'manager' || a.role === 'inspector'); // viewer/unknown -> blocked
+    })
     .map(function(a){ return a.id; });
-  if (!sharedApiaryIds.length) return [];
+  if (!blockedApiaryIds.length) return [];
   return JSON.parse(localStorage.getItem('hk_hives_v2') || '[]')
-    .filter(function(h){ return sharedApiaryIds.indexOf(h.apiaryId) !== -1; })
+    .filter(function(h){ return blockedApiaryIds.indexOf(h.apiaryId) !== -1; })
     .map(function(h){ return h.id; });
 }
 
@@ -35946,7 +35996,13 @@ async function pushInspections() {
   });
   var { error } = await sb.from('inspections').upsert(rows, { onConflict: 'id' });
   if (error) {
-    console.warn('Inspection push error:', error.message);
+    console.warn('Inspection push error:', error.message, error.code);
+    // HIV-149 (1 June 2026) — surface RLS permission rejections honestly (see pushHives).
+    var _permI = (error.code === '42501') || /row-level security|permission denied|violates row-level/i.test(error.message || '');
+    if (_permI) {
+      showToast('You don\u2019t have permission to add inspections in this shared apiary');
+      return;
+    }
     showToast('Cloud backup will retry shortly \u2014 your inspection is safe on your phone');
     // 27 April 2026 — Phase 1c: also enqueue the rows so the offline queue's
     // attempts counter (5 strikes → dead-letter store) tracks this failure.
@@ -36366,11 +36422,19 @@ async function pullFromSupabase() {
 
     // Pull hives (own + shared apiary hives)
     var { data: hives, error: he } = await sb.from('hives').select('*').eq('user_id', uid);
-    // Also pull hives from shared apiaries
+    // Also pull hives from shared apiaries (apiaries shared TO me)
     var sharedApiaryIds = (sharedShares || []).map(function(s){ return s.apiary_id; });
+    // HIV-149 (1 June 2026) — ALSO pull every hive in apiaries I OWN, regardless of
+    // user_id. A manager-sharee (e.g. Daren) writes hives stamped with THEIR user_id
+    // into MY apiary; the old query (.eq('user_id', uid)) never saw them, so the
+    // owner could not see collaborator additions. Owner-owned apiary ids:
+    var ownedApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]')
+      .filter(function(a){ return !(a.isShared || a.sharedWith); })
+      .map(function(a){ return a.id; });
+    var pullApiaryIds = sharedApiaryIds.concat(ownedApiaryIds).filter(function(v,i,arr){ return arr.indexOf(v)===i; });
     var sharedHives = [];
-    for (var shi = 0; shi < sharedApiaryIds.length; shi++) {
-      var { data: ah } = await sb.from('hives').select('*').eq('apiary_id', sharedApiaryIds[shi]);
+    for (var shi = 0; shi < pullApiaryIds.length; shi++) {
+      var { data: ah } = await sb.from('hives').select('*').eq('apiary_id', pullApiaryIds[shi]);
       if (ah) sharedHives = sharedHives.concat(ah);
     }
     var allHives = (hives || []).concat(sharedHives);
@@ -36434,8 +36498,26 @@ async function pullFromSupabase() {
       localStorage.setItem('hk_hives_v2', JSON.stringify(mapped));
     }
 
-    // Pull inspections
+    // Pull inspections (own)
     var { data: inspections, error: ie } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at', { ascending: false }).limit(500);
+    // HIV-149 (1 June 2026) — ALSO pull inspections authored by collaborators on
+    // apiaries I can see (own + shared). The old own-only query meant an owner never
+    // saw a sharee's inspections and a sharee never re-pulled the owner's after the
+    // one-time accept hydrate. Pull by apiary_id across all apiaries I hold.
+    try {
+      var _allApiaryIds = JSON.parse(localStorage.getItem('hk_apiaries_v1') || '[]').map(function(a){ return a.id; });
+      if (_allApiaryIds.length) {
+        var { data: _collabInsp } = await sb.from('inspections').select('*')
+          .in('apiary_id', _allApiaryIds).order('inspected_at', { ascending: false }).limit(500);
+        if (_collabInsp && _collabInsp.length) {
+          var _seenI = {};
+          inspections = (inspections || []);
+          inspections.forEach(function(x){ if (x && x.id) _seenI[x.id] = true; });
+          _collabInsp.forEach(function(x){ if (x && x.id && !_seenI[x.id]) { _seenI[x.id] = true; inspections.push(x); } });
+          ie = null; // we have a valid merged set
+        }
+      }
+    } catch(e) { console.warn('[pullFromSupabase] collab inspection pull failed', e); }
     if (!ie && inspections && inspections.length) {
       var mapped = inspections.map(function(i) {
         return {
