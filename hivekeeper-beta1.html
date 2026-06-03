@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260603f">
+  <meta name="app-version" content="20260603g">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -24751,6 +24751,17 @@ function planEditUnlock() {
     renderPlan();
   } catch(e) { console.warn('[HIV-151] planEditUnlock error:', e); }
 }
+// HIV-151 — X / cancel on the setting+editing state. Clears the planned date and
+// lock entirely (back to unset), per Chris: tapping X means "don't keep this plan".
+function planCloseClear() {
+  try {
+    var data = (typeof buildPlanData === 'function') ? buildPlanData() : null;
+    var apiaryId = data && data.apiary ? data.apiary.id : null;
+    if (apiaryId && typeof setPlanCustomDate === 'function') setPlanCustomDate(apiaryId, null);
+    if (typeof showToast === 'function') showToast('Plan cleared');
+    renderPlan();
+  } catch(e) { console.warn('[HIV-151] planCloseClear error:', e); }
+}
 
 // 22 May 2026 Phase 3.5 — Set the plan date by tapping a forecast day.
 // daysFromToday is the offset from now (0 = today, 1 = tomorrow, etc).
@@ -25401,6 +25412,9 @@ function renderPlanOrderContent(data) {
     html += '</button>';
     html += '<div style="text-align:center;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:600;color:var(--text-m);margin-top:10px;line-height:1.45;">Planned for ' + escapeHtml(_planLabel) + '. We\'ll remind you the day before — no need to do anything now.</div>';
     html += '<button onclick="planBeginVisit()" style="width:100%;background:transparent;color:var(--text-m);border:none;padding:12px;margin-top:6px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Or inspect now →</button>';
+    // HIV-151 — X / close on the setting+editing state: clears the plan entirely
+    // (back to unset). Per Chris: X means "don't keep this plan".
+    html += '<button onclick="planCloseClear()" style="width:100%;background:transparent;color:var(--text-l);border:none;padding:10px;margin-top:2px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">✕ Cancel — clear this plan</button>';
     }
   } else {
     html += '<button onclick="planBeginVisit()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
@@ -25460,11 +25474,13 @@ function planSaveForLater() {
       ? planDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
       : 'the planned date';
     if (typeof showToast === 'function') showToast('✓ Planned for ' + when + ' · you\'ll be reminded the day before');
-    // Refresh home so the reminder banner reflects the saved plan, then go there.
+    // HIV-151 — stay on the Plan screen and settle into the locked "Inspection
+    // planned" card (padlock) rather than bouncing to home. Same result whether
+    // this is the first save or a re-save after Edit. setPlanCustomDate above
+    // already set the lock; re-render shows the locked card in place.
     setTimeout(function(){
-      try { _userOnHome = true; goTo('s-home'); } catch(e) {}
-      try { if (typeof renderDashboard === 'function') renderDashboard(); } catch(e) {}
-    }, 600);
+      try { if (typeof renderPlan === 'function') renderPlan(); } catch(e) {}
+    }, 350);
   } catch(e) {
     console.error('planSaveForLater error:', e);
     if (typeof showToast === 'function') showToast('Could not save the plan');
@@ -35061,7 +35077,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '3 June 2026 build f';
+var HIVEKEEPER_BUILD = '3 June 2026 build g';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
