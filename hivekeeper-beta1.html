@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260603b">
+  <meta name="app-version" content="20260603d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2660,6 +2660,12 @@ input[type="checkbox"].hk-chk:checked::after {
          surfaces when one is due tomorrow, today, or overdue. Populated by
          renderInspectionDueBanner(); hidden when nothing is due. -->
     <div id="inspection-due-banner" style="display:none;margin:12px 16px 0;border-radius:14px;padding:14px 16px;align-items:center;gap:12px;"></div>
+
+    <!-- PLANNED INSPECTION CARD (HIV-151, 3 June 2026).
+         Distinct from the inspection-DUE banner above: this shows a date the
+         keeper has deliberately PLANNED (and locked), however many days ahead,
+         with that day's forecast if within range. "Your plan" vs "when due". -->
+    <div id="planned-inspection-card" style="display:none;margin:12px 16px 0;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#2D5016,#3E6B1F);align-items:center;gap:12px;"></div>
 
     <!-- WELCOME BANNER — first-run only (Phase 4s).
          Single purpose: introduce the ? icons. Community CTA moved to
@@ -8431,6 +8437,87 @@ function renderInspectionDueBanner() {
   }
 }
 
+// HIV-151 (3 June 2026) — PLANNED inspection card. Separate from the due-banner.
+// Shows the keeper's committed (locked) plan for the most imminent apiary,
+// however many days ahead, with that day's forecast if it's within range.
+// Reads the same hk_plan_custom_date_<id> the Plan flow persists; only surfaces
+// dates that are LOCKED (a deliberate plan), not auto-suggestions.
+async function renderPlannedInspectionCard() {
+  var el = document.getElementById('planned-inspection-card');
+  if (!el) return;
+  var hide = function(){ el.style.display = 'none'; el.innerHTML = ''; };
+  try {
+    var apiaries = (typeof loadApiaries === 'function') ? loadApiaries() : [];
+    if (!apiaries || !apiaries.length) return hide();
+
+    var now = new Date();
+    var todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var DAY = 86400000;
+
+    // Most imminent FUTURE locked plan (today or later). Overdue/ due-tomorrow is
+    // the due-banner's job; this card is the forward-looking "you've planned X".
+    var best = null; // { name, days, date }
+    apiaries.forEach(function(ap){
+      if (!ap || !ap.id) return;
+      if (typeof isPlanLocked === 'function' && !isPlanLocked(ap.id)) return; // only locked plans
+      var raw;
+      try { raw = localStorage.getItem('hk_plan_custom_date_' + ap.id); } catch(e) { raw = null; }
+      if (!raw) return;
+      var d = new Date(raw);
+      if (isNaN(d.getTime())) return;
+      var dueMid = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      var days = Math.round((dueMid - todayMid) / DAY);
+      if (days < 0) return; // past plans aren't "planned ahead"
+      if (!best || days < best.days) best = { name: ap.name || 'your apiary', days: days, date: d };
+    });
+
+    if (!best) return hide();
+
+    var dayLabel = best.date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    var inLabel = best.days === 0 ? 'today' : best.days === 1 ? 'tomorrow' : 'in ' + best.days + ' days';
+
+    // Forecast for the planned day, if within the 14-day window.
+    var wxHtml = '';
+    try {
+      if (typeof fetchForecast14d === 'function') {
+        var forecast = await fetchForecast14d();
+        var fd = forecast && forecast.daily;
+        if (fd && fd.temperature_2m_max && best.days < fd.temperature_2m_max.length) {
+          var i = best.days;
+          var maxT = Math.round(fd.temperature_2m_max[i]);
+          var code = fd.weathercode ? fd.weathercode[i] : null;
+          var precip = fd.precipitation_sum ? fd.precipitation_sum[i] : 0;
+          var windKmh = fd.windspeed_10m_max ? fd.windspeed_10m_max[i] : 0;
+          var windMph = Math.round((windKmh || 0) * 0.621371);
+          var icon = (typeof WMO_EMOJI !== 'undefined' && code != null && WMO_EMOJI[code]) ? WMO_EMOJI[code] : '\uD83C\uDF21\uFE0F';
+          var v = (typeof flyingVerdict === 'function') ? flyingVerdict(maxT, windKmh, precip, { rainThreshold: 1 }) : { label: '' };
+          wxHtml = '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;">' +
+            '<span style="font-size:13px;color:rgba(255,255,255,0.95);font-weight:700;">' + icon + ' ' + maxT + '\u00B0C</span>' +
+            '<span style="font-size:13px;color:rgba(255,255,255,0.95);font-weight:700;">\uD83C\uDF2C\uFE0F ' + windMph + ' mph</span>' +
+            (v.label ? '<span style="font-size:11px;color:#1B5E20;background:rgba(255,255,255,0.92);border-radius:8px;padding:2px 8px;font-weight:800;">' + escapeHtml(v.label) + '</span>' : '') +
+            '</div>';
+        }
+      }
+    } catch(e) { /* forecast optional — show the plan regardless */ }
+
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;gap:12px;width:100%;">' +
+        '<div style="font-size:24px;">\uD83D\uDDD3\uFE0F</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-family:\'Syne\',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.8);">Planned inspection</div>' +
+          '<div style="font-size:14px;font-weight:800;color:white;line-height:1.3;margin-top:1px;">' + escapeHtml(best.name) + ' \u00b7 ' + inLabel + '</div>' +
+          '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:14px;font-weight:600;color:rgba(255,255,255,0.92);">' + escapeHtml(dayLabel) + '</div>' +
+          wxHtml +
+        '</div>' +
+        '<button onclick="try{window._planActiveTab=\'plan\';goTo(\'s-plan\');}catch(e){}" style="background:rgba(255,255,255,0.92);border:none;border-radius:20px;padding:8px 14px;color:#2D5016;font-size:12px;font-weight:800;cursor:pointer;font-family:\'Syne\',sans-serif;white-space:nowrap;align-self:flex-start;">Plan \u2192</button>' +
+      '</div>';
+    el.style.display = 'flex';
+  } catch(e) {
+    if (window._hkDiag) console.warn('[planned-inspection-card]', e);
+    hide();
+  }
+}
+
 function renderDashboard(){
   updateApiaryNameDisplays();
   // 5 May 2026 Phase 4ce-5s — only reveal the chevron + greeting row when
@@ -8468,6 +8555,7 @@ function renderDashboard(){
   try { if (typeof renderFoundingBadge === 'function') renderFoundingBadge(); } catch(e) {}
   // HIV-130 (30 May 2026 build b) — planned-inspection due reminder.
   try { if (typeof renderInspectionDueBanner === 'function') renderInspectionDueBanner(); } catch(e) {}
+  try { if (typeof renderPlannedInspectionCard === 'function') renderPlannedInspectionCard(); } catch(e) {}
   // Show sticky setup prompt if onboarding was never completed
   var setupBanner = document.getElementById('setup-incomplete-banner');
   var onboarded = localStorage.getItem('hk_onboarded') === '1';
@@ -24588,6 +24676,39 @@ function setPlanCustomDate(apiaryId, dateStr) {
     if (dateStr) localStorage.setItem('hk_plan_custom_date_' + apiaryId, dateStr);
     else localStorage.removeItem('hk_plan_custom_date_' + apiaryId);
   } catch(e) {}
+  // HIV-151 (3 June 2026) — persist to the apiary record so the planned date
+  // survives a re-pull (localStorage alone was wiped by cloud pulls). Also set
+  // the lock flag so the auto-suggestion can't silently move a committed date.
+  // Best-effort: localStorage above is already correct, so a failure here is
+  // non-fatal. The apiaries ownership-lock trigger prevents this touching user_id.
+  try {
+    var _sbP = getSupabase();
+    if (_sbP) {
+      _sbP.from('apiaries').update({
+        planned_visit_date: dateStr || null,
+        planned_visit_locked: dateStr ? true : false
+      }).eq('id', apiaryId).then(function(){}, function(err){
+        console.warn('[HIV-151] planned date row write failed (local ok):', err);
+      });
+    }
+    // mirror lock state locally for instant UI without a round-trip
+    if (dateStr) localStorage.setItem('hk_plan_locked_' + apiaryId, '1');
+    else localStorage.removeItem('hk_plan_locked_' + apiaryId);
+  } catch(e2) { console.warn('[HIV-151] planned date persist error (local ok):', e2); }
+}
+// HIV-151 — is the apiary's plan currently locked? (local mirror of planned_visit_locked)
+function isPlanLocked(apiaryId) {
+  if (!apiaryId) return false;
+  try { return localStorage.getItem('hk_plan_locked_' + apiaryId) === '1'; } catch(e) { return false; }
+}
+// HIV-151 — unlock the plan (e.g. when a visit starts, so a fresh plan can be set).
+function unlockPlan(apiaryId) {
+  if (!apiaryId) return;
+  try { localStorage.removeItem('hk_plan_locked_' + apiaryId); } catch(e) {}
+  try {
+    var _sbU = getSupabase();
+    if (_sbU) _sbU.from('apiaries').update({ planned_visit_locked: false }).eq('id', apiaryId).then(function(){}, function(){});
+  } catch(e) {}
 }
 function openPlanDatePicker() {
   var input = document.getElementById('plan-custom-date-input');
@@ -24617,6 +24738,18 @@ function planClearCustomDate(apiaryId) {
   setPlanCustomDate(apiaryId, null);
   if (typeof showToast === 'function') showToast('Reverted to suggested date');
   renderPlan();
+}
+// HIV-151 — unlock a committed plan so the date can be edited. Keeps the date
+// value (so the picker opens on the current plan) but clears the lock; re-saving
+// re-locks it.
+function planEditUnlock() {
+  try {
+    var data = (typeof buildPlanData === 'function') ? buildPlanData() : null;
+    var apiaryId = data && data.apiary ? data.apiary.id : null;
+    if (apiaryId && typeof unlockPlan === 'function') unlockPlan(apiaryId);
+    if (typeof showToast === 'function') showToast('Plan unlocked — adjust the date, then save');
+    renderPlan();
+  } catch(e) { console.warn('[HIV-151] planEditUnlock error:', e); }
 }
 
 // 22 May 2026 Phase 3.5 — Set the plan date by tapping a forecast day.
@@ -25209,11 +25342,25 @@ function renderPlanOrderContent(data) {
   html += '<div style="padding:22px;">';
   if (_isFuturePlan) {
     var _planLabel = _planDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    var _apIdForLock = (data && data.apiary) ? data.apiary.id : null;
+    var _locked = _apIdForLock && (typeof isPlanLocked === 'function') && isPlanLocked(_apIdForLock);
+    if (_locked) {
+      // HIV-151 — committed plan: locked card + Edit button. Picker is inert
+      // until the user taps Edit, and the auto-suggestion can't move this date.
+      html += '<div style="width:100%;background:var(--cream);border:2px solid var(--forest);border-radius:12px;padding:18px;text-align:center;box-sizing:border-box;">';
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--forest);margin-bottom:4px;">🔒 Inspection planned</div>';
+      html += '<div style="font-family:\'Cormorant Garamond\',serif;font-style:italic;font-size:22px;font-weight:600;color:var(--text-d);">' + escapeHtml(_planLabel) + '</div>';
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:600;color:var(--text-m);margin-top:6px;line-height:1.45;">We\'ll remind you the day before. Locked so it won\'t move on its own.</div>';
+      html += '</div>';
+      html += '<button onclick="planEditUnlock()" style="width:100%;background:transparent;color:var(--forest);border:1px solid var(--forest);padding:12px;margin-top:10px;border-radius:10px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Edit plan</button>';
+      html += '<button onclick="planBeginVisit()" style="width:100%;background:transparent;color:var(--text-m);border:none;padding:12px;margin-top:4px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Or inspect now →</button>';
+    } else {
     html += '<button onclick="planSaveForLater()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
     html += 'Save planned inspection <span style="font-size:18px;">✓</span>';
     html += '</button>';
     html += '<div style="text-align:center;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:600;color:var(--text-m);margin-top:10px;line-height:1.45;">Planned for ' + escapeHtml(_planLabel) + '. We\'ll remind you the day before — no need to do anything now.</div>';
     html += '<button onclick="planBeginVisit()" style="width:100%;background:transparent;color:var(--text-m);border:none;padding:12px;margin-top:6px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Or inspect now →</button>';
+    }
   } else {
     html += '<button onclick="planBeginVisit()" style="width:100%;background:var(--forest);color:var(--cream);border:none;padding:18px;border-radius:12px;font-family:\'Syne\',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;">';
     html += 'Begin inspection <span style="font-size:18px;">→</span>';
@@ -25434,6 +25581,9 @@ window.HK.Visit = (function() {
     visits.push(visit);
     if (!saveAll(visits)) return null;
     setCurrentVisitId(id);
+    // HIV-151 — starting a visit fulfils the committed plan, so release the lock
+    // for this apiary. The next plan can then be set freely once the visit ends.
+    try { if (typeof unlockPlan === 'function') unlockPlan(apiaryId); } catch(e) {}
     return visit;
   }
 
@@ -34855,7 +35005,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '3 June 2026 build b';
+var HIVEKEEPER_BUILD = '3 June 2026 build d';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -36388,6 +36538,23 @@ async function pullFromSupabase() {
         };
       });
       localStorage.setItem('hk_apiaries_v1', JSON.stringify(mapped));
+      // HIV-151 (3 June 2026) — restore each apiary's planned visit date + lock
+      // from the server record into the localStorage keys the home banner and
+      // calendar read. This is what makes the planned date survive a re-pull
+      // (previously localStorage-only, so a pull wiped it).
+      try {
+        apiaries.forEach(function(a) {
+          if (!a || !a.id) return;
+          if (a.planned_visit_date) {
+            localStorage.setItem('hk_plan_custom_date_' + a.id, a.planned_visit_date);
+            if (a.planned_visit_locked) localStorage.setItem('hk_plan_locked_' + a.id, '1');
+            else localStorage.removeItem('hk_plan_locked_' + a.id);
+          } else {
+            localStorage.removeItem('hk_plan_custom_date_' + a.id);
+            localStorage.removeItem('hk_plan_locked_' + a.id);
+          }
+        });
+      } catch(e) { console.warn('[HIV-151] planned date restore failed:', e); }
     }
 
     // Pull shared apiaries (where this user is a collaborator — match by user_id OR email)
