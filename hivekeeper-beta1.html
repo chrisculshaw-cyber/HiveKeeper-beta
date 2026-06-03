@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260603e">
+  <meta name="app-version" content="20260603f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -24856,6 +24856,37 @@ function planSetCustomOrderRaw(apiaryId, hiveIds) {
 
 // Returns hive objects in custom order, reconciled with current hives.
 // If no custom order is saved, returns hives in auto-order (row-based).
+// HIV-151b (3 June 2026) — per-apiary "skip this inspection" for individual hives.
+// Local-only and transient by design: skipping is personal to the visit you're
+// about to do (e.g. a hive you've just hived a swarm into and don't want to
+// disturb). Stored as hk_plan_skipped_<apiaryId> (JSON array of hive ids).
+// Cleared when a visit starts, so the next plan is fresh.
+function getSkippedHives(apiaryId) {
+  if (!apiaryId) return [];
+  try {
+    var raw = localStorage.getItem('hk_plan_skipped_' + apiaryId);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch(e) { return []; }
+}
+function isHiveSkipped(apiaryId, hiveId) {
+  return getSkippedHives(apiaryId).indexOf(hiveId) !== -1;
+}
+function toggleSkipHive(apiaryId, hiveId) {
+  if (!apiaryId || !hiveId) return;
+  try {
+    var arr = getSkippedHives(apiaryId);
+    var i = arr.indexOf(hiveId);
+    if (i === -1) arr.push(hiveId); else arr.splice(i, 1);
+    localStorage.setItem('hk_plan_skipped_' + apiaryId, JSON.stringify(arr));
+  } catch(e) {}
+  try { renderPlan(); } catch(e) {}
+}
+function clearSkippedHives(apiaryId) {
+  if (!apiaryId) return;
+  try { localStorage.removeItem('hk_plan_skipped_' + apiaryId); } catch(e) {}
+}
+
 function planGetCustomOrderHives(data) {
   if (!data || !data.apiary) return [];
   var saved = planGetCustomOrderRaw(data.apiary.id);
@@ -25294,24 +25325,34 @@ function renderPlanOrderContent(data) {
       var canUp = idx > 0;
       var canDown = idx < ordered.length - 1;
       var rowName = (hive.row !== null && hive.row !== undefined && hive.row !== '') ? (/^row\b/i.test(String(hive.row)) ? String(hive.row) : 'Row ' + hive.row) : 'Unassigned';
+      // HIV-151b — is this hive skipped for the upcoming inspection?
+      var _apId = data.apiary ? data.apiary.id : null;
+      var _skipped = _apId && (typeof isHiveSkipped === 'function') && isHiveSkipped(_apId, hive.id);
+      var _rowOpacity = _skipped ? '0.5' : '1';
 
-      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;' + (idx < ordered.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
+      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;opacity:' + _rowOpacity + ';' + (idx < ordered.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
       // Number disc
       html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + numColor + ';background:' + numBg + ';border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;">' + (idx + 1) + '</div>';
       // Name + meta + tag
       html += '<div style="flex:1;min-width:0;">';
-      html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);">' + escapeHtml(hiveName) + '</div>';
+      html += '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:600;color:var(--text);' + (_skipped ? 'text-decoration:line-through;' : '') + '">' + escapeHtml(hiveName) + '</div>';
       html += '<div style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:600;color:var(--text-l);margin-top:2px;">' + rowName;
-      if (outstanding && outstanding.tag) {
+      if (_skipped) {
+        html += ' · <span style="display:inline-block;padding:1px 7px;font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;border-radius:99px;background:#FFF6E1;color:#7A5C00;border:1px solid #E9C76A;vertical-align:middle;">Skipped</span>';
+      } else if (outstanding && outstanding.tag) {
         html += ' · <span style="display:inline-block;padding:1px 7px;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border-radius:99px;background:' + outstanding.tag.bg + ';color:' + outstanding.tag.color + ';border:1px solid ' + outstanding.tag.border + ';vertical-align:middle;">' + outstanding.tag.label + '</span>';
       }
       html += '</div>';
       html += '</div>';
-      // Arrow buttons
-      html += '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">';
-      html += '<button onclick="planMoveHiveUp(' + idx + ')" ' + (canUp ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canUp ? 'var(--cream)' : 'transparent') + ';color:' + (canUp ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canUp ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canUp ? '1' : '0.35') + ';">↑</button>';
-      html += '<button onclick="planMoveHiveDown(' + idx + ')" ' + (canDown ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canDown ? 'var(--cream)' : 'transparent') + ';color:' + (canDown ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canDown ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canDown ? '1' : '0.35') + ';">↓</button>';
-      html += '</div>';
+      // Skip / include toggle
+      html += '<button onclick="toggleSkipHive(\'' + (_apId || '') + '\',\'' + hive.id + '\')" aria-label="' + (_skipped ? 'Include hive in inspection' : 'Skip hive this inspection') + '" style="flex-shrink:0;border:1px solid ' + (_skipped ? '#97C459' : 'var(--wax)') + ';background:' + (_skipped ? '#EAF3DE' : 'var(--cream)') + ';color:' + (_skipped ? '#27500A' : 'var(--text-m)') + ';border-radius:6px;padding:0 10px;height:30px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">' + (_skipped ? 'Include' : 'Skip') + '</button>';
+      // Arrow buttons (hidden when skipped — no point reordering a skipped hive)
+      if (!_skipped) {
+        html += '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">';
+        html += '<button onclick="planMoveHiveUp(' + idx + ')" ' + (canUp ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canUp ? 'var(--cream)' : 'transparent') + ';color:' + (canUp ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canUp ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canUp ? '1' : '0.35') + ';">↑</button>';
+        html += '<button onclick="planMoveHiveDown(' + idx + ')" ' + (canDown ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canDown ? 'var(--cream)' : 'transparent') + ';color:' + (canDown ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canDown ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canDown ? '1' : '0.35') + ';">↓</button>';
+        html += '</div>';
+      }
       html += '</div>';
     });
     html += '</div>';
@@ -25468,6 +25509,19 @@ function planBeginVisit() {
         data.rowGroups[rk].forEach(function(h){ plannedOrder.push(h.id); });
       });
     }
+    // HIV-151b — drop hives the keeper marked "skip this inspection" (e.g. a hive
+    // just given a swarm, left undisturbed). Capture the skip list BEFORE
+    // startVisit, which clears it for the next plan.
+    try {
+      var _skips = (typeof getSkippedHives === 'function') ? getSkippedHives(data.apiary.id) : [];
+      if (_skips && _skips.length) {
+        plannedOrder = plannedOrder.filter(function(id){ return _skips.indexOf(id) === -1; });
+      }
+    } catch(e) {}
+    if (plannedOrder.length === 0) {
+      if (typeof showToast === 'function') showToast('All hives skipped — nothing to inspect');
+      return;
+    }
     var visit = window.HK.Visit.startVisit(data.apiary.id, plannedOrder);
     if (!visit) {
       if (typeof showToast === 'function') showToast('Could not start visit');
@@ -25584,6 +25638,8 @@ window.HK.Visit = (function() {
     // HIV-151 — starting a visit fulfils the committed plan, so release the lock
     // for this apiary. The next plan can then be set freely once the visit ends.
     try { if (typeof unlockPlan === 'function') unlockPlan(apiaryId); } catch(e) {}
+    // HIV-151b — clear per-hive skips too; they were for this visit only.
+    try { if (typeof clearSkippedHives === 'function') clearSkippedHives(apiaryId); } catch(e) {}
     return visit;
   }
 
@@ -35005,7 +35061,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '3 June 2026 build e';
+var HIVEKEEPER_BUILD = '3 June 2026 build f';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
