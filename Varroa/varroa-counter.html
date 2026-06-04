@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="app-version" content="20260604b">
+<meta name="app-version" content="20260604c">
 <title>HiveKeeper — Varroa Counter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -126,12 +126,12 @@
     <details><summary>Raw response</summary><pre id="raw"></pre></details>
   </div>
 
-  <div class="footer">HIVEKEEPER · VARROA COUNTER · build 20260604b</div>
+  <div class="footer">HIVEKEEPER · VARROA COUNTER · build 20260604c</div>
 </div>
 
 <script>
 const WORKER_URL = 'https://hivekeeper-varroa-counter.chris-culshaw.workers.dev/';
-const HIVEKEEPER_BUILD = '4 June 2026 build b';
+const HIVEKEEPER_BUILD = '4 June 2026 build c';
 
 const $ = id => document.getElementById(id);
 const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'), overlay=$('overlay'),
@@ -157,34 +157,44 @@ function loadFile(f){
   if(!f.type.startsWith('image/')){ setStatus('That is not an image file.', true); return; }
   setStatus('<span class="spinner"></span>Preparing image…');
   const reader = new FileReader();
-  reader.onload = ()=>{
-    const tmp = new Image();
-    tmp.onload = ()=>{
-      // downscale via canvas so the payload is small (faster + cheaper, avoids hangs)
-      let w = tmp.naturalWidth, h = tmp.naturalHeight;
-      const scale = Math.min(1, MAX_DIM / Math.max(w, h));
-      const cw = Math.round(w*scale), ch = Math.round(h*scale);
-      const cv = document.createElement('canvas');
-      cv.width = cw; cv.height = ch;
-      cv.getContext('2d').drawImage(tmp, 0, 0, cw, ch);
-      const dataUrl = cv.toDataURL('image/jpeg', 0.85);
-      imageB64 = dataUrl.split(',')[1];
-      preview.src = dataUrl;            // show the downscaled version (corners map to it)
-      stage.style.display='block'; drop.style.display='none';
-      traydim.style.display='flex'; hintEl.style.display='block';
-      corners=[]; drawOverlay();
-      stepLabel.textContent='Step 2 · Tap the four tray corners';
-      setHint();
-      results.style.display='none';
-      countBtn.disabled = true;
-      resetCornersBtn.style.display='none';
-      const kb = Math.round(imageB64.length*0.75/1024);
-      setStatus(`Image ready (${cw}×${ch}, ~${kb} KB). Tap the four tray corners.`);
-    };
-    tmp.onerror = ()=>setStatus('Could not load that image.', true);
-    tmp.src = reader.result;
-  };
   reader.onerror = ()=>setStatus('Could not read that file.', true);
+  reader.onload = ()=>{
+    const dataUrl = reader.result;
+    // Show the photo immediately (robust — does not depend on an off-screen decode)
+    preview.src = dataUrl;
+    imageB64 = dataUrl.split(',')[1];           // fallback: original if downscale fails
+    stage.style.display='block'; drop.style.display='none';
+    traydim.style.display='flex'; hintEl.style.display='block';
+    corners=[]; drawOverlay();
+    stepLabel.textContent='Step 2 · Tap the four tray corners';
+    setHint();
+    results.style.display='none';
+    countBtn.disabled = true;
+    resetCornersBtn.style.display='none';
+    setStatus('Image loaded. Tap the four tray corners.');
+
+    // Try to downscale in the background; if it fails, we keep the original.
+    try{
+      const tmp = new Image();
+      tmp.onload = ()=>{
+        try{
+          let w = tmp.naturalWidth, h = tmp.naturalHeight;
+          if(!w || !h) return;
+          const scale = Math.min(1, MAX_DIM / Math.max(w, h));
+          if(scale >= 1) return;                // already small enough — keep original
+          const cw = Math.round(w*scale), ch = Math.round(h*scale);
+          const cv = document.createElement('canvas');
+          cv.width = cw; cv.height = ch;
+          cv.getContext('2d').drawImage(tmp, 0, 0, cw, ch);
+          const small = cv.toDataURL('image/jpeg', 0.85);
+          imageB64 = small.split(',')[1];
+          const kb = Math.round(imageB64.length*0.75/1024);
+          setStatus(`Image ready (${cw}×${ch}, ~${kb} KB). Tap the four tray corners.`);
+        }catch(e){ /* keep original imageB64 */ }
+      };
+      tmp.src = dataUrl;
+    }catch(e){ /* keep original imageB64 */ }
+  };
   reader.readAsDataURL(f);
 }
 
