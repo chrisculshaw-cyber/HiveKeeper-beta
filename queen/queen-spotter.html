@@ -3,120 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="app-version" content="20260604b">
-<title>HiveKeeper — Queen Spotter (standalone)</title>
+<meta name="app-version" content="20260604c">
+<title>HiveKeeper — Queen Spotter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --honey:#E8A317; --honey-deep:#C8841C; --comb:#1c1408; --comb-2:#241a0d;
-    --wax:#F4E4C1; --ink:#F4E4C1; --ink-dim:#bfa978; --line:#3a2c14;
-    --hi:#ff3030; --hi-glow:rgba(255,48,48,.55);
-    --mid:#ffb300; --mid-glow:rgba(255,179,0,.5);
-    --lo:#7fd17f;
-    --ok:#6fcf6f; --bad:#ff6b5e;
+    --honey:#C8730A; --honey-l:#E8960C; --honey-pale:#FFF4DC;
+    --forest:#162B1F; --forest-m:#243D2E; --forest-l:#3A6B4A;
+    --cream:#FAF6EE; --warm:#F5EFE3; --wax:#EDE4CC; --bark:#4A2E0E;
+    --text:#1A1208; --text-m:#4A3A25; --text-l:#8A7A60; --white:#FFFDF8;
+    --red:#B83228; --green:#2A7A48; --purple:#4A1E7A;
+    --r:16px; --rs:10px;
+    --shadow:0 4px 20px rgba(26,18,8,.1); --shadow-l:0 12px 40px rgba(26,18,8,.18);
+    --hi:#B83228; --hi-glow:rgba(184,50,40,.55);
+    --mid:var(--honey-l); --mid-glow:rgba(232,150,12,.5);
+    --lo:#2A7A48; --lo-glow:rgba(42,122,72,.45);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
-    background:
-      radial-gradient(120% 80% at 50% -10%, #2a1e0c 0%, var(--comb) 55%, #120c05 100%);
-    color:var(--ink); min-height:100dvh;
-    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
-    line-height:1.45; padding:env(safe-area-inset-top) 16px 40px;
+    background:linear-gradient(135deg,#0A1A0A 0%,#1a2d1a 50%,#0A1A0A 100%);
+    background-attachment:fixed;
+    color:var(--text); min-height:100dvh;
+    font-family:'Syne',sans-serif;
+    padding:env(safe-area-inset-top) 16px 40px;
   }
-  .wrap{max-width:760px;margin:0 auto}
-  header{padding:26px 0 8px;text-align:center}
-  .crown{font-size:30px;letter-spacing:.18em}
+  .wrap{max-width:720px;margin:0 auto}
+
+  header{padding:30px 0 6px;text-align:center}
+  .crown{font-size:30px}
   h1{
-    font-size:clamp(26px,6vw,40px);margin:.18em 0 .1em;font-weight:600;
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;
+    font-size:clamp(34px,8vw,52px);margin:.06em 0 .04em;color:var(--honey-pale);
     letter-spacing:.01em;
-    background:linear-gradient(180deg,#ffd97a,var(--honey-deep));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
   }
-  .sub{font-size:13px;color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase}
+  .sub{font-family:'DM Mono',monospace;font-size:11.5px;color:#cdbd95cc;letter-spacing:.16em;text-transform:uppercase}
+
   .card{
-    background:linear-gradient(180deg,var(--comb-2),#160f06);
-    border:1px solid var(--line);border-radius:18px;
+    background:var(--cream);
+    border-radius:var(--r);
     padding:18px;margin:18px 0;
-    box-shadow:0 18px 40px -22px #000, inset 0 1px 0 #ffffff0d;
+    box-shadow:var(--shadow-l);
   }
-  label.lab{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 7px}
-  input[type=text]{
-    width:100%;padding:12px 14px;border-radius:11px;border:1px solid var(--line);
-    background:#0e0a04;color:var(--ink);font:inherit;font-size:15px;
-  }
-  input[type=text]:focus{outline:none;border-color:var(--honey)}
+
   .drop{
-    border:2px dashed #5a431f;border-radius:14px;padding:30px 18px;text-align:center;
-    cursor:pointer;transition:.18s;background:#0e0a0480;
+    border:2px dashed #d8c9a8;border-radius:var(--r);padding:34px 18px;text-align:center;
+    cursor:pointer;transition:all .2s;background:var(--warm);
   }
-  .drop:hover,.drop.over{border-color:var(--honey);background:#1a120880}
-  .drop .big{font-size:17px;color:var(--wax)}
-  .drop .small{font-size:12.5px;color:var(--ink-dim);margin-top:5px}
-  .stage{position:relative;margin-top:16px;border-radius:14px;overflow:hidden;display:none;background:#000}
+  .drop:hover,.drop.over{border-color:var(--honey);background:var(--honey-pale)}
+  .drop .ic{font-size:30px;line-height:1}
+  .drop .big{font-size:16px;font-weight:700;color:var(--text);margin-top:8px}
+  .drop .small{font-size:12.5px;color:var(--text-l);margin-top:4px}
+
+  .stage{position:relative;border-radius:var(--r);overflow:hidden;display:none;background:#000}
   .stage img{display:block;width:100%;height:auto}
   .stage svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
   button{
-    appearance:none;border:0;border-radius:12px;padding:13px 20px;font:inherit;font-size:15px;
-    font-weight:600;cursor:pointer;letter-spacing:.02em;transition:.15s;
+    appearance:none;border:none;border-radius:var(--rs);padding:15px 20px;
+    font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+    transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
   }
-  .go{background:linear-gradient(180deg,var(--honey),var(--honey-deep));color:#1c1304;flex:1;min-width:160px}
-  .go:disabled{opacity:.45;cursor:not-allowed}
-  .ghost{background:#0e0a04;color:var(--ink-dim);border:1px solid var(--line)}
-  .status{margin-top:14px;font-size:14px;min-height:20px;color:var(--ink-dim)}
-  .status.err{color:var(--bad)}
-  .spinner{display:inline-block;width:15px;height:15px;border:2px solid #ffffff33;border-top-color:var(--honey);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
+  .go{background:var(--honey);color:#fff;flex:1;min-width:160px}
+  .go:hover:not(:disabled){background:var(--honey-l)}
+  .go:disabled{opacity:.4;cursor:not-allowed}
+  .ghost{background:transparent;color:var(--text-m);border:1.5px solid #d8c9a8}
+  .ghost:hover{border-color:var(--honey);color:var(--honey)}
+
+  .status{margin-top:14px;font-size:13.5px;min-height:20px;color:var(--text-m);font-family:'DM Mono',monospace}
+  .status.err{color:var(--red)}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #00000022;border-top-color:var(--honey);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .results{margin-top:8px;display:none}
-  .verdict{font-size:15px;margin:4px 0 14px;color:var(--wax)}
-  .verdict .pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.05em;margin-left:8px;text-transform:uppercase}
-  .pill.marked{background:#1e3a1e;color:var(--ok);border:1px solid #2f5f2f}
-  .pill.unmarked{background:#3a2a0e;color:var(--mid);border:1px solid #6a4e16}
-  .cand{
-    display:flex;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--line);
-    border-radius:12px;margin-bottom:9px;background:#0e0a0490;
-  }
-  .dot{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-size:12px;font-weight:800;color:#160f06}
-  .cand .meta{flex:1;min-width:0}
-  .cand .pct{font-size:18px;font-weight:700}
-  .cand .why{font-size:13px;color:var(--ink-dim);margin-top:2px}
-  .disc{font-size:12px;color:var(--ink-dim);margin-top:6px;line-height:1.5;border-top:1px solid var(--line);padding-top:12px}
+
+  .results{display:none}
+
   .overall{
-    display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;
-    background:linear-gradient(180deg,#1a1206,#100b04);border:1px solid var(--line);margin-bottom:14px;
+    display:flex;align-items:center;gap:16px;padding:16px;border-radius:var(--r);
+    background:var(--forest);margin-bottom:16px;
   }
-  .overall .ring{position:relative;width:64px;height:64px;flex:0 0 auto}
+  .overall .ring{position:relative;width:66px;height:66px;flex:0 0 auto}
   .overall .ring svg{transform:rotate(-90deg)}
-  .overall .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:800}
-  .overall .lab2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
-  .overall .txt{font-size:14px;color:var(--wax);margin-top:2px}
-  .cand .crop{width:72px;height:72px;flex:0 0 auto;border-radius:10px;border:1px solid var(--line);object-fit:cover;background:#0a0703}
-  .footer{text-align:center;font-size:11.5px;color:#6e5a30;margin-top:26px;letter-spacing:.1em}
-  details{margin-top:14px}
-  summary{cursor:pointer;font-size:12.5px;color:var(--ink-dim);letter-spacing:.06em}
-  pre{background:#0a0703;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;font-size:11.5px;color:#cdbd95;white-space:pre-wrap}
+  .overall .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:800;font-family:'Syne',sans-serif}
+  .overall .lab2{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#cdbd95cc}
+  .overall .txt{font-size:14.5px;color:var(--honey-pale);margin-top:3px;font-weight:600}
+
+  .verdict{font-size:15px;margin:2px 0 14px;color:var(--text);font-weight:600}
+  .verdict .pill{display:inline-block;padding:3px 11px;border-radius:99px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.05em;margin-left:8px;text-transform:uppercase;vertical-align:1px}
+  .pill.marked{background:#e3f0e3;color:var(--green);border:1px solid #b6d8b6}
+  .pill.unmarked{background:var(--honey-pale);color:var(--honey);border:1px solid #e8cf9c}
+
+  .cand{
+    display:flex;align-items:center;gap:13px;padding:12px;border:1px solid #e8ddc4;
+    border-radius:var(--rs);margin-bottom:10px;background:var(--white);
+  }
+  .dot{width:26px;height:26px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff}
+  .cand .crop{width:74px;height:74px;flex:0 0 auto;border-radius:var(--rs);border:1px solid #e8ddc4;object-fit:cover;background:var(--warm)}
+  .cand .meta{flex:1;min-width:0}
+  .cand .pct{font-size:19px;font-weight:800}
+  .cand .pct span{font-size:12px;color:var(--text-l);font-weight:400}
+  .cand .why{font-size:13px;color:var(--text-m);margin-top:2px;line-height:1.4}
+
+  .disc{font-size:12px;color:var(--text-l);margin-top:8px;line-height:1.55;border-top:1px solid #e8ddc4;padding-top:12px}
+  details{margin-top:12px}
+  summary{cursor:pointer;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text-l);letter-spacing:.05em}
+  pre{background:var(--forest);border-radius:var(--rs);padding:12px;overflow:auto;font-size:11px;color:#cdbd95;white-space:pre-wrap;font-family:'DM Mono',monospace}
+
+  .footer{text-align:center;font-family:'DM Mono',monospace;font-size:10.5px;color:#cdbd9580;margin-top:26px;letter-spacing:.1em}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="crown">♛</div>
+    <div class="crown">🐝</div>
     <h1>Queen Spotter</h1>
-    <div class="sub">Standalone · frame_analysis route</div>
+    <div class="sub">HiveKeeper · frame analysis</div>
   </header>
 
   <div class="card">
-    <label class="lab" for="endpoint">Worker endpoint URL</label>
-    <input type="text" id="endpoint" value="https://hivekeeper-queen-spotter.chris-culshaw.workers.dev/" placeholder="https://your-worker.workers.dev/" autocomplete="off" spellcheck="false">
-    <div style="font-size:12px;color:var(--ink-dim);margin-top:7px">
-      Posts <code>{ type:"frame_analysis", task:"queen_spotter", image:"&lt;base64&gt;" }</code>.
-    </div>
-  </div>
-
-  <div class="card">
     <div class="drop" id="drop">
+      <div class="ic">📷</div>
       <div class="big">Tap to choose a frame photo</div>
-      <div class="small">or drag &amp; drop · JPEG/PNG</div>
+      <div class="small">or drag &amp; drop · JPEG / PNG</div>
       <input type="file" id="file" accept="image/*" hidden>
     </div>
 
@@ -126,7 +135,7 @@
     </div>
 
     <div class="row">
-      <button class="go" id="analyse" disabled>Spot the queen</button>
+      <button class="go" id="analyse" disabled>👑 Spot the queen</button>
       <button class="ghost" id="reset">Clear</button>
     </div>
     <div class="status" id="status"></div>
@@ -134,7 +143,7 @@
 
   <div class="card results" id="results">
     <div class="overall" id="overall" style="display:none">
-      <div class="ring"><svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#2a1f0d" stroke-width="8"/><circle id="ringFg" cx="32" cy="32" r="27" fill="none" stroke="var(--honey)" stroke-width="8" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="170"/></svg><div class="num" id="overallNum">0%</div></div>
+      <div class="ring"><svg width="66" height="66" viewBox="0 0 66 66"><circle cx="33" cy="33" r="27" fill="none" stroke="#ffffff22" stroke-width="8"/><circle id="ringFg" cx="33" cy="33" r="27" fill="none" stroke="var(--honey-l)" stroke-width="8" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="170"/></svg><div class="num" id="overallNum">0%</div></div>
       <div><div class="lab2">Queen present in this photo</div><div class="txt" id="overallTxt"></div></div>
     </div>
     <div class="verdict" id="verdict"></div>
@@ -148,25 +157,22 @@
     </details>
   </div>
 
-  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604b</div>
+  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604c</div>
 </div>
 
 <script>
-const HIVEKEEPER_BUILD = '4 June 2026 build b';
+const HIVEKEEPER_BUILD = '4 June 2026 build c';
+const WORKER_URL = 'https://hivekeeper-queen-spotter.chris-culshaw.workers.dev/';
+
 const $ = id => document.getElementById(id);
 const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'),
       overlay=$('overlay'), analyseBtn=$('analyse'), resetBtn=$('reset'),
       statusEl=$('status'), results=$('results'), verdict=$('verdict'),
-      candList=$('candList'), raw=$('raw'), endpointEl=$('endpoint'),
+      candList=$('candList'), raw=$('raw'),
       overallBox=$('overall'), overallNum=$('overallNum'), overallTxt=$('overallTxt'), ringFg=$('ringFg');
 
-let imageB64 = null;   // base64 payload (no data: prefix)
+let imageB64 = null;
 
-// ---- endpoint persistence (in-memory only; no browser storage) ----
-let savedEndpoint = '';
-endpointEl.addEventListener('input', ()=>{ savedEndpoint = endpointEl.value.trim(); });
-
-// ---- file handling ----
 drop.addEventListener('click', ()=>fileIn.click());
 drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over');});
 drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
@@ -196,20 +202,15 @@ function loadFile(f){
   reader.readAsDataURL(f);
 }
 
-function setStatus(msg, isErr){
-  statusEl.innerHTML = msg;
-  statusEl.classList.toggle('err', !!isErr);
-}
+function setStatus(msg, isErr){ statusEl.innerHTML = msg; statusEl.classList.toggle('err', !!isErr); }
 function clearOverlay(){ overlay.innerHTML=''; }
 
-// confidence → colour band
 function band(c){
-  if(c>=0.6) return {fill:'var(--hi)',  glow:'var(--hi-glow)',  text:'#160f06'};
-  if(c>=0.35)return {fill:'var(--mid)', glow:'var(--mid-glow)', text:'#160f06'};
-  return        {fill:'var(--lo)',  glow:'rgba(127,209,127,.4)', text:'#0c1a0c'};
+  if(c>=0.6) return {fill:'var(--hi)',  glow:'var(--hi-glow)'};
+  if(c>=0.35)return {fill:'var(--mid)', glow:'var(--mid-glow)'};
+  return        {fill:'var(--lo)',  glow:'var(--lo-glow)'};
 }
 
-// ---- analyse ----
 analyseBtn.addEventListener('click', analyse);
 resetBtn.addEventListener('click', ()=>{
   imageB64=null; stage.style.display='none'; drop.style.display='block';
@@ -218,16 +219,12 @@ resetBtn.addEventListener('click', ()=>{
 });
 
 async function analyse(){
-  const url = (endpointEl.value||'').trim();
-  if(!url){ setStatus('Enter your Worker endpoint URL first.', true); return; }
   if(!imageB64){ setStatus('Choose a frame photo first.', true); return; }
-
   analyseBtn.disabled=true;
-  setStatus('<span class="spinner"></span>Asking the Worker to look for the queen…');
+  setStatus('<span class="spinner"></span>Looking for the queen…');
   clearOverlay(); results.style.display='none';
-
   try{
-    const res = await fetch(url, {
+    const res = await fetch(WORKER_URL, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ type:'frame_analysis', task:'queen_spotter', image: imageB64 })
@@ -237,7 +234,6 @@ async function analyse(){
     try { data = JSON.parse(text); }
     catch { throw new Error('Worker did not return JSON. First 200 chars:\n'+text.slice(0,200)); }
     if(!res.ok) throw new Error('Worker returned HTTP '+res.status+':\n'+text.slice(0,200));
-
     render(data);
     setStatus('');
   }catch(err){
@@ -250,36 +246,31 @@ async function analyse(){
 function render(data){
   raw.textContent = JSON.stringify(data, null, 2);
   const cands = Array.isArray(data.candidates) ? data.candidates.slice() : [];
-  // sort highest confidence first
   cands.sort((a,b)=>(b.confidence||0)-(a.confidence||0));
 
   clearOverlay();
   candList.innerHTML='';
 
-  // verdict line
-  let v = '';
-  if(cands.length===0){
-    v = 'No queen found in this image — try another frame, or a clearer shot.';
-  }else{
-    v = cands.length===1 ? 'One likely candidate.' : (cands.length+' possible candidates — listed strongest first.');
-  }
+  let v = cands.length===0
+    ? 'No queen found in this image — try another frame, or a clearer shot.'
+    : (cands.length===1 ? 'One likely candidate.' : cands.length+' possible candidates — strongest first.');
   const markPill = data.marked===true
     ? '<span class="pill marked">marked queen</span>'
     : (data.marked===false ? '<span class="pill unmarked">unmarked</span>' : '');
   verdict.innerHTML = v + markPill;
 
-  // overall "queen present at all" certainty
   const oc = clamp01(typeof data.overall_confidence === 'number' ? data.overall_confidence : 0);
   if (cands.length === 0 && !data.overall_confidence) {
     overallBox.style.display = 'none';
   } else {
     const ocPct = Math.round(oc * 100);
-    const circ = 2 * Math.PI * 27;            // r=27
+    const circ = 2 * Math.PI * 27;
     ringFg.setAttribute('stroke-dasharray', circ.toFixed(1));
     ringFg.setAttribute('stroke-dashoffset', (circ * (1 - oc)).toFixed(1));
-    ringFg.setAttribute('stroke', oc >= 0.6 ? 'var(--hi)' : oc >= 0.35 ? 'var(--mid)' : 'var(--lo)');
+    const ringCol = oc >= 0.6 ? 'var(--hi)' : oc >= 0.35 ? 'var(--honey-l)' : 'var(--lo)';
+    ringFg.setAttribute('stroke', ringCol);
     overallNum.textContent = ocPct + '%';
-    overallNum.style.color = oc >= 0.6 ? 'var(--hi)' : oc >= 0.35 ? 'var(--mid)' : 'var(--lo)';
+    overallNum.style.color = '#fff';
     overallTxt.textContent =
       oc >= 0.6 ? 'Likely a queen is present.' :
       oc >= 0.35 ? 'Possibly — worth a closer look.' :
@@ -287,32 +278,28 @@ function render(data){
     overallBox.style.display = 'flex';
   }
 
-  // draw + list
   cands.forEach((c,i)=>{
     const x = clamp01(c.x)*100, y = clamp01(c.y)*100;
     const conf = clamp01(c.confidence||0);
     const pct = Math.round(conf*100);
     const b = band(conf);
-    const rx = 7, ry = 9; // ellipse radii in viewBox % (queen is elongated)
+    const rx = 7, ry = 9;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.innerHTML =
-      `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"
-         fill="none" stroke="${b.fill}" stroke-width="0.9"
-         style="filter:drop-shadow(0 0 6px ${b.glow})"/>
+      `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="none" stroke="${b.fill}" stroke-width="0.9" style="filter:drop-shadow(0 0 6px ${b.glow})"/>
        <circle cx="${x}" cy="${y-ry-2.4}" r="3.1" fill="${b.fill}"/>
-       <text x="${x}" y="${y-ry-1.2}" font-size="3.0" font-weight="800"
-         text-anchor="middle" fill="${b.text}" font-family="sans-serif">${i+1}</text>`;
+       <text x="${x}" y="${y-ry-1.2}" font-size="3.0" font-weight="800" text-anchor="middle" fill="#fff" font-family="sans-serif">${i+1}</text>`;
     overlay.appendChild(g);
 
+    const cropUrl = makeCrop(c.x, c.y);
     const row = document.createElement('div');
     row.className='cand';
-    const cropUrl = makeCrop(c.x, c.y);   // zoomed-in image of this area
     row.innerHTML =
       `<div class="dot" style="background:${b.fill}">${i+1}</div>
        ${cropUrl ? `<img class="crop" src="${cropUrl}" alt="zoom of candidate ${i+1}">` : ''}
        <div class="meta">
-         <div class="pct" style="color:${b.fill}">${pct}% <span style="font-size:12px;color:var(--ink-dim);font-weight:400">confidence</span></div>
+         <div class="pct" style="color:${b.fill}">${pct}% <span>confidence</span></div>
          <div class="why">${escapeHtml(c.reason||'no reason given')}</div>
        </div>`;
     candList.appendChild(row);
@@ -320,26 +307,23 @@ function render(data){
 
   if(data.note){
     const n = document.createElement('div');
-    n.className='why'; n.style.marginTop='4px'; n.style.color='var(--ink-dim)';
+    n.className='why'; n.style.marginTop='4px'; n.style.color='var(--text-l)';
     n.textContent = data.note;
     candList.appendChild(n);
   }
-
   results.style.display='block';
 }
 
-// Build a zoomed square crop around a normalised (x,y) point from the loaded photo.
 function makeCrop(nx, ny){
   try{
     if(!preview || !preview.naturalWidth) return null;
     const iw = preview.naturalWidth, ih = preview.naturalHeight;
     const cx = clamp01(nx)*iw, cy = clamp01(ny)*ih;
-    // crop window ~22% of the shorter side, clamped to image bounds
     const win = Math.max(60, Math.round(Math.min(iw,ih)*0.22));
     let sx = Math.round(cx - win/2), sy = Math.round(cy - win/2);
     sx = Math.max(0, Math.min(sx, iw-win));
     sy = Math.max(0, Math.min(sy, ih-win));
-    const out = 144; // output px (2x of 72 display for sharpness)
+    const out = 148;
     const cv = document.createElement('canvas');
     cv.width = out; cv.height = out;
     const ctx = cv.getContext('2d');
