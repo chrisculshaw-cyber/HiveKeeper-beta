@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="app-version" content="20260604a">
+<meta name="app-version" content="20260604b">
 <title>HiveKeeper — Queen Spotter (standalone)</title>
 <style>
   :root{
@@ -81,6 +81,16 @@
   .cand .pct{font-size:18px;font-weight:700}
   .cand .why{font-size:13px;color:var(--ink-dim);margin-top:2px}
   .disc{font-size:12px;color:var(--ink-dim);margin-top:6px;line-height:1.5;border-top:1px solid var(--line);padding-top:12px}
+  .overall{
+    display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;
+    background:linear-gradient(180deg,#1a1206,#100b04);border:1px solid var(--line);margin-bottom:14px;
+  }
+  .overall .ring{position:relative;width:64px;height:64px;flex:0 0 auto}
+  .overall .ring svg{transform:rotate(-90deg)}
+  .overall .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:16px;font-weight:800}
+  .overall .lab2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+  .overall .txt{font-size:14px;color:var(--wax);margin-top:2px}
+  .cand .crop{width:72px;height:72px;flex:0 0 auto;border-radius:10px;border:1px solid var(--line);object-fit:cover;background:#0a0703}
   .footer{text-align:center;font-size:11.5px;color:#6e5a30;margin-top:26px;letter-spacing:.1em}
   details{margin-top:14px}
   summary{cursor:pointer;font-size:12.5px;color:var(--ink-dim);letter-spacing:.06em}
@@ -97,7 +107,7 @@
 
   <div class="card">
     <label class="lab" for="endpoint">Worker endpoint URL</label>
-    <input type="text" id="endpoint" placeholder="https://your-worker.workers.dev/" autocomplete="off" spellcheck="false">
+    <input type="text" id="endpoint" value="https://hivekeeper-queen-spotter.chris-culshaw.workers.dev/" placeholder="https://your-worker.workers.dev/" autocomplete="off" spellcheck="false">
     <div style="font-size:12px;color:var(--ink-dim);margin-top:7px">
       Posts <code>{ type:"frame_analysis", task:"queen_spotter", image:"&lt;base64&gt;" }</code>.
     </div>
@@ -123,6 +133,10 @@
   </div>
 
   <div class="card results" id="results">
+    <div class="overall" id="overall" style="display:none">
+      <div class="ring"><svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#2a1f0d" stroke-width="8"/><circle id="ringFg" cx="32" cy="32" r="27" fill="none" stroke="var(--honey)" stroke-width="8" stroke-linecap="round" stroke-dasharray="170" stroke-dashoffset="170"/></svg><div class="num" id="overallNum">0%</div></div>
+      <div><div class="lab2">Queen present in this photo</div><div class="txt" id="overallTxt"></div></div>
+    </div>
     <div class="verdict" id="verdict"></div>
     <div id="candList"></div>
     <div class="disc">
@@ -134,16 +148,17 @@
     </details>
   </div>
 
-  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604a</div>
+  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604b</div>
 </div>
 
 <script>
-const HIVEKEEPER_BUILD = '4 June 2026 build a';
+const HIVEKEEPER_BUILD = '4 June 2026 build b';
 const $ = id => document.getElementById(id);
 const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'),
       overlay=$('overlay'), analyseBtn=$('analyse'), resetBtn=$('reset'),
       statusEl=$('status'), results=$('results'), verdict=$('verdict'),
-      candList=$('candList'), raw=$('raw'), endpointEl=$('endpoint');
+      candList=$('candList'), raw=$('raw'), endpointEl=$('endpoint'),
+      overallBox=$('overall'), overallNum=$('overallNum'), overallTxt=$('overallTxt'), ringFg=$('ringFg');
 
 let imageB64 = null;   // base64 payload (no data: prefix)
 
@@ -199,7 +214,7 @@ analyseBtn.addEventListener('click', analyse);
 resetBtn.addEventListener('click', ()=>{
   imageB64=null; stage.style.display='none'; drop.style.display='block';
   analyseBtn.disabled=true; clearOverlay(); results.style.display='none';
-  fileIn.value=''; setStatus('');
+  fileIn.value=''; setStatus(''); overallBox.style.display='none';
 });
 
 async function analyse(){
@@ -253,6 +268,25 @@ function render(data){
     : (data.marked===false ? '<span class="pill unmarked">unmarked</span>' : '');
   verdict.innerHTML = v + markPill;
 
+  // overall "queen present at all" certainty
+  const oc = clamp01(typeof data.overall_confidence === 'number' ? data.overall_confidence : 0);
+  if (cands.length === 0 && !data.overall_confidence) {
+    overallBox.style.display = 'none';
+  } else {
+    const ocPct = Math.round(oc * 100);
+    const circ = 2 * Math.PI * 27;            // r=27
+    ringFg.setAttribute('stroke-dasharray', circ.toFixed(1));
+    ringFg.setAttribute('stroke-dashoffset', (circ * (1 - oc)).toFixed(1));
+    ringFg.setAttribute('stroke', oc >= 0.6 ? 'var(--hi)' : oc >= 0.35 ? 'var(--mid)' : 'var(--lo)');
+    overallNum.textContent = ocPct + '%';
+    overallNum.style.color = oc >= 0.6 ? 'var(--hi)' : oc >= 0.35 ? 'var(--mid)' : 'var(--lo)';
+    overallTxt.textContent =
+      oc >= 0.6 ? 'Likely a queen is present.' :
+      oc >= 0.35 ? 'Possibly — worth a closer look.' :
+      'Low — a queen may not be visible here.';
+    overallBox.style.display = 'flex';
+  }
+
   // draw + list
   cands.forEach((c,i)=>{
     const x = clamp01(c.x)*100, y = clamp01(c.y)*100;
@@ -273,8 +307,10 @@ function render(data){
 
     const row = document.createElement('div');
     row.className='cand';
+    const cropUrl = makeCrop(c.x, c.y);   // zoomed-in image of this area
     row.innerHTML =
       `<div class="dot" style="background:${b.fill}">${i+1}</div>
+       ${cropUrl ? `<img class="crop" src="${cropUrl}" alt="zoom of candidate ${i+1}">` : ''}
        <div class="meta">
          <div class="pct" style="color:${b.fill}">${pct}% <span style="font-size:12px;color:var(--ink-dim);font-weight:400">confidence</span></div>
          <div class="why">${escapeHtml(c.reason||'no reason given')}</div>
@@ -290,6 +326,26 @@ function render(data){
   }
 
   results.style.display='block';
+}
+
+// Build a zoomed square crop around a normalised (x,y) point from the loaded photo.
+function makeCrop(nx, ny){
+  try{
+    if(!preview || !preview.naturalWidth) return null;
+    const iw = preview.naturalWidth, ih = preview.naturalHeight;
+    const cx = clamp01(nx)*iw, cy = clamp01(ny)*ih;
+    // crop window ~22% of the shorter side, clamped to image bounds
+    const win = Math.max(60, Math.round(Math.min(iw,ih)*0.22));
+    let sx = Math.round(cx - win/2), sy = Math.round(cy - win/2);
+    sx = Math.max(0, Math.min(sx, iw-win));
+    sy = Math.max(0, Math.min(sy, ih-win));
+    const out = 144; // output px (2x of 72 display for sharpness)
+    const cv = document.createElement('canvas');
+    cv.width = out; cv.height = out;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(preview, sx, sy, win, win, 0, 0, out, out);
+    return cv.toDataURL('image/jpeg', 0.85);
+  }catch(e){ return null; }
 }
 
 function clamp01(n){ n=Number(n); if(isNaN(n))return 0; return Math.max(0,Math.min(1,n)); }
