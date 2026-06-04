@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260604e">
+  <meta name="app-version" content="20260604f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2165,13 +2165,19 @@ input[type="checkbox"].hk-chk:checked::after {
 <!-- Queen Spotter overlay (4 June 2026): full-screen in-app frame for the
      SEPARATE standalone page. Keeps the feature feeling native while its code
      stays entirely in /queen/queen-spotter.html. -->
-<div id="qs-overlay-host" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--forest,#162B1F);flex-direction:column;">
-  <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 8px) 14px 8px;background:var(--forest,#162B1F);">
-    <button onclick="closeQueenSpotter()" aria-label="Back" style="background:rgba(255,255,255,0.12);border:none;border-radius:10px;width:38px;height:38px;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&#x2039;</button>
-    <span style="color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;">Queen Spotter</span>
-    <span style="margin-left:auto;font-size:8px;font-weight:800;background:rgba(255,255,255,0.18);color:#fff;border-radius:10px;padding:3px 7px;letter-spacing:.05em;">PREVIEW</span>
+<div id="qs-overlay-host" style="display:none;position:fixed;inset:0;z-index:9999;flex-direction:column;background:var(--cream,#FAF6EE);opacity:0;transform:translateY(18px);transition:opacity .22s ease,transform .22s ease;">
+  <!-- Header matched to the app's screen headers: honey accent bar + forest gradient. -->
+  <div style="flex:0 0 auto;background:linear-gradient(180deg,var(--forest,#162B1F) 0%,var(--forest-m,#243D2E) 100%);">
+    <div style="height:4px;background:var(--honey,#C8730A);"></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 14px 12px;">
+      <button onclick="closeQueenSpotter()" aria-label="Back" style="background:rgba(255,255,255,0.12);border:none;border-radius:10px;width:38px;height:38px;color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;">&#x2039;</button>
+      <div style="min-width:0;">
+        <div style="font-size:9px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,0.6);">Beta &middot; Preview</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;letter-spacing:-0.01em;">&#x1F451; Queen Spotter</div>
+      </div>
+    </div>
   </div>
-  <iframe id="qs-overlay-frame" title="Queen Spotter" style="flex:1;width:100%;border:none;background:#0A1A0A;" allow="camera"></iframe>
+  <iframe id="qs-overlay-frame" title="Queen Spotter" style="flex:1;width:100%;border:none;background:var(--cream,#FAF6EE);" allow="camera"></iframe>
 </div>
 <!-- UPDATE CHECK BANNER — 23 May 2026.
      Shows once per day after 9am if a new version is available.
@@ -35097,7 +35103,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '4 June 2026 build e';
+var HIVEKEEPER_BUILD = '4 June 2026 build f';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -44853,13 +44859,26 @@ function openQueenSpotter(){
   // Load fresh each open (cache-busted) so testers always get the latest page.
   frame.src = QS_URL + '?t=' + Date.now();
   host.style.display = 'flex';
+  // Slide-up: paint the hidden state, then animate to visible on the next frame.
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      host.style.opacity = '1';
+      host.style.transform = 'translateY(0)';
+    });
+  });
   if (typeof trackEvent === 'function') { try { trackEvent('queen_spotter_opened', {}); } catch(e){} }
 }
 function closeQueenSpotter(){
   var host = document.getElementById('qs-overlay-host');
   var frame = document.getElementById('qs-overlay-frame');
-  if(host) host.style.display = 'none';
-  if(frame) frame.src = 'about:blank'; // free the camera + stop the page
+  if(!host){ return; }
+  // Animate out, then hide + free the iframe once the transition finishes.
+  host.style.opacity = '0';
+  host.style.transform = 'translateY(18px)';
+  setTimeout(function(){
+    host.style.display = 'none';
+    if(frame) frame.src = 'about:blank'; // free the camera + stop the page
+  }, 230);
 }
 
 </script>
