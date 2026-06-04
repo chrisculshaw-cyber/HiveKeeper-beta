@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="app-version" content="20260604c">
+<meta name="app-version" content="20260604e">
 <title>HiveKeeper — Varroa Counter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -126,12 +126,12 @@
     <details><summary>Raw response</summary><pre id="raw"></pre></details>
   </div>
 
-  <div class="footer">HIVEKEEPER · VARROA COUNTER · build 20260604c</div>
+  <div class="footer">HIVEKEEPER · VARROA COUNTER · build 20260604e</div>
 </div>
 
 <script>
 const WORKER_URL = 'https://hivekeeper-varroa-counter.chris-culshaw.workers.dev/';
-const HIVEKEEPER_BUILD = '4 June 2026 build c';
+const HIVEKEEPER_BUILD = '4 June 2026 build e';
 
 const $ = id => document.getElementById(id);
 const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'), overlay=$('overlay'),
@@ -145,11 +145,18 @@ let imageB64 = null;
 let corners = [];          // up to 4 normalised {x,y} points, order TL,TR,BR,BL
 const CORNER_LABELS = ['top-left','top-right','bottom-right','bottom-left'];
 
-drop.addEventListener('click', ()=>fileIn.click());
+function setStatus(msg, isErr){
+  if(!statusEl) return;
+  statusEl.innerHTML = msg || '';
+  statusEl.classList.toggle('err', !!isErr);
+}
+
+drop.addEventListener('click', e=>{ if(e.target!==fileIn) fileIn.click(); });
 drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over');});
 drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
 drop.addEventListener('drop', e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
-fileIn.addEventListener('change', e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+fileIn.addEventListener('click', e=>e.stopPropagation());
+fileIn.addEventListener('change', e=>{ e.stopPropagation(); if(e.target.files[0]) loadFile(e.target.files[0]); });
 
 const MAX_DIM = 1600;   // downscale long edge to this before sending — big phone photos otherwise hang
 
