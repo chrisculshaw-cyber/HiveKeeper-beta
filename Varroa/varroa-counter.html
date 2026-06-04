@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="app-version" content="20260604a">
+<title>HiveKeeper — Varroa Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --honey:#C8730A; --honey-l:#E8960C; --honey-pale:#FFF4DC;
+    --forest:#162B1F; --forest-m:#243D2E;
+    --cream:#FAF6EE; --warm:#F5EFE3; --white:#FFFDF8;
+    --text:#1A1208; --text-m:#4A3A25; --text-l:#8A7A60;
+    --red:#B83228; --green:#2A7A48;
+    --r:16px; --rs:10px; --shadow-l:0 12px 40px rgba(26,18,8,.18);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:linear-gradient(135deg,#0A1A0A 0%,#1a2d1a 50%,#0A1A0A 100%);background-attachment:fixed;
+    color:var(--text);min-height:100dvh;font-family:'Syne',sans-serif;padding:env(safe-area-inset-top) 16px 40px}
+  .wrap{max-width:760px;margin:0 auto}
+  header{padding:30px 0 6px;text-align:center}
+  h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:700;font-size:clamp(32px,7vw,48px);
+    margin:.06em 0 .04em;color:var(--honey-pale)}
+  .sub{font-family:'DM Mono',monospace;font-size:11.5px;color:#cdbd95cc;letter-spacing:.16em;text-transform:uppercase}
+  .card{background:var(--cream);border-radius:var(--r);padding:18px;margin:18px 0;box-shadow:var(--shadow-l)}
+  .step{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--honey);margin-bottom:10px}
+  .drop{border:2px dashed #d8c9a8;border-radius:var(--r);padding:34px 18px;text-align:center;cursor:pointer;transition:all .2s;background:var(--warm)}
+  .drop:hover,.drop.over{border-color:var(--honey);background:var(--honey-pale)}
+  .drop .ic{font-size:30px}
+  .drop .big{font-size:16px;font-weight:700;margin-top:8px}
+  .drop .small{font-size:12.5px;color:var(--text-l);margin-top:4px}
+  .stage{position:relative;border-radius:var(--r);overflow:hidden;display:none;background:#000;touch-action:none}
+  .stage img{display:block;width:100%;height:auto;-webkit-user-select:none;user-select:none}
+  .stage svg{position:absolute;inset:0;width:100%;height:100%}
+  .hint{font-size:13px;color:var(--text-m);margin-top:10px;font-family:'DM Mono',monospace}
+  .traydim{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .traydim label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-l)}
+  .traydim select,.traydim input{padding:9px 11px;border-radius:var(--rs);border:1px solid #d8c9a8;background:var(--white);font:inherit;font-size:14px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+  button{appearance:none;border:none;border-radius:var(--rs);padding:14px 20px;font-family:'Syne',sans-serif;
+    font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .go{background:var(--honey);color:#fff;flex:1;min-width:150px}
+  .go:hover:not(:disabled){background:var(--honey-l)}
+  .go:disabled{opacity:.4;cursor:not-allowed}
+  .ghost{background:transparent;color:var(--text-m);border:1.5px solid #d8c9a8}
+  .ghost:hover{border-color:var(--honey);color:var(--honey)}
+  .status{margin-top:14px;font-size:13.5px;min-height:20px;color:var(--text-m);font-family:'DM Mono',monospace}
+  .status.err{color:var(--red)}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #00000022;border-top-color:var(--honey);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .results{display:none}
+  .headline{display:flex;align-items:center;gap:18px;padding:18px;border-radius:var(--r);background:var(--forest);margin-bottom:14px}
+  .headline .big{font-family:'Syne';font-size:44px;font-weight:800;color:var(--honey-pale);line-height:1}
+  .headline .lab{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#cdbd95cc}
+  .headline .rng{color:var(--honey-pale);font-size:14px;margin-top:4px}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .badge{display:inline-block;padding:4px 12px;border-radius:99px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.04em}
+  .b-info{background:var(--honey-pale);color:var(--honey);border:1px solid #e8cf9c}
+  .note{font-size:13px;color:var(--text-m);line-height:1.5}
+  .disc{font-size:12px;color:var(--text-l);margin-top:10px;line-height:1.55;border-top:1px solid #e8ddc4;padding-top:12px}
+  details{margin-top:12px}
+  summary{cursor:pointer;font-family:'DM Mono',monospace;font-size:11.5px;color:var(--text-l)}
+  pre{background:var(--forest);border-radius:var(--rs);padding:12px;overflow:auto;font-size:11px;color:#cdbd95;white-space:pre-wrap;font-family:'DM Mono',monospace}
+  .footer{text-align:center;font-family:'DM Mono',monospace;font-size:10.5px;color:#cdbd9580;margin-top:24px;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="font-size:26px">🪲</div>
+    <h1>Varroa Counter</h1>
+    <div class="sub">HiveKeeper · mite drop estimate</div>
+  </header>
+
+  <div class="card">
+    <div class="step" id="stepLabel">Step 1 · Photograph the tray</div>
+    <div class="drop" id="drop">
+      <div class="ic">📷</div>
+      <div class="big">Tap to choose a tray photo</div>
+      <div class="small">square-on, whole tray in frame · JPEG / PNG</div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+
+    <div class="stage" id="stage">
+      <img id="preview" alt="tray">
+      <svg id="overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="hint" id="hint" style="display:none"></div>
+
+    <div class="traydim" id="traydim" style="display:none">
+      <label for="traysel">Tray size</label>
+      <select id="traysel">
+        <option value="460x460">National (~460 × 460 mm)</option>
+        <option value="460x460c">Commercial (~460 × 460 mm)</option>
+        <option value="510x460">14×12 (~510 × 460 mm)</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input id="trayw" type="number" placeholder="w mm" style="display:none;width:90px">
+      <input id="trayh" type="number" placeholder="h mm" style="display:none;width:90px">
+    </div>
+
+    <div class="row">
+      <button class="go" id="count" disabled>🪲 Count mites</button>
+      <button class="ghost" id="resetCorners" style="display:none">Re-tap corners</button>
+      <button class="ghost" id="reset">Clear</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card results" id="results">
+    <div class="headline">
+      <div><div class="big" id="estNum">–</div><div class="lab">estimated mites</div></div>
+      <div><div class="rng" id="rngTxt"></div></div>
+    </div>
+    <div class="meta">
+      <span class="badge b-info" id="confBadge"></span>
+      <span class="badge b-info" id="gridBadge" style="display:none"></span>
+    </div>
+    <div class="note" id="noteTxt"></div>
+    <div class="disc">
+      This is an AI <strong>estimate</strong>, not an exact count. Overlapping mites and mite-sized debris (wax, pollen) can't be perfectly separated from a photo. Use it for the <strong>trend over time</strong> (mites per day) and as a treatment-threshold guide — confirm by eye before acting.
+    </div>
+    <details><summary>Raw response</summary><pre id="raw"></pre></details>
+  </div>
+
+  <div class="footer">HIVEKEEPER · VARROA COUNTER · build 20260604a</div>
+</div>
+
+<script>
+const WORKER_URL = 'https://hivekeeper-varroa-counter.chris-culshaw.workers.dev/';
+const HIVEKEEPER_BUILD = '4 June 2026 build a';
+
+const $ = id => document.getElementById(id);
+const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'), overlay=$('overlay'),
+      countBtn=$('count'), resetBtn=$('reset'), resetCornersBtn=$('resetCorners'),
+      statusEl=$('status'), hintEl=$('hint'), stepLabel=$('stepLabel'), traydim=$('traydim'),
+      traysel=$('traysel'), trayw=$('trayw'), trayh=$('trayh'),
+      results=$('results'), estNum=$('estNum'), rngTxt=$('rngTxt'), confBadge=$('confBadge'),
+      gridBadge=$('gridBadge'), noteTxt=$('noteTxt'), raw=$('raw');
+
+let imageB64 = null;
+let corners = [];          // up to 4 normalised {x,y} points, order TL,TR,BR,BL
+const CORNER_LABELS = ['top-left','top-right','bottom-right','bottom-left'];
+
+drop.addEventListener('click', ()=>fileIn.click());
+drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+drop.addEventListener('drop', e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+fileIn.addEventListener('change', e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(f){
+  if(!f.type.startsWith('image/')){ setStatus('That is not an image file.', true); return; }
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    imageB64 = reader.result.split(',')[1];
+    preview.src = reader.result;
+    preview.onload = ()=>{
+      stage.style.display='block'; drop.style.display='none';
+      traydim.style.display='flex'; hintEl.style.display='block';
+      corners=[]; drawOverlay();
+      stepLabel.textContent='Step 2 · Tap the four tray corners';
+      setHint();
+      results.style.display='none';
+      countBtn.disabled = true;
+      resetCornersBtn.style.display='none';
+      setStatus('');
+    };
+  };
+  reader.onerror = ()=>setStatus('Could not read that file.', true);
+  reader.readAsDataURL(f);
+}
+
+function setHint(){
+  if(corners.length < 4){
+    hintEl.textContent = `Tap the ${CORNER_LABELS[corners.length]} corner of the white tray (${corners.length}/4).`;
+  } else {
+    hintEl.textContent = 'Four corners set. Adjust by re-tapping, or count.';
+  }
+}
+
+// tap to place corners (and allow dragging the nearest one once 4 are set)
+stage.addEventListener('click', e=>{
+  if(!imageB64) return;
+  const r = stage.getBoundingClientRect();
+  const x = (e.clientX - r.left)/r.width, y = (e.clientY - r.top)/r.height;
+  if(corners.length < 4){
+    corners.push({x:clamp01(x), y:clamp01(y)});
+  } else {
+    // move the nearest corner to the new tap
+    let bi=0, bd=Infinity;
+    corners.forEach((c,i)=>{ const d=Math.hypot(c.x-x,c.y-y); if(d<bd){bd=d;bi=i;} });
+    corners[bi]={x:clamp01(x), y:clamp01(y)};
+  }
+  drawOverlay(); setHint();
+  const ready = corners.length===4;
+  countBtn.disabled = !ready;
+  resetCornersBtn.style.display = corners.length ? 'flex' : 'none';
+});
+
+function drawOverlay(){
+  let s='';
+  // quadrilateral + grid once 4 corners exist
+  if(corners.length===4){
+    const pts = corners.map(c=>`${c.x*100},${c.y*100}`).join(' ');
+    s += `<polygon points="${pts}" fill="rgba(200,115,10,0.08)" stroke="#C8730A" stroke-width="0.5"/>`;
+    // bilinear grid lines (perspective-approx) inside the quad
+    const N=12;
+    const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+    const [TL,TR,BR,BL]=corners;
+    for(let i=1;i<N;i++){
+      const t=i/N;
+      const top=lerp(TL,TR,t), bot=lerp(BL,BR,t);   // vertical lines
+      s+=`<line x1="${top.x*100}" y1="${top.y*100}" x2="${bot.x*100}" y2="${bot.y*100}" stroke="#C8730A" stroke-width="0.2" opacity="0.5"/>`;
+      const left=lerp(TL,BL,t), right=lerp(TR,BR,t); // horizontal lines
+      s+=`<line x1="${left.x*100}" y1="${left.y*100}" x2="${right.x*100}" y2="${right.y*100}" stroke="#C8730A" stroke-width="0.2" opacity="0.5"/>`;
+    }
+  }
+  // corner dots
+  corners.forEach((c,i)=>{
+    s+=`<circle cx="${c.x*100}" cy="${c.y*100}" r="1.6" fill="#fff" stroke="#C8730A" stroke-width="0.6"/>`;
+    s+=`<text x="${c.x*100}" y="${c.y*100-2.4}" font-size="3" font-weight="800" text-anchor="middle" fill="#fff" stroke="#162B1F" stroke-width="0.3" font-family="sans-serif">${i+1}</text>`;
+  });
+  overlay.innerHTML=s;
+}
+
+traysel.addEventListener('change', ()=>{
+  const c = traysel.value==='custom';
+  trayw.style.display = c?'inline-block':'none';
+  trayh.style.display = c?'inline-block':'none';
+});
+
+function trayMM(){
+  if(traysel.value==='custom'){
+    return { w: Number(trayw.value)||0, h: Number(trayh.value)||0 };
+  }
+  const v = traysel.value.replace('c','');
+  const [w,h] = v.split('x').map(Number);
+  return { w, h };
+}
+
+resetCornersBtn.addEventListener('click', ()=>{
+  corners=[]; drawOverlay(); setHint();
+  countBtn.disabled=true; resetCornersBtn.style.display='none';
+  stepLabel.textContent='Step 2 · Tap the four tray corners';
+});
+
+resetBtn.addEventListener('click', ()=>{
+  imageB64=null; corners=[]; stage.style.display='none'; drop.style.display='block';
+  traydim.style.display='none'; hintEl.style.display='none'; results.style.display='none';
+  countBtn.disabled=true; resetCornersBtn.style.display='none'; fileIn.value='';
+  stepLabel.textContent='Step 1 · Photograph the tray'; setStatus('');
+});
+
+countBtn.addEventListener('click', countMites);
+
+async function countMites(){
+  if(!imageB64){ setStatus('Choose a tray photo first.', true); return; }
+  if(corners.length!==4){ setStatus('Tap all four tray corners first.', true); return; }
+  const tm = trayMM();
+  countBtn.disabled=true;
+  setStatus('<span class="spinner"></span>Estimating mite drop…');
+  results.style.display='none';
+  try{
+    const res = await fetch(WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        type:'frame_analysis', task:'varroa_count',
+        image: imageB64, corners, tray_mm: tm
+      })
+    });
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); }
+    catch{ throw new Error('Worker did not return JSON. First 200 chars:\n'+text.slice(0,200)); }
+    if(!res.ok) throw new Error('Worker returned HTTP '+res.status+':\n'+text.slice(0,200));
+    render(data);
+    setStatus('');
+  }catch(err){
+    setStatus('Error: '+(err.message||err), true);
+  }finally{
+    countBtn.disabled=false;
+  }
+}
+
+function render(data){
+  raw.textContent = JSON.stringify(data, null, 2);
+  estNum.textContent = (data.estimate===null||data.estimate===undefined) ? '–' : data.estimate;
+  if(data.range && (data.range.low!==undefined)){
+    rngTxt.textContent = `likely ${data.range.low}–${data.range.high}`;
+  } else rngTxt.textContent='';
+  const c = clamp01(data.confidence||0);
+  confBadge.textContent = `confidence ${Math.round(c*100)}%`;
+  if(data.grid && data.grid.cols){
+    gridBadge.style.display='inline-block';
+    gridBadge.textContent = `grid ${data.grid.cols}×${data.grid.rows}`;
+  } else gridBadge.style.display='none';
+  noteTxt.textContent = data.note || '';
+  results.style.display='block';
+}
+
+function clamp01(n){ n=Number(n); if(isNaN(n))return 0; return Math.max(0,Math.min(1,n)); }
+</script>
+</body>
+</html>
