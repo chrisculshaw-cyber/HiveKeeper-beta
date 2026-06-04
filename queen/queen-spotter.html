@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="app-version" content="20260604c">
+<meta name="app-version" content="20260604d">
 <title>HiveKeeper — Queen Spotter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -136,6 +136,7 @@
 
     <div class="row">
       <button class="go" id="analyse" disabled>👑 Spot the queen</button>
+      <button class="ghost" id="download" style="display:none">⬇ Download image</button>
       <button class="ghost" id="reset">Clear</button>
     </div>
     <div class="status" id="status"></div>
@@ -157,11 +158,11 @@
     </details>
   </div>
 
-  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604c</div>
+  <div class="footer">HIVEKEEPER · QUEEN SPOTTER · build 20260604d</div>
 </div>
 
 <script>
-const HIVEKEEPER_BUILD = '4 June 2026 build c';
+const HIVEKEEPER_BUILD = '4 June 2026 build d';
 const WORKER_URL = 'https://hivekeeper-queen-spotter.chris-culshaw.workers.dev/';
 
 const $ = id => document.getElementById(id);
@@ -169,9 +170,11 @@ const drop=$('drop'), fileIn=$('file'), stage=$('stage'), preview=$('preview'),
       overlay=$('overlay'), analyseBtn=$('analyse'), resetBtn=$('reset'),
       statusEl=$('status'), results=$('results'), verdict=$('verdict'),
       candList=$('candList'), raw=$('raw'),
-      overallBox=$('overall'), overallNum=$('overallNum'), overallTxt=$('overallTxt'), ringFg=$('ringFg');
+      overallBox=$('overall'), overallNum=$('overallNum'), overallTxt=$('overallTxt'), ringFg=$('ringFg'),
+      downloadBtn=$('download');
 
 let imageB64 = null;
+let lastCandidates = [];   // candidates from the most recent render, for the download composite
 
 drop.addEventListener('click', ()=>fileIn.click());
 drop.addEventListener('dragover', e=>{e.preventDefault();drop.classList.add('over');});
@@ -216,6 +219,7 @@ resetBtn.addEventListener('click', ()=>{
   imageB64=null; stage.style.display='none'; drop.style.display='block';
   analyseBtn.disabled=true; clearOverlay(); results.style.display='none';
   fileIn.value=''; setStatus(''); overallBox.style.display='none';
+  downloadBtn.style.display='none'; lastCandidates=[];
 });
 
 async function analyse(){
@@ -312,7 +316,71 @@ function render(data){
     candList.appendChild(n);
   }
   results.style.display='block';
+
+  // enable image download once we have candidates drawn on the photo
+  lastCandidates = cands;
+  downloadBtn.style.display = cands.length ? 'flex' : 'none';
 }
+
+// Composite the photo + candidate circles into one JPEG and download it.
+function downloadAnnotated(){
+  try{
+    if(!preview || !preview.naturalWidth){ setStatus('Nothing to download yet.', true); return; }
+    const W = preview.naturalWidth, H = preview.naturalHeight;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(preview, 0, 0, W, H);
+
+    // scale line/label sizes to the image so they look right on any resolution
+    const unit = Math.max(W, H) / 100;     // matches the 0-100 viewBox feel
+    const rx = 7 * unit, ry = 9 * unit;
+    const colour = c => c>=0.6 ? '#B83228' : c>=0.35 ? '#E8960C' : '#2A7A48';
+
+    lastCandidates.forEach((c,i)=>{
+      const x = clamp01(c.x)*W, y = clamp01(c.y)*H;
+      const conf = clamp01(c.confidence||0);
+      const col = colour(conf);
+
+      // ellipse
+      ctx.lineWidth = Math.max(2, unit*0.9);
+      ctx.strokeStyle = col;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI*2);
+      ctx.stroke();
+
+      // number badge above
+      const badgeR = unit*3.1, by = y - ry - unit*2.4;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(x, by, badgeR, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = `800 ${unit*3.4}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(i+1), x, by);
+
+      // confidence % label under the ellipse
+      const pct = Math.round(conf*100) + '%';
+      ctx.font = `700 ${unit*3}px sans-serif`;
+      const ly = y + ry + unit*3.4;
+      ctx.lineWidth = Math.max(2, unit*0.7);
+      ctx.strokeStyle = 'rgba(0,0,0,0.55)';
+      ctx.strokeText(pct, x, ly);
+      ctx.fillStyle = col;
+      ctx.fillText(pct, x, ly);
+    });
+
+    const stamp = new Date().toISOString().slice(0,10);
+    const a = document.createElement('a');
+    a.href = cv.toDataURL('image/jpeg', 0.92);
+    a.download = `queen-spotter-${stamp}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }catch(e){
+    setStatus('Could not build the image: '+(e.message||e), true);
+  }
+}
+downloadBtn.addEventListener('click', downloadAnnotated);
 
 function makeCrop(nx, ny){
   try{
