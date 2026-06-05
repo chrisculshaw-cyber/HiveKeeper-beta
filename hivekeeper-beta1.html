@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260604m">
+  <meta name="app-version" content="20260606a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -599,6 +599,18 @@ html, body { overscroll-behavior: none; }
   background: var(--white) !important;
   box-shadow: 0 8px 24px rgba(0,0,0,0.22) !important;
   transform: scale(1.03);
+  border: 1px solid var(--honey) !important;
+}
+/* HIV-181 (6 Jun 2026) — Plan custom-order drag states. Mirrors the apiary
+   list pattern above. Ghost = gap left behind; chosen = brief mousedown ack;
+   dragging = lifted floating clone following the finger. */
+.plan-drag-handle:active { cursor:grabbing !important; }
+.plan-drag-ghost { opacity:0 !important; background:transparent !important; }
+.plan-drag-chosen { background: var(--honey-pale) !important; }
+.plan-drag-dragging {
+  opacity: 1 !important;
+  background: var(--white) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22) !important;
   border: 1px solid var(--honey) !important;
 }
 
@@ -24849,7 +24861,14 @@ function renderPlan() {
     }
 
     if (window._planActiveTab === 'order') {
+      // HIV-181 — tear down any prior Sortable before re-rendering the list,
+      // then (re)initialise drag if we're on the Custom sub-mode. The 50ms
+      // defer matches the apiary pattern — lets the new DOM settle first.
+      try { destroyPlanCustomSortable(); } catch(e) {}
       contentEl.innerHTML = renderPlanPreviewBanner() + renderPlanOrderContent(data);
+      if (window._planOrderMode === 'custom') {
+        setTimeout(function(){ try { initPlanCustomSortable(); } catch(e) {} }, 50);
+      }
     } else {
       contentEl.innerHTML = renderPlanPreviewBanner() + renderPlanContent(data);
       // Asynchronously fetch + populate the forecast strip without blocking initial render
@@ -24990,6 +25009,60 @@ function planResetCustomOrder() {
   try { localStorage.removeItem('hk_plan_custom_order_' + data.apiary.id); } catch(e) {}
   if (typeof showToast === 'function') showToast('Reset to auto order');
   renderPlan();
+}
+
+// HIV-181 (6 Jun 2026 build a) — drag-to-reorder on the Plan Custom tab.
+// Reuses the SortableJS pattern proven on the apiary screen (initHiveListSortable):
+// handle-only grab so taps elsewhere don't start a drag, forceFallback for
+// consistent touch behaviour in the Median wrapper. On drop, reads the new DOM
+// order and persists to hk_plan_custom_order_<apiaryId> (the same per-apiary,
+// plan-only key the ↑↓ arrows used to write — overrides apiary order for
+// planning only, never touches the apiary listOrder). Re-renders so the number
+// discs (honey "start here" on #1) update to match the new order.
+var _planSortable = null;
+function destroyPlanCustomSortable() {
+  try { if (_planSortable) { _planSortable.destroy(); _planSortable = null; } } catch(e) {}
+}
+function initPlanCustomSortable() {
+  try {
+    destroyPlanCustomSortable();
+    if (typeof Sortable === 'undefined') { console.warn('Sortable not loaded (plan)'); return; }
+    var container = document.getElementById('plan-custom-order-list');
+    if (!container) return;
+    var apiaryId = container.getAttribute('data-apiaryid');
+    if (!apiaryId) return;
+    _planSortable = new Sortable(container, {
+      handle: '.plan-drag-handle',
+      animation: 150,
+      ghostClass: 'plan-drag-ghost',
+      chosenClass: 'plan-drag-chosen',
+      dragClass: 'plan-drag-dragging',
+      forceFallback: true,
+      fallbackTolerance: 5,
+      scrollSensitivity: 80,
+      scrollSpeed: 20,
+      onEnd: function() {
+        try {
+          var newOrder = [];
+          container.querySelectorAll('.plan-custom-item').forEach(function(el) {
+            var hid = el.getAttribute('data-hiveid');
+            if (hid) newOrder.push(hid);
+          });
+          if (!newOrder.length) return;
+          // Preserve any saved-but-currently-skipped hives that weren't rendered
+          // as draggable rows, so a reorder doesn't silently drop them from the
+          // saved order. Append them (in their prior relative position) at the end.
+          var prev = planGetCustomOrderRaw(apiaryId) || [];
+          prev.forEach(function(hid) {
+            if (newOrder.indexOf(hid) === -1) newOrder.push(hid);
+          });
+          planSetCustomOrderRaw(apiaryId, newOrder);
+          if (typeof showToast === 'function') showToast('Order updated');
+          renderPlan();
+        } catch(e) { console.warn('plan Sortable onEnd:', e); }
+      }
+    });
+  } catch(e) { console.warn('initPlanCustomSortable error:', e); }
 }
 
 // 22 May 2026 Phase 3.4 — "Just finished" CTA renderer.
@@ -25292,7 +25365,7 @@ function renderPlanOrderContent(data) {
   if (!modeAuto) {
     // Phase 3.3 — Custom mode: flat list, arrow buttons to reorder.
     html += '<div style="margin:8px 22px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">';
-    html += '<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:600;color:var(--text-m);flex:1;line-height:1.4;">Tap ↑ ↓ to reorder. First hive gets the honey-coloured number — that\'s where you\'ll start.</div>';
+    html += '<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:600;color:var(--text-m);flex:1;line-height:1.4;">Drag the ⋮ handle to reorder. First hive gets the honey-coloured number — that\'s where you\'ll start.</div>';
     html += '<button onclick="planResetCustomOrder()" style="background:transparent;border:1px solid var(--wax);border-radius:8px;padding:6px 10px;font-family:\'Syne\',sans-serif;font-size:10px;font-weight:700;color:var(--text-m);cursor:pointer;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Reset</button>';
     html += '</div>';
   }
@@ -25347,9 +25420,14 @@ function renderPlanOrderContent(data) {
       html += '</div>';
     });
   } else {
-    // ─── CUSTOM MODE: flat list with up/down arrows ───
+    // ─── CUSTOM MODE: flat list, drag to reorder (HIV-181, 6 Jun 2026 build a) ───
+    // Replaced ↑↓ arrow buttons with a SortableJS drag handle (⋮), reusing the
+    // exact touch-drag pattern proven on the apiary screen (initHiveListSortable):
+    // forceFallback for consistent mobile behaviour, handle-only grab so taps
+    // elsewhere don't start a drag. Persists to hk_plan_custom_order_<id> on drop
+    // (localStorage — synced-record migration tracked separately).
     var ordered = planGetCustomOrderHives(data);
-    html += '<div style="padding:0 22px;">';
+    html += '<div id="plan-custom-order-list" data-apiaryid="' + (data.apiary ? escapeHtml(data.apiary.id) : '') + '" style="padding:0 22px;">';
     ordered.forEach(function(hive, idx) {
       var hiveName = hive.name || ('Hive ' + (hive.number || ''));
       var outstanding = data.outstandingByHiveId[hive.id];
@@ -25364,7 +25442,7 @@ function renderPlanOrderContent(data) {
       var _skipped = _apId && (typeof isHiveSkipped === 'function') && isHiveSkipped(_apId, hive.id);
       var _rowOpacity = _skipped ? '0.5' : '1';
 
-      html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;opacity:' + _rowOpacity + ';' + (idx < ordered.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
+      html += '<div class="plan-custom-item" data-hiveid="' + escapeHtml(hive.id) + '" style="display:flex;align-items:center;gap:10px;padding:10px 0;opacity:' + _rowOpacity + ';' + (idx < ordered.length - 1 ? 'border-bottom:1px solid var(--wax);' : '') + '">';
       // Number disc
       html += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + numColor + ';background:' + numBg + ';border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;">' + (idx + 1) + '</div>';
       // Name + meta + tag
@@ -25380,12 +25458,17 @@ function renderPlanOrderContent(data) {
       html += '</div>';
       // Skip / include toggle
       html += '<button onclick="toggleSkipHive(\'' + (_apId || '') + '\',\'' + hive.id + '\')" aria-label="' + (_skipped ? 'Include hive in inspection' : 'Skip hive this inspection') + '" style="flex-shrink:0;border:1px solid ' + (_skipped ? '#97C459' : 'var(--wax)') + ';background:' + (_skipped ? '#EAF3DE' : 'var(--cream)') + ';color:' + (_skipped ? '#27500A' : 'var(--text-m)') + ';border-radius:6px;padding:0 10px;height:30px;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">' + (_skipped ? 'Include' : 'Skip') + '</button>';
-      // Arrow buttons (hidden when skipped — no point reordering a skipped hive)
+      // Drag handle (HIV-181) — hidden when skipped (no point reordering a skipped
+      // hive). Handle-only grab: tapping the row body does nothing, only this
+      // grip starts a drag. Matches the apiary screen's .hive-drag-handle visual.
       if (!_skipped) {
-        html += '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;">';
-        html += '<button onclick="planMoveHiveUp(' + idx + ')" ' + (canUp ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canUp ? 'var(--cream)' : 'transparent') + ';color:' + (canUp ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canUp ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canUp ? '1' : '0.35') + ';">↑</button>';
-        html += '<button onclick="planMoveHiveDown(' + idx + ')" ' + (canDown ? '' : 'disabled ') + 'style="width:36px;height:26px;border:1px solid var(--wax);background:' + (canDown ? 'var(--cream)' : 'transparent') + ';color:' + (canDown ? 'var(--text)' : 'var(--text-l)') + ';border-radius:6px;cursor:' + (canDown ? 'pointer' : 'not-allowed') + ';font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;opacity:' + (canDown ? '1' : '0.35') + ';">↓</button>';
-        html += '</div>';
+        html += '<div class="plan-drag-handle" title="Drag to reorder" style="width:36px;height:40px;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;user-select:none;flex-shrink:0;background:var(--honey-pale);border-radius:8px;border:1px solid var(--honey);">' +
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+            '<line x1="4" y1="7"  x2="20" y2="7"  stroke="#C8730A" stroke-width="2.5" stroke-linecap="round"/>' +
+            '<line x1="4" y1="12" x2="20" y2="12" stroke="#C8730A" stroke-width="2.5" stroke-linecap="round"/>' +
+            '<line x1="4" y1="17" x2="20" y2="17" stroke="#C8730A" stroke-width="2.5" stroke-linecap="round"/>' +
+          '</svg>' +
+        '</div>';
       }
       html += '</div>';
     });
@@ -35147,7 +35230,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '4 June 2026 build m';
+var HIVEKEEPER_BUILD = '6 June 2026 build a';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
