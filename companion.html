@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606e">
+<meta name="app-version" content="companion-20260606f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -259,8 +259,8 @@ textarea.ed-inp{font-weight:400;}
 
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
-const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1';
-const BUILD_STAMP = '6 June 2026 companion build e';
+const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
+const BUILD_STAMP = '6 June 2026 companion build f';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -277,6 +277,7 @@ function loadHives(){ try{ return JSON.parse(localStorage.getItem(HIVE_KEY))||[]
 function loadApiaries(){ try{ return JSON.parse(localStorage.getItem(APIARY_KEY))||[]; }catch(e){ return []; } }
 function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch(e){ return []; } }
 function loadHarvests(){ try{ return JSON.parse(localStorage.getItem(HARVEST_KEY))||[]; }catch(e){ return []; } }
+function loadTreatments(){ try{ return JSON.parse(localStorage.getItem(TREATMENT_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(k,r){ try{ localStorage.setItem(k, JSON.stringify(r)); }catch(e){} }
 
 const $ = s => document.querySelector(s);
@@ -345,7 +346,7 @@ async function signOut(){
   // Wipe the local data cache so the next account on this browser can't briefly
   // see the previous user's hives/inspections before their own pull completes.
   // (The Supabase auth key is managed by the SDK and left to it.)
-  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); }catch(e){}
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); localStorage.removeItem(TREATMENT_KEY); }catch(e){}
   $('#signin-btn').disabled=false; $('#signin-btn').textContent='Sign in'; $('#signin-pass').value='';
   show('auth-screen');
 }
@@ -354,7 +355,7 @@ async function pullData(uid){
   const sb=getSupabase();
   // Clear any stale cache first so a failed/partial pull can never surface a
   // previous account's data. Each table below repopulates its own key.
-  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); }catch(e){}
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); localStorage.removeItem(TREATMENT_KEY); }catch(e){}
   let _testApiaryIds={};
   try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid);
     if(data){ const kept=data.map(mapApiary).filter(a=>{ if(isTestApiary(a)){ _testApiaryIds[a.id]=true; return false; } return true; }); saveLocal(APIARY_KEY, kept); } }catch(e){}
@@ -364,6 +365,8 @@ async function pullData(uid){
     if(data) saveLocal(INSP_KEY, data.map(mapInsp).filter(i=>!(i.id&&String(i.id).startsWith('demo-')))); }catch(e){}
   try{ const { data } = await sb.from('harvests').select('*').eq('user_id', uid);
     if(data) saveLocal(HARVEST_KEY, data.map(mapHarvest).filter(x=>!x.deletedAt)); }catch(e){}
+  try{ const { data } = await sb.from('treatments').select('*').eq('user_id', uid);
+    if(data) saveLocal(TREATMENT_KEY, data.map(mapTreatment)); }catch(e){}
 }
 /* Test-data filters — mirror the app: meadowbrook + demo rows are seeded test data. */
 function isTestApiary(a){ if(!a) return true; if(a.id==='apiary_meadowbrook') return true; if(a.id&&String(a.id).startsWith('demo-')) return true; if(a.name==='Meadowbrook Apiary') return true; return false; }
@@ -386,6 +389,10 @@ function mapHarvest(x){
     kg: (x.weight_kg!=null?Number(x.weight_kg):(x.kg!=null?Number(x.kg):0)),
     harvestedAt: when?new Date(when).getTime():0,
     deletedAt: x.deleted_at?new Date(x.deleted_at).getTime():null }; }
+function mapTreatment(x){
+  const when = x.treated_on || x.created_at || null;
+  return { id:x.id, hiveId:x.hive_id, product:x.product||'', dose:x.dose||'',
+    treatedAt: when?new Date(when).getTime():0, notes:x.notes||'' }; }
 async function onAuthSuccess(){
   show('load-screen');
   const uid=_user&&_user.id; if(uid){ await pullData(uid); }
@@ -488,7 +495,7 @@ function viewDashboard(){
     <div style="flex:1;min-width:260px;">
       ${kpiTiles()}
       ${trendChart()}
-      ${efficacyCard()}
+      ${treatmentCard()}
       ${swarmCard()}
     </div>
   </div>`;
@@ -549,16 +556,63 @@ function kpiTiles(){
   </div>`;
 }
 function trendChart(){
-  // Operation health over 6 months — needs historical health snapshots, which the
-  // companion doesn't sync yet. Shown as a clearly-labelled placeholder per design.
-  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health · 6 months</div><div class="note" style="margin-bottom:10px;">Avg across all apiaries</div>
-    <div style="height:90px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">Trend builds as inspections<br>accumulate over the season</div></div></div>`;
+  const hives=scopedHives(); 
+  if(!hives.length) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health · 6 months</div><div style="height:90px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note">No hives in this view</div></div></div>`;
+  // Build 6 month-end buckets. For each, compute each hive's health from its latest
+  // inspection on or before that month-end, then average across hives that had one.
+  const now=new Date(); const pts=[]; const labels=[];
+  for(let m=5;m>=0;m--){
+    const d=new Date(now.getFullYear(), now.getMonth()-m+1, 0, 23,59,59); // month-end
+    const cutoff=d.getTime();
+    labels.push(d.toLocaleDateString('en-GB',{month:'short'}));
+    let sum=0,n=0;
+    hives.forEach(h=>{
+      const insp=inspsFor(h.id).filter(i=>i.inspectedAt<=cutoff);
+      if(!insp.length) return;
+      const score=healthFromInsp(h, insp[0]);
+      if(score!=null){ sum+=score; n++; }
+    });
+    pts.push(n?Math.round(sum/n):null);
+  }
+  const real=pts.filter(p=>p!=null);
+  if(!real.length) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health · 6 months</div><div class="note" style="margin-bottom:10px;">${_scope==='all'?'Avg across all apiaries':esc(apiaryName(_scope))}</div><div style="height:90px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">No inspections in<br>the last 6 months</div></div></div>`;
+  // SVG line
+  const W=260,H=90,pad=18; const min=Math.min(...real), max=Math.max(...real);
+  const lo=Math.max(0,min-5), hi=Math.min(100,max+5), span=(hi-lo)||1;
+  const xs=i=>pad+(i*(W-2*pad)/5), ys=v=>H-pad-((v-lo)/span)*(H-2*pad);
+  let path='', dots='', prev=null;
+  pts.forEach((v,i)=>{ if(v==null) return; const x=xs(i),y=ys(v); path+=(prev===null?'M':'L')+x.toFixed(1)+' '+y.toFixed(1)+' '; prev=v; dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="#C8730A"/>`; });
+  const last=real[real.length-1], lb=healthBand(last);
+  const lbls=labels.map((l,i)=>`<text x="${xs(i).toFixed(1)}" y="${H-4}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${l}</text>`).join('');
+  return `<div class="card-box"><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2px;"><div style="font-size:13px;font-weight:800;">Operation health · 6 months</div><span class="pill" style="background:${lb.bg};color:${lb.tx};">${last}</span></div>
+    <div class="note" style="margin-bottom:8px;">${_scope==='all'?'Avg across all apiaries':esc(apiaryName(_scope))} · derived from inspections</div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:90px;"><path d="${path.trim()}" fill="none" stroke="#C8730A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${lbls}</svg></div>`;
 }
-function efficacyCard(){
-  // Treatment efficacy needs before/after varroa counts around a treatment — needs
-  // treatment records synced. Placeholder until wired.
-  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:8px;">Treatment efficacy</div>
-    <div style="height:60px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">Shows varroa knockdown once<br>treatment records are synced</div></div></div>`;
+// Health for a specific inspection (same weighting as hiveHealth but for a given record)
+function healthFromInsp(h, latest){
+  if(h.status==='dead') return 0;
+  if(!latest) return null;
+  let score=70;
+  if(latest.queenSeen) score+=10;
+  if(latest.varroaLevel==='High') score-=25; else if(latest.varroaLevel==='Med'||latest.varroaLevel==='Medium') score-=8;
+  if(typeof latest.broodFrames==='number'){ score += Math.min(15, Math.max(-15,(latest.broodFrames-5)*3)); }
+  if(latest.swarmRisk==='High') score-=10;
+  return Math.max(0,Math.min(100,Math.round(score)));
+}
+function treatmentCard(){
+  const hives=scopedHives(); const ids={}; hives.forEach(h=>ids[h.id]=h);
+  const list=loadTreatments().filter(t=>ids[t.hiveId]).sort((a,b)=>b.treatedAt-a.treatedAt);
+  if(!list.length) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:8px;">Treatment history</div>
+    <div style="height:60px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">No treatments logged<br>in this view</div></div></div>`;
+  const rows=list.slice(0,6).map(t=>{
+    const d=t.treatedAt?new Date(t.treatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'}):'—';
+    const hv=ids[t.hiveId];
+    return `<div style="display:flex;align-items:baseline;justify-content:space-between;padding:5px 0;border-bottom:1px solid #F4EFE3;">
+      <div style="min-width:0;"><span style="font-weight:800;font-size:12px;">${esc(t.product||'Treatment')}</span><span style="color:var(--text-l);font-size:11px;"> · ${esc(hv?hv.name:'')}</span>${t.dose?`<span style="color:#A85D08;font-size:10px;"> · ${esc(t.dose)}</span>`:''}</div>
+      <div style="color:#7A6A4F;font-size:11px;font-weight:700;white-space:nowrap;margin-left:8px;">${d}</div></div>`;
+  }).join('');
+  const more=list.length>6?`<div style="padding-top:6px;font-size:10px;font-weight:800;color:#A85D08;text-align:center;">${list.length} total · showing latest 6</div>`:'';
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:6px;">Treatment history <span style="color:var(--text-l);font-weight:600;font-size:11px;">· ${list.length} record${list.length!==1?'s':''}</span></div>${rows}${more}</div>`;
 }
 function colonyTrendMini(){
   const h=scopedHives().slice().sort((a,b)=>hiveHealth(b)-hiveHealth(a)).slice(0,5);
