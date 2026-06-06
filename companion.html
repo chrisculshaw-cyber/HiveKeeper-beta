@@ -350,10 +350,17 @@ async function pullData(uid){
   // Clear any stale cache first so a failed/partial pull can never surface a
   // previous account's data. Each table below repopulates its own key.
   try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); }catch(e){}
-  try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid); if(data) saveLocal(APIARY_KEY, data.map(mapApiary)); }catch(e){}
-  try{ const { data } = await sb.from('hives').select('*').eq('user_id', uid); if(data) saveLocal(HIVE_KEY, data.map(mapHive)); }catch(e){}
-  try{ const { data } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at',{ascending:false}).limit(500); if(data) saveLocal(INSP_KEY, data.map(mapInsp)); }catch(e){}
+  let _testApiaryIds={};
+  try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid);
+    if(data){ const kept=data.map(mapApiary).filter(a=>{ if(isTestApiary(a)){ _testApiaryIds[a.id]=true; return false; } return true; }); saveLocal(APIARY_KEY, kept); } }catch(e){}
+  try{ const { data } = await sb.from('hives').select('*').eq('user_id', uid);
+    if(data) saveLocal(HIVE_KEY, data.map(mapHive).filter(h=>!isTestHive(h,_testApiaryIds))); }catch(e){}
+  try{ const { data } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at',{ascending:false}).limit(500);
+    if(data) saveLocal(INSP_KEY, data.map(mapInsp).filter(i=>!(i.id&&String(i.id).startsWith('demo-')))); }catch(e){}
 }
+/* Test-data filters — mirror the app: meadowbrook + demo rows are seeded test data. */
+function isTestApiary(a){ if(!a) return true; if(a.id==='apiary_meadowbrook') return true; if(a.id&&String(a.id).startsWith('demo-')) return true; return false; }
+function isTestHive(h,testApiaryIds){ if(!h) return true; if(h.apiaryId==='apiary_meadowbrook') return true; if(h.id&&String(h.id).startsWith('demo-')) return true; if(testApiaryIds&&h.apiaryId&&testApiaryIds[h.apiaryId]) return true; return false; }
 /* Row normalisers — mirror the app's pullFromSupabase mapping (DB snake_case -> local camelCase) */
 function mapApiary(a){ return { id:a.id, name:a.name, isShared:a.is_shared, sharedWith:a.shared_with, userId:a.user_id||null }; }
 function mapHive(h){
@@ -377,7 +384,8 @@ let _scope='all', _tab='dash';
 const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['plan','📋','Plan'],['export','📤','Export']];
 
 /* ---- data helpers (operate on normalised local cache) ---- */
-function activeHives(){ return loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-'))); }
+function activeHives(){ return loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-')) && h.apiaryId!=='apiary_meadowbrook'); }
+function liveApiaries(){ return loadApiaries().filter(a=>!isTestApiary(a)); }
 function scopedHives(){ const all=activeHives(); return _scope==='all'?all:all.filter(h=>h.apiaryId===_scope); }
 function inspsFor(hiveId){ return loadInspections().filter(i=>i.hiveId===hiveId).sort((a,b)=>b.inspectedAt-a.inspectedAt); }
 function apiaryName(id){ const a=loadApiaries().find(x=>x.id===id); return a?a.name:'—'; }
@@ -410,7 +418,7 @@ function initBackOffice(){
 }
 function tabTo(t){ _tab=t; closeDrawer(); $('#bo-nav').innerHTML=NAV.map(n=>`<div class="bo-nav ${n[0]===_tab?'active':''}" onclick="HKWEB.tabTo('${n[0]}')"><span class="i">${n[1]}</span>${n[2]}</div>`).join(''); renderContent(); }
 function scopeMenuHtml(){
-  const aps=loadApiaries();
+  const aps=liveApiaries();
   const all=activeHives();
   function flags(list){ const f=[]; if(list.some(h=>h.varroaLevel==='High')) f.push('VARROA'); return f; }
   function row(id,name,list){
@@ -444,7 +452,7 @@ function renderContent(){
   else if(_tab==='hives') c.innerHTML='<div style="max-width:760px;">'+hiveTable()+'</div>';
   else c.innerHTML=`<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">${NAV.find(n=>n[0]===_tab)[1]}</div><div class="serif" style="font-size:22px;font-weight:700;">${titles[_tab][0]}</div><div class="note" style="max-width:320px;margin-top:6px;">This section of the Desktop Companion is coming next. Dashboard and Analytics are live and reading your real data.</div></div>`;
 }
-function scopeSub(){ const h=scopedHives(); const aps=loadApiaries().length; return `${_scope==='all'?'All apiaries':apiaryName(_scope)} · ${h.length} hive${h.length!==1?'s':''}${_scope==='all'?' · '+aps+' apiar'+(aps!==1?'ies':'y'):''} · synced from your phone`; }
+function scopeSub(){ const h=scopedHives(); const aps=liveApiaries().length; return `${_scope==='all'?'All apiaries':apiaryName(_scope)} · ${h.length} hive${h.length!==1?'s':''}${_scope==='all'?' · '+aps+' apiar'+(aps!==1?'ies':'y'):''} · synced from your phone`; }
 
 /* ---- dashboard ---- */
 function viewDashboard(){
@@ -523,7 +531,7 @@ function colonyStrength(){
   return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:3px;">Colony strength · brood frames</div><div class="note" style="margin-bottom:8px;">${legend}</div><svg width="100%" height="${ht}" viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none" style="display:block;">${grid}${lines}</svg><div class="note" style="margin-top:6px;">Built from your inspection history — each line is a colony's brood-frame count over time.</div></div>`;
 }
 function apiaryRanking(){
-  const aps=loadApiaries();
+  const aps=liveApiaries();
   if(aps.length<2) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:4px;">Apiary comparison</div><div class="note">Add a second apiary to compare performance across sites.</div></div>`;
   const rows=aps.map(a=>{ const hv=activeHives().filter(x=>x.apiaryId===a.id); const health=avgHealth(hv); const varroaHigh=hv.filter(x=>x.varroaLevel==='High').length; return {name:a.name,health,hives:hv.length,varroaHigh}; })
     .filter(r=>r.hives>0).sort((a,b)=>b.health-a.health);
