@@ -1,1081 +1,1930 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nene Valley Lavender — Organic English Lavender, Brigstock</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#5a4a7a">
-<meta name="description" content="A little farm at Drumbledrone Eden in Brigstock, North Northamptonshire, on the edge of the Nene Valley, growing English Lavender and producing 100% organic essential oil, honey and skincare.">
+<title>HiveKeeper — The UK beekeeper's field companion</title>
+<meta name="description" content="AI-powered beekeeping app for UK keepers. Asian hornet AI identifier, crop spraying alerts, UK nectar calendar, BeeBase export, satellite apiary mapping and voice inspections. Built around the UK beekeeping year.">
+
+<meta property="og:title" content="HiveKeeper — The UK beekeeper's field companion">
+<meta property="og:description" content="AI-powered beekeeping app built for the UK beekeeping year. By a Northamptonshire beekeeper.">
+<meta property="og:image" content="https://gethivekeeper.com/og-image.jpg">
+<meta property="og:url" content="https://gethivekeeper.com">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="HiveKeeper">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="HiveKeeper — the UK beekeeper's field companion">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HiveKeeper — The UK beekeeper's field companion">
+<meta name="twitter:description" content="AI-powered beekeeping app built for the UK beekeeping year.">
+<meta name="twitter:image" content="https://gethivekeeper.com/og-image.jpg">
+
+<link rel="canonical" href="https://gethivekeeper.com/">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Chris Culshaw, Culshaw Consulting Ltd">
+<meta name="theme-color" content="#1F4E3A">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "HiveKeeper",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "iOS, Web, Android",
+  "description": "The UK beekeeper's field companion. Asian Hornet AI identifier, crop spraying awareness, UK nectar calendar, BeeBase export, satellite apiary mapping and AI-powered voice inspections.",
+  "offers": [
+    {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "GBP"},
+    {"@type": "Offer", "name": "Pro", "price": "3.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"},
+    {"@type": "Offer", "name": "Commercial", "price": "19.99", "priceCurrency": "GBP", "priceValidUntil": "2027-12-31"}
+  ],
+  "author": {
+    "@type": "Organization",
+    "name": "Culshaw Consulting Ltd",
+    "url": "https://gethivekeeper.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "30 Stanion Road",
+      "addressLocality": "Brigstock",
+      "addressRegion": "Northamptonshire",
+      "postalCode": "NN14 3HW",
+      "addressCountry": "GB"
+    }
+  }
+}
+</script>
+
+<link rel="icon" type="image/png" href="hivekeeper-icon.png">
+<link rel="apple-touch-icon" href="hivekeeper-icon.png">
+
+<!-- Fonts: Syne (UI) — matches spec v25 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Jost:wght@300;400;500&family=Tangerine:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --ink: #2e2140;          /* deep aubergine, from logo script */
-    --violet: #6b4f9e;       /* mid lavender-violet */
-    --lilac: #b9a3da;        /* soft lilac wash */
-    --lilac-pale: #ece3f7;   /* palest wash */
-    --paper: #f7f3ee;        /* warm cream paper */
-    --paper-deep: #efe7dd;   /* slightly deeper cream */
-    --gold: #b08d57;         /* warm accent for fine detail */
-    --line: #ddd1c4;
+:root {
+  --forest: #1F4E3A;
+  --forest-deep: #163527;
+  --forest-light: #2a6448;
+  --honey: #C8730A;
+  --honey-bright: #e4a33a;
+  --honey-soft: #f4e2b6;
+  --cream: #faf5e9;
+  --cream-warm: #f5ecd8;
+  --bark: #4a3a28;
+  --ink: #1a1612;
+  --muted: #6b6050;
+  --rule: #d9c9a8;
+  --amber-burnt: #b45309;
+  --amber-urgent: #991b1b;
+
+  --display: 'Syne', 'Helvetica Neue', Arial, sans-serif;
+  --ui: 'Syne', 'Helvetica Neue', Arial, sans-serif;
+
+  --max: 1180px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+.eyebrow {
+  font-family: var(--ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--honey);
+}
+
+h1, h2, h3 { font-family: var(--display); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+h1 { font-size: clamp(42px, 7vw, 92px); }
+h2 { font-size: clamp(32px, 4.5vw, 56px); }
+h3 { font-size: clamp(22px, 2.5vw, 32px); }
+p { font-size: 17px; line-height: 1.7; }
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 245, 233, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(217, 201, 168, 0.5);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--forest);
+}
+.brand img { width: 36px; height: 36px; border-radius: 8px; }
+.brand sup { font-size: 11px; color: var(--honey); margin-left: 2px; vertical-align: super; }
+.nav-links {
+  display: flex;
+  gap: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  align-items: center;
+}
+.nav-links a {
+  color: var(--forest);
+  transition: color 0.2s;
+  padding: 8px 0;
+}
+.nav-links a:hover { color: var(--honey); }
+.nav-links a.nav-cta {
+  background: var(--forest);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-size: 12px;
+  font-weight: 800;
+  transition: all 0.2s;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25);
+  animation: ctaPulse 2.6s ease-in-out infinite;
+}
+.nav-links a.nav-cta:hover {
+  background: var(--forest-deep);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(31, 78, 58, 0.35);
+  animation: none;
+}
+@keyframes ctaPulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25),
+                0 0 0 0 rgba(200, 115, 10, 0);
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Jost', sans-serif;
-    color: var(--ink);
-    background: var(--paper);
-    line-height: 1.65;
-    font-weight: 300;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
+  50% {
+    box-shadow: 0 2px 8px rgba(31, 78, 58, 0.25),
+                0 0 0 8px rgba(200, 115, 10, 0.18);
   }
-  /* subtle paper grain */
-  body::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.04;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-links a.nav-cta { animation: none; }
+}
+@media (max-width: 720px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-inner { padding: 14px 18px; }
+  .nav-links a.nav-cta { padding: 10px 18px; font-size: 11px; letter-spacing: 0.06em; }
+  .brand { font-size: 18px; }
+  .brand img { width: 32px; height: 32px; }
+}
+
+.hero {
+  position: relative;
+  padding: 80px 0 120px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at top right, rgba(228, 163, 58, 0.08), transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(31, 78, 58, 0.04), transparent 60%),
+    var(--cream);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'><path d='M30 0l26 15v22L30 52 4 37V15z' fill='none' stroke='%23C8730A' stroke-width='0.5' opacity='0.15'/></svg>");
+  background-size: 120px 104px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+}
+
+.hero-text .eyebrow { margin-bottom: 24px; }
+.hero-headline {
+  color: var(--forest);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+.hero-headline em {
+  font-style: italic;
+  color: var(--honey);
+  font-weight: 500;
+}
+.hero-sub {
+  font-size: 19px;
+  color: var(--bark);
+  margin-bottom: 40px;
+  max-width: 560px;
+  line-height: 1.6;
+}
+.hero-ctas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 28px;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.btn-primary {
+  background: var(--forest);
+  color: var(--cream);
+}
+.btn-primary:hover { background: var(--forest-deep); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(31, 78, 58, 0.25); }
+.btn-secondary {
+  background: transparent;
+  color: var(--forest);
+  border-color: var(--forest);
+}
+.btn-secondary:hover { background: var(--forest); color: var(--cream); }
+
+.hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.hero-trust-item { display: flex; align-items: center; gap: 8px; }
+.hero-trust-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--honey);
+}
+
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 480px;
+}
+.phone-frame {
+  position: relative;
+  width: 280px;
+  height: 560px;
+  background: var(--forest-deep);
+  border-radius: 42px;
+  padding: 14px;
+  box-shadow:
+    0 40px 80px -20px rgba(31, 78, 58, 0.35),
+    0 20px 40px -10px rgba(31, 78, 58, 0.2),
+    inset 0 0 0 2px rgba(228, 163, 58, 0.15);
+  animation: phoneRise 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--forest);
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 20px;
+  color: var(--cream);
+  font-family: var(--ui);
+  font-size: 12px;
+}
+.phone-notch {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 24px;
+  background: var(--forest-deep);
+  border-radius: 14px;
+  z-index: 2;
+}
+.phone-content { padding-top: 32px; }
+.phone-greeting {
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+.phone-apiary {
+  font-size: 11px;
+  color: var(--honey-soft);
+  opacity: 0.7;
+  margin-bottom: 20px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.phone-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.phone-stat {
+  background: rgba(228, 163, 58, 0.1);
+  border: 1px solid rgba(228, 163, 58, 0.25);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.phone-stat-num { font-family: var(--display); font-size: 24px; color: var(--honey-bright); font-weight: 600; }
+.phone-stat-lab { font-size: 9px; color: var(--honey-soft); opacity: 0.75; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+.phone-alert {
+  background: rgba(180, 83, 9, 0.2);
+  border-left: 3px solid var(--amber-burnt);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+.phone-alert-label { font-size: 9px; color: var(--honey-bright); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+.phone-alert-text { font-size: 11px; color: var(--cream); line-height: 1.4; }
+
+.phone-hive-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(228, 163, 58, 0.15);
+}
+.phone-hive-ring {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--honey-bright);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600;
+  color: var(--honey-soft);
+}
+.phone-hive-ring.amber { border-color: #d89b3a; color: #d89b3a; }
+.phone-hive-name { font-size: 11px; color: var(--cream); flex: 1; }
+.phone-hive-meta { font-size: 9px; color: rgba(244, 226, 182, 0.5); }
+
+.bee-float {
+  position: absolute;
+  top: 8%;
+  right: -6%;
+  width: 90px;
+  height: 90px;
+  opacity: 0.85;
+  animation: beeFly 8s ease-in-out infinite;
+}
+.bee-phone-left {
+  position: absolute;
+  bottom: 12%;
+  left: -4%;
+  width: 56px;
+  height: 56px;
+  opacity: 0.8;
+  animation: beePhoneLeft 10s ease-in-out infinite;
+  z-index: 2;
+}
+.bee-phone-right {
+  position: absolute;
+  top: 42%;
+  right: -2%;
+  width: 42px;
+  height: 42px;
+  opacity: 0.75;
+  animation: beePhoneRight 12s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes beePhoneLeft {
+  0%, 100% { transform: translate(0, 0) rotate(15deg); }
+  30% { transform: translate(20px, -30px) rotate(-10deg); }
+  60% { transform: translate(40px, -15px) rotate(20deg); }
+  85% { transform: translate(15px, -40px) rotate(-5deg); }
+}
+@keyframes beePhoneRight {
+  0%, 100% { transform: translate(0, 0) rotate(-20deg); }
+  25% { transform: translate(-15px, 25px) rotate(10deg); }
+  50% { transform: translate(-40px, 10px) rotate(-15deg); }
+  75% { transform: translate(-20px, 35px) rotate(5deg); }
+}
+@media (max-width: 720px) {
+  .bee-phone-right { display: none; }
+  .bee-phone-left { width: 42px; height: 42px; }
+}
+@keyframes beeFly {
+  0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+  25% { transform: translate(-20px, -15px) rotate(5deg); }
+  50% { transform: translate(-10px, -25px) rotate(-3deg); }
+  75% { transform: translate(-25px, -10px) rotate(7deg); }
+}
+@keyframes phoneRise {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Extra bees — scattered across the page with distinct flight paths */
+.extra-bee {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+.bee-why {
+  top: 40px;
+  right: 5%;
+  width: 48px;
+  height: 48px;
+  opacity: 0.75;
+  animation: beeDrift 11s ease-in-out infinite;
+}
+.bee-features {
+  top: 18%;
+  left: 7%;
+  width: 72px;
+  height: 72px;
+  opacity: 0.55;
+  animation: beeHover 9s ease-in-out infinite;
+}
+.bee-cta {
+  bottom: 20%;
+  right: 8%;
+  width: 40px;
+  height: 40px;
+  opacity: 0.6;
+  animation: beeCircle 13s linear infinite;
+}
+@keyframes beeDrift {
+  0%, 100% { transform: translate(0, 0) rotate(8deg); }
+  33% { transform: translate(-30px, 20px) rotate(-6deg); }
+  66% { transform: translate(-15px, 45px) rotate(12deg); }
+}
+@keyframes beeHover {
+  0%, 100% { transform: translate(0, 0) rotate(-12deg); }
+  20% { transform: translate(8px, -6px) rotate(-8deg); }
+  50% { transform: translate(-6px, 4px) rotate(-16deg); }
+  80% { transform: translate(4px, -2px) rotate(-10deg); }
+}
+@keyframes beeCircle {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-30px, -20px) rotate(-90deg); }
+  50%  { transform: translate(0, -40px) rotate(-180deg); }
+  75%  { transform: translate(30px, -20px) rotate(-270deg); }
+  100% { transform: translate(0, 0) rotate(-360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .extra-bee, .bee-float, .bee-phone-left, .bee-phone-right { animation: none; }
+}
+@media (max-width: 720px) {
+  .bee-features { display: none; }
+}
+
+.hex-deco {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.35;
+}
+.hex-deco-1 { top: 5%; left: 5%; width: 60px; }
+.hex-deco-2 { bottom: 10%; right: 5%; width: 80px; }
+
+.trust-bar {
+  padding: 36px 0;
+  background: var(--forest);
+  color: var(--cream);
+  border-top: 1px solid var(--forest-light);
+  border-bottom: 1px solid var(--forest-light);
+}
+.trust-bar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 40px;
+  flex-wrap: wrap;
+  font-family: var(--ui);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--honey-soft);
+  opacity: 0.9;
+}
+.trust-item { display: flex; align-items: center; gap: 10px; }
+.trust-item svg { width: 16px; height: 16px; stroke: var(--honey-bright); }
+
+.why {
+  padding: 120px 0;
+  background: var(--cream);
+  position: relative;
+}
+.section-head {
+  max-width: 720px;
+  margin-bottom: 72px;
+}
+.section-head .eyebrow { margin-bottom: 16px; display: block; }
+.section-head h2 {
+  color: var(--forest);
+  margin-bottom: 20px;
+}
+.section-head h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.section-head p {
+  color: var(--bark);
+  font-size: 19px;
+  max-width: 620px;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 48px;
+}
+@media (max-width: 740px) {
+  .why-grid { grid-template-columns: 1fr; gap: 40px; }
+}
+
+.why-card {
+  position: relative;
+  padding: 40px 36px 36px;
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.why-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(74, 58, 40, 0.15);
+}
+.why-card-num {
+  position: absolute;
+  top: -18px;
+  left: 32px;
+  background: var(--forest);
+  color: var(--honey-bright);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  font-style: italic;
+}
+.why-card h3 {
+  font-family: var(--display);
+  color: var(--forest);
+  margin-bottom: 14px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+.why-card p {
+  color: var(--bark);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.why-card strong { color: var(--forest); font-weight: 600; }
+
+.features {
+  padding: 120px 0;
+  background: var(--forest);
+  color: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+.features::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='52' viewBox='0 0 60 52'><path d='M30 0l26 15v22L30 52 4 37V15z' fill='none' stroke='%23e4a33a' stroke-width='0.5' opacity='0.1'/></svg>");
+  background-size: 120px 104px;
+  pointer-events: none;
+}
+.features .section-head h2 { color: var(--honey-soft); }
+.features .section-head h2 em { color: var(--honey-bright); }
+.features .section-head p { color: rgba(244, 226, 182, 0.8); }
+.features .eyebrow { color: var(--honey-bright); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  position: relative;
+}
+@media (max-width: 920px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .features-grid { grid-template-columns: 1fr; } }
+
+.feature-tile {
+  padding: 32px 28px;
+  background: rgba(228, 163, 58, 0.06);
+  border: 1px solid rgba(228, 163, 58, 0.2);
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+.feature-tile:hover {
+  background: rgba(228, 163, 58, 0.12);
+  border-color: rgba(228, 163, 58, 0.4);
+  transform: translateY(-4px);
+}
+.feature-tile.feature-tile-ai {
+  background: rgba(228, 163, 58, 0.14);
+  border-color: rgba(228, 163, 58, 0.45);
+}
+.feature-tile.feature-tile-ai:hover {
+  background: rgba(228, 163, 58, 0.22);
+  border-color: rgba(228, 163, 58, 0.65);
+}
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 20px;
+  color: var(--honey-bright);
+}
+.feature-tile h4 {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--honey-soft);
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.feature-tile-ai h4::before {
+  content: 'AI';
+  display: inline-block;
+  background: var(--honey-bright);
+  color: var(--forest-deep);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+  font-family: var(--ui);
+}
+.feature-tile p {
+  font-size: 14px;
+  color: rgba(244, 226, 182, 0.75);
+  line-height: 1.6;
+}
+
+.features-roadmap {
+  max-width: 760px;
+  margin: 48px auto 0;
+  padding: 22px 26px;
+  border: 1px dashed rgba(244, 226, 182, 0.28);
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(244, 226, 182, 0.62);
+  text-align: center;
+}
+.features-roadmap strong { color: rgba(244, 226, 182, 0.9); font-weight: 700; }
+.features-roadmap a { color: var(--honey-l, #E8960C); text-decoration: underline; }
+
+.beta-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #FFFDF8;
+  background: rgba(232, 150, 12, 0.85);
+  border-radius: 10px;
+  padding: 2px 7px;
+  position: relative;
+  top: -1px;
+}
+
+.pricing {
+  padding: 120px 0;
+  background: var(--cream);
+}
+.pricing .section-head h2 { color: var(--forest); }
+.pricing .section-head h2 em { color: var(--honey); }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+.price-card {
+  background: var(--cream-warm);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 40px 32px;
+  position: relative;
+  transition: all 0.3s;
+}
+.price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(74, 58, 40, 0.15); }
+
+.price-card.featured {
+  background: var(--forest);
+  color: var(--cream);
+  border-color: var(--forest);
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+  transform: translateY(-8px);
+}
+@media (max-width: 900px) {
+  .price-card.featured { transform: none; }
+}
+
+.price-flag {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--honey);
+  color: var(--forest-deep);
+  font-family: var(--ui);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.price-name {
+  font-family: var(--display);
+  font-size: 32px;
+  margin-bottom: 8px;
+  color: var(--forest);
+}
+.price-card.featured .price-name { color: var(--honey-soft); }
+.price-tagline {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+.price-card.featured .price-tagline { color: rgba(244, 226, 182, 0.7); }
+
+.price-amount {
+  font-family: var(--display);
+  font-size: 56px;
+  font-weight: 500;
+  color: var(--forest);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.price-card.featured .price-amount { color: var(--honey-bright); }
+.price-amount span {
+  font-size: 16px;
+  color: var(--muted);
+  font-weight: 400;
+  font-family: var(--ui);
+}
+.price-card.featured .price-amount span { color: rgba(244, 226, 182, 0.6); }
+.price-annual {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.price-card.featured .price-annual { color: rgba(244, 226, 182, 0.7); }
+
+.price-features {
+  list-style: none;
+  margin-bottom: 32px;
+}
+.price-features li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  color: var(--bark);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.price-card.featured .price-features li {
+  color: var(--honey-soft);
+  border-bottom-color: rgba(228, 163, 58, 0.15);
+}
+.price-features li::before {
+  content: '\2713';
+  color: var(--honey);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.price-card.featured .price-features li::before { color: var(--honey-bright); }
+
+.price-cta {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  text-align: center;
+  border-radius: 999px;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  transition: all 0.2s;
+  border: 2px solid var(--forest);
+  color: var(--forest);
+  background: transparent;
+}
+.price-cta:hover { background: var(--forest); color: var(--cream); }
+.price-card.featured .price-cta {
+  background: var(--honey);
+  color: var(--forest-deep);
+  border-color: var(--honey);
+}
+.price-card.featured .price-cta:hover { background: var(--honey-bright); border-color: var(--honey-bright); }
+
+/* PHOTO BAND — 24 April 2026
+   Real-beekeeping photo + credibility copy between Features and Pricing.
+   Dark forest background so the photo can pop, honey accent on quote. */
+.photo-band {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #1F4E3A 0%, #2A4A2A 50%, #1F4E3A 100%);
+  color: white;
+  position: relative;
+}
+.photo-band-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .photo-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .photo-band { padding: 60px 0; }
+}
+.photo-band-image {
+  position: relative;
+}
+.photo-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 80px -15px rgba(0,0,0,0.5);
+}
+.photo-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+}
+.photo-band-text .eyebrow {
+  color: var(--honey);
+  display: block;
+  margin-bottom: 16px;
+}
+.photo-band-text h2 {
+  color: white;
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.photo-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.photo-band-text p {
+  color: rgba(255,255,255,0.88);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+/* FAMILY BAND — 24 April 2026
+   Smaller, warmer companion to .photo-band. Cream background to contrast with
+   the dark forest photo-band above, image on the RIGHT so the eye flows
+   differently. Used to show Tilly in a bee suit — the personal angle. */
+.family-band {
+  padding: 100px 0;
+  background: var(--cream-warm);
+  position: relative;
+}
+.family-band-inner {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .family-band-inner { grid-template-columns: 1fr; gap: 32px; }
+  .family-band { padding: 60px 0; }
+  /* On mobile, put image above text for a natural read order */
+  .family-band-image { order: -1; }
+}
+.family-band-image {
+  position: relative;
+}
+.family-band-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+}
+.family-band-image::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border: 2px solid var(--honey);
+  border-radius: 20px;
+  opacity: 0.35;
+  z-index: -1;
+  pointer-events: none;
+}
+.family-band-text .eyebrow {
+  display: block;
+  margin-bottom: 16px;
+}
+.family-band-text h2 {
+  color: var(--forest);
+  margin-bottom: 24px;
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+}
+.family-band-text h2 em {
+  font-style: italic;
+  color: var(--honey);
+}
+.family-band-text p {
+  color: var(--bark);
+  font-size: 17px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.about {
+  padding: 120px 0;
+  background: var(--cream-warm);
+  position: relative;
+  overflow: hidden;
+}
+.about-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 80px;
+  align-items: center;
+}
+@media (max-width: 880px) {
+  .about-inner { grid-template-columns: 1fr; gap: 40px; }
+}
+.about-portrait-col { position: relative; }
+.about-icon-frame {
+  position: relative;
+  aspect-ratio: 4/5;  /* portrait aspect — bee suit photo is vertical */
+  max-width: 360px;
+  margin: 0 auto;
+}
+.about-icon-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  object-fit: cover;  /* crop to fit the frame cleanly regardless of source aspect */
+  box-shadow: 0 30px 60px -15px rgba(31, 78, 58, 0.3);
+}
+.about-hex-behind {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  bottom: -20px;
+  left: -20px;
+  border: 2px solid var(--honey);
+  border-radius: 16px;
+  opacity: 0.4;
+  z-index: -1;
+}
+
+.about-text .eyebrow { display: block; margin-bottom: 16px; }
+.about-text h2 { color: var(--forest); margin-bottom: 24px; }
+.about-text h2 em { font-style: italic; color: var(--honey); }
+.about-text p {
+  color: var(--bark);
+  font-size: 17px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+.about-text p strong { color: var(--forest); font-weight: 600; }
+.about-signature {
+  margin-top: 32px;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--forest);
+}
+
+.about-creds {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.about-cred { display: flex; align-items: flex-start; gap: 10px; }
+.about-cred strong {
+  color: var(--forest);
+  display: block;
+  font-family: var(--ui);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.final-cta {
+  padding: 120px 0;
+  background: var(--forest);
+  color: var(--cream);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.final-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(228, 163, 58, 0.08), transparent 60%);
+  pointer-events: none;
+}
+.final-cta-inner {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.final-cta h2 {
+  color: var(--honey-soft);
+  margin-bottom: 24px;
+}
+.final-cta h2 em { font-style: italic; color: var(--honey-bright); }
+.final-cta p {
+  color: rgba(244, 226, 182, 0.8);
+  font-size: 19px;
+  margin-bottom: 40px;
+}
+
+/* Store badges — 30 April 2026 Phase 4br
+   Updated to use official Apple App Store and Google Play SVG badges
+   per brand guidelines. App Store live, Google Play disabled (coming
+   soon), web app option as a small text link below. */
+.store-badges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.store-badges a, .store-badges span {
+  display: inline-block;
+  line-height: 0;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.store-badges a:hover {
+  transform: translateY(-2px);
+}
+.store-badges img {
+  height: 60px;
+  width: auto;
+  display: block;
+}
+.store-webapp-link {
+  display: block;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--honey-soft);
+  opacity: 0.85;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.store-webapp-link:hover {
+  color: var(--honey-bright);
+  opacity: 1;
+}
+
+.final-cta-note {
+  font-size: 13px;
+  color: rgba(244, 226, 182, 0.6);
+  letter-spacing: 0.02em;
+  margin-top: 24px;
+}
+
+footer {
+  background: var(--forest-deep);
+  color: rgba(244, 226, 182, 0.5);
+  padding: 60px 0 32px;
+  font-size: 13px;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(228, 163, 58, 0.1);
+  margin-bottom: 32px;
+}
+@media (max-width: 720px) { .footer-top { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .footer-top { grid-template-columns: 1fr; } }
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 22px;
+  color: var(--honey-soft);
+  margin-bottom: 16px;
+}
+.footer-brand img { width: 32px; height: 32px; border-radius: 6px; }
+.footer-about {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(244, 226, 182, 0.5);
+  max-width: 320px;
+}
+
+.footer-col h5 {
+  font-family: var(--ui);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--honey-bright);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a {
+  color: rgba(244, 226, 182, 0.65);
+  transition: color 0.2s;
+}
+.footer-col a:hover { color: var(--honey-bright); }
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 12px;
+  color: rgba(244, 226, 182, 0.4);
+}
+.footer-bottom a { color: inherit; }
+.footer-bottom a:hover { color: var(--honey-bright); }
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.footer-social a {
+  color: rgba(244, 226, 182, 0.55);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+.footer-social a:hover {
+  color: var(--honey-bright);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  a { color: inherit; text-decoration: none; }
-  h1,h2,h3 { font-family: 'Fraunces', serif; font-weight: 400; line-height: 1.1; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 6vw; }
-
-  /* ---------- Header ---------- */
-  header {
-    position: sticky; top: 0; z-index: 50;
-    background: rgba(247,243,238,0.82);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--line);
-  }
-  .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 6vw; }
-  .nav-logo img { height: 84px; display: block; mix-blend-mode: multiply; transition: height .3s ease; }
-  @media (max-width: 860px){ .nav-logo img { height: 64px; } }
-  nav ul { list-style: none; display: flex; gap: 34px; }
-  nav a { font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 400; position: relative; padding: 4px 0; }
-  nav a::after { content:""; position:absolute; left:0; bottom:-2px; width:0; height:1px; background: var(--violet); transition: width .35s ease; }
-  nav a:hover::after { width: 100%; }
-  .nav-toggle { display:none; background:none; border:none; font-size:1.6rem; color:var(--ink); cursor:pointer; }
-
-  /* ---------- Hero ---------- */
-  .hero { position: relative; padding: clamp(70px,12vh,150px) 0 clamp(80px,14vh,160px); overflow: hidden; }
-  .hero .wash {
-    position:absolute; z-index:0; border-radius: 50%; filter: blur(60px); opacity:0.55;
-  }
-  .hero .wash.a { width: 560px; height: 420px; background: var(--lilac); top:-120px; right:-100px; }
-  .hero .wash.b { width: 460px; height: 360px; background: #d9cae9; bottom:-140px; left:-120px; opacity:0.45; }
-  .hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 50px; align-items: center; }
-  .eyebrow { font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--violet); margin-bottom: 26px; display:flex; align-items:center; gap:14px; }
-  .eyebrow::before { content:""; width:42px; height:1px; background: var(--gold); display:inline-block; }
-  .hero h1 { font-size: clamp(2.8rem, 6.5vw, 5.2rem); font-weight: 300; letter-spacing: -0.02em; }
-  .hero h1 em { font-style: italic; color: var(--violet); }
-  .hero p.lead { font-size: 1.18rem; max-width: 30em; margin: 30px 0 38px; color: #4a3d5c; }
-  .hero-art { position: relative; }
-  .hero-art img { width: 100%; max-width: 440px; margin: 0 auto; display:block; mix-blend-mode: multiply; transform: rotate(-2deg); }
-  .btn {
-    display:inline-block; font-family:'Jost'; font-size:0.82rem; letter-spacing:0.18em; text-transform:uppercase;
-    padding: 16px 38px; border:1px solid var(--ink); color: var(--ink); background: transparent;
-    transition: all .4s cubic-bezier(.2,.7,.3,1); cursor:pointer;
-  }
-  .btn:hover { background: var(--ink); color: var(--paper); }
-  .btn.solid { background: var(--ink); color: var(--paper); }
-  .btn.solid:hover { background: var(--violet); border-color: var(--violet); }
-
-  /* reveal animation */
-  .reveal { opacity:0; transform: translateY(26px); animation: rise .9s cubic-bezier(.2,.7,.3,1) forwards; }
-  @keyframes rise { to { opacity:1; transform:none; } }
-  .d1{animation-delay:.05s}.d2{animation-delay:.18s}.d3{animation-delay:.32s}.d4{animation-delay:.46s}.d5{animation-delay:.6s}
-
-  /* ---------- Decorative lavender sprigs ---------- */
-  .sprig { position:absolute; z-index:1; pointer-events:none; opacity:0.5; }
-  .sprig svg { display:block; width:100%; height:100%; }
-  .sprig path, .sprig line { stroke: var(--violet); stroke-width:1.4; fill:none; stroke-linecap:round; }
-  .sprig .bud { fill: var(--lilac); stroke:none; opacity:0.85; }
-  .hero .sprig.s1 { width:120px; height:230px; top:40px; right:36%; opacity:0.4; transform:rotate(8deg); }
-  .intro .sprig.s2 { width:90px; height:180px; top:-30px; right:4%; opacity:0.45; transform:rotate(-12deg); }
-  .visit .sprig.s3 { width:100px; height:200px; bottom:20px; right:6%; opacity:0.4; transform:rotate(14deg); }
-  @media (max-width:860px){ .hero .sprig.s1, .intro .sprig.s2 { display:none; } }
-
-  /* ---------- Full-width photo band ---------- */
-  .band {
-    position:relative; height: clamp(320px, 46vh, 520px); overflow:hidden;
-    display:flex; align-items:center; justify-content:center; text-align:center;
-    background: linear-gradient(120deg, var(--lilac-pale), #ded0ef);
-  }
-  .band img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-  .band::after { content:""; position:absolute; inset:0; background: linear-gradient(rgba(46,33,64,0.32),rgba(46,33,64,0.42)); z-index:1; }
-  .band .band-inner { position:relative; z-index:2; color:#fff; padding:0 6vw; max-width:34em; }
-  .band .band-inner .placeholder-note { color:var(--violet); font-family:'Fraunces',serif; font-style:italic; }
-  .band.has-photo .band-inner { color:#fff; }
-  .band h2 { font-size:clamp(1.8rem,4vw,3rem); font-weight:300; }
-  .band h2 em { font-style:italic; }
-  .band p { margin-top:14px; font-size:1.05rem; opacity:0.95; }
-  /* when no photo loads, hide the white overlay text-shadow look and show a soft note */
-  .band-fallback { position:relative; z-index:2; color:var(--violet); }
-
-  /* ---------- Hero photo background (optional) ---------- */
-  .hero.has-bg { color:#fff; }
-  .hero.has-bg .eyebrow { color:#e7dcf7; }
-  .hero.has-bg .lead { color:#f0e9f8; }
-  .hero.has-bg .btn { border-color:#fff; color:#fff; }
-  .hero.has-bg .btn:hover { background:#fff; color:var(--ink); }
-  .hero.has-bg .btn.solid { background:#fff; color:var(--ink); border-color:#fff; }
-  .hero-bg { position:absolute; inset:0; z-index:0; overflow:hidden; }
-  .hero-bg img { width:100%; height:100%; object-fit:cover; }
-  .hero-bg::after { content:""; position:absolute; inset:0; background:linear-gradient(rgba(46,33,64,0.4),rgba(46,33,64,0.5)); }
-
-  /* ---------- Social ---------- */
-  .social { padding: clamp(60px,9vh,110px) 0; background: var(--paper); }
-  .social-title { text-align:center; font-size:clamp(1.8rem,3.5vw,2.6rem); font-weight:300; margin:6px 0 10px; }
-  .social-title em { font-style:italic; color:var(--violet); }
-  .social-intro { text-align:center; color:#4a3d5c; max-width:60ch; margin:0 auto 36px; }
-  .social-intro a { color:var(--violet); border-bottom:1px solid var(--lilac); }
-  .social-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; align-items:start; justify-items:center; }
-  .social-embed { width:100%; max-width:300px; min-height:120px; }
-  .social-embed blockquote { margin:0 auto; min-width:0 !important; width:100% !important; }
-  .social-embed iframe { max-width:100% !important; }
-  @media (max-width:720px){ .social-grid { grid-template-columns:1fr; } .social-embed { max-width:330px; } }
-  .social-follow { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:40px; }
-  .btn.ghost { background:transparent; border:1px solid var(--violet); color:var(--violet); }
-  .btn.ghost:hover { background:var(--violet); color:#fff; }
-
-  /* ---------- Gallery ---------- */
-  .gallery { padding: clamp(60px,9vh,110px) 0; background: var(--paper); }
-  .gallery-grid { display:grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
-  .g-item { position:relative; margin:0; overflow:hidden; aspect-ratio: 4/3; background: var(--lilac-pale); }
-  .g-item img { width:100%; height:100%; object-fit:cover; transition: transform .9s cubic-bezier(.2,.7,.3,1); }
-  .g-item:hover img { transform: scale(1.06); }
-  .g-item figcaption {
-    position:absolute; left:0; right:0; bottom:0; z-index:2;
-    background: linear-gradient(transparent, rgba(46,33,64,0.75));
-    color:#fff; font-family:'Fraunces',serif; font-style:italic; font-size:1.02rem;
-    padding: 40px 20px 18px;
-  }
-  .g-item.g-empty { display:flex; align-items:center; justify-content:center; }
-  .g-item.g-empty figcaption { position:static; background:none; color:var(--violet); padding:0; text-align:center; }
-  @media (max-width:760px){ .gallery-grid { grid-template-columns:1fr; } .g-item{ aspect-ratio:16/9; } }
-
-  /* ---------- Add-to-basket button ---------- */
-  .addbtn { background: var(--lav-deep, #5a4a7a); color:#fff; border:none; font-family:'Jost',sans-serif;
-    font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase; padding:8px 12px; border-radius:3px;
-    cursor:pointer; transition: background .25s; }
-  .addbtn:hover { background:#8a73b0; }
-  .addbtn:disabled { background:#bcaecc; cursor:default; }
-
-  /* ---------- Floating basket button ---------- */
-  .basket-fab { position:fixed; right:22px; bottom:22px; z-index:80; background:#2e2140; color:#fff;
-    border:none; border-radius:50px; padding:14px 22px; font-family:'Jost',sans-serif; font-size:0.9rem;
-    letter-spacing:0.06em; cursor:pointer; box-shadow:0 6px 24px rgba(46,33,64,0.35); display:flex; gap:10px; align-items:center; }
-  .basket-fab .count { background:#b9a3da; color:#2e2140; border-radius:50%; width:24px; height:24px;
-    display:inline-flex; align-items:center; justify-content:center; font-weight:600; font-size:0.82rem; }
-  .basket-fab.hidden { display:none; }
-
-  /* ---------- Basket drawer ---------- */
-  .drawer-overlay { position:fixed; inset:0; background:rgba(46,33,64,0.45); z-index:90; opacity:0;
-    pointer-events:none; transition:opacity .35s; }
-  .drawer-overlay.open { opacity:1; pointer-events:auto; }
-  .drawer { position:fixed; top:0; right:0; height:100%; width:min(420px,92vw); background:var(--paper,#f7f3ee);
-    z-index:100; transform:translateX(100%); transition:transform .4s cubic-bezier(.2,.7,.3,1);
-    display:flex; flex-direction:column; box-shadow:-10px 0 40px rgba(0,0,0,0.2); }
-  .drawer.open { transform:none; }
-  .drawer header { padding:24px; border-bottom:1px solid var(--line,#ddd1c4); display:flex; justify-content:space-between; align-items:center; }
-  .drawer header h3 { font-family:'Fraunces',serif; font-weight:400; font-size:1.4rem; }
-  .drawer .close { background:none; border:none; font-size:1.6rem; cursor:pointer; color:#2e2140; line-height:1; }
-  .drawer .items { flex:1; overflow-y:auto; padding:16px 24px; }
-  .b-item { display:flex; gap:12px; align-items:center; padding:14px 0; border-bottom:1px solid var(--line,#ddd1c4); }
-  .b-item .b-name { flex:1; }
-  .b-item .b-name small { display:block; color:#6d6178; }
-  .qty { display:flex; align-items:center; gap:8px; }
-  .qty button { width:26px; height:26px; border:1px solid #b8a8a8; background:#fff; border-radius:4px; cursor:pointer; font-size:1rem; }
-  .b-empty { color:#6d6178; text-align:center; padding:40px 0; font-style:italic; font-family:'Fraunces',serif; }
-  .drawer footer { padding:24px; border-top:1px solid var(--line,#ddd1c4); }
-  .b-total { display:flex; justify-content:space-between; font-family:'Fraunces',serif; font-size:1.3rem; margin-bottom:16px; }
-  .checkout-btn { width:100%; background:#2e2140; color:#fff; border:none; padding:16px; font-family:'Jost',sans-serif;
-    letter-spacing:0.1em; text-transform:uppercase; font-size:0.85rem; cursor:pointer; border-radius:3px; }
-  .checkout-btn:hover { background:#5a4a7a; }
-  .checkout-btn:disabled { background:#bcaecc; cursor:default; }
-  .cf { display:none; }
-  .cf.show { display:block; }
-  .cf input, .cf textarea { width:100%; padding:12px; margin-bottom:10px; border:1px solid #b8a8a8; background:#fff;
-    font-family:'Jost',sans-serif; font-size:0.95rem; border-radius:3px; }
-  .cf textarea { min-height:70px; resize:vertical; }
-  #checkoutMsg { font-size:0.9rem; margin-top:8px; min-height:1.2em; }
-
-  /* ---------- Marquee strip ---------- */
-  .strip { background: var(--ink); color: var(--paper); padding: 16px 0; overflow:hidden; white-space:nowrap; }
-  .strip .track { display:inline-block; animation: slide 28s linear infinite; }
-  .strip span { font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; padding: 0 38px; opacity:0.9; }
-  .strip span::after{ content:"¾7"; margin-left: 38px; color: var(--lilac); font-style:normal; }
-  @keyframes slide { to { transform: translateX(-50%); } }
-
-  /* ---------- Intro / philosophy ---------- */
-  .intro { padding: clamp(80px,12vh,140px) 0; position:relative; }
-  .intro-grid { display:grid; grid-template-columns: 0.9fr 1.1fr; gap: 70px; align-items:start; }
-  .section-label { font-size:0.78rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); }
-  .intro h2 { font-size: clamp(2rem,4vw,3.1rem); font-weight:300; margin: 18px 0 0; }
-  .intro h2 em { font-style:italic; color: var(--violet); }
-  .intro .body p { margin-bottom: 22px; font-size:1.08rem; color:#4a3d5c; }
-  .pull { font-family:'Tangerine',cursive; font-size: clamp(2.4rem,5vw,3.4rem); color: var(--violet); line-height:1; margin: 10px 0 26px; }
-
-  /* ---------- Products ---------- */
-  .shop { padding: clamp(60px,9vh,110px) 0 clamp(80px,12vh,140px); background: var(--paper-deep); position:relative; }
-  .shop-head { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:18px; margin-bottom: 54px; }
-  .shop-head h2 { font-size: clamp(2rem,4vw,3rem); font-weight:300; }
-  .shop-head h2 em { font-style:italic; color:var(--violet); }
-  .products { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 4px; background: var(--line); border:1px solid var(--line); }
-  .card { background: var(--paper); padding: 20px; display:flex; flex-direction:column; transition: background .4s; }
-  .card:hover { background: #fff; }
-  .card .ph {
-    aspect-ratio: 1/1; margin: -20px -20px 18px; background: var(--lilac-pale);
-    display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;
-  }
-  .card .ph img { width:100%; height:100%; object-fit:cover; transition: transform .8s cubic-bezier(.2,.7,.3,1); }
-  .card:hover .ph img { transform: scale(1.05); }
-  .card .ph .placeholder { font-family:'Fraunces',serif; font-style:italic; color:var(--lilac); font-size:0.85rem; text-align:center; padding:16px; }
-  .card .tag { position:absolute; top:12px; left:12px; background:var(--ink); color:var(--paper); font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; padding:4px 9px; }
-  .card .tag.out { background: var(--gold); }
-  .card h3 { font-size:1.12rem; font-weight:400; }
-  .card .desc { font-size:0.85rem; color:#5d5070; margin:8px 0 16px; flex:1; }
-  .card .foot { display:flex; align-items:center; justify-content:space-between; border-top:1px solid var(--line); padding-top:14px; gap:8px; }
-  .card .price { font-family:'Fraunces',serif; font-size:1.15rem; }
-  .card .soldout { font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); }
-
-  /* ---------- Event ---------- */
-  .event { background: linear-gradient(180deg, var(--lilac-pale, #ece3f7), var(--paper)); padding: clamp(50px,8vh,90px) 0; }
-  .event-grid { display:grid; grid-template-columns: 0.9fr 1.1fr; gap:48px; align-items:center; }
-  .event-img img { width:100%; border-radius:8px; box-shadow:0 12px 40px rgba(46,33,64,0.18); display:block; }
-  .event-copy h2 { font-size:clamp(2rem,4vw,3rem); font-weight:300; margin:6px 0 4px; }
-  .event-copy h2 em { font-style:italic; color:var(--violet); }
-  .event-dates { font-family:'Fraunces',serif; font-size:1.25rem; color:var(--violet); margin-bottom:16px; }
-  .event-copy > p { color:#4a3d5c; margin-bottom:18px; max-width:42ch; }
-  .event-list { list-style:none; padding:0; margin:0 0 24px; }
-  .event-list li { padding:6px 0 6px 26px; position:relative; color:#3d3450; }
-  .event-list li::before { content:"\2767"; position:absolute; left:0; color:var(--lilac); }
-  .event-cta { display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
-  .event-cta .ticket { font-family:'Fraunces',serif; font-style:italic; font-size:1.1rem; color:var(--ink); }
-  .event-find { font-size:0.85rem; color:#6d6178; }
-  @media (max-width:760px){ .event-grid { grid-template-columns:1fr; gap:28px; } .event-img { max-width:420px; margin:0 auto; } }
-
-  /* ---------- Booking ---------- */
-  .book { background: var(--paper); padding: clamp(50px,8vh,90px) 0; }
-  .book-inner { max-width:620px; margin:0 auto; text-align:center; }
-  .book h2 { font-size:clamp(2rem,4vw,2.8rem); font-weight:300; margin:6px 0 14px; }
-  .book h2 em { font-style:italic; color:var(--violet); }
-  .book-intro { color:#4a3d5c; margin-bottom:30px; }
-  .book-card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:30px; text-align:left; box-shadow:0 6px 24px rgba(46,33,64,0.08); }
-  .bk-field { display:block; margin-bottom:18px; }
-  .bk-field > span { display:block; font-size:0.82rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--violet); margin-bottom:6px; }
-  .bk-field input, .bk-field select { width:100%; padding:13px; border:1px solid #c4b8d4; border-radius:5px; font-family:'Jost',sans-serif; font-size:1rem; background:#fff; }
-  .bk-field small { color:#6d6178; font-size:0.82rem; }
-  .bk-row { display:flex; gap:16px; }
-  .bk-row .bk-field { flex:1; }
-  .bk-check { display:flex; align-items:center; gap:8px; font-size:0.95rem; padding:11px 0; text-transform:none; letter-spacing:0; color:var(--ink); }
-  .bk-check input { width:auto; }
-  .bk-total { display:flex; justify-content:space-between; font-family:'Fraunces',serif; font-size:1.4rem; margin:8px 0 20px; padding-top:16px; border-top:1px solid var(--line); }
-  .bk-row-3 { gap:12px; }
-  .bk-row-3 .bk-field { flex:1; min-width:0; }
-  .bk-disclaimer { background:#f3eef9; border:1px solid #d9cdeb; border-radius:8px; padding:16px 18px; margin:6px 0 4px; }
-  .bk-disclaimer > strong { display:block; color:var(--violet); margin-bottom:8px; font-size:0.92rem; letter-spacing:0.04em; text-transform:uppercase; }
-  .bk-disclaimer p strong { color:var(--ink); }
-  .bk-disclaimer p { font-size:0.88rem; line-height:1.55; color:#4a3d5c; margin:0 0 12px; }
-  .bk-agree { font-size:0.9rem; align-items:flex-start; gap:10px; line-height:1.4; }
-  .bk-agree input { margin-top:3px; flex:none; }
-  #bk-pay { width:100%; }
-  #bk-pay:disabled { opacity:0.5; cursor:default; }
-  #bk-msg { margin-top:12px; font-size:0.95rem; min-height:1.2em; }
-  #bk-suggest { margin-top:10px; font-size:0.9rem; color:#6d6178; }
-  #bk-suggest button { background:none; border:none; color:var(--violet); text-decoration:underline; cursor:pointer; font-size:0.9rem; padding:2px 4px; }
-
-  /* ---------- Visit ---------- */
-  .visit { padding: clamp(80px,12vh,140px) 0; position:relative; overflow:hidden; }
-  .visit .wash { position:absolute; width:600px; height:480px; background:var(--lilac); border-radius:50%; filter:blur(70px); opacity:0.4; top:-100px; left:-160px; z-index:0; }
-  .visit-grid { position:relative; z-index:2; display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center; }
-  .visit h2 { font-size:clamp(2rem,4vw,3rem); font-weight:300; margin-bottom:22px; }
-  .visit h2 em { font-style:italic; color:var(--violet); }
-  .visit p { font-size:1.08rem; color:#4a3d5c; margin-bottom:18px; max-width:34em; }
-  .info-card { background:var(--paper); border:1px solid var(--line); padding:38px; }
-  .info-card h3 { font-family:'Fraunces'; font-size:1.1rem; letter-spacing:0.02em; margin-bottom:6px; }
-  .info-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px dashed var(--line); font-size:0.95rem; }
-  .info-row:last-child{border:none;}
-  .info-row .day{color:#6d6178;}
-  .visit-socials{ display:flex; flex-direction:column; gap:12px; }
-  .visit-socials a{ display:flex; align-items:center; gap:12px; color:var(--ink); font-size:0.98rem; transition:color .25s; }
-  .visit-socials a:hover{ color:var(--violet); }
-  .visit-socials svg{ width:26px; height:26px; fill:var(--violet); flex:none; }
-  .info-block{ margin-bottom:26px; }
-  .info-block a{ color:var(--violet); border-bottom:1px solid var(--lilac); }
-
-  /* ---------- Contact ---------- */
-  .contact { background: var(--ink); color: var(--paper); padding: clamp(80px,12vh,140px) 0; }
-  .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:60px; }
-  .contact h2 { font-size:clamp(2rem,4vw,3rem); font-weight:300; color:var(--paper); }
-  .contact h2 em{ font-style:italic; color:var(--lilac); }
-  .contact .section-label{ color:var(--lilac); }
-  .contact p.sub{ color:#cdbfdf; margin:18px 0 0; max-width:30em; }
-  .field { margin-bottom:20px; }
-  .field input, .field textarea {
-    width:100%; background:transparent; border:none; border-bottom:1px solid #5b4d72;
-    color:var(--paper); font-family:'Jost'; font-size:1rem; padding:14px 2px; transition:border-color .3s;
-  }
-  .field input::placeholder, .field textarea::placeholder { color:#8c7da5; }
-  .field input:focus, .field textarea:focus { outline:none; border-color:var(--lilac); }
-  .field textarea{ resize:vertical; min-height:110px; }
-  #formMsg{ margin-top:16px; font-size:0.95rem; min-height:1.2em; }
-
-  /* ---------- Footer ---------- */
-  footer { background:#241a33; color:var(--paper); padding: 70px 0 40px; }
-  .foot-grid{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:40px; align-items:flex-start; }
-  .foot-brand img{ height:64px; mix-blend-mode:screen; opacity:0.95; margin-bottom:14px; }
-  .foot-brand p{ color:#b7a8c9; font-size:0.9rem; max-width:24em; }
-  .foot-nav{ display:flex; gap:60px; flex-wrap:wrap; }
-  .foot-col h4{ font-family:'Jost'; font-weight:500; font-size:0.78rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--lilac); margin-bottom:16px; }
-  .foot-col a{ display:block; color:#cdbfdf; font-size:0.95rem; padding:5px 0; transition:color .3s; }
-  .foot-col a:hover{ color:#fff; }
-  .socials{ display:flex; gap:14px; margin-top:6px; }
-  .socials a{ width:42px; height:42px; border:1px solid #4a3d63; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all .3s; }
-  .socials a:hover{ background:var(--lilac); border-color:var(--lilac); }
-  .socials a:hover svg{ fill:var(--ink); }
-  .socials svg{ width:18px; height:18px; fill:#cdbfdf; transition:fill .3s; }
-  .foot-base{ border-top:1px solid #3a2e4f; margin-top:50px; padding-top:26px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; color:#8c7da5; font-size:0.82rem; }
-  .foot-credit{ margin-top:28px; display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap; text-align:center; }
-  .credit-logo{ display:inline-flex; background:#fff; border-radius:10px; padding:10px 16px; line-height:0; box-shadow:0 2px 10px rgba(0,0,0,0.25); }
-  .credit-logo img{ height:54px; width:auto; display:block; }
-  .credit-text{ display:flex; flex-direction:column; gap:2px; text-align:left; }
-  .credit-by{ color:#cdbfdf; font-size:0.98rem; font-weight:500; letter-spacing:0.02em; }
-  .credit-links{ color:#8c7da5; font-size:0.84rem; }
-  .credit-links a{ color:#9a8bb8; border-bottom:1px solid #4a3d63; transition:color .25s; }
-  .credit-links a:hover{ color:var(--lilac); }
-  @media (max-width:520px){ .foot-credit{ flex-direction:column; } .credit-text{ text-align:center; align-items:center; } }
-
-  @media (max-width: 860px) {
-    nav ul { display:none; }
-    .nav-toggle{ display:block; }
-    nav.open ul{ display:flex; position:absolute; top:100%; left:0; right:0; flex-direction:column; gap:0; background:var(--paper); border-bottom:1px solid var(--line); padding:10px 6vw 20px; }
-    nav.open ul li{ border-bottom:1px solid var(--line); }
-    nav.open ul a{ display:block; padding:14px 0; }
-    .hero-grid, .intro-grid, .visit-grid, .contact-grid { grid-template-columns:1fr; gap:40px; }
-    .hero-art{ order:-1; max-width:300px; margin:0 auto; }
-  }
+}
 </style>
 </head>
 <body>
 
-<header>
+<nav class="nav">
   <div class="nav-inner">
-    <a class="nav-logo" href="#top"><img src="images/logo_1701860470.webp" alt="Nene Valley Lavender"></a>
-    <nav id="nav">
-      <button class="nav-toggle" id="navToggle" aria-label="Menu">&#9776;</button>
-      <ul>
-        <li><a href="#event">Visit Us</a></li>
-        <li><a href="#shop">Shop</a></li>
-        <li><a href="#story">Our Story</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
-
-<a id="top"></a>
-<section class="hero" id="hero">
-  <!-- OPTIONAL HERO PHOTO: drop a wide lavender-field photo at images/hero.jpeg and it
-       will appear as the background automatically (text restyles to white). Until then,
-       the soft watercolour washes below are shown instead. -->
-  <div class="hero-bg" id="heroBg" style="display:none;"><img src="images/hero.jpeg" alt="Nene Valley lavender field" id="heroImg"></div>
-  <div class="wash a"></div>
-  <div class="wash b"></div>
-  <div class="sprig s1" aria-hidden="true">
-    <svg viewBox="0 0 60 120"><path d="M30 118 V52"/><path d="M30 70 C18 66 14 56 16 48 C24 50 30 58 30 64"/><path d="M30 64 C42 60 46 50 44 42 C36 44 30 52 30 58"/><path d="M30 56 C20 52 17 44 19 37 C26 39 30 46 30 51"/><ellipse class="bud" cx="30" cy="20" rx="9" ry="15"/><circle class="bud" cx="24" cy="14" r="3.5"/><circle class="bud" cx="36" cy="16" r="3.5"/><circle class="bud" cx="30" cy="8" r="3.5"/></svg>
-  </div>
-  <div class="wrap hero-grid">
-    <div>
-      <div class="eyebrow reveal d1">Est. 2023 &middot; Brigstock, Northamptonshire</div>
-      <h1 class="reveal d2">English lavender,<br>grown in the <em>Nene Valley</em></h1>
-      <p class="lead reveal d3">A little farm at Drumbledrone Eden in Brigstock, North Northamptonshire, on the edge of the incredibly scenic Nene Valley, growing several varieties of English lavender and producing 100% organic essential oil, honey and skincare.</p>
-      <div class="reveal d4" style="display:flex; gap:16px; flex-wrap:wrap;">
-        <a class="btn solid" href="#shop">Explore the shop</a>
-        <a class="btn" href="#visit">Plan a visit</a>
-      </div>
-    </div>
-    <div class="hero-art reveal d3">
-      <img src="images/logo_1701860470.webp" alt="Nene Valley Lavender">
+    <a href="#" class="brand">
+      <img src="hivekeeper-icon.png" alt="">
+      HiveKeeper<sup>&trade;</sup>
+    </a>
+    <div class="nav-links">
+      <a href="#why">Why HiveKeeper</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+      <a href="/hivekeeper-beta1.html" class="nav-cta">Launch app</a>
     </div>
   </div>
-</section>
+</nav>
 
-<div class="strip">
-  <div class="track">
-    <span>100% organic essential oil</span><span>Hand-grown &amp; distilled on the farm</span><span>Honey from our own hives</span><span>Wander the lavender fields</span>
-    <span>100% organic essential oil</span><span>Hand-grown &amp; distilled on the farm</span><span>Honey from our own hives</span><span>Wander the lavender fields</span>
-  </div>
-</div>
-
-<!-- EVENT: Opening Weekends -->
-<section class="event" id="event">
-  <div class="wrap event-grid">
-    <div class="event-img">
-      <img src="images/Event.jpeg" alt="Nene Valley Lavender Opening Weekends, 20th June to 2nd August"
-        onerror="this.closest('.event-img').style.display='none'">
-    </div>
-    <div class="event-copy">
-      <div class="section-label">This Summer</div>
-      <h2>Opening <em>Weekends</em></h2>
-      <p class="event-dates">20th June &ndash; 2nd August &middot; weekends only</p>
-      <p>Come and wander our lavender fields in full bloom. Meet our goats, ducks, chickens and bees, shop our lavender products and honey on site, and enjoy the peace of the farm.</p>
-      <ul class="event-list">
-        <li>Walk through the lavender fields</li>
-        <li>Meet our animals &mdash; goats, ducks, chickens &amp; bees</li>
-        <li>Shop lavender products &amp; honey on site</li>
-        <li>Parking on site &middot; dogs welcome on leads</li>
-      </ul>
-      <div class="event-cta">
-        <span class="ticket">£1 per car &middot; please book ahead</span>
-        <a class="btn solid" href="#book" id="revealBook">Book your visit</a>
-      </div>
-      <p class="event-find">Old Dry Ln N, Brigstock, North Northants, NN14 3HY &middot; what3words: <strong>nuzzling.plant.patch</strong></p>
-    </div>
-  </div>
-</section>
-
-<!-- BOOKING -->
-<section class="book" id="book">
-  <div class="wrap book-inner">
-    <div class="section-label">Book Your Visit</div>
-    <h2>Reserve your <em>spot</em></h2>
-    <p class="book-intro">We&rsquo;re a small farm with limited parking &mdash; just 50 cars a day &mdash; so please <strong>book in advance</strong> to be sure of your spot. It&rsquo;s just <strong>£1 per car</strong> and everyone in the car is free. Payment is handled securely by SumUp.</p>
-
-    <div id="bk-prompt" style="text-align:center;">
-      <button class="btn solid" id="showBookForm" onclick="showBookingForm()">Book your visit</button>
-    </div>
-
-    <div class="book-card" id="bookCard" style="display:none;">
-      <label class="bk-field">
-        <span>Choose a date</span>
-        <select id="bk-date"><option value="">Loading dates…</option></select>
-        <small id="bk-dateinfo"></small>
-      </label>
-      <label class="bk-field">
-        <span>Car registration</span>
-        <input type="text" id="bk-reg" placeholder="e.g. AB12 CDE" maxlength="12">
-        <small>Booking is £1 per car. Everyone in the car is free.</small>
-      </label>
-      <div class="bk-row bk-row-3">
-        <label class="bk-field">
-          <span>Adults</span>
-          <input type="number" id="bk-adults" min="0" value="2">
-        </label>
-        <label class="bk-field">
-          <span>Children (under 16)</span>
-          <input type="number" id="bk-children" min="0" value="0">
-        </label>
-        <label class="bk-field">
-          <span>Infants</span>
-          <input type="number" id="bk-infants" min="0" value="0">
-        </label>
-      </div>
-      <label class="bk-field">
-        <span>Your name</span>
-        <input type="text" id="bk-name" autocomplete="name">
-      </label>
-      <label class="bk-field">
-        <span>Email</span>
-        <input type="email" id="bk-email" autocomplete="email">
-      </label>
-      <label class="bk-field">
-        <span>Phone number</span>
-        <input type="tel" id="bk-phone" autocomplete="tel" placeholder="In case we need to reach you">
-      </label>
-
-      <div class="bk-disclaimer">
-        <strong>Before you visit — please read</strong>
-        <p>Nene Valley Lavender is a <strong>working farm</strong>. The ground is uneven and there may be holes, ditches, mud, slopes, water, farm machinery and animals. Sturdy footwear is strongly advised and suitable clothing for the weather. Please supervise children at all times and keep dogs on leads. Visitors enter and explore the farm <strong>at their own risk</strong>; please take care and follow any signs or instructions from staff on the day.</p>
-        <label class="bk-check bk-agree">
-          <input type="checkbox" id="bk-disclaimer"> I have read and understood the visitor safety notice above.
-        </label>
-      </div>
-
-      <div class="bk-total"><span>Total</span><span id="bk-total">£1.00</span></div>
-      <button class="btn solid" id="bk-pay" onclick="bookVisit()">Book &amp; pay with SumUp</button>
-      <div id="bk-msg"></div>
-      <div id="bk-suggest"></div>
-    </div>
-  </div>
-</section>
-
-<section class="intro" id="story">
-  <div class="sprig s2" aria-hidden="true">
-    <svg viewBox="0 0 60 120"><path d="M30 118 V52"/><path d="M30 70 C18 66 14 56 16 48 C24 50 30 58 30 64"/><path d="M30 64 C42 60 46 50 44 42 C36 44 30 52 30 58"/><ellipse class="bud" cx="30" cy="20" rx="9" ry="15"/><circle class="bud" cx="24" cy="14" r="3.5"/><circle class="bud" cx="36" cy="16" r="3.5"/><circle class="bud" cx="30" cy="8" r="3.5"/></svg>
-  </div>
-  <div class="wrap intro-grid">
-    <div>
-      <div class="section-label">Our Story</div>
-      <h2>Calm, grown <em>by hand</em></h2>
-    </div>
-    <div class="body">
-      <p class="pull">Our aim is simple &mdash; to create products that relax you.</p>
-      <p>We want to give you an experience of calming wellbeing when you come and wander around our lavender fields. Lavender has been used for centuries for many remedies, and wandering among our plants is extremely peaceful.</p>
-      <p>Everything we make &mdash; the essential oil, the skincare blends, the honey and beeswax from our own hives &mdash; comes from this one small farm in the stunning Nene Valley, made to promote both mental and body wellbeing.</p>
-    </div>
-  </div>
-</section>
-
-<!-- FULL-WIDTH PHOTO BAND -->
-<section class="band" id="band">
-  <img src="images/bee.jpeg" alt="A bee on Nene Valley lavender" id="bandImg"
-    onerror="this.style.display='none'; document.getElementById('band').classList.add('no-photo');">
-  <div class="band-inner">
-    <h2 id="bandText">Grown for the bees, <em>and for you</em></h2>
-    <p id="bandSub">100% organic lavender, hand-tended on the edge of the Nene Valley.</p>
-  </div>
-</section>
-
-<section class="shop" id="shop">
-  <div class="wrap">
-    <div class="shop-head">
-      <div>
-        <div class="section-label">The Collection</div>
-        <h2>From our <em>fields &amp; hives</em></h2>
-      </div>
-      <p style="max-width:24em; color:#5d5070; font-size:0.98rem;">Browse our range and buy securely through our shop &mdash; checkout, payment and delivery are handled by SumUp.</p>
-    </div>
-    <div class="products" id="products">
-
-      <div class="card" data-id="lavender-essential-oil">
-        <div class="ph"><span class="tag">Bestseller</span><img src="images/lavender-essential-oil.jpeg" alt="Lavender Essential Oil" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Lavender Essential Oil<br>(add photo: images/lavender-essential-oil.jpeg)</span>')"></div>
-        <h3>Lavender Essential Oil</h3>
-        <p class="desc">10ml · grown &amp; distilled on the farm, 100% organic. Promotes relaxation and calm.</p>
-        <div class="foot"><span class="price">£8.00</span><button class="addbtn" data-add="lavender-essential-oil">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="lavender-hydrosol">
-        <div class="ph"><img src="images/lavender-hydrosol.jpeg" alt="Lavender Hydrosol" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Lavender Hydrosol<br>(add photo: images/lavender-hydrosol.jpeg)</span>')"></div>
-        <h3>Lavender Hydrosol</h3>
-        <p class="desc">250ml flower water spray. A soothing skincare toner, naturally antibacterial.</p>
-        <div class="foot"><span class="price">£6.00</span><button class="addbtn" data-add="lavender-hydrosol">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="nourishing-argan">
-        <div class="ph"><img src="images/nourishing-argan.jpeg" alt="Nourishing Skin Care Oil" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Nourishing Skin Care Oil<br>(add photo: images/nourishing-argan.jpeg)</span>')"></div>
-        <h3>Nourishing Skin Care Oil</h3>
-        <p class="desc">20ml argan blend with our lavender oil. Rich in vitamin E and antioxidants.</p>
-        <div class="foot"><span class="price">£8.00</span><button class="addbtn" data-add="nourishing-argan">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="natural-jojoba">
-        <div class="ph"><img src="images/natural-jojoba.jpeg" alt="Natural Skin Care Oil" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Natural Skin Care Oil<br>(add photo: images/natural-jojoba.jpeg)</span>')"></div>
-        <h3>Natural Skin Care Oil</h3>
-        <p class="desc">20ml jojoba blend. Non-greasy, suits all skin types, the perfect carrier oil.</p>
-        <div class="foot"><span class="price">£8.00</span><button class="addbtn" data-add="natural-jojoba">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="soothing-almond">
-        <div class="ph"><img src="images/soothing-almond.jpeg" alt="Soothing Skin Care Oil" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Soothing Skin Care Oil<br>(add photo: images/soothing-almond.jpeg)</span>')"></div>
-        <h3>Soothing Skin Care Oil</h3>
-        <p class="desc">20ml sweet almond blend. Highly emollient and soothing for dry, sensitive skin.</p>
-        <div class="foot"><span class="price">£8.00</span><button class="addbtn" data-add="soothing-almond">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="dried-lavender-pouches">
-        <div class="ph"><img src="images/dried-lavender-pouches.jpeg" alt="Dried Lavender Pouches" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Dried Lavender Pouches<br>(add photo: images/dried-lavender-pouches.jpeg)</span>')"></div>
-        <h3>Dried Lavender Pouches</h3>
-        <p class="desc">Approx. 10g in organza. A natural sleep aid, drawer freshener and moth repellent.</p>
-        <div class="foot"><span class="price">£1.50</span><button class="addbtn" data-add="dried-lavender-pouches">Add to basket</button></div>
-      </div>
-      <div class="card" data-id="honey">
-        <div class="ph"><span class="tag out">Sold out</span><img src="images/honey.jpeg" alt="Pure Wildflower Honey" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Pure Wildflower Honey<br>(add photo: images/honey.jpeg)</span>')"></div>
-        <h3>Pure Wildflower Honey</h3>
-        <p class="desc">400g, straight from our beehives. Nectar of Nene Valley &amp; Rockingham Forest wildflowers.</p>
-        <div class="foot"><span class="price">£6.00</span><span class="soldout">Sold out</span></div>
-      </div>
-      <div class="card" data-id="beeswax">
-        <div class="ph"><img src="images/beeswax.jpeg" alt="Beeswax" onerror="this.style.display='none';this.parentNode.insertAdjacentHTML('beforeend','<span class=\'placeholder\'>Beeswax<br>(add photo: images/beeswax.jpeg)</span>')"></div>
-        <h3>Beeswax</h3>
-        <p class="desc">Natural beeswax from our hives — for polish, candles, cosmetics. 50g default.</p>
-        <div class="foot"><span class="price">£2.50</span><button class="addbtn" data-add="beeswax">Add to basket</button></div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section class="visit" id="visit">
-  <div class="wash"></div>
-  <div class="sprig s3" aria-hidden="true">
-    <svg viewBox="0 0 60 120"><path d="M30 118 V52"/><path d="M30 70 C18 66 14 56 16 48 C24 50 30 58 30 64"/><path d="M30 64 C42 60 46 50 44 42 C36 44 30 52 30 58"/><path d="M30 56 C20 52 17 44 19 37 C26 39 30 46 30 51"/><ellipse class="bud" cx="30" cy="20" rx="9" ry="15"/><circle class="bud" cx="24" cy="14" r="3.5"/><circle class="bud" cx="36" cy="16" r="3.5"/><circle class="bud" cx="30" cy="8" r="3.5"/></svg>
-  </div>
-  <div class="wrap visit-grid">
-    <div>
-      <div class="section-label">Visit Us</div>
-      <h2>Wander the <em>lavender fields</em></h2>
-      <p>Come and wander around our lavender fields and enjoy the peace and tranquillity. Bring a picnic and make an afternoon of it.</p>
-      <p style="margin-bottom:30px;">To book a visit, drop us a message &mdash; we&rsquo;d love to welcome you to the farm.</p>
-      <a class="btn solid" href="#contact">Book a visit</a>
-    </div>
-    <div class="info-card">
-      <div class="info-block">
-        <h3>Find us</h3>
-        Nene Valley Lavender<br>
-        Old Dry Lane (North), Brigstock<br>
-        Kettering, NN14 3HY<br>
-        <a href="tel:07886171356">07886 171356</a><br>
-        <a href="mailto:nenevalleylavender@mail.com">nenevalleylavender@mail.com</a><br>
-        <a href="https://maps.google.com/?q=Nene+Valley+Lavender+Brigstock+NN14+3HY" target="_blank" rel="noopener">Get directions &rarr;</a>
-      </div>
-      <h3 style="margin-bottom:12px;">Follow us</h3>
-      <div class="visit-socials">
-        <a href="https://www.facebook.com/profile.php?id=61553958877640" target="_blank" rel="noopener" aria-label="Facebook">
-          <svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.13 8.44 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99C18.34 21.13 22 16.99 22 12z"/></svg>
-          <span>Facebook</span>
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="hero-text">
+      <span class="eyebrow animate-in">For UK beekeepers · AI-powered · Live on iOS &amp; Web</span>
+      <h1 class="hero-headline animate-in delay-1">
+        Built for the <em>UK beekeeping year.</em>
+      </h1>
+      <p class="hero-sub animate-in delay-2">
+        An AI Asian Hornet identifier, crop spraying alerts, the UK nectar calendar, BeeBase export and the BBKA seasonal calendar &mdash; plus voice inspections that fill the form for you. The one beekeeping app built around the UK beekeeping year, by a Northamptonshire beekeeper.
+      </p>
+      <div class="hero-ctas animate-in delay-3">
+        <a href="/hivekeeper-beta1.html" class="btn btn-primary">
+          Start free · 14-day Pro trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
-        <a href="https://www.instagram.com/nenevalleylavender" target="_blank" rel="noopener" aria-label="Instagram">
-          <svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 1.62c-3.15 0-3.52.01-4.76.07-.92.04-1.42.2-1.75.33-.44.17-.75.37-1.08.7-.33.33-.53.64-.7 1.08-.13.33-.29.83-.33 1.75-.06 1.24-.07 1.61-.07 4.76s.01 3.52.07 4.76c.04.92.2 1.42.33 1.75.17.44.37.75.7 1.08.33.33.64.53 1.08.7.33.13.83.29 1.75.33 1.24.06 1.61.07 4.76.07s3.52-.01 4.76-.07c.92-.04 1.42-.2 1.75-.33.44-.17.75-.37 1.08-.7.33-.33.53-.64.7-1.08.13-.33.29-.83.33-1.75.06-1.24.07-1.61.07-4.76s-.01-3.52-.07-4.76c-.04-.92-.2-1.42-.33-1.75a2.9 2.9 0 0 0-.7-1.08 2.9 2.9 0 0 0-1.08-.7c-.33-.13-.83-.29-1.75-.33-1.24-.06-1.61-.07-4.76-.07zm0 2.76a5.3 5.3 0 1 1 0 10.6 5.3 5.3 0 0 1 0-10.6zm0 1.62a3.68 3.68 0 1 0 0 7.36 3.68 3.68 0 0 0 0-7.36zm5.5-2.9a1.24 1.24 0 1 1 0 2.48 1.24 1.24 0 0 1 0-2.48z"/></svg>
-          <span>@nenevalleylavender</span>
-        </a>
-        <a href="https://www.tiktok.com/@nene.valley.laven" target="_blank" rel="noopener" aria-label="TikTok">
-          <svg viewBox="0 0 24 24"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg>
-          <span>@nene.valley.laven</span>
-        </a>
+        <a href="#why" class="btn btn-secondary">See how it works</a>
+      </div>
+      <div class="hero-trust animate-in delay-4">
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>No card for trial</div>
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>Offline-capable for notes</div>
+        <div class="hero-trust-item"><span class="hero-trust-dot"></span>Your data, delete anytime</div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <svg class="hex-deco hex-deco-1" viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg"><path d="M30 2l24 14v20L30 50 6 36V16z" fill="none" stroke="#C8730A" stroke-width="1.5"/></svg>
+      <svg class="hex-deco hex-deco-2" viewBox="0 0 60 52" xmlns="http://www.w3.org/2000/svg"><path d="M30 2l24 14v20L30 50 6 36V16z" fill="#C8730A" opacity="0.2"/></svg>
+
+      <svg class="bee-float" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <svg class="bee-phone-left" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <svg class="bee-phone-right" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+        <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+        <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+        <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+        <circle cx="47" cy="35" r="1.5" fill="white"/>
+        <circle cx="53" cy="35" r="1.5" fill="white"/>
+        <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+        <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+        <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+      </svg>
+
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-content">
+            <div class="phone-greeting">Good morning, Chris</div>
+            <div class="phone-apiary">· Nene Valley Lavender Farm</div>
+
+            <div class="phone-stats">
+              <div class="phone-stat">
+                <div class="phone-stat-num">15</div>
+                <div class="phone-stat-lab">Active</div>
+              </div>
+              <div class="phone-stat">
+                <div class="phone-stat-num">2</div>
+                <div class="phone-stat-lab">Watch</div>
+              </div>
+            </div>
+
+            <div class="phone-alert">
+              <div class="phone-alert-label">⚠ Asian hornet · Critical</div>
+              <div class="phone-alert-text">Confirmed sighting: 13 miles, Sawtry</div>
+            </div>
+
+            <div class="phone-hive-row">
+              <div class="phone-hive-ring">92</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 4 · Queenright</div>
+                <div class="phone-hive-meta">8 frames brood · 3 stores</div>
+              </div>
+            </div>
+            <div class="phone-hive-row">
+              <div class="phone-hive-ring amber">74</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 7 · Needs super</div>
+                <div class="phone-hive-meta">Tight, inspected 2 days ago</div>
+              </div>
+            </div>
+            <div class="phone-hive-row" style="border-bottom:none">
+              <div class="phone-hive-ring">88</div>
+              <div style="flex:1">
+                <div class="phone-hive-name">Hive 12 · Queenright</div>
+                <div class="phone-hive-meta">Good pattern, calm temper</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- GALLERY: three farm images (animals, honey, sign) -->
-<section class="gallery">
+<section class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L4 7v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V7l-8-5z"/></svg>
+      Trade Mark Filed
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>
+      GDPR Compliant
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/></svg>
+      BeeBase Export
+    </div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      Photosensitive Safety Audited
+    </div>
+  </div>
+</section>
+
+<section class="why" id="why">
+  <svg class="extra-bee bee-why" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
   <div class="wrap">
-    <div class="section-label" style="text-align:center; margin-bottom:32px;">Life on the farm</div>
-    <div class="gallery-grid">
-      <figure class="g-item">
-        <img src="images/animals.jpeg" alt="Goats, ducks, chickens and hens among the lavender"
-          onerror="this.closest('.g-item').classList.add('g-empty'); this.style.display='none';">
-        <figcaption>Our goats, ducks, chickens &amp; bees</figcaption>
-      </figure>
-      <figure class="g-item">
-        <img src="images/honey-jar.jpeg" alt="Pure local honey from our hives"
-          onerror="this.closest('.g-item').classList.add('g-empty'); this.style.display='none';">
-        <figcaption>Pure honey from our hives</figcaption>
-      </figure>
-      <figure class="g-item">
-        <img src="images/sign.jpeg" alt="The Nene Valley Lavender sign at the farm gate"
-          onerror="this.closest('.g-item').classList.add('g-empty'); this.style.display='none';">
-        <figcaption>Find us at the farm gate</figcaption>
-      </figure>
+    <div class="section-head">
+      <span class="eyebrow">Why HiveKeeper</span>
+      <h2>Four things that make it <em>specifically yours.</em></h2>
+      <p>There are plenty of beekeeping apps. Most were built for American or European operations. HiveKeeper was built for how British beekeepers actually keep bees.</p>
+    </div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-card-num">1</div>
+        <h3>Built around the UK beekeeping year</h3>
+        <p>Works with <strong>every UK hive type</strong> &mdash; National, Commercial, WBC, Smith, Top Bar, Warr&eacute;, Nuc. The <strong>BBKA seasonal calendar</strong> drives your alerts. UK varroa treatment windows. Export inspection data to <strong>BeeBase / NBU format</strong> in one tap.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">2</div>
+        <h3>Aware of your environment</h3>
+        <p>Integrated <strong>Asian Hornet Watch</strong> panel with live UK sightings map and in-app reporting. A <strong>Crop Spraying Tracker</strong> for pesticide exposure near your apiaries. The <strong>UK Nectar Calendar</strong> with 16 UK forage sources and monthly intensity. Forage conditions based on the weather at your apiary.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">3</div>
+        <h3>AI that understands beekeeping</h3>
+        <p>Voice notes at the hive that <strong>fill the form for you</strong>. A chat assistant trained on your apiary data, with UK-legal treatments only. An <strong>AI Asian Hornet identifier</strong> that confirms <em>Vespa velutina</em> from a photo before you submit to Asian Hornet Watch. Built by beekeepers, for beekeepers.</p>
+      </div>
+
+      <div class="why-card">
+        <div class="why-card-num">4</div>
+        <h3>Made by a beekeeper, not a startup</h3>
+        <p>Built in Brigstock by <strong>Chris Culshaw</strong>, a BBKA Swarm Collector running multiple apiaries in Northamptonshire. Emails get answered personally. Still being shaped by the beekeepers using it. If something's wrong, tell Chris &mdash; he's the one reading.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- SOCIAL FEED: hand-picked embedded posts.
-     TO UPDATE: replace the contents of each .social-embed below with a fresh
-     embed code. Instagram: post ... menu > Embed. TikTok: Share > Embed.
-     Paste the <blockquote>...</blockquote> they give you in place of the
-     existing one. The platform scripts at the bottom render them automatically. -->
-<section class="social" id="social">
+<section class="features" id="features">
+  <svg class="extra-bee bee-features" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
   <div class="wrap">
-    <div class="section-label" style="text-align:center;">Follow Along</div>
-    <h2 class="social-title">From our <em>Instagram &amp; TikTok</em></h2>
-    <p class="social-intro">A little of farm life, lavender and the bees. Follow us
-      <a href="https://www.instagram.com/nenevalleylavender" target="_blank" rel="noopener">@nenevalleylavender</a> and
-      <a href="https://www.tiktok.com/@nene.valley.laven" target="_blank" rel="noopener">@nene.valley.laven</a>.</p>
-
-    <div class="social-grid">
-
-      <!-- ===== INSTAGRAM POST 1 — replace the blockquote to update ===== -->
-      <div class="social-embed">
-        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reel/DZInG6-tCyC/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%;"><div style="padding:16px;"><a href="https://www.instagram.com/reel/DZInG6-tCyC/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank" rel="noopener">A post shared by Nene Valley Lavender (@nenevalleylavender)</a></div></blockquote>
-      </div>
-
-      <!-- ===== INSTAGRAM POST 2 — replace the blockquote to update ===== -->
-      <div class="social-embed">
-        <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DYIQygmDVgw/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style=" background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%;"><div style="padding:16px;"><a href="https://www.instagram.com/p/DYIQygmDVgw/?utm_source=ig_embed&amp;utm_campaign=loading" target="_blank" rel="noopener">A post shared by Nene Valley Lavender (@nenevalleylavender)</a></div></blockquote>
-      </div>
-
-      <!-- ===== TIKTOK POST — replace the blockquote to update ===== -->
-      <div class="social-embed">
-        <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@nene.valley.laven/video/7647846784450006294" data-video-id="7647846784450006294" style="max-width: 605px;min-width: 325px;"> <section> <a target="_blank" title="@nene.valley.laven" href="https://www.tiktok.com/@nene.valley.laven?refer=embed" rel="noopener">@nene.valley.laven</a> <p>💜 Meet some of the stars of Nene Valley Lavender! 🐝🐑🦙 From lavender fields and buzzing bees to our friendly farm animals, there&rsquo;s plenty to discover 🌿✨ We&rsquo;re opening from 20th June &mdash; come and say hello!</p> <a target="_blank" title="♬ som original - anix nerd1" href="https://www.tiktok.com/music/som-original-7272841651516345093?refer=embed" rel="noopener">♬ som original - anix nerd1</a> </section> </blockquote>
-      </div>
-
+    <div class="section-head">
+      <span class="eyebrow">What's actually in the app</span>
+      <h2>The things no other beekeeping app <em>actually ships.</em></h2>
+      <p>We didn't want to build another generic hive logger. These are the features that exist because UK beekeepers told us what they needed &mdash; and that, honestly, no one else is shipping.</p>
     </div>
 
-    <div class="social-follow">
-      <a class="btn solid" href="https://www.instagram.com/nenevalleylavender" target="_blank" rel="noopener">Follow on Instagram</a>
-      <a class="btn ghost" href="https://www.tiktok.com/@nene.valley.laven" target="_blank" rel="noopener">Follow on TikTok</a>
-      <a class="btn ghost" href="https://www.facebook.com/profile.php?id=61553958877640" target="_blank" rel="noopener">Follow on Facebook</a>
+    <div class="features-grid">
+      <!-- THREE AI FEATURES — the differentiators -->
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+        <h4>Voice Inspections</h4>
+        <p>Speak at the hive in plain English &mdash; queen status, brood, stores, varroa, temper, swarm risk &mdash; and the AI extracts the data and fills the form. No typing in gloves with bees in the air.</p>
+      </div>
+
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+          <path d="M9 9l6 6M15 9l-6 6"/>
+        </svg>
+        <h4>Asian Hornet Identifier</h4>
+        <p>Photo a suspect, get a Vespa velutina confidence score and the technical features the AI noticed (yellow tarsi, dark thorax, abdomen banding). Submit straight to Asian Hornet Watch with the photo attached.</p>
+      </div>
+
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+        <h4>HiveKeeper AI Chat</h4>
+        <p>A chat assistant trained on your apiary's data, with UK context throughout. Ask about strange brood patterns, photograph a frame for analysis, get direct practical advice. UK-legal treatments only.</p>
+      </div>
+
+      <div class="feature-tile feature-tile-ai">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+          <path d="M3 4l3 1M21 4l-3 1"/>
+        </svg>
+        <h4>Hands-Free Voice Control <span class="beta-tag">Beta</span></h4>
+        <p>Run a whole inspection without touching the screen, and move around the app by voice too &mdash; start an inspection, log what you see, jump between hives and screens, all spoken aloud. Hands in the hive, eyes on the bees. The app talks back so you always know it heard you.</p>
+      </div>
+
+      <!-- ENVIRONMENTAL AWARENESS -->
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M2 12h20"/>
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+        <h4>Crop Spraying Tracker</h4>
+        <p>Log and see pesticide events within 6 miles of your apiaries. Severity scaling. Know when to keep your bees inside for a day.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M3 10h18M8 2v4M16 2v4M7 14h2M11 14h2M15 14h2M7 18h2M11 18h2"/>
+        </svg>
+        <h4>UK Nectar Calendar</h4>
+        <p>16 UK forage sources from willow to ivy, each with monthly intensity. Know what's active this week and when the peak is coming.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a10 10 0 1 0 10 10"/>
+          <path d="M22 2L12 12"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <h4>Satellite Apiary Map</h4>
+        <p>Drag hives to their exact position. Place landmarks &mdash; sheds, water, trees. Rotate to match reality. Map zoom syncs across your devices.</p>
+      </div>
+
+      <!-- PRACTICAL TOOLS -->
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="1"/>
+          <path d="M4 10h16M4 16h16M10 4v16M16 4v16"/>
+        </svg>
+        <h4>Inventory &amp; Refurb Pile</h4>
+        <p>Track every box, frame, jar and lid. Boxes coming off a hive go to a refurb pile because they're not deployable until cleaned. Bottle directly from a harvest with automatic stock decrement.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 18a5 5 0 0 0-10 0"/>
+          <circle cx="12" cy="11" r="4"/>
+          <path d="M20 22H4M12 2v3M5 5l2 2M19 5l-2 2"/>
+        </svg>
+        <h4>Lone Worker SOS</h4>
+        <p>One-tap emergency with live GPS. Texts your chosen contact with your exact location. For when you're at the out-apiary on your own.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>
+        </svg>
+        <h4>Health Score 0&ndash;100</h4>
+        <p>One number per hive, combining queen, brood, stores, varroa, temper and swarm risk. See trouble coming before it arrives.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 6h11M9 12h11M9 18h11"/>
+          <path d="M4 5l1.5 1.5L8 4M4 11l1.5 1.5L8 9M4 17l1.5 1.5L8 15"/>
+        </svg>
+        <h4>Plan Your Visit <span class="beta-tag">Beta</span></h4>
+        <p>Set the order you'll work an apiary &mdash; drag hives into the round, and the first one's flagged as your start. Then just crack on: inspect, skip a hive with a reason if you need to, and the app moves you straight to the next one. No hunting for what's left.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="7" r="3"/>
+          <circle cx="17" cy="9" r="3"/>
+          <path d="M2 20c0-3.5 3-6 7-6s7 2.5 7 6M14 18c.5-2.5 3-4 6-4"/>
+        </svg>
+        <h4>Share an Apiary</h4>
+        <p>Co-manage a hive with a mentor, a partner, or your local beekeeping association. Invite via link &mdash; they see what you see.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l-2 5h4l-2-5zM8 7c-2 3-3 6-3 9a7 7 0 0 0 14 0c0-3-1-6-3-9"/>
+          <circle cx="12" cy="14" r="3"/>
+        </svg>
+        <h4>Asian Hornet Watch</h4>
+        <p>Live UK sightings map in your hand. Severity alerts when sightings appear near your apiaries. Submit verified sightings in two taps.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l1.5 4.5L18 8l-3.5 3 1 4.5L12 13l-3.5 2.5 1-4.5L6 8l4.5-1.5z"/>
+          <circle cx="12" cy="20" r="2"/>
+        </svg>
+        <h4>Queen Rearing Calendar</h4>
+        <p>Track a grafting batch through every stage &mdash; graft, acceptance, capping, transfer to mating nucs, emergence, mating, first eggs. The app tells you the next action and the day it's due, including the critical &ldquo;move cells before day 12&rdquo; warning.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 3h6M10 3v5l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>
+          <path d="M7 14h10"/>
+        </svg>
+        <h4>Treatment Efficacy Tracker</h4>
+        <p>Pair pre- and post-treatment mite counts and the app calculates real efficacy. Below 80% it flags likely resistance. Withdrawal-period countdowns per product, and a warning if you reach for the same active ingredient twice on one hive.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 15a4 4 0 0 1 4-4h1a5 5 0 0 1 9.5-1.5A3.5 3.5 0 1 1 18 17H7a4 4 0 0 1-4-2z"/>
+          <path d="M8 21l2-3M14 21l-1-3"/>
+        </svg>
+        <h4>Swarm Risk Forecast</h4>
+        <p>Reads the 14-day forecast for your apiary and warns you when swarm pressure is building. Colonies can't fly in cold, wet spells &mdash; then all release on the first warm day. HiveKeeper sees that day coming. UK-calibrated, peak window flagged.</p>
+      </div>
+
+      <div class="feature-tile">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 8a7 7 0 0 1 14 0c0 5-4 8-7 11-3-3-7-6-7-11z"/>
+          <circle cx="12" cy="8" r="2.5"/>
+        </svg>
+        <h4>Swarm Catch Log</h4>
+        <p>Caught a swarm? Log it straight into an empty or available box in two taps &mdash; the app only offers boxes that are actually free. As a BBKA swarm collector's tool, it keeps your collections and their new homes recorded from the moment you hive them.</p>
+      </div>
+    </div>
+
+    <p class="features-roadmap">
+      <strong>In development:</strong> Hive Transfer (hand a hive and its entire history to another keeper, with one-tap onboarding for newcomers), a forage intelligence layer, an expanded in-app Field Guide, and a link to <a href="https://cropspray.farm" target="_blank" rel="noopener">cropspray.farm</a> so spray notifications from nearby farmers land against the apiaries they affect. Shaped by the beekeepers using HiveKeeper &mdash; not promised with a date, but actively being built.
+    </p>
+  </div>
+</section>
+
+<!-- PHOTO BAND — 24 April 2026: real beekeeping credibility -->
+<section class="photo-band">
+  <div class="wrap photo-band-inner">
+    <div class="photo-band-image">
+      <img src="IMG-20250412-WA0006.jpg" alt="Chris Culshaw moving beehives on a trailer in Northamptonshire, demonstrating real beekeeping experience behind HiveKeeper">
+    </div>
+    <div class="photo-band-text">
+      <span class="eyebrow">Built in the field</span>
+      <h2>Not designed in a boardroom. <em>Designed on a trailer.</em></h2>
+      <p>
+        Every feature in HiveKeeper exists because I needed it at 6am, in a field, with multiple apiaries to get through. Voice notes because your hands are in the hive. Asian hornet AI because the threat is real. Crop-spraying alerts because losing a colony to drift is devastating. Lone-worker SOS because some apiaries have no signal and no one nearby.
+      </p>
+      <p>
+        This is beekeeping software written by someone who still drops the hive tool in the grass.
+      </p>
     </div>
   </div>
 </section>
-<!-- Platform embed scripts (render the blockquotes above) -->
-<script async src="https://www.instagram.com/embed.js"></script>
-<script async src="https://www.tiktok.com/embed.js"></script>
 
-<section class="contact" id="contact">
-  <div class="wrap contact-grid">
-    <div>
-      <div class="section-label">Get in touch</div>
-      <h2>Send us a <em>note</em></h2>
-      <p class="sub">Questions, orders or just to say hello &mdash; let us know if there&rsquo;s anything we can do for you.</p>
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Pricing</span>
+      <h2>Honest pricing, <em>no hidden tiers.</em></h2>
+      <p>Free if you've got a few hives. Pro if you're serious. Commercial if you're running a bee business. Every new account gets a 14-day Pro trial of the full thing, no card needed.</p>
     </div>
-    <div>
-      <div class="field"><input type="text" id="name" placeholder="Your name"></div>
-      <div class="field"><input type="email" id="email" placeholder="Email address"></div>
-      <div class="field"><textarea id="message" placeholder="Your message"></textarea></div>
-      <button class="btn" style="border-color:var(--lilac); color:var(--paper);" onclick="sendContact()">Send message</button>
-      <div id="formMsg"></div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-name">Free</div>
+        <div class="price-tagline">For the first few hives</div>
+        <div class="price-amount">&pound;0<span> forever</span></div>
+        <div class="price-annual">14-day full Pro trial included with every account.</div>
+        <ul class="price-features">
+          <li>Up to 3 hives, 1 apiary</li>
+          <li>Full inspection workflow</li>
+          <li>Voice-recorded inspections</li>
+          <li>Asian Hornet Watch panel</li>
+          <li>Weather at your apiary</li>
+          <li>HiveKeeper AI (5 messages/month)</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Get started free</a>
+      </div>
+
+      <div class="price-card featured">
+        <div class="price-flag">Most popular</div>
+        <div class="price-name">Pro</div>
+        <div class="price-tagline">For ambitious hobbyists</div>
+        <div class="price-amount">&pound;3.99<span>/month</span></div>
+        <div class="price-annual">Or &pound;39.99/year (save &pound;7.89)</div>
+        <ul class="price-features">
+          <li>Up to 50 hives, 5 apiaries</li>
+          <li>Full inspection history</li>
+          <li>AI Asian Hornet identifier</li>
+          <li>HiveKeeper AI chat (unlimited)</li>
+          <li>Crop Spraying Tracker</li>
+          <li>UK Nectar Calendar</li>
+          <li>BeeBase / NBU export</li>
+          <li>Health trends &amp; session reports (PDF)</li>
+          <li>Inventory &amp; refurb pile</li>
+          <li>Apiary sharing</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-name">Commercial</div>
+        <div class="price-tagline">For bee farmers and associations</div>
+        <div class="price-amount">&pound;19.99<span>/month</span></div>
+        <div class="price-annual">Or &pound;199.99/year (save &pound;39.89)</div>
+        <ul class="price-features">
+          <li>Unlimited hives &amp; apiaries</li>
+          <li>Everything in Pro</li>
+          <li>Ad-free experience</li>
+          <li>Priority support</li>
+          <li>Advanced exports</li>
+          <li>Bulk marketplace listings</li>
+        </ul>
+        <a href="/hivekeeper-beta1.html" class="price-cta">Start 14-day trial</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="wrap about-inner">
+    <div class="about-portrait-col">
+      <div class="about-icon-frame">
+        <img src="FB_IMG_1776981969106.jpg" alt="Chris Culshaw, beekeeper and founder of HiveKeeper, in bee suit at his apiary">
+        <div class="about-hex-behind"></div>
+      </div>
+    </div>
+
+    <div class="about-text">
+      <span class="eyebrow">About</span>
+      <h2>Built in Brigstock. <em>Shaped by British beekeepers.</em></h2>
+      <p>
+        I'm Chris. I'm a BBKA Swarm Collector running multiple apiaries in and around Brigstock, Northamptonshire. HiveKeeper is the app I built because I was tired of hauling a notebook around the apiary and trying to decipher my own handwriting on Sunday evenings.
+      </p>
+      <p>
+        Tired of American apps that didn't understand how UK beekeepers actually keep bees. Tired of ignoring the Asian hornet threat because no one had built the tools to track it alongside the actual work.
+      </p>
+      <p>
+        What started as a personal tool became something other beekeepers asked to try. Then test. Then rely on. Today it's being shaped by a dedicated beta testing group whose feedback runs the roadmap.
+      </p>
+      <p>If something's wrong, tell me &mdash; I'm the one reading. HiveKeeper is owned by <strong>Culshaw Consulting Ltd</strong>, the small consultancy I run.
+      </p>
+      <div class="about-signature">&mdash; Chris</div>
+
+      <div class="about-creds">
+        <div class="about-cred">
+          <div>
+            <strong>Culshaw Consulting Ltd</strong>
+            Company No. 16938477
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>Trade Mark Filed</strong>
+            UKIPO Classes 9, 35, 42
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>D-U-N-S Number</strong>
+            234452896
+          </div>
+        </div>
+        <div class="about-cred">
+          <div>
+            <strong>Based in</strong>
+            Brigstock, Northamptonshire
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAMILY BAND — 24 April 2026: the next generation of beekeepers -->
+<section class="family-band">
+  <div class="wrap family-band-inner">
+    <div class="family-band-text">
+      <span class="eyebrow">The next generation</span>
+      <h2>Beekeeping is <em>better shared.</em></h2>
+      <p>My daughter Tilly is already spotting the queens faster than me. HiveKeeper isn't just about making my beekeeping easier &mdash; it's about passing the knowledge on.</p>
+      <p>Apiary sharing lets you invite a partner, a mentor, or your local association to co-manage a hive. Everything you see, they see.</p>
+    </div>
+    <div class="family-band-image">
+      <img src="PXL_20260304_112319172.jpg" alt="Tilly Culshaw in a bee suit inspecting a hive — the next generation of UK beekeepers">
+    </div>
+  </div>
+</section>
+
+<section class="final-cta" id="download">
+  <svg class="extra-bee bee-cta" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <ellipse cx="42" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(-25 42 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="58" cy="38" rx="9" ry="14" fill="#a8c8e0" opacity="0.7" transform="rotate(25 58 38)" stroke="#5a7a92" stroke-width="1"/>
+    <ellipse cx="50" cy="55" rx="13" ry="20" fill="#e4a33a"/>
+    <ellipse cx="50" cy="48" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="58" rx="13" ry="3" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="67" rx="10" ry="2.5" fill="#1F4E3A"/>
+    <ellipse cx="50" cy="36" rx="9" ry="8" fill="#1F4E3A"/>
+    <circle cx="47" cy="35" r="1.5" fill="white"/>
+    <circle cx="53" cy="35" r="1.5" fill="white"/>
+    <path d="M46 30 Q43 24 41 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M54 30 Q57 24 59 22" stroke="#1F4E3A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="22" r="1.2" fill="#1F4E3A"/>
+    <circle cx="59" cy="22" r="1.2" fill="#1F4E3A"/>
+    <path d="M50 75 L48 80 L50 78 L52 80 Z" fill="#1F4E3A"/>
+  </svg>
+  <div class="wrap final-cta-inner">
+    <h2>Start keeping better records <em>this week.</em></h2>
+    <p>14-day Pro trial of the full thing. No credit card needed.</p>
+
+    <!-- 4 May 2026 Phase 4ce-5h — Google Play link is now live following
+         Play Console approval. Both store badges link directly to their
+         respective listings. Web app option as a small text link below
+         since the user can launch it directly from this page. -->
+    <div class="store-badges">
+      <a href="https://apps.apple.com/gb/app/hivekeeper/id6762303018" target="_blank" rel="noopener" aria-label="Download HiveKeeper on the App Store">
+        <img src="badge-appstore.svg" alt="Download on the App Store">
+      </a>
+      <a href="https://play.google.com/store/apps/details?id=com.culshawconsulting.hivekeeper" target="_blank" rel="noopener" aria-label="Get HiveKeeper on Google Play">
+        <img src="badge-googleplay.svg" alt="Get it on Google Play">
+      </a>
+    </div>
+
+    <a href="/hivekeeper-beta1.html" class="store-webapp-link">Or launch the web app in your browser →</a>
+
+    <div class="final-cta-note">
+      Available on iOS, Android and the web. Sync across all your devices.
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <div class="foot-grid">
-      <div class="foot-brand">
-        <img src="images/logo_1701860470.webp" alt="Nene Valley Lavender">
-        <p>Organic English lavender, honey and skincare, grown by hand at Drumbledrone Eden in the Nene Valley.</p>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand">
+          <img src="hivekeeper-icon.png" alt="">
+          HiveKeeper<sup>&trade;</sup>
+        </div>
+        <p class="footer-about">
+          The UK beekeeper's field companion. Built in Brigstock, Northamptonshire, by a BBKA Swarm Collector. Shaped by the community that uses it.
+        </p>
       </div>
-      <div class="foot-nav">
-        <div class="foot-col">
-          <h4>Explore</h4>
-          <a href="#shop">Shop</a>
-          <a href="#story">Our Story</a>
-          <a href="#visit">Visit</a>
-          <a href="#contact">Contact</a>
-        </div>
-        <div class="foot-col">
-          <h4>Follow</h4>
-          <div class="socials">
-                        <a href="https://www.tiktok.com/@nene.valley.laven" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z"/></svg></a>
-            <a href="https://www.instagram.com/nenevalleylavender" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9-.42-.42-.68-.82-.9-1.38-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 1.62c-3.15 0-3.52.01-4.76.07-.92.04-1.42.2-1.75.33-.44.17-.75.37-1.08.7-.33.33-.53.64-.7 1.08-.13.33-.29.83-.33 1.75-.06 1.24-.07 1.61-.07 4.76s.01 3.52.07 4.76c.04.92.2 1.42.33 1.75.17.44.37.75.7 1.08.33.33.64.53 1.08.7.33.13.83.29 1.75.33 1.24.06 1.61.07 4.76.07s3.52-.01 4.76-.07c.92-.04 1.42-.2 1.75-.33.44-.17.75-.37 1.08-.7.33-.33.53-.64.7-1.08.13-.33.29-.83.33-1.75.06-1.24.07-1.61.07-4.76s-.01-3.52-.07-4.76c-.04-.92-.2-1.42-.33-1.75a2.9 2.9 0 0 0-.7-1.08 2.9 2.9 0 0 0-1.08-.7c-.33-.13-.83-.29-1.75-.33-1.24-.06-1.61-.07-4.76-.07zm0 2.76a5.3 5.3 0 1 1 0 10.6 5.3 5.3 0 0 1 0-10.6zm0 1.62a3.68 3.68 0 1 0 0 7.36 3.68 3.68 0 0 0 0-7.36zm5.5-2.9a1.24 1.24 0 1 1 0 2.48 1.24 1.24 0 0 1 0-2.48z"/></svg></a>
-            <a href="https://www.facebook.com/profile.php?id=61553958877640" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.13 8.44 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99C18.34 21.13 22 16.99 22 12z"/></svg></a>
-            <a href="mailto:nenevalleylavender@mail.com" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
-          </div>
-        </div>
+
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#why">Why HiveKeeper</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="/hivekeeper-beta1.html">Launch the app</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="mailto:privacy@gethivekeeper.com">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="/security-policy.html">Security Policy</a></li>
+          <li><a href="/terms-of-service.html">Terms of Service</a></li>
+          <li><a href="/delete-account.html">Delete my account</a></li>
+        </ul>
       </div>
     </div>
-    <div class="foot-base">
-      <span>&copy; 2026 Nene Valley Lavender. All rights reserved.</span>
-      <span>Drumbledrone Eden &middot; Brigstock &middot; NN14 3HY</span>
-    </div>
-    <div class="foot-credit">
-      <a href="https://www.culshaw.consulting" target="_blank" rel="noopener" class="credit-logo" aria-label="Culshaw Consulting">
-        <img src="data:image/png;base64,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" alt="Culshaw Consulting">
-      </a>
-      <div class="credit-text">
-        <span class="credit-by">Designed by Chris Culshaw</span>
-        <span class="credit-links">
-          <a href="https://www.culshaw.consulting" target="_blank" rel="noopener">www.culshaw.consulting</a>
-          &middot;
-          <a href="mailto:chris@culshaw.consulting">chris@culshaw.consulting</a>
-        </span>
+
+    <div class="footer-bottom">
+      <div>
+        &copy; 2026 Culshaw Consulting Ltd · Company No. 16938477 · Trade Mark Filed UKIPO
+      </div>
+      <div class="footer-social">
+        <a href="https://instagram.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="https://facebook.com/GetHiveKeeper" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/company/hivekeeper-app/" target="_blank" rel="noopener noreferrer" aria-label="HiveKeeper on LinkedIn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5c0 1.381-1.11 2.5-2.48 2.5s-2.48-1.119-2.48-2.5c0-1.38 1.11-2.5 2.48-2.5s2.48 1.12 2.48 2.5zm.02 4.5h-5v16h5v-16zm7.982 0h-4.968v16h4.969v-8.399c0-4.67 6.029-5.052 6.029 0v8.399h4.988v-10.131c0-7.88-8.922-7.593-11.018-3.714v-2.155z"/></svg>
+        </a>
+      </div>
+      <div>
+        Built with care in the UK.
       </div>
     </div>
   </div>
 </footer>
 
-<script>
-  // Optional hero background: only show images/hero.jpeg if it actually loads.
-  (function(){
-    var probe = new Image();
-    probe.onload = function(){
-      document.getElementById('heroBg').style.display = 'block';
-      document.getElementById('hero').classList.add('has-bg');
-    };
-    probe.onerror = function(){ /* no hero photo yet — keep watercolour washes */ };
-    probe.src = 'images/hero.jpeg';
-  })();
-
-  // Photo band: if images/field.jpeg is missing, soften the band into a lilac panel
-  // and show a gentle note instead of dark-overlay white text.
-  (function(){
-    var band = document.getElementById('band');
-    var probe = new Image();
-    probe.onload = function(){ band.classList.add('has-photo'); };
-    probe.onerror = function(){
-      band.classList.add('no-photo');
-      document.getElementById('bandText').classList.add('band-fallback');
-      var sub = document.getElementById('bandSub');
-      sub.classList.add('band-fallback');
-      sub.innerHTML = '<span style="opacity:.8">(Add a photo at <strong>images/bee.jpeg</strong> to fill this band)</span>';
-    };
-    probe.src = 'images/bee.jpeg';
-  })();
-  // mobile nav
-  document.getElementById('navToggle').addEventListener('click', function(){
-    document.getElementById('nav').classList.toggle('open');
-  });
-  // scroll reveal for sections below the fold (progressive enhancement — content
-  // is visible by default in CSS; we only add the hidden state if JS + IO are supported)
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{ if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='none'; io.unobserve(e.target);} });
-    },{threshold:0.12});
-    document.querySelectorAll('.intro .body, .intro h2, .card, .info-card, .visit-grid > div, .contact-grid > div').forEach(el=>{
-      el.style.transition='opacity .9s cubic-bezier(.2,.7,.3,1), transform .9s cubic-bezier(.2,.7,.3,1)';
-      el.style.opacity='0'; el.style.transform='translateY(26px)';
-      io.observe(el);
-    });
-    // safety net: if anything is still hidden after 3s, reveal it
-    setTimeout(()=>{ document.querySelectorAll('.card,.info-card,.intro .body,.intro h2,.visit-grid > div,.contact-grid > div').forEach(el=>{ el.style.opacity='1'; el.style.transform='none'; }); }, 3000);
-  }
-
-  // ====================================================================
-  // CONTACT FORM — uses Formspree (works on static hosting like GitHub Pages).
-  // SET UP: 1) sign up free at https://formspree.io  2) create a form, point it
-  // at your email  3) copy its endpoint (looks like https://formspree.io/f/abcdwxyz)
-  // 4) paste the form ID below, replacing YOUR_FORM_ID.
-  // ====================================================================
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
-
-  async function sendContact() {
-    const msgEl = document.getElementById('formMsg');
-    const payload = {
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-      message: document.getElementById('message').value
-    };
-    if (!payload.name || !payload.email || !payload.message) {
-      msgEl.style.color = '#e7b6b6'; msgEl.textContent = 'Please fill in all fields.'; return;
-    }
-    if (FORMSPREE_ENDPOINT.indexOf('YOUR_FORM_ID') !== -1) {
-      msgEl.style.color = '#e7b6b6';
-      msgEl.textContent = 'The contact form is not set up yet. Please email nenevalleylavender@mail.com directly.';
-      return;
-    }
-    msgEl.style.color = '#cdbfdf'; msgEl.textContent = 'Sending...';
-    try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (res.ok) {
-        msgEl.style.color = '#cde7c6';
-        msgEl.textContent = "Thank you — your message has been sent. We'll be in touch soon.";
-        document.getElementById('name').value=''; document.getElementById('email').value=''; document.getElementById('message').value='';
-      } else {
-        msgEl.style.color = '#e7b6b6';
-        msgEl.textContent = 'Sorry, something went wrong. Please email us directly at nenevalleylavender@mail.com.';
-      }
-    } catch(e) {
-      msgEl.style.color = '#e7b6b6';
-      msgEl.textContent = 'Sorry, something went wrong. Please email us directly at nenevalleylavender@mail.com.';
-    }
-  }
-</script>
-<!-- Floating basket button + drawer -->
-<button class="basket-fab hidden" id="basketFab" onclick="openBasket()">
-  Basket <span class="count" id="basketCount">0</span>
-</button>
-<div class="drawer-overlay" id="overlay" onclick="closeBasket()"></div>
-<aside class="drawer" id="drawer" aria-label="Basket">
-  <header>
-    <h3>Your basket</h3>
-    <button class="close" onclick="closeBasket()" aria-label="Close">&times;</button>
-  </header>
-  <div class="items" id="basketItems"></div>
-  <footer>
-    <div class="b-total"><span>Total</span><span id="basketTotal">£0.00</span></div>
-    <button class="checkout-btn" id="toCheckout" onclick="showCheckoutForm()">Checkout</button>
-    <div class="cf" id="checkoutForm">
-      <input type="text" id="cf-name" placeholder="Full name" autocomplete="name">
-      <input type="email" id="cf-email" placeholder="Email" autocomplete="email">
-      <textarea id="cf-address" placeholder="Delivery address" autocomplete="shipping street-address"></textarea>
-      <button class="checkout-btn" id="payBtn" onclick="pay()">Pay with SumUp</button>
-      <div id="checkoutMsg"></div>
-    </div>
-  </footer>
-</aside>
-
-<script>
-(function(){
-  // API base = same origin when served via the Worker. Falls back to the Worker URL
-  // if the page is opened directly from GitHub Pages.
-  const WORKER = "https://nenevalley.chris-culshaw.workers.dev";
-  const API = (location.hostname.endsWith("workers.dev")) ? "" : WORKER;
-
-  let products = {};   // id -> {price_pence, stock, name}
-  let basket = {};     // id -> quantity
-
-  // Fetch live product data (prices + stock) and enhance the cards.
-  fetch(API + "/api/products")
-    .then(r => r.ok ? r.json() : Promise.reject())
-    .then(list => {
-      list.forEach(p => { products[p.id] = p; });
-      document.querySelectorAll('.card[data-id]').forEach(card => {
-        const id = card.getAttribute('data-id');
-        const p = products[id];
-        if (!p) return;
-        // update price
-        const priceEl = card.querySelector('.price');
-        if (priceEl) priceEl.textContent = '£' + (p.price_pence/100).toFixed(2);
-        const btn = card.querySelector('.addbtn');
-        // out of stock?
-        if (p.stock <= 0) {
-          if (btn) { btn.disabled = true; btn.textContent = 'Sold out'; }
-        }
-      });
-    })
-    .catch(() => { /* API unavailable — cards stay as static fallback */ });
-
-  window.addToBasket = function(id){
-    const p = products[id];
-    if (!p || p.stock <= 0) return;
-    basket[id] = (basket[id]||0) + 1;
-    if (basket[id] > p.stock) basket[id] = p.stock;
-    renderBasket();
-    // brief confirmation on the button instead of forcing the drawer open
-    const btn = document.querySelector('.addbtn[data-add="'+id+'"]');
-    if (btn){ const t = btn.textContent; btn.textContent='Added ✓'; setTimeout(()=>{ btn.textContent=t; }, 900); }
-  };
-  document.querySelectorAll('.addbtn[data-add]').forEach(b => {
-    b.addEventListener('click', () => window.addToBasket(b.getAttribute('data-add')));
-  });
-
-  function renderBasket(){
-    const itemsEl = document.getElementById('basketItems');
-    const ids = Object.keys(basket).filter(id => basket[id] > 0);
-    let total = 0, count = 0;
-    if (!ids.length) {
-      itemsEl.innerHTML = '<div class="b-empty">Your basket is empty</div>';
-    } else {
-      itemsEl.innerHTML = ids.map(id => {
-        const p = products[id]; const q = basket[id];
-        total += p.price_pence * q; count += q;
-        return '<div class="b-item"><div class="b-name">'+p.name+'<small>£'+(p.price_pence/100).toFixed(2)+' each</small></div>'+
-          '<div class="qty"><button onclick="chgQty(\''+id+'\',-1)">−</button><span>'+q+'</span>'+
-          '<button onclick="chgQty(\''+id+'\',1)">+</button></div></div>';
-      }).join('');
-    }
-    document.getElementById('basketTotal').textContent = '£' + (total/100).toFixed(2);
-    document.getElementById('basketCount').textContent = count;
-    const fab = document.getElementById('basketFab');
-    fab.classList.toggle('hidden', count === 0);
-    document.getElementById('toCheckout').disabled = count === 0;
-  }
-
-  window.chgQty = function(id, d){
-    const p = products[id];
-    basket[id] = Math.max(0, (basket[id]||0) + d);
-    if (p && basket[id] > p.stock) basket[id] = p.stock;
-    if (basket[id] === 0) delete basket[id];
-    renderBasket();
-  };
-
-  window.openBasket = function(){ document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); };
-  window.closeBasket = function(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
-  window.showCheckoutForm = function(){ document.getElementById('checkoutForm').classList.add('show'); document.getElementById('toCheckout').style.display='none'; };
-
-  window.pay = async function(){
-    const msg = document.getElementById('checkoutMsg');
-    const name = document.getElementById('cf-name').value.trim();
-    const email = document.getElementById('cf-email').value.trim();
-    const address = document.getElementById('cf-address').value.trim();
-    if (!name || !email || !address){ msg.style.color='#b23'; msg.textContent='Please fill in all delivery details.'; return; }
-    const items = Object.keys(basket).filter(id=>basket[id]>0).map(id=>({id, quantity:basket[id]}));
-    if (!items.length){ msg.style.color='#b23'; msg.textContent='Your basket is empty.'; return; }
-    const payBtn = document.getElementById('payBtn');
-    payBtn.disabled = true; msg.style.color='#5a4a7a'; msg.textContent='Setting up secure payment…';
-    try {
-      const res = await fetch(API + "/api/checkout", {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ items, customer:{ name, email, address } })
-      });
-      const data = await res.json();
-      if (res.ok && data.url){ window.location.href = data.url; }
-      else { msg.style.color='#b23'; msg.textContent = data.error || 'Could not start checkout. Please try again.'; payBtn.disabled=false; }
-    } catch(e){
-      msg.style.color='#b23'; msg.textContent='Something went wrong. Please try again.'; payBtn.disabled=false;
-    }
-  };
-
-  renderBasket();
-})();
-</script>
-<script>
-(function(){
-  const WORKER = "https://nenevalley.chris-culshaw.workers.dev";
-  const API = (location.hostname.endsWith("workers.dev")) ? "" : WORKER;
-  let days = [];
-
-  // Reveal the booking form (hidden by default). Used by both the event
-  // "Book your visit" button and the prompt button in the booking section.
-  window.showBookingForm = function(){
-    const card = document.getElementById('bookCard');
-    const prompt = document.getElementById('bk-prompt');
-    if (card) card.style.display = 'block';
-    if (prompt) prompt.style.display = 'none';
-    document.getElementById('book').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  // The event section's "Book your visit" link also reveals the form.
-  const eventBtn = document.getElementById('revealBook');
-  if (eventBtn) eventBtn.addEventListener('click', function(e){ e.preventDefault(); window.showBookingForm(); });
-
-  const fmt = iso => { try { return new Date(iso+"T00:00:00Z").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"}); } catch(_){ return iso; } };
-
-  function dateInfo(){
-    const sel = document.getElementById('bk-date').value;
-    const info = document.getElementById('bk-dateinfo');
-    const d = days.find(x => x.date === sel);
-    if (!d){ info.textContent=''; return; }
-    if (d.spaces_left <= 0){ info.innerHTML = '<span style="color:#9b2c2c">This date is fully booked — please choose another.</span>'; }
-    else if (d.spaces_left <= 10){ info.textContent = `Only ${d.spaces_left} car spaces left on this date.`; }
-    else { info.textContent = `${d.spaces_left} car spaces available.`; }
-  }
-
-  fetch(API + "/api/booking/dates").then(r=>r.json()).then(list=>{
-    days = list || [];
-    const sel = document.getElementById('bk-date');
-    if (!days.length){ sel.innerHTML = '<option value="">No dates available</option>'; return; }
-    sel.innerHTML = days.map(d => {
-      const full = d.spaces_left <= 0;
-      return `<option value="${d.date}" ${full?'data-full="1"':''}>${fmt(d.date)}${full?' — FULL':''}</option>`;
-    }).join('');
-    dateInfo();
-  }).catch(()=>{ document.getElementById('bk-date').innerHTML = '<option value="">Could not load dates</option>'; });
-
-  document.getElementById('bk-date').addEventListener('change', dateInfo);
-
-  window.bookVisit = async function(){
-    const msg = document.getElementById('bk-msg');
-    const suggest = document.getElementById('bk-suggest');
-    suggest.innerHTML = '';
-    const date = document.getElementById('bk-date').value;
-    const carReg = document.getElementById('bk-reg').value.trim();
-    const adults = Math.max(0, parseInt(document.getElementById('bk-adults').value,10)||0);
-    const children = Math.max(0, parseInt(document.getElementById('bk-children').value,10)||0);
-    const infants = Math.max(0, parseInt(document.getElementById('bk-infants').value,10)||0);
-    const name = document.getElementById('bk-name').value.trim();
-    const email = document.getElementById('bk-email').value.trim();
-    const phone = document.getElementById('bk-phone').value.trim();
-    const disclaimer = document.getElementById('bk-disclaimer').checked;
-
-    if (!date){ msg.style.color='#b23'; msg.textContent='Please choose a date.'; return; }
-    if (!carReg){ msg.style.color='#b23'; msg.textContent='Please enter your car registration — booking is per car.'; return; }
-    if ((adults+children+infants) < 1){ msg.style.color='#b23'; msg.textContent='Please tell us how many people are coming.'; return; }
-    if (!name || !email){ msg.style.color='#b23'; msg.textContent='Please enter your name and email.'; return; }
-    if (!disclaimer){ msg.style.color='#b23'; msg.textContent='Please tick the box to confirm you have read the visitor safety notice.'; return; }
-
-    // If chosen date is full, suggest alternatives with space.
-    const chosen = days.find(d=>d.date===date);
-    if (chosen && chosen.spaces_left <= 0){
-      const alt = days.filter(d=>d.spaces_left > 0).slice(0,4);
-      msg.style.color='#b23'; msg.textContent='That date is fully booked (50 cars).';
-      if (alt.length){
-        suggest.innerHTML = 'Try: ' + alt.map(d=>`<button onclick="document.getElementById('bk-date').value='${d.date}';document.getElementById('bk-date').dispatchEvent(new Event('change'));document.getElementById('bk-msg').textContent='';this.parentNode.innerHTML='';">${fmt(d.date)}</button>`).join(' ');
-      }
-      return;
-    }
-
-    const payBtn = document.getElementById('bk-pay');
-    payBtn.disabled = true; msg.style.color='#5a4a7a'; msg.textContent='Setting up secure payment…';
-    try {
-      const res = await fetch(API + "/api/booking/checkout", {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ date, car_reg:carReg, adults, children, infants, name, email, phone, disclaimer_agreed:disclaimer })
-      });
-      const data = await res.json();
-      if (res.ok && data.url){ window.location.href = data.url; }
-      else { msg.style.color='#b23'; msg.textContent = data.error || 'Could not start booking. Please try again.'; payBtn.disabled=false; }
-    } catch(e){
-      msg.style.color='#b23'; msg.textContent='Something went wrong. Please try again.'; payBtn.disabled=false;
-    }
-  };
-})();
-</script>
 </body>
 </html>
