@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606d">
+<meta name="app-version" content="companion-20260606e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -260,7 +260,7 @@ textarea.ed-inp{font-weight:400;}
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1';
-const BUILD_STAMP = '6 June 2026 companion build d';
+const BUILD_STAMP = '6 June 2026 companion build e';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -393,7 +393,7 @@ async function onAuthSuccess(){
 }
 
 /* ============================ BACK-OFFICE ============================ */
-let _scope='all', _tab='dash';
+let _scope='all', _tab='dash', _honeyMode='year';
 const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['plan','📋','Plan'],['export','📤','Export']];
 
 /* ---- data helpers (operate on normalised local cache) ---- */
@@ -460,6 +460,7 @@ function toggleScopeMenu(ev){ if(ev) ev.stopPropagation(); const m=$('#bo-scope-
 function closeScopeMenu(){ $('#bo-scope-menu').classList.remove('open'); $('#bo-scrim').classList.remove('open'); }
 function pickScope(id){ _scope=id; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; closeScopeMenu(); renderContent(); }
 function cycleSort(){ const o=['health','name','last']; _sortBy=o[(o.indexOf(_sortBy)+1)%o.length]; renderContent(); }
+function cycleHoney(){ const o=['year','12mo','all']; _honeyMode=o[(o.indexOf(_honeyMode)+1)%o.length]; renderContent(); }
 function cycleFilter(){ const o=['all','attention']; _filterBy=o[(o.indexOf(_filterBy)+1)%o.length]; renderContent(); }
 
 function renderContent(){
@@ -527,21 +528,24 @@ function recentInspections(){
 }
 function kpiTiles(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
-  // Honey '26 — sum this calendar year's harvest weight, scoped to the current view.
-  const yr=new Date().getFullYear();
+  const now=new Date(), yr=now.getFullYear();
+  const yearStart=new Date(yr,0,1).getTime();
+  const rollingStart=now.getTime()-365*86400000;
   const hiveIds={}; h.forEach(x=>hiveIds[x.id]=true);
-  const harv=loadHarvests().filter(x=>{
-    if(x.deletedAt) return false;
-    if(!x.harvestedAt) return false;
-    if(new Date(x.harvestedAt).getFullYear()!==yr) return false;
-    if(_scope==='all') return true;
-    return hiveIds[x.hiveId] || x.apiaryId===_scope;
-  });
+  const inScope=x=>{
+    if(x.deletedAt||!x.harvestedAt) return false;
+    if(_scope!=='all' && !(hiveIds[x.hiveId]||x.apiaryId===_scope)) return false;
+    return true;
+  };
+  const all=loadHarvests().filter(inScope);
+  let harv, label;
+  if(_honeyMode==='all'){ harv=all; label='Honey all-time'; }
+  else if(_honeyMode==='12mo'){ harv=all.filter(x=>x.harvestedAt>=rollingStart); label='Honey 12mo'; }
+  else { harv=all.filter(x=>x.harvestedAt>=yearStart); label=`Honey '${String(yr).slice(2)}`; }
   const honey = harv.length ? Math.round(harv.reduce((s,x)=>s+(x.kg||0),0)*10)/10 : null;
-  const yy=String(yr).slice(2);
   return `<div class="kpi">
     <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Op. health</div><div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span></div></div>
-    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Honey '${yy}</div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>logged yet</div>`}</div>
+    <div class="box click" onclick="HKWEB.cycleHoney()" title="Tap to switch period" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;display:flex;align-items:center;gap:3px;">${label} <span style="color:#C4A24A;">▾</span></div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>in period</div>`}</div>
   </div>`;
 }
 function trendChart(){
@@ -737,7 +741,7 @@ async function boot(){
 }
 
 window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
-  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
+  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, cycleHoney, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
 boot();
 })();
 </script>
