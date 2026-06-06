@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606i">
+<meta name="app-version" content="companion-20260606j">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -259,9 +259,10 @@ textarea.ed-inp{font-weight:400;}
 'use strict';
 
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
+const COMPANION_AI_URL = 'https://companion-ai.gethivekeeper.com'; // AI overview proxy Worker (Supabase-auth gated)
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
-const BUILD_STAMP = '6 June 2026 companion build i';
+const BUILD_STAMP = '6 June 2026 companion build j';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -675,13 +676,17 @@ async function refreshAI(){
   try{
     const summary=buildOpsSummary();
     const prompt=`You are an experienced UK beekeeping assistant writing a back-office operations briefing for a beekeeper looking at their HiveKeeper desktop dashboard. Below is a JSON snapshot of their operation (scope: ${summary.scope}).\n\nWrite a concise briefing in two clearly-headed sections:\n1. "What's happened" — a short narrative recap (2-4 sentences) of the operation's recent state: colony numbers, any losses, health trend, recent harvests and treatments.\n2. "What to do" — a prioritised, actionable bullet list (3-6 items) of what needs attention or is coming up: overdue inspections, swarm risk, treatment timing, seasonal tasks for the current UK season.\n\nRules: Use UK English and UK beekeeping conventions. Be specific — name hives where relevant. Be honest about data gaps; never invent varroa mite counts or treatment efficacy figures. Keep the whole thing under 220 words. Do not use headers larger than bold text. Today is ${summary.today}.\n\nSnapshot:\n${JSON.stringify(summary)}`;
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
-        messages:[{role:'user',content:prompt}] })
+    // Get a fresh access token from the live session (avoid a stale one).
+    let token=(_session&&_session.access_token)||null;
+    try{ const { data } = await getSupabase().auth.getSession(); if(data&&data.session){ token=data.session.access_token; _session=data.session; } }catch(_){}
+    if(!token) throw new Error('Not signed in');
+    const res=await fetch(COMPANION_AI_URL,{
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({ prompt })
     });
     const data=await res.json();
-    const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+    if(!res.ok) throw new Error((data&&data.error)||('HTTP '+res.status));
+    const text=(data.text||'').trim();
     if(!text) throw new Error('Empty response');
     _aiBriefing=text; _aiUpdatedAt=Date.now();
   }catch(e){ _aiError=(e&&e.message)||'Could not generate briefing'; }
