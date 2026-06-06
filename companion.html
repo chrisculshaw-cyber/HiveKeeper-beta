@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606c">
+<meta name="app-version" content="companion-20260606d">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -259,8 +259,8 @@ textarea.ed-inp{font-weight:400;}
 
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
-const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1';
-const BUILD_STAMP = '6 June 2026 companion build c';
+const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1';
+const BUILD_STAMP = '6 June 2026 companion build d';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -276,6 +276,7 @@ function getSupabase(){
 function loadHives(){ try{ return JSON.parse(localStorage.getItem(HIVE_KEY))||[]; }catch(e){ return []; } }
 function loadApiaries(){ try{ return JSON.parse(localStorage.getItem(APIARY_KEY))||[]; }catch(e){ return []; } }
 function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch(e){ return []; } }
+function loadHarvests(){ try{ return JSON.parse(localStorage.getItem(HARVEST_KEY))||[]; }catch(e){ return []; } }
 function saveLocal(k,r){ try{ localStorage.setItem(k, JSON.stringify(r)); }catch(e){} }
 
 const $ = s => document.querySelector(s);
@@ -344,7 +345,7 @@ async function signOut(){
   // Wipe the local data cache so the next account on this browser can't briefly
   // see the previous user's hives/inspections before their own pull completes.
   // (The Supabase auth key is managed by the SDK and left to it.)
-  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); }catch(e){}
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); }catch(e){}
   $('#signin-btn').disabled=false; $('#signin-btn').textContent='Sign in'; $('#signin-pass').value='';
   show('auth-screen');
 }
@@ -353,7 +354,7 @@ async function pullData(uid){
   const sb=getSupabase();
   // Clear any stale cache first so a failed/partial pull can never surface a
   // previous account's data. Each table below repopulates its own key.
-  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); }catch(e){}
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); localStorage.removeItem(HARVEST_KEY); }catch(e){}
   let _testApiaryIds={};
   try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid);
     if(data){ const kept=data.map(mapApiary).filter(a=>{ if(isTestApiary(a)){ _testApiaryIds[a.id]=true; return false; } return true; }); saveLocal(APIARY_KEY, kept); } }catch(e){}
@@ -361,6 +362,8 @@ async function pullData(uid){
     if(data) saveLocal(HIVE_KEY, data.map(mapHive).filter(h=>!isTestHive(h,_testApiaryIds))); }catch(e){}
   try{ const { data } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at',{ascending:false}).limit(500);
     if(data) saveLocal(INSP_KEY, data.map(mapInsp).filter(i=>!(i.id&&String(i.id).startsWith('demo-')))); }catch(e){}
+  try{ const { data } = await sb.from('harvests').select('*').eq('user_id', uid);
+    if(data) saveLocal(HARVEST_KEY, data.map(mapHarvest).filter(x=>!x.deletedAt)); }catch(e){}
 }
 /* Test-data filters — mirror the app: meadowbrook + demo rows are seeded test data. */
 function isTestApiary(a){ if(!a) return true; if(a.id==='apiary_meadowbrook') return true; if(a.id&&String(a.id).startsWith('demo-')) return true; if(a.name==='Meadowbrook Apiary') return true; return false; }
@@ -377,6 +380,12 @@ function mapInsp(i){
     inspectedBy:i.inspected_by, queenSeen:i.queen_seen, queenFrame:i.queen_frame, broodFrames:i.brood_frames,
     storesLevel:i.stores_level, swarmRisk:i.swarm_risk, varroaLevel:i.varroa_level, temper:i.temper,
     healthScore:i.health_score, notes:i.notes, framesBrood:i.frames_brood }; }
+function mapHarvest(x){
+  const when = x.harvested_at || x.harvested_on || x.created_at || null;
+  return { id:x.id, hiveId:x.hive_id, apiaryId:x.apiary_id,
+    kg: (x.weight_kg!=null?Number(x.weight_kg):(x.kg!=null?Number(x.kg):0)),
+    harvestedAt: when?new Date(when).getTime():0,
+    deletedAt: x.deleted_at?new Date(x.deleted_at).getTime():null }; }
 async function onAuthSuccess(){
   show('load-screen');
   const uid=_user&&_user.id; if(uid){ await pullData(uid); }
@@ -518,11 +527,21 @@ function recentInspections(){
 }
 function kpiTiles(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
-  // Honey needs harvest records, which aren't synced into the companion yet.
-  const honey=null; // placeholder until harvest data is wired
+  // Honey '26 — sum this calendar year's harvest weight, scoped to the current view.
+  const yr=new Date().getFullYear();
+  const hiveIds={}; h.forEach(x=>hiveIds[x.id]=true);
+  const harv=loadHarvests().filter(x=>{
+    if(x.deletedAt) return false;
+    if(!x.harvestedAt) return false;
+    if(new Date(x.harvestedAt).getFullYear()!==yr) return false;
+    if(_scope==='all') return true;
+    return hiveIds[x.hiveId] || x.apiaryId===_scope;
+  });
+  const honey = harv.length ? Math.round(harv.reduce((s,x)=>s+(x.kg||0),0)*10)/10 : null;
+  const yy=String(yr).slice(2);
   return `<div class="kpi">
     <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Op. health</div><div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span></div></div>
-    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Honey '26</div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>data yet</div>`}</div>
+    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Honey '${yy}</div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>logged yet</div>`}</div>
   </div>`;
 }
 function trendChart(){
