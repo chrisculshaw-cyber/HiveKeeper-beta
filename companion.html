@@ -120,6 +120,9 @@ table{width:100%;border-collapse:collapse;}
 .fld{margin-bottom:11px;}
 .fld .lab{font-size:9px;font-weight:800;color:#9A8A6E;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
 .fld .inp{background:#fff;border:1px solid var(--wax);border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;color:var(--text);display:flex;justify-content:space-between;}
+.ed-inp{width:100%;background:#fff;border:1px solid var(--wax);border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;color:var(--text);font-family:inherit;}
+.ed-inp:focus{outline:none;border-color:var(--honey);}
+textarea.ed-inp{font-weight:400;}
 .dr-head{background:var(--forest-m);padding:15px 16px;display:flex;align-items:center;gap:11px;}
 .dr-head .t{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#fff;line-height:1;}
 .dr-head .s{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px;}
@@ -606,24 +609,80 @@ function openHive(id){
     </div>`;
   $('#bo-drawer').style.display='flex';
 }
+let _editHiveId=null, _editInspIdx=null;
 function openInsp(id,i){
   const h=activeHives().find(x=>x.id===id); const r=inspsFor(id)[i]; if(!r) return;
+  _editHiveId=id; _editInspIdx=i;
   const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
-  const vc=r.varroaLevel==='High'?'#A32D2D':(r.varroaLevel==='Med'||r.varroaLevel==='Medium'?'#854F0B':'#3B6D11');
+  const sel=(val,opts)=>opts.map(o=>`<option value="${o}"${String(val)===String(o)?' selected':''}>${o}</option>`).join('');
   $('#bo-drawer').innerHTML=`<div class="dr-head"><span class="bk" onclick="HKWEB.openHive('${id}')">‹</span><div style="flex:1;"><div class="t">Inspection · ${d.replace(/ \d{4}$/,'')}</div><div class="s">${esc(h.name||'')} · recorded in the field</div></div><span class="x" onclick="HKWEB.closeDrawer()">✕</span></div>
     <div class="dr-body">
-      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Date</div><div class="inp" style="justify-content:flex-start;">${d}</div></div><div style="flex:1;"><div class="lab">Brood frames</div><div class="inp" style="justify-content:flex-start;">${typeof r.broodFrames==='number'?r.broodFrames:'—'}</div></div></div>
-      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Queen seen</div><div class="inp" style="color:${r.queenSeen?'var(--text)':'#854F0B'};">${r.queenSeen?'Yes':'No'} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Varroa</div><div class="inp" style="color:${vc};">${esc(r.varroaLevel||'—')} <span style="color:#A85D08;">▾</span></div></div></div>
-      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Swarm risk</div><div class="inp">${esc(r.swarmRisk||'—')} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Temperament</div><div class="inp">${esc(r.temper||'—')} <span style="color:#A85D08;">▾</span></div></div></div>
-      <div class="fld"><div class="lab">Notes</div><div class="inp" style="display:block;font-weight:400;line-height:1.4;min-height:48px;">${r.notes?esc(r.notes):'<span style="color:#B4A98A;">No notes</span>'}</div></div>
-      <div style="background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:700;color:#5F5E5A;line-height:1.4;">🕓 Recorded in the field. Edits here are saved as corrections, stamped “edited on web” — field history is preserved.</div>
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Date</div><div class="inp" style="justify-content:flex-start;">${d}</div></div><div style="flex:1;"><div class="lab">Brood frames</div><input id="ed-brood" type="number" min="0" max="22" class="ed-inp" value="${typeof r.broodFrames==='number'?r.broodFrames:''}"></div></div>
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Queen seen</div><select id="ed-queen" class="ed-inp">${sel(r.queenSeen?'Yes':'No',['Yes','No'])}</select></div><div style="flex:1;"><div class="lab">Varroa</div><select id="ed-varroa" class="ed-inp">${sel(r.varroaLevel||'',['','Low','Med','High'])}</select></div></div>
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Swarm risk</div><select id="ed-swarm" class="ed-inp">${sel(r.swarmRisk||'',['','Low','Med','High'])}</select></div><div style="flex:1;"><div class="lab">Temperament</div><select id="ed-temper" class="ed-inp">${sel(r.temper||'',['','Calm','Active','Testy','Aggressive'])}</select></div></div>
+      <div class="fld"><div class="lab">Notes</div><textarea id="ed-notes" class="ed-inp" style="min-height:64px;resize:vertical;line-height:1.4;">${r.notes?esc(r.notes):''}</textarea></div>
+      <div style="background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:700;color:#5F5E5A;line-height:1.4;">🕓 Recorded in the field. Saving stamps this record “edited on web” so the original field entry stays auditable.</div>
     </div>
-    <div class="dr-foot"><div class="dr-cancel" onclick="HKWEB.openHive('${id}')">Cancel</div><div class="dr-save" onclick="HKWEB.saveCorrection()">✓ Save correction</div></div>`;
+    <div class="dr-foot"><div class="dr-cancel" onclick="HKWEB.openHive('${id}')">Cancel</div><div class="dr-save" id="ed-savebtn" onclick="HKWEB.saveCorrection()">✓ Save correction</div></div>`;
   $('#bo-drawer').style.display='flex';
 }
 function closeDrawer(){ const d=$('#bo-drawer'); if(d){ d.style.display='none'; } }
 function toast(msg){ const t=$('#bo-toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{ t.style.display='none'; },1600); }
-function saveCorrection(){ toast('Editing is read-only in this preview — write-back lands next build'); }
+async function saveCorrection(){
+  if(_editHiveId===null||_editInspIdx===null) return;
+  const r=inspsFor(_editHiveId)[_editInspIdx]; if(!r){ toast('Could not find that record'); return; }
+  const btn=$('#ed-savebtn'); if(btn){ btn.textContent='Saving…'; btn.style.pointerEvents='none'; }
+
+  // read edited values
+  const broodRaw=$('#ed-brood').value;
+  const newVals={
+    broodFrames: broodRaw===''?null:parseInt(broodRaw,10),
+    queenSeen: $('#ed-queen').value==='Yes',
+    varroaLevel: $('#ed-varroa').value||'',
+    swarmRisk: $('#ed-swarm').value||'',
+    temper: $('#ed-temper').value||''
+  };
+  let notes=$('#ed-notes').value||'';
+  // audit stamp — append once per day if not already present for today
+  const stamp='[edited on web '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+']';
+  if(notes.indexOf(stamp)===-1){ notes=(notes.trim()+'\n'+stamp).trim(); }
+  newVals.notes=notes;
+
+  // build the snake_case row matching the app's push shape
+  const uid=_user&&_user.id;
+  const row={
+    id:r.id, user_id:uid, hive_id:r.hiveId,
+    inspected_at:new Date(r.inspectedAt||Date.now()).toISOString(),
+    queen_seen:newVals.queenSeen,
+    brood_frames:newVals.broodFrames,
+    varroa_level:newVals.varroaLevel,
+    swarm_risk:newVals.swarmRisk,
+    temper:newVals.temper,
+    notes:newVals.notes
+  };
+  // include apiary_id if we can resolve it (keeps RLS/scoping consistent)
+  const hv=activeHives().find(x=>x.id===r.hiveId); if(hv&&hv.apiaryId) row.apiary_id=hv.apiaryId;
+
+  try{
+    const { error } = await getSupabase().from('inspections').upsert([row], { onConflict:'id' });
+    if(error){
+      const perm=(error.code==='42501')||/row-level security|permission denied|violates row-level/i.test(error.message||'');
+      toast(perm?'You don’t have permission to edit this record':'Save failed — '+(error.message||'try again'));
+      if(btn){ btn.textContent='✓ Save correction'; btn.style.pointerEvents=''; }
+      return;
+    }
+  }catch(e){ toast('Save failed — check your connection'); if(btn){ btn.textContent='✓ Save correction'; btn.style.pointerEvents=''; } return; }
+
+  // update local cache so the UI reflects the change immediately (offline-first)
+  try{
+    const all=loadInspections();
+    const idx=all.findIndex(x=>x.id===r.id);
+    if(idx>=0){ all[idx]=Object.assign({}, all[idx], newVals); saveLocal(INSP_KEY, all); }
+  }catch(e){}
+
+  toast('✓ Correction saved · stamped “edited on web”');
+  openHive(_editHiveId);   // back to hive, now showing updated record + recomputed health
+}
 function exportData(){ toast('Export (BeeBase / CSV) lands in a later build'); }
 function addHive(){ toast('Add hive lands in a later build — manage existing hives for now'); }
 
