@@ -105,7 +105,7 @@ button{font-family:inherit;cursor:pointer;border:none;}
 .bo-content{padding:18px 22px;overflow:auto;}
 table{width:100%;border-collapse:collapse;}
 .tbl{background:#fff;border:1px solid var(--wax);border-radius:14px;overflow:hidden;}
-.tbl th{padding:9px 10px;color:#9A8A6E;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:left;background:#FAF6EC;}
+.tbl th{padding:9px 10px;color:#9A8A6E;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:left;background:#FAF6EC;position:sticky;top:0;z-index:1;}
 .tbl td{padding:9px 8px;font-size:12px;}
 .tbl tr.click{cursor:pointer;}
 .tbl tr.click:hover{background:#FFFBF2;}
@@ -359,7 +359,7 @@ async function pullData(uid){
     if(data) saveLocal(INSP_KEY, data.map(mapInsp).filter(i=>!(i.id&&String(i.id).startsWith('demo-')))); }catch(e){}
 }
 /* Test-data filters — mirror the app: meadowbrook + demo rows are seeded test data. */
-function isTestApiary(a){ if(!a) return true; if(a.id==='apiary_meadowbrook') return true; if(a.id&&String(a.id).startsWith('demo-')) return true; return false; }
+function isTestApiary(a){ if(!a) return true; if(a.id==='apiary_meadowbrook') return true; if(a.id&&String(a.id).startsWith('demo-')) return true; if(a.name==='Meadowbrook Apiary') return true; return false; }
 function isTestHive(h,testApiaryIds){ if(!h) return true; if(h.apiaryId==='apiary_meadowbrook') return true; if(h.id&&String(h.id).startsWith('demo-')) return true; if(testApiaryIds&&h.apiaryId&&testApiaryIds[h.apiaryId]) return true; return false; }
 /* Row normalisers — mirror the app's pullFromSupabase mapping (DB snake_case -> local camelCase) */
 function mapApiary(a){ return { id:a.id, name:a.name, isShared:a.is_shared, sharedWith:a.shared_with, userId:a.user_id||null }; }
@@ -384,7 +384,10 @@ let _scope='all', _tab='dash';
 const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['plan','📋','Plan'],['export','📤','Export']];
 
 /* ---- data helpers (operate on normalised local cache) ---- */
-function activeHives(){ return loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-')) && h.apiaryId!=='apiary_meadowbrook'); }
+function activeHives(){
+  const hiddenApIds={}; loadApiaries().forEach(a=>{ if(isTestApiary(a)) hiddenApIds[a.id]=true; });
+  return loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-')) && h.apiaryId!=='apiary_meadowbrook' && !hiddenApIds[h.apiaryId]);
+}
 function liveApiaries(){ return loadApiaries().filter(a=>!isTestApiary(a)); }
 function scopedHives(){ const all=activeHives(); return _scope==='all'?all:all.filter(h=>h.apiaryId===_scope); }
 function inspsFor(hiveId){ return loadInspections().filter(i=>i.hiveId===hiveId).sort((a,b)=>b.inspectedAt-a.inspectedAt); }
@@ -495,7 +498,7 @@ function hiveTable(){
   }).join('');
   const sortLabel={health:'Health',name:'Name',last:'Last visit'}[_sortBy];
   const filterLabel={all:'All',attention:'Needs attention'}[_filterBy];
-  return `<div class="tbl"><table><tr><th>Hive</th><th>Apiary</th><th>Health</th><th>Brood</th><th>Varroa</th><th>Status</th><th>Last</th><th></th></tr>${rows}</table><div style="padding:9px;text-align:center;font-size:11px;font-weight:800;color:#A85D08;border-top:1px solid #F4EFE3;">Showing ${h.length} hive${h.length!==1?'s':''}</div></div>`;
+  return `<div class="tbl"><div style="max-height:340px;overflow-y:auto;"><table><thead><tr><th>Hive</th><th>Apiary</th><th>Health</th><th>Brood</th><th>Varroa</th><th>Status</th><th>Last</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><div style="padding:9px;text-align:center;font-size:11px;font-weight:800;color:#A85D08;border-top:1px solid #F4EFE3;">Showing ${h.length} hive${h.length!==1?'s':''}${h.length>8?' · scroll for more':''}</div></div>`;
 }
 function tableControls(){
   return `<div style="font-size:11px;font-weight:700;color:#A85D08;cursor:pointer;"><span onclick="HKWEB.cycleSort()">Sort: ${({health:'Health',name:'Name',last:'Last visit'})[_sortBy]} ▾</span> · <span onclick="HKWEB.cycleFilter()">Filter: ${({all:'All',attention:'Needs attention'})[_filterBy]} ▾</span></div>`;
