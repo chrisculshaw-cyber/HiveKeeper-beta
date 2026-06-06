@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606f">
+<meta name="app-version" content="companion-20260606g">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -113,6 +113,7 @@ table{width:100%;border-collapse:collapse;}
 .kpi{display:flex;gap:10px;margin-bottom:14px;}
 .kpi .box{flex:1;border-radius:13px;padding:11px 13px;}
 .card-box{background:#fff;border:1px solid var(--wax);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
+.mini-sel{font-family:inherit;font-size:11px;font-weight:700;color:var(--honey);background:#FBF4E6;border:1px solid var(--wax);border-radius:8px;padding:3px 7px;cursor:pointer;}
 .note{font-size:12px;color:var(--text-l);line-height:1.6;}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;text-align:center;}
 /* edit drawer */
@@ -260,7 +261,7 @@ textarea.ed-inp{font-weight:400;}
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
-const BUILD_STAMP = '6 June 2026 companion build f';
+const BUILD_STAMP = '6 June 2026 companion build g';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -400,8 +401,8 @@ async function onAuthSuccess(){
 }
 
 /* ============================ BACK-OFFICE ============================ */
-let _scope='all', _tab='dash', _honeyMode='year';
-const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['plan','📋','Plan'],['export','📤','Export']];
+let _scope='all', _tab='dash', _harvestGroup='year', _treatPeriod='12mo';
+const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['treatments','💧','Treatments'],['plan','📋','Plan'],['export','📤','Export']];
 
 /* ---- data helpers (operate on normalised local cache) ---- */
 function activeHives(){
@@ -467,16 +468,19 @@ function toggleScopeMenu(ev){ if(ev) ev.stopPropagation(); const m=$('#bo-scope-
 function closeScopeMenu(){ $('#bo-scope-menu').classList.remove('open'); $('#bo-scrim').classList.remove('open'); }
 function pickScope(id){ _scope=id; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; closeScopeMenu(); renderContent(); }
 function cycleSort(){ const o=['health','name','last']; _sortBy=o[(o.indexOf(_sortBy)+1)%o.length]; renderContent(); }
-function cycleHoney(){ const o=['year','12mo','all']; _honeyMode=o[(o.indexOf(_honeyMode)+1)%o.length]; renderContent(); }
+function setHarvestGroup(v){ _harvestGroup=v; renderContent(); }
+function setTreatPeriod(v){ _treatPeriod=v; renderContent(); }
 function cycleFilter(){ const o=['all','attention']; _filterBy=o[(o.indexOf(_filterBy)+1)%o.length]; renderContent(); }
 
 function renderContent(){
-  const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
+  const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],treatments:['Treatments','Varroa control and medication history'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
   $('#bo-title').textContent=titles[_tab][0]; $('#bo-sub').textContent=titles[_tab][1];
   const c=$('#bo-content');
   if(_tab==='dash') c.innerHTML=viewDashboard();
   else if(_tab==='analytics') c.innerHTML=viewAnalytics();
   else if(_tab==='hives') c.innerHTML='<div style="max-width:760px;">'+hiveTable()+'</div>';
+  else if(_tab==='harvests') c.innerHTML='<div style="max-width:820px;">'+viewHarvests()+'</div>';
+  else if(_tab==='treatments') c.innerHTML='<div style="max-width:820px;">'+viewTreatments()+'</div>';
   else c.innerHTML=`<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">${NAV.find(n=>n[0]===_tab)[1]}</div><div class="serif" style="font-size:22px;font-weight:700;">${titles[_tab][0]}</div><div class="note" style="max-width:320px;margin-top:6px;">This section of the Desktop Companion is coming next. Dashboard and Analytics are live and reading your real data.</div></div>`;
 }
 function scopeSub(){ const h=scopedHives(); const aps=liveApiaries().length; return `${_scope==='all'?'All apiaries':apiaryName(_scope)} · ${h.length} hive${h.length!==1?'s':''}${_scope==='all'?' · '+aps+' apiar'+(aps!==1?'ies':'y'):''} · synced from your phone`; }
@@ -493,9 +497,10 @@ function viewDashboard(){
       ${recentInspections()}
     </div>
     <div style="flex:1;min-width:260px;">
-      ${kpiTiles()}
+      ${healthTile()}
+      ${harvestGraph()}
+      ${treatmentGraph()}
       ${trendChart()}
-      ${treatmentCard()}
       ${swarmCard()}
     </div>
   </div>`;
@@ -533,27 +538,118 @@ function recentInspections(){
     return `<div class="click" onclick="HKWEB.openHive('${r.hiveId}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;${i<ins.length-1?'border-bottom:1px solid #F4EFE3;':''}cursor:pointer;"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:12px;color:var(--forest-m);"><b>${esc(h.name||'')}</b> · ${summary} <span style="color:var(--text-l);">· ${d}</span></div><span style="color:#C4B896;font-size:13px;">✎</span></div>`;
   }).join('')}</div>`;
 }
-function kpiTiles(){
+function healthTile(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
-  const now=new Date(), yr=now.getFullYear();
-  const yearStart=new Date(yr,0,1).getTime();
-  const rollingStart=now.getTime()-365*86400000;
-  const hiveIds={}; h.forEach(x=>hiveIds[x.id]=true);
-  const inScope=x=>{
-    if(x.deletedAt||!x.harvestedAt) return false;
-    if(_scope!=='all' && !(hiveIds[x.hiveId]||x.apiaryId===_scope)) return false;
-    return true;
-  };
-  const all=loadHarvests().filter(inScope);
-  let harv, label;
-  if(_honeyMode==='all'){ harv=all; label='Honey all-time'; }
-  else if(_honeyMode==='12mo'){ harv=all.filter(x=>x.harvestedAt>=rollingStart); label='Honey 12mo'; }
-  else { harv=all.filter(x=>x.harvestedAt>=yearStart); label=`Honey '${String(yr).slice(2)}`; }
-  const honey = harv.length ? Math.round(harv.reduce((s,x)=>s+(x.kg||0),0)*10)/10 : null;
-  return `<div class="kpi">
-    <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Op. health</div><div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span></div></div>
-    <div class="box click" onclick="HKWEB.cycleHoney()" title="Tap to switch period" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;display:flex;align-items:center;gap:3px;">${label} <span style="color:#C4A24A;">▾</span></div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>in period</div>`}</div>
+  return `<div class="kpi" style="grid-template-columns:1fr;">
+    <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Operation health</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span><span style="font-size:11px;font-weight:700;color:${b.tx};text-transform:uppercase;">${b.word}</span></div></div>
   </div>`;
+}
+/* ---- harvest graph (dashboard) — bars with visible grouping dropdown ---- */
+function harvestData(){
+  const h=scopedHives(); const ids={}; h.forEach(x=>ids[x.id]=x);
+  return loadHarvests().filter(x=>!x.deletedAt && x.harvestedAt && (_scope==='all'?true:(ids[x.hiveId]||x.apiaryId===_scope)));
+}
+function harvestGraph(){
+  const data=harvestData();
+  const sel=`<select class="mini-sel" onchange="HKWEB.setHarvestGroup(this.value)">
+    <option value="year"${_harvestGroup==='year'?' selected':''}>By year</option>
+    <option value="month"${_harvestGroup==='month'?' selected':''}>By month</option>
+    <option value="hive"${_harvestGroup==='hive'?' selected':''}>By hive</option></select>`;
+  const head=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;font-weight:800;">Honey harvest</div>${sel}</div>`;
+  if(!data.length) return `<div class="card-box">${head}<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note">No harvests in this view</div></div></div>`;
+  const buckets={}; const order=[];
+  const hname=id=>{ const h=scopedHives().find(x=>x.id===id); return h?h.name:'—'; };
+  data.forEach(x=>{
+    let key;
+    if(_harvestGroup==='year') key=String(new Date(x.harvestedAt).getFullYear());
+    else if(_harvestGroup==='month') key=new Date(x.harvestedAt).toLocaleDateString('en-GB',{month:'short',year:'2-digit'});
+    else key=hname(x.hiveId);
+    if(!(key in buckets)){ buckets[key]=0; order.push(key); }
+    buckets[key]+=(x.kg||0);
+  });
+  if(_harvestGroup==='month') order.sort((a,b)=>new Date('1 '+a)-new Date('1 '+b));
+  else if(_harvestGroup==='year') order.sort();
+  else order.sort((a,b)=>buckets[b]-buckets[a]);
+  const max=Math.max(...order.map(k=>buckets[k]))||1;
+  const total=Math.round(data.reduce((s,x)=>s+(x.kg||0),0)*10)/10;
+  const bars=order.map(k=>{
+    const v=buckets[k]; const pct=Math.round(v/max*100);
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="width:62px;font-size:10px;color:var(--text-l);text-align:right;font-family:DM Mono,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(k)}</div>
+      <div style="flex:1;background:#F4EFE3;border-radius:4px;height:16px;position:relative;"><div style="width:${pct}%;background:linear-gradient(90deg,#E8960C,#C8730A);height:100%;border-radius:4px;min-width:2px;"></div></div>
+      <div style="width:46px;font-size:11px;font-weight:700;text-align:right;">${Math.round(v*10)/10}kg</div></div>`;
+  }).join('');
+  return `<div class="card-box">${head}${bars}<div style="margin-top:6px;padding-top:6px;border-top:1px solid #F4EFE3;display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text-l);">Total</span><span style="font-weight:800;">${total}kg</span></div></div>`;
+}
+/* ---- treatment graph (dashboard) — count over time, period dropdown ---- */
+function treatmentGraph(){
+  const h=scopedHives(); const ids={}; h.forEach(x=>ids[x.id]=true);
+  const all=loadTreatments().filter(t=>ids[t.hiveId] && t.treatedAt);
+  const sel=`<select class="mini-sel" onchange="HKWEB.setTreatPeriod(this.value)">
+    <option value="6mo"${_treatPeriod==='6mo'?' selected':''}>6 months</option>
+    <option value="12mo"${_treatPeriod==='12mo'?' selected':''}>12 months</option>
+    <option value="all"${_treatPeriod==='all'?' selected':''}>All time</option></select>`;
+  const head=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div style="font-size:13px;font-weight:800;">Treatments applied</div>${sel}</div>`;
+  const now=new Date();
+  let months = _treatPeriod==='6mo'?6:(_treatPeriod==='12mo'?12:0);
+  let from;
+  if(months){ from=new Date(now.getFullYear(), now.getMonth()-months+1, 1).getTime(); }
+  else { const ts=all.map(t=>t.treatedAt); from=ts.length?Math.min(...ts):now.getTime(); }
+  const list=all.filter(t=>t.treatedAt>=from);
+  if(!list.length) return `<div class="card-box">${head}<div style="height:70px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note">No treatments in this period</div></div></div>`;
+  // bucket by month
+  const buckets={}; const order=[];
+  const startD=new Date(from);
+  if(months){
+    for(let i=0;i<months;i++){ const d=new Date(now.getFullYear(), now.getMonth()-months+1+i, 1); const k=d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); buckets[k]=0; order.push(k); }
+  }
+  list.forEach(t=>{ const k=new Date(t.treatedAt).toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); if(!(k in buckets)){ buckets[k]=0; order.push(k);} buckets[k]++; });
+  if(!months) order.sort((a,b)=>new Date('1 '+a)-new Date('1 '+b));
+  const max=Math.max(...order.map(k=>buckets[k]))||1;
+  const W=260,H=84,pad=16; const n=order.length;
+  const bw=n?Math.min(34,(W-2*pad)/n*0.7):10;
+  const gap=n>1?((W-2*pad)-bw*n)/(n-1):0;
+  let bars='',lbls='';
+  order.forEach((k,i)=>{
+    const v=buckets[k]; const bh=(v/max)*(H-pad-14); const x=pad+i*(bw+gap); const y=H-14-bh;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,bh).toFixed(1)}" rx="2" fill="#9C6CC4"/>${v?`<text x="${(x+bw/2).toFixed(1)}" y="${(y-2).toFixed(1)}" font-size="8" fill="#6B4B8A" text-anchor="middle" font-weight="700">${v}</text>`:''}`;
+    if(n<=12) lbls+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-3}" font-size="7" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${k.split(' ')[0]}</text>`;
+  });
+  const total=list.length;
+  return `<div class="card-box">${head}<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:84px;">${bars}${lbls}</svg><div style="margin-top:4px;padding-top:6px;border-top:1px solid #F4EFE3;display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text-l);">Total applied</span><span style="font-weight:800;">${total}</span></div></div>`;
+}
+/* ---- full detail pages ---- */
+function viewHarvests(){
+  const data=harvestData().slice().sort((a,b)=>b.harvestedAt-a.harvestedAt);
+  const hname=id=>{ const h=scopedHives().find(x=>x.id===id); return h?h.name:'—'; };
+  if(!data.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">🪙</div><div class="serif" style="font-size:22px;font-weight:700;">No harvests yet</div><div class="note" style="max-width:340px;margin-top:6px;">Log extractions in the app and they'll appear here, by hive and season.</div></div>`;
+  const total=Math.round(data.reduce((s,x)=>s+(x.kg||0),0)*10)/10;
+  const rows=data.map(x=>`<tr>
+    <td>${new Date(x.harvestedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</td>
+    <td>${esc(hname(x.hiveId))}</td>
+    <td style="text-align:right;font-weight:700;">${Math.round((x.kg||0)*10)/10}kg</td>
+    <td class="note" style="max-width:340px;">${esc(x.notes||'')}</td></tr>`).join('');
+  return `${harvestGraph()}
+    <div class="card-box" style="margin-top:16px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;"><div style="font-size:14px;font-weight:800;">All harvests <span style="color:var(--text-l);font-weight:600;font-size:12px;">· ${data.length} record${data.length!==1?'s':''}</span></div><div style="font-size:13px;font-weight:800;">${total}kg total</div></div>
+      <table class="tbl"><thead><tr><th>Date</th><th>Hive</th><th style="text-align:right;">Yield</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+function viewTreatments(){
+  const h=scopedHives(); const ids={}; h.forEach(x=>ids[x.id]=x);
+  const data=loadTreatments().filter(t=>ids[t.hiveId]).sort((a,b)=>b.treatedAt-a.treatedAt);
+  if(!data.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">💧</div><div class="serif" style="font-size:22px;font-weight:700;">No treatments yet</div><div class="note" style="max-width:340px;margin-top:6px;">Record varroa treatments in the app and they'll appear here, by hive and date.</div></div>`;
+  const rows=data.map(t=>`<tr>
+    <td>${t.treatedAt?new Date(t.treatedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'}</td>
+    <td style="font-weight:700;">${esc(t.product||'—')}</td>
+    <td>${esc(ids[t.hiveId]?ids[t.hiveId].name:'')}</td>
+    <td>${esc(t.dose||'')}</td>
+    <td class="note" style="max-width:300px;">${esc(t.notes||'')}</td></tr>`).join('');
+  return `${treatmentGraph()}
+    <div class="card-box" style="margin-top:16px;">
+      <div style="font-size:14px;font-weight:800;margin-bottom:8px;">All treatments <span style="color:var(--text-l);font-weight:600;font-size:12px;">· ${data.length} record${data.length!==1?'s':''}</span></div>
+      <table class="tbl"><thead><tr><th>Date</th><th>Product</th><th>Hive</th><th>Dose</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
 }
 function trendChart(){
   const hives=scopedHives(); 
@@ -795,7 +891,7 @@ async function boot(){
 }
 
 window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
-  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, cycleHoney, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
+  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, setHarvestGroup, setTreatPeriod, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
 boot();
 })();
 </script>
