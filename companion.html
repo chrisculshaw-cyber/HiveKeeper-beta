@@ -85,6 +85,22 @@ button{font-family:inherit;cursor:pointer;border:none;}
 .bo-head .ttl{font-size:24px;font-weight:700;color:var(--text);line-height:1;}
 .bo-head .sub{font-size:12px;color:var(--text-l);margin-top:3px;}
 .bo-scope,.bo-btn{background:#fff;border:1px solid var(--wax);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;white-space:nowrap;}
+.bo-scope-wrap{position:relative;}
+.bo-scope-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;width:300px;background:#fff;border:1px solid var(--wax);border-radius:14px;box-shadow:var(--shadow-l);padding:8px;z-index:50;max-height:70vh;overflow:auto;}
+.bo-scope-menu.open{display:block;}
+.bo-scope-menu .hd{font-size:10px;font-weight:800;letter-spacing:.06em;color:#9A8A6E;text-transform:uppercase;margin:4px 6px 7px;}
+.sw-row{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--wax);border-radius:12px;padding:9px 11px;margin-bottom:6px;cursor:pointer;}
+.sw-row:last-child{margin-bottom:0;}
+.sw-row:hover{background:#FFFBF2;}
+.sw-row.cur{background:var(--health-good-bg,#F4FAEA);border-color:#8BBF4D;}
+.sw-ring{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;border:2.5px solid;flex-shrink:0;}
+.sw-meta{flex:1;min-width:0;}
+.sw-name{font-size:13px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sw-sub{font-size:10px;font-weight:700;color:var(--text-l);margin-top:1px;}
+.sw-flag{font-size:8px;font-weight:800;color:#791F1F;background:#FCEBEB;padding:2px 6px;border-radius:4px;margin-left:5px;}
+.sw-tick{color:#3B6D11;font-size:16px;font-weight:800;}
+.bo-scrim{display:none;position:fixed;inset:0;z-index:45;}
+.bo-scrim.open{display:block;}
 .bo-btn.primary{background:var(--forest-m);color:#fff;border-color:var(--forest-m);font-weight:800;}
 .bo-content{padding:18px 22px;overflow:auto;}
 table{width:100%;border-collapse:collapse;}
@@ -212,13 +228,17 @@ table{width:100%;border-collapse:collapse;}
     <div class="bo-main">
       <div class="bo-head">
         <div style="flex:1;min-width:0;"><div class="ttl serif" id="bo-title">Manage your operation</div><div class="sub" id="bo-sub"></div></div>
-        <div class="bo-scope" id="bo-scope" onclick="HKWEB.cycleScope()">All apiaries ▾</div>
+        <div class="bo-scope-wrap">
+          <div class="bo-scope" id="bo-scope" onclick="HKWEB.toggleScopeMenu(event)">All apiaries ▾</div>
+          <div class="bo-scope-menu" id="bo-scope-menu"></div>
+        </div>
         <div class="bo-btn" onclick="HKWEB.exportData()">📤 Export</div>
         <div class="bo-btn primary" onclick="HKWEB.addHive()">+ Add hive</div>
       </div>
       <div class="bo-content" id="bo-content"></div>
     </div>
     <div id="bo-drawer"></div>
+    <div id="bo-scrim" class="bo-scrim" onclick="HKWEB.closeScopeMenu()"></div>
     <div id="bo-toast"></div>
   </div>
 </div>
@@ -389,7 +409,31 @@ function initBackOffice(){
   renderContent();
 }
 function tabTo(t){ _tab=t; closeDrawer(); $('#bo-nav').innerHTML=NAV.map(n=>`<div class="bo-nav ${n[0]===_tab?'active':''}" onclick="HKWEB.tabTo('${n[0]}')"><span class="i">${n[1]}</span>${n[2]}</div>`).join(''); renderContent(); }
-function cycleScope(){ const ids=['all'].concat(loadApiaries().map(a=>a.id)); const i=ids.indexOf(_scope); _scope=ids[(i+1)%ids.length]; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; renderContent(); }
+function scopeMenuHtml(){
+  const aps=loadApiaries();
+  const all=activeHives();
+  function flags(list){ const f=[]; if(list.some(h=>h.varroaLevel==='High')) f.push('VARROA'); return f; }
+  function row(id,name,list){
+    const sc=avgHealth(list), b=healthBand(sc), cur=(_scope===id);
+    const due=''; // due-count not modelled in companion yet
+    const flagChips=flags(list).map(x=>`<span class="sw-flag">⚠ ${x}</span>`).join('');
+    const sub = id==='all'
+      ? `${list.length} hives · ${aps.length} apiar${aps.length!==1?'ies':'y'}`
+      : `${list.length} hive${list.length!==1?'s':''}`;
+    return `<div class="sw-row ${cur?'cur':''}" onclick="HKWEB.pickScope('${id}')">
+      <div class="sw-ring" style="background:${cur?'#fff':b.bg};border-color:${b.bd};color:${b.tx};">${sc||'—'}</div>
+      <div class="sw-meta"><div class="sw-name">${esc(name)}${flagChips}</div><div class="sw-sub" style="color:${cur?'#5C8A1E':'var(--text-l)'};">${sub}</div></div>
+      ${cur?'<span class="sw-tick">✓</span>':''}
+    </div>`;
+  }
+  let h=`<div class="hd">Switch view</div>`;
+  h+=row('all','All apiaries',all);
+  aps.forEach(a=>{ h+=row(a.id, a.name||'(unnamed apiary)', all.filter(x=>x.apiaryId===a.id)); });
+  return h;
+}
+function toggleScopeMenu(ev){ if(ev) ev.stopPropagation(); const m=$('#bo-scope-menu'); const open=!m.classList.contains('open'); if(open){ m.innerHTML=scopeMenuHtml(); m.classList.add('open'); $('#bo-scrim').classList.add('open'); } else { closeScopeMenu(); } }
+function closeScopeMenu(){ $('#bo-scope-menu').classList.remove('open'); $('#bo-scrim').classList.remove('open'); }
+function pickScope(id){ _scope=id; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; closeScopeMenu(); renderContent(); }
 
 function renderContent(){
   const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
@@ -557,7 +601,7 @@ async function boot(){
 }
 
 window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
-  tabTo, cycleScope, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
+  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
 boot();
 })();
 </script>
