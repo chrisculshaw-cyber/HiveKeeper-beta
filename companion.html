@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606l">
+<meta name="app-version" content="companion-20260606m">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,7 +262,7 @@ const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const COMPANION_AI_URL = 'https://companion-ai.chris-culshaw.workers.dev'; // AI overview proxy Worker (Supabase-auth gated)
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
-const BUILD_STAMP = '6 June 2026 companion build l';
+const BUILD_STAMP = '6 June 2026 companion build m';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -493,7 +493,8 @@ function scopeSub(){ const h=scopedHives(); const aps=liveApiaries().length; ret
 function viewDashboard(){
   const h=scopedHives();
   if(!h.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">🐝</div><div class="serif" style="font-size:22px;font-weight:700;">No hives yet</div><div class="note" style="max-width:340px;margin-top:6px;">Add hives in the app and they'll appear here for you to manage and analyse. Nothing to inspect here — that's the app's job.</div></div>`;
-  return `<div style="display:flex;gap:18px;flex-wrap:wrap;">
+  return `${needsAttention()}
+  <div style="display:flex;gap:18px;flex-wrap:wrap;">
     <div style="flex:1.5;min-width:320px;">
       ${colonyTimeline()}
       ${trendChart()}
@@ -502,6 +503,7 @@ function viewDashboard(){
       ${healthTile()}
       ${harvestGraph()}
       ${treatmentGraph()}
+      ${forageWidget()}
       ${swarmCard()}
     </div>
   </div>
@@ -540,6 +542,134 @@ function recentInspections(){
     return `<div class="click" onclick="HKWEB.openHive('${r.hiveId}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;${i<ins.length-1?'border-bottom:1px solid #F4EFE3;':''}cursor:pointer;"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:12px;color:var(--forest-m);"><b>${esc(h.name||'')}</b> · ${summary} <span style="color:var(--text-l);">· ${d}</span></div><span style="color:#C4B896;font-size:13px;">✎</span></div>`;
   }).join('')}</div>`;
 }
+/* ---- harvest-safety / PHI (HIV-230) ----
+ * Pre-harvest interval per varroa product, in days, from UK product labels / VMD.
+ * Honey supers must be OFF during many treatments; PHI here is a conservative
+ * "do not harvest before" guide, NOT legal advice. Unknown products => null.
+ * Sources: product SPCs (Apivar, Apiguard, Api-Bioxal, Formic Pro/MAQS, oxalic). */
+const PHI_DAYS = {
+  'apivar': 0,            // supers off during treatment; remove strips before supering
+  'apiguard': 0,          // thymol — supers off; taint risk, not a residue PHI
+  'apibioxal': 0,         // oxalic — supers off; broodless use
+  'api-bioxal': 0,
+  'oxalic': 0, 'oxalic acid': 0, 'oas': 0, 'oa': 0,
+  'formic pro': 0, 'maqs': 0, 'formic': 0, // formic — supers can be on per label, no residue PHI
+  'apistan': 0, 'bayvarol': 0
+};
+function phiForProduct(p){
+  if(!p) return null;
+  const key=String(p).toLowerCase().trim();
+  if(key in PHI_DAYS) return PHI_DAYS[key];
+  // loose contains-match for compound names
+  for(const k in PHI_DAYS){ if(key.indexOf(k)>-1) return PHI_DAYS[k]; }
+  return null; // unknown — surfaced as "check label"
+}
+/* Active treatments per scoped hive whose supers-off / PHI window may still matter.
+ * We flag any treatment in the last 56 days as "recently treated — confirm supers
+ * were off / honey not affected", since most UK varroa treatments require supers off. */
+function harvestSafetyFlags(){
+  const hives=scopedHives(); const ids={}; hives.forEach(h=>ids[h.id]=h);
+  const now=Date.now(); const WINDOW=56*86400000;
+  const out=[];
+  loadTreatments().filter(t=>ids[t.hiveId]&&t.treatedAt&&(now-t.treatedAt)<WINDOW)
+    .sort((a,b)=>b.treatedAt-a.treatedAt)
+    .forEach(t=>{
+      const phi=phiForProduct(t.product);
+      const days=Math.round((now-t.treatedAt)/86400000);
+      out.push({ hive:(ids[t.hiveId]||{}).name||'', product:t.product||'treatment',
+        daysAgo:days, phiKnown:phi!==null,
+        note: phi===null ? 'PHI unknown — check product label before harvesting'
+              : 'supers should have been off during treatment — confirm before extracting' });
+    });
+  return out;
+}
+
+/* ---- needs-attention alert strip (HIV-229) ---- */
+function needsAttention(){
+  const hives=scopedHives();
+  if(!hives.length) return '';
+  const alerts=[];
+  // overdue inspections (>21 days)
+  const overdue=hives.map(h=>({h,d:lastInspDays(h)})).filter(x=>x.d!=null&&x.d>21).sort((a,b)=>b.d-a.d);
+  if(overdue.length){
+    const names=overdue.slice(0,3).map(x=>esc(x.h.name)).join(', ');
+    const extra=overdue.length>3?` +${overdue.length-3} more`:'';
+    alerts.push({sev:'amber',icon:'🕒',label:`${overdue.length} overdue inspection${overdue.length>1?'s':''}`,detail:`${names}${extra} · longest ${overdue[0].d}d`});
+  }
+  // swarm risk High
+  const swarm=hives.filter(h=>(inspsFor(h.id)[0]||{}).swarmRisk==='High');
+  if(swarm.length){
+    alerts.push({sev:'red',icon:'🐝',label:`${swarm.length} high swarm risk`,detail:swarm.slice(0,4).map(h=>esc(h.name)).join(', ')});
+  }
+  // poor health
+  const poor=hives.filter(h=>h.status!=='dead'&&hiveHealth(h)<50).sort((a,b)=>hiveHealth(a)-hiveHealth(b));
+  if(poor.length){
+    alerts.push({sev:'red',icon:'❤️‍🩹',label:`${poor.length} colon${poor.length>1?'ies':'y'} struggling`,detail:poor.slice(0,3).map(h=>`${esc(h.name)} (${hiveHealth(h)})`).join(', ')});
+  }
+  // queenless signal (latest inspection queenSeen false on recent visit)
+  const ql=hives.filter(h=>{const i=inspsFor(h.id)[0];return i&&i.queenSeen===false&&daysSince(i.inspectedAt)<=28;});
+  if(ql.length>1){
+    alerts.push({sev:'amber',icon:'👑',label:`${ql.length} no queen seen recently`,detail:ql.slice(0,3).map(h=>esc(h.name)).join(', ')});
+  }
+  // harvest-safety / PHI
+  const hs=harvestSafetyFlags();
+  if(hs.length){
+    const unknown=hs.filter(x=>!x.phiKnown).length;
+    const lbl = unknown ? `${hs.length} recently treated · ${unknown} PHI unknown` : `${hs.length} recently treated`;
+    alerts.push({sev:'amber',icon:'🍯',label:lbl,detail:'Confirm supers were off / honey unaffected before extracting'});
+  }
+  if(!alerts.length){
+    return `<div class="card-box" style="border-color:#CDE3C2;background:#F4FAEA;">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#3B6D11;font-weight:700;"><span>✅</span> Nothing needs urgent attention in ${_scope==='all'?'your operation':esc(apiaryName(_scope))} right now.</div></div>`;
+  }
+  const C={red:{bg:'#FCEBEB',bd:'#E89A9A',tx:'#A32D2D'},amber:{bg:'#FBF1DC',bd:'#E0B062',tx:'#854F0B'}};
+  const rows=alerts.map(a=>{const c=C[a.sev];
+    return `<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid #F4EFE3;">
+      <span style="font-size:14px;">${a.icon}</span>
+      <div style="flex:1;min-width:0;"><span style="font-size:12px;font-weight:800;color:${c.tx};">${a.label}</span>
+      <div class="note" style="margin-top:1px;">${a.detail}</div></div></div>`;}).join('');
+  return `<div class="card-box" style="border-color:#E6C98F;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:7px;"><span>⚠️</span> Needs attention <span class="note" style="font-weight:600;">· ${_scope==='all'?'all apiaries':esc(apiaryName(_scope))}</span></div>
+    ${rows}</div>`;
+}
+
+/* ---- forage / spray-risk widget (HIV-231) ----
+ * UK Nectar Calendar — what's typically yielding by month. Regional, not field-level.
+ * Honest: live crop-spray feed is NOT wired into the Companion yet (lives in the app),
+ * so spray risk is shown as a "set up in app" pointer, not fabricated nearby-spray data. */
+const UK_NECTAR = {
+  0:['Snowdrop','Winter aconite','Hazel (pollen)'],
+  1:['Snowdrop','Crocus','Hazel','Willow (early)'],
+  2:['Willow','Blackthorn','Dandelion (early)','Crocus'],
+  3:['Dandelion','Blackthorn','Fruit blossom','Oilseed rape (early)'],
+  4:['Oilseed rape','Hawthorn','Dandelion','Sycamore','Apple'],
+  5:['Clover','Blackberry','Lime (late)','Field bean','Hawthorn'],
+  6:['Lime','Clover','Blackberry','Bramble','Rosebay willowherb'],
+  7:['Heather (ling)','Rosebay willowherb','Clover','Himalayan balsam'],
+  8:['Heather','Himalayan balsam','Ivy (early)','Michaelmas daisy'],
+  9:['Ivy','Himalayan balsam (late)','Michaelmas daisy'],
+  10:['Ivy (late)','Mahonia'],
+  11:['Mahonia','Winter heather','little forage — cluster']
+};
+function forageWidget(){
+  const m=new Date().getMonth();
+  const monthName=new Date().toLocaleDateString('en-GB',{month:'long'});
+  const forage=UK_NECTAR[m]||[];
+  const chips=forage.map(f=>`<span style="display:inline-block;background:#FBF4E6;border:1px solid var(--wax);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600;color:#7A5A12;margin:0 4px 5px 0;">${esc(f)}</span>`).join('');
+  return `<div class="card-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div style="font-size:13px;font-weight:800;">Forage &amp; spray risk</div>
+      <span class="note" style="font-weight:600;">${monthName} · UK</span></div>
+    <div class="note" style="margin-bottom:6px;">Typically yielding now (UK nectar calendar):</div>
+    <div style="margin-bottom:8px;">${chips}</div>
+    <div style="display:flex;align-items:flex-start;gap:8px;padding-top:8px;border-top:1px solid #F4EFE3;">
+      <span style="font-size:14px;">🚜</span>
+      <div class="note" style="flex:1;">Crop-spray alerts come from the HiveKeeper app's Crop Spraying Tracker — set apiary locations in the app to receive nearby-spray warnings here.</div>
+    </div>
+    <div class="note" style="margin-top:6px;font-size:10px;opacity:0.8;">Regional guide — local conditions and your own forage will vary.</div>
+  </div>`;
+}
+
 function healthTile(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
   return `<div class="kpi" style="grid-template-columns:1fr;">
@@ -919,11 +1049,58 @@ function colonyStrength(){
 function apiaryRanking(){
   const aps=liveApiaries();
   if(aps.length<2) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:4px;">Apiary comparison</div><div class="note">Add a second apiary to compare performance across sites.</div></div>`;
-  const rows=aps.map(a=>{ const hv=activeHives().filter(x=>x.apiaryId===a.id); const health=avgHealth(hv); const varroaHigh=hv.filter(x=>x.varroaLevel==='High').length; return {name:a.name,health,hives:hv.length,varroaHigh}; })
-    .filter(r=>r.hives>0).sort((a,b)=>b.health-a.health);
-  if(!rows.length) return '';
-  const tr=rows.map((r,i)=>{ const b=healthBand(r.health); return `<tr><td style="padding:10px 8px;"><span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:${i===0?'#F4FAEA':'#F1EFE8'};border:1.5px solid ${i===0?'#5C8A1E':'#D8D3C5'};align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:700;color:${i===0?'#3B6D11':'#7A6A4F'};">${i+1}</span></td><td style="padding:10px 8px;font-size:12px;font-weight:800;">${esc(r.name)}${i===0?' <span style="font-size:8px;font-weight:800;color:#27500A;background:#EDF6DC;padding:1px 6px;border-radius:4px;">BEST</span>':''}</td><td style="padding:10px 8px;"><span class="pill" style="background:${b.bg};color:${b.tx};">${r.health||'—'}</span></td><td style="padding:10px 8px;font-size:12px;font-weight:700;">${r.hives}</td><td style="padding:10px 8px;font-size:11px;font-weight:700;color:${r.varroaHigh?'#A32D2D':'#3B6D11'};">${r.varroaHigh||'0'}</td></tr>`; }).join('');
-  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Which apiary is performing best?</div><div class="note" style="margin-bottom:11px;">Ranked by average colony health — varroa pressure shown alongside.</div><table><tr><th style="padding:0 8px 6px;">#</th><th style="padding:0 8px 6px;">Apiary</th><th style="padding:0 8px 6px;">Health</th><th style="padding:0 8px 6px;">Hives</th><th style="padding:0 8px 6px;">Varroa⚠</th></tr>${tr}</table></div>`;
+  // Multi-metric: health, honey PER HIVE (normalised — raw totals favour big sites),
+  // varroa pressure, swarm risk. Each scored 0-100, weighted, → letter grade + why.
+  const allHarv=loadHarvests().filter(x=>!x.deletedAt&&x.harvestedAt);
+  const rows=aps.map(a=>{
+    const hv=activeHives().filter(x=>x.apiaryId===a.id);
+    if(!hv.length) return null;
+    const ids={}; hv.forEach(h=>ids[h.id]=1);
+    const health=avgHealth(hv);
+    const honeyKg=allHarv.filter(x=>ids[x.hiveId]||x.apiaryId===a.id).reduce((s,x)=>s+(x.kg||0),0);
+    const honeyPerHive=hv.length?honeyKg/hv.length:0;
+    const varroaHigh=hv.filter(x=>(inspsFor(x.id)[0]||{}).varroaLevel==='High').length;
+    const swarmHigh=hv.filter(x=>(inspsFor(x.id)[0]||{}).swarmRisk==='High').length;
+    return {name:a.name,hives:hv.length,health,honeyKg,honeyPerHive,varroaHigh,swarmHigh};
+  }).filter(Boolean);
+  if(rows.length<2) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:4px;">Apiary comparison</div><div class="note">Need two apiaries with active hives to compare.</div></div>`;
+  // normalise each metric to 0-100 across apiaries
+  const maxHoney=Math.max(...rows.map(r=>r.honeyPerHive),0.0001);
+  rows.forEach(r=>{
+    const healthScore=r.health; // already 0-100
+    const honeyScore=Math.round(r.honeyPerHive/maxHoney*100);
+    const varroaScore=r.hives?Math.round(100-(r.varroaHigh/r.hives*100)):100; // fewer high = better
+    const swarmScore=r.hives?Math.round(100-(r.swarmHigh/r.hives*100)):100;
+    // weights: health .40, honey/hive .30, varroa .20, swarm .10
+    r.score=Math.round(healthScore*0.40 + honeyScore*0.30 + varroaScore*0.20 + swarmScore*0.10);
+    r.honeyScore=honeyScore;
+  });
+  rows.sort((a,b)=>b.score-a.score);
+  const grade=s=>s>=85?'A':s>=72?'B':s>=58?'C':s>=45?'D':'E';
+  const gradeColor=g=>({A:'#27500A',B:'#5C8A1E',C:'#854F0B',D:'#A85D08',E:'#A32D2D'}[g]);
+  // plain-language why for best + worst
+  const best=rows[0], worst=rows[rows.length-1];
+  const whyBest=[];
+  if(best.health>=Math.max(...rows.map(r=>r.health))) whyBest.push('best colony health');
+  if(best.honeyPerHive>=Math.max(...rows.map(r=>r.honeyPerHive))&&best.honeyKg>0) whyBest.push('most honey per hive');
+  if(best.varroaHigh===0) whyBest.push('low varroa');
+  const whyWorst=[];
+  if(worst.health<=Math.min(...rows.map(r=>r.health))) whyWorst.push('lowest health');
+  if(worst.honeyPerHive<=Math.min(...rows.map(r=>r.honeyPerHive))) whyWorst.push('least honey/hive');
+  if(worst.varroaHigh>0) whyWorst.push(`${worst.varroaHigh} high-varroa colon${worst.varroaHigh>1?'ies':'y'}`);
+  const why=`<div class="note" style="margin-top:10px;line-height:1.5;"><b>${esc(best.name)}</b> leads${whyBest.length?' — '+whyBest.join(', ')+'.':'.'}${rows.length>1&&whyWorst.length?` <b>${esc(worst.name)}</b> trails — ${whyWorst.join(', ')} — worth a look.`:''}</div>`;
+  const tr=rows.map((r,i)=>{ const g=grade(r.score); const gc=gradeColor(g);
+    return `<tr>
+      <td style="padding:9px 8px;"><span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:${i===0?'#F4FAEA':'#F1EFE8'};border:1.5px solid ${i===0?'#5C8A1E':'#D8D3C5'};align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:700;color:${i===0?'#3B6D11':'#7A6A4F'};">${i+1}</span></td>
+      <td style="padding:9px 8px;font-size:12px;font-weight:800;">${esc(r.name)}${i===0?' <span style="font-size:8px;font-weight:800;color:#27500A;background:#EDF6DC;padding:1px 6px;border-radius:4px;">BEST</span>':''}</td>
+      <td style="padding:9px 8px;"><span style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:${gc};">${g}</span></td>
+      <td style="padding:9px 8px;font-size:12px;font-weight:700;">${r.health||'—'}</td>
+      <td style="padding:9px 8px;font-size:12px;font-weight:700;">${r.honeyPerHive?r.honeyPerHive.toFixed(1):'0'}<span style="font-size:9px;color:var(--text-l);">kg/hive</span></td>
+      <td style="padding:9px 8px;font-size:11px;font-weight:700;color:${r.varroaHigh?'#A32D2D':'#3B6D11'};">${r.varroaHigh||'0'}</td></tr>`; }).join('');
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Which apiary is performing best?</div>
+    <div class="note" style="margin-bottom:11px;">Graded across health, honey per hive, varroa &amp; swarm pressure. Honey is per-hive — raw totals just favour bigger sites.</div>
+    <table><tr><th style="padding:0 8px 6px;">#</th><th style="padding:0 8px 6px;">Apiary</th><th style="padding:0 8px 6px;">Grade</th><th style="padding:0 8px 6px;">Health</th><th style="padding:0 8px 6px;">Honey</th><th style="padding:0 8px 6px;">Varroa⚠</th></tr>${tr}</table>
+    ${why}</div>`;
 }
 
 /* ---- edit drawer ---- */
