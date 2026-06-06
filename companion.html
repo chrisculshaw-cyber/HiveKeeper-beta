@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<!-- HiveKeeper Desktop Companion — website build. Shares the live Supabase backend with the app. -->
+<!-- Build 2 (6 June 2026 build b): app-faithful auth (Sign in + Create account) on the real backend. Redesigned back-office UI builds on top next. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="app-version" content="companion-20260606b">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HiveKeeper — Desktop Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Pinyon+Script&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<style>
+:root{
+  --bark:#4A2E0E; --cream:#FAF6EE; --forest-l:#3A6B4A; --forest-m:#243D2E; --forest:#162B1F;
+  --green:#2A7A48; --honey-l:#E8960C; --honey-pale:#FFF4DC; --honey:#C8730A;
+  --r:16px; --rs:10px; --red:#B83228; --text-l:#8A7A60; --text-m:#4A3A25; --text:#1A1208;
+  --warm:#F5EFE3; --wax:#EDE4CC; --white:#FFFDF8; --shadow:0 4px 20px rgba(26,18,8,.1); --shadow-l:0 12px 40px rgba(26,18,8,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',-apple-system,sans-serif;background:var(--cream);color:var(--text);-webkit-font-smoothing:antialiased;}
+.serif{font-family:'Cormorant Garamond',serif;}
+button{font-family:inherit;cursor:pointer;border:none;}
+.hidden{display:none !important;}
+
+/* ---- AUTH SCREEN (app-faithful) ---- */
+#auth-screen{position:fixed;inset:0;z-index:100;overflow:auto;
+  background:linear-gradient(165deg, #3A5A3F 0%, #243D2E 38%, #162B1F 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:46px 20px 60px;}
+.hk-honeycomb{position:absolute;top:0;right:0;width:340px;height:100%;opacity:.10;pointer-events:none;z-index:0;}
+.hk-honeycomb polygon{fill:none;stroke:var(--honey-l);stroke-width:2;}
+.auth-halo{position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse at center, rgba(228,163,58,0.12) 0%, transparent 60%);pointer-events:none;z-index:0;}
+.auth-logo{position:relative;width:100px;height:100px;margin:0 auto 8px;filter:drop-shadow(0 5px 14px rgba(228,163,58,0.40));display:flex;align-items:center;justify-content:center;z-index:1;}
+.auth-logo img{width:100px;height:100px;object-fit:contain;}
+.auth-glow{position:absolute;top:-15px;left:50%;transform:translateX(-50%);width:100px;height:100px;border-radius:50%;background:radial-gradient(circle, rgba(228,163,58,0.35) 0%, rgba(228,163,58,0.12) 40%, transparent 70%);filter:blur(2px);pointer-events:none;}
+.auth-title{position:relative;font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:600;color:white;line-height:1;letter-spacing:.01em;z-index:1;text-align:center;}
+.auth-title sup{font-size:26px;vertical-align:super;opacity:.55;font-weight:400;}
+.auth-tag{position:relative;font-size:18px;color:rgba(255,255,255,.78);margin-top:14px;font-style:italic;line-height:1.4;z-index:1;text-align:center;}
+.auth-context{position:relative;font-size:10px;color:rgba(255,255,255,.42);margin-top:10px;letter-spacing:.05em;text-transform:uppercase;line-height:1.5;max-width:340px;margin-left:auto;margin-right:auto;text-align:center;z-index:1;}
+.auth-stamp{position:relative;font-size:11px;color:rgba(255,255,255,.85);margin-top:14px;margin-bottom:18px;font-family:'DM Mono',monospace;font-weight:500;letter-spacing:.02em;z-index:1;}
+.auth-glass{position:relative;width:100%;max-width:360px;border-radius:18px;padding:22px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);backdrop-filter:blur(8px);box-shadow:var(--shadow-l);z-index:1;}
+.auth-tabs{display:flex;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12);}
+.auth-tab{flex:1;background:transparent;border:none;font-size:14px;padding:8px 4px 12px;cursor:pointer;letter-spacing:.01em;border-bottom:2px solid transparent;}
+.auth-tab.on{color:#fff;font-weight:700;border-bottom-color:var(--honey);}
+.auth-tab.off{color:rgba(255,255,255,.55);font-weight:500;}
+.auth-input{width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:#fff;font-size:15px;margin-bottom:10px;font-family:inherit;}
+.auth-input::placeholder{color:rgba(255,255,255,.5);}
+.auth-input:focus{outline:none;border-color:var(--honey);background:rgba(255,255,255,.1);}
+.honey-btn{width:100%;padding:15px;border-radius:var(--rs);font-size:15px;font-weight:700;color:#fff;letter-spacing:.04em;background:linear-gradient(135deg, var(--honey-l) 0%, var(--honey) 100%);box-shadow:0 4px 14px rgba(200,115,10,.4);}
+.honey-btn:disabled{opacity:.65;cursor:wait;}
+.remember-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.remember-box{width:18px;height:18px;border:2px solid var(--honey);border-radius:4px;background:var(--honey);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.remember-box.off{background:transparent;}
+.pw-bars{display:flex;gap:4px;margin-bottom:4px;}
+.pw-bars div{height:3px;flex:1;border-radius:2px;background:rgba(255,255,255,.15);transition:background .2s;}
+.auth-err{margin-top:14px;font-size:13px;font-weight:700;color:#fff;text-align:center;max-width:360px;line-height:1.5;background:rgba(183,28,28,.5);border-radius:10px;padding:10px 14px;border:1px solid rgba(255,100,100,.4);position:relative;z-index:1;}
+.auth-foot{position:relative;z-index:1;margin-top:18px;font-size:11px;color:rgba(255,255,255,.5);text-align:center;max-width:360px;line-height:1.6;}
+.auth-foot b{color:#A8D5A8;font-weight:800;}
+
+/* ---- LOADING ---- */
+#load-screen{position:fixed;inset:0;z-index:90;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+.spinner{width:36px;height:36px;border:3px solid var(--wax);border-top-color:var(--honey);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.note{font-size:12px;color:var(--text-l);line-height:1.6;}
+
+/* ---- BACK-OFFICE ---- */
+#app{display:none;}
+.bo-shell{display:flex;min-height:100vh;background:var(--cream);position:relative;}
+.bo-side{width:212px;background:var(--forest-m);flex-shrink:0;display:flex;flex-direction:column;padding:18px 0;}
+.bo-logo{padding:0 18px 18px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.1);}
+.bo-logo .m{width:34px;height:34px;border-radius:9px;background:var(--honey-l);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.bo-logo .n{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:#fff;}
+.bo-navlist{padding:14px 12px;display:flex;flex-direction:column;gap:3px;}
+.bo-nav{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;color:rgba(255,255,255,.75);font-size:13px;font-weight:600;cursor:pointer;}
+.bo-nav.active{background:rgba(255,255,255,.12);color:#fff;font-weight:800;}
+.bo-nav .i{font-size:16px;}
+.bo-prof{margin-top:auto;padding:12px;}
+.bo-prof .box{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;background:rgba(255,255,255,.08);margin-bottom:8px;}
+.bo-prof .av{width:30px;height:30px;border-radius:50%;background:var(--honey-l);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;}
+.bo-prof .nm{font-size:11px;font-weight:800;color:#fff;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bo-prof .tier{font-size:9px;color:#9CC85F;}
+.bo-signout{width:100%;background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);border-radius:9px;padding:8px;font-size:11px;font-weight:700;}
+.bo-main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.bo-head{padding:16px 22px;border-bottom:1px solid var(--wax);display:flex;align-items:center;gap:12px;}
+.bo-head .ttl{font-size:24px;font-weight:700;color:var(--text);line-height:1;}
+.bo-head .sub{font-size:12px;color:var(--text-l);margin-top:3px;}
+.bo-scope,.bo-btn{background:#fff;border:1px solid var(--wax);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;white-space:nowrap;}
+.bo-btn.primary{background:var(--forest-m);color:#fff;border-color:var(--forest-m);font-weight:800;}
+.bo-content{padding:18px 22px;overflow:auto;}
+table{width:100%;border-collapse:collapse;}
+.tbl{background:#fff;border:1px solid var(--wax);border-radius:14px;overflow:hidden;}
+.tbl th{padding:9px 10px;color:#9A8A6E;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:left;background:#FAF6EC;}
+.tbl td{padding:9px 8px;font-size:12px;}
+.tbl tr.click{cursor:pointer;}
+.tbl tr.click:hover{background:#FFFBF2;}
+.pill{font-weight:800;padding:2px 7px;border-radius:5px;font-size:11px;}
+.kpi{display:flex;gap:10px;margin-bottom:14px;}
+.kpi .box{flex:1;border-radius:13px;padding:11px 13px;}
+.card-box{background:#fff;border:1px solid var(--wax);border-radius:14px;padding:14px 15px;margin-bottom:14px;}
+.note{font-size:12px;color:var(--text-l);line-height:1.6;}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px;text-align:center;}
+/* edit drawer */
+#bo-drawer{position:fixed;top:0;right:0;bottom:0;width:380px;background:var(--cream);box-shadow:-8px 0 30px rgba(0,0,0,.18);border-left:1px solid var(--wax);display:none;flex-direction:column;z-index:60;}
+.fld{margin-bottom:11px;}
+.fld .lab{font-size:9px;font-weight:800;color:#9A8A6E;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.fld .inp{background:#fff;border:1px solid var(--wax);border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700;color:var(--text);display:flex;justify-content:space-between;}
+.dr-head{background:var(--forest-m);padding:15px 16px;display:flex;align-items:center;gap:11px;}
+.dr-head .t{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:#fff;line-height:1;}
+.dr-head .s{font-size:10px;color:rgba(255,255,255,.7);margin-top:3px;}
+.dr-head .x,.dr-head .bk{color:rgba(255,255,255,.8);font-size:19px;cursor:pointer;}
+.dr-body{padding:15px;overflow:auto;flex:1;}
+.dr-foot{padding:13px 15px;border-top:1px solid var(--wax);display:flex;gap:9px;}
+.dr-cancel{flex:1;background:#fff;border:1px solid var(--wax);border-radius:11px;padding:11px;text-align:center;font-size:12px;font-weight:700;color:var(--text-m);cursor:pointer;}
+.dr-save{flex:1.4;background:var(--forest-m);border-radius:11px;padding:11px;text-align:center;font-size:12px;font-weight:800;color:#fff;cursor:pointer;}
+#bo-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--forest-m);color:#fff;font-size:12px;font-weight:700;padding:10px 18px;border-radius:11px;box-shadow:var(--shadow-l);display:none;z-index:65;}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <svg class="hk-honeycomb" viewBox="0 0 230 600" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
+    <g>
+      <polygon points="162.5,3 185,16 185,42 162.5,55 140,42 140,16"/>
+      <polygon points="207.5,3 230,16 230,42 207.5,55 185,42 185,16"/>
+      <polygon points="185,42 207.5,55 207.5,81 185,94 162.5,81 162.5,55"/>
+      <polygon points="162.5,81 185,94 185,120 162.5,133 140,120 140,94"/>
+      <polygon points="207.5,81 230,94 230,120 207.5,133 185,120 185,94"/>
+      <polygon points="185,120 207.5,133 207.5,159 185,172 162.5,159 162.5,133"/>
+      <polygon points="162.5,159 185,172 185,198 162.5,211 140,198 140,172"/>
+      <polygon points="207.5,159 230,172 230,198 207.5,211 185,198 185,172"/>
+      <polygon points="185,198 207.5,211 207.5,237 185,250 162.5,237 162.5,211"/>
+      <polygon points="162.5,237 185,250 185,276 162.5,289 140,276 140,250"/>
+      <polygon points="207.5,237 230,250 230,276 207.5,289 185,276 185,250"/>
+      <polygon points="185,276 207.5,289 207.5,315 185,328 162.5,315 162.5,289"/>
+      <polygon points="162.5,315 185,328 185,354 162.5,367 140,354 140,328"/>
+      <polygon points="207.5,315 230,328 230,354 207.5,367 185,354 185,328"/>
+      <polygon points="185,354 207.5,367 207.5,393 185,406 162.5,393 162.5,367"/>
+      <polygon points="162.5,393 185,406 185,432 162.5,445 140,432 140,406"/>
+      <polygon points="207.5,393 230,406 230,432 207.5,445 185,432 185,406"/>
+      <polygon points="185,432 207.5,445 207.5,471 185,484 162.5,471 162.5,445"/>
+    </g>
+  </svg>
+  <div class="auth-halo"></div>
+
+  <div style="position:relative;text-align:center;z-index:1;">
+    <div class="auth-logo"><div class="auth-glow"></div><img src="https://gethivekeeper.com/Logo.png" alt="HiveKeeper"></div>
+    <div class="auth-title">HiveKeeper<sup>™</sup></div>
+    <div style="position:relative;font-family:'Pinyon Script',cursive;font-weight:400;font-size:46px;color:var(--honey-l);line-height:1;margin-top:4px;text-align:center;z-index:1;">Desktop Companion</div>
+    <div class="auth-tag">Your apiary, always with you</div>
+    <div class="auth-context">Built at a 24-hive apiary in Northamptonshire<br>alongside our dedicated founding beekeepers</div>
+  </div>
+  <div class="auth-stamp" id="auth-stamp"></div>
+
+  <div class="auth-glass">
+    <div class="auth-tabs">
+      <button id="tab-signin" class="auth-tab on" onclick="HKWEB.tab('signin')">Sign in</button>
+      <button id="tab-signup" class="auth-tab off" onclick="HKWEB.tab('signup')">Create account</button>
+    </div>
+
+    <div id="auth-err" class="auth-err hidden" style="margin-top:0;margin-bottom:14px;"></div>
+
+    <!-- Sign in -->
+    <div id="form-signin">
+      <input id="signin-email" class="auth-input" type="email" placeholder="Email address" autocomplete="email">
+      <input id="signin-pass" class="auth-input" type="password" placeholder="Password" autocomplete="current-password" style="margin-bottom:14px;">
+      <div class="remember-row">
+        <div onclick="HKWEB.toggleRemember()" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <div id="remember-box" class="remember-box"><span id="remember-tick" style="color:#fff;font-size:12px;font-weight:900;line-height:1;">✓</span></div>
+          <label style="font-size:12px;color:rgba(255,255,255,.85);cursor:pointer;font-weight:600;">Keep me signed in</label>
+        </div>
+        <a onclick="HKWEB.forgot()" style="font-size:12px;color:var(--honey);cursor:pointer;font-weight:600;">Forgot password?</a>
+      </div>
+      <button id="signin-btn" class="honey-btn" onclick="HKWEB.signIn()">Sign in</button>
+    </div>
+
+    <!-- Sign up -->
+    <div id="form-signup" style="display:none;">
+      <input id="signup-name" class="auth-input" type="text" placeholder="Your name" autocomplete="name">
+      <input id="signup-email" class="auth-input" type="email" placeholder="Email address" autocomplete="email">
+      <input id="signup-pass" class="auth-input" type="password" placeholder="Password" autocomplete="new-password" style="margin-bottom:8px;" oninput="HKWEB.pwStrength()">
+      <div style="margin-bottom:10px;">
+        <div class="pw-bars"><div id="pw1"></div><div id="pw2"></div><div id="pw3"></div><div id="pw4"></div></div>
+        <div id="pw-label" style="font-size:11px;color:rgba(255,255,255,.4);padding:0 2px;">Min. 8 characters including at least 1 number</div>
+      </div>
+      <input id="signup-pass2" class="auth-input" type="password" placeholder="Confirm password" autocomplete="new-password" style="margin-bottom:6px;" oninput="HKWEB.pwMatch()">
+      <div id="pw-match" style="font-size:11px;min-height:16px;margin-bottom:14px;padding:0 2px;"></div>
+      <button id="signup-btn" class="honey-btn" onclick="HKWEB.signUp()">Create account</button>
+    </div>
+  </div>
+
+  <div class="auth-foot">
+    The Desktop Companion uses the same account as the HiveKeeper app.
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="load-screen" class="hidden">
+  <div class="spinner"></div>
+  <div class="note" id="load-msg">Loading your apiaries…</div>
+</div>
+
+<!-- APP — desktop back-office -->
+<div id="app">
+  <div class="bo-shell">
+    <div class="bo-side">
+      <div class="bo-logo"><div class="m">🐝</div><div class="n">HiveKeeper</div></div>
+      <div class="bo-navlist" id="bo-nav"></div>
+      <div class="bo-prof"><div class="box"><div class="av" id="bo-avatar">CC</div><div><div class="nm" id="bo-username">Beekeeper</div><div class="tier">Signed in</div></div></div>
+        <button class="bo-signout" onclick="HKWEB.signOut()">Sign out</button></div>
+    </div>
+    <div class="bo-main">
+      <div class="bo-head">
+        <div style="flex:1;min-width:0;"><div class="ttl serif" id="bo-title">Manage your operation</div><div class="sub" id="bo-sub"></div></div>
+        <div class="bo-scope" id="bo-scope" onclick="HKWEB.cycleScope()">All apiaries ▾</div>
+        <div class="bo-btn" onclick="HKWEB.exportData()">📤 Export</div>
+        <div class="bo-btn primary" onclick="HKWEB.addHive()">+ Add hive</div>
+      </div>
+      <div class="bo-content" id="bo-content"></div>
+    </div>
+    <div id="bo-drawer"></div>
+    <div id="bo-toast"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   HiveKeeper Desktop Companion — auth + data foundation
+   Same Supabase project / SDK / PKCE config / table + localStorage model
+   as hivekeeper-beta1.html. Offline-first: localStorage is the working
+   store, Supabase is the sync source.
+   ========================================================================= */
+(function(){
+'use strict';
+
+const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
+const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1';
+const BUILD_STAMP = '6 June 2026 companion build b';
+
+let _supabase=null, _user=null, _session=null, _remember=true;
+
+function getSupabase(){
+  if(!_supabase){
+    _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:true,
+             storage:window.localStorage, storageKey:'hk-supabase-auth', flowType:'pkce' }
+    });
+  }
+  return _supabase;
+}
+function loadHives(){ try{ return JSON.parse(localStorage.getItem(HIVE_KEY))||[]; }catch(e){ return []; } }
+function loadApiaries(){ try{ return JSON.parse(localStorage.getItem(APIARY_KEY))||[]; }catch(e){ return []; } }
+function loadInspections(){ try{ return JSON.parse(localStorage.getItem(INSP_KEY))||[]; }catch(e){ return []; } }
+function saveLocal(k,r){ try{ localStorage.setItem(k, JSON.stringify(r)); }catch(e){} }
+
+const $ = s => document.querySelector(s);
+function show(id){ ['auth-screen','load-screen','app'].forEach(x=>{ const el=$('#'+x); el.classList.toggle('hidden', x!==id); el.style.display = (x===id)?(x==='app'?'block':'flex'):'none'; }); }
+function authErr(msg){ const e=$('#auth-err'); if(!msg){ e.classList.add('hidden'); return; } e.textContent=msg; e.classList.remove('hidden'); }
+
+function tab(which){
+  const si=which==='signin';
+  $('#form-signin').style.display=si?'block':'none';
+  $('#form-signup').style.display=si?'none':'block';
+  $('#tab-signin').className='auth-tab '+(si?'on':'off');
+  $('#tab-signup').className='auth-tab '+(si?'off':'on');
+  authErr(null);
+}
+function toggleRemember(){ _remember=!_remember; const b=$('#remember-box'),t=$('#remember-tick'); b.classList.toggle('off',!_remember); t.style.display=_remember?'block':'none'; }
+
+function pwStrength(){
+  const v=$('#signup-pass').value; let s=0;
+  if(v.length>=8) s++; if(/[0-9]/.test(v)) s++; if(/[A-Z]/.test(v)) s++; if(/[^A-Za-z0-9]/.test(v)) s++;
+  const cols=['rgba(255,255,255,.15)','#B83228','#E8960C','#F4D03F','#2A7A48'];
+  for(let i=1;i<=4;i++){ $('#pw'+i).style.background = i<=s ? cols[s] : 'rgba(255,255,255,.15)'; }
+  const labels=['Min. 8 characters including at least 1 number','Weak','Fair','Good','Strong'];
+  $('#pw-label').textContent=labels[s]; $('#pw-label').style.color = s>=2 ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.4)';
+}
+function pwMatch(){
+  const a=$('#signup-pass').value, b=$('#signup-pass2').value, el=$('#pw-match');
+  if(!b){ el.textContent=''; return; }
+  if(a===b){ el.textContent='✓ Passwords match'; el.style.color='#A8D5A8'; }
+  else { el.textContent='Passwords don’t match yet'; el.style.color='rgba(255,200,200,.9)'; }
+}
+
+async function signIn(){
+  const email=$('#signin-email').value.trim(), pass=$('#signin-pass').value;
+  if(!email||!pass){ authErr('Enter your email and password.'); return; }
+  authErr(null);
+  const btn=$('#signin-btn'); btn.disabled=true; btn.textContent='Signing in…';
+  try{
+    const { data, error } = await getSupabase().auth.signInWithPassword({ email, password:pass });
+    if(error){ authErr(error.message||'Sign-in failed.'); btn.disabled=false; btn.textContent='Sign in'; return; }
+    _session=data.session; _user=data.user; await onAuthSuccess();
+  }catch(e){ authErr('Something went wrong — please try again.'); btn.disabled=false; btn.textContent='Sign in'; }
+}
+async function signUp(){
+  const name=$('#signup-name').value.trim(), email=$('#signup-email').value.trim(), pass=$('#signup-pass').value, pass2=$('#signup-pass2').value;
+  if(!name||!email||!pass){ authErr('Fill in your name, email and password.'); return; }
+  if(pass.length<8 || !/[0-9]/.test(pass)){ authErr('Password must be at least 8 characters and include a number.'); return; }
+  if(pass!==pass2){ authErr('Passwords don’t match.'); return; }
+  authErr(null);
+  const btn=$('#signup-btn'); btn.disabled=true; btn.textContent='Creating account…';
+  try{
+    const { data, error } = await getSupabase().auth.signUp({ email, password:pass, options:{ data:{ full_name:name } } });
+    if(error){ authErr(error.message||'Could not create account.'); btn.disabled=false; btn.textContent='Create account'; return; }
+    if(data.session){ _session=data.session; _user=data.user; await onAuthSuccess(); }
+    else { authErr('Account created — check your inbox for the verification link, then sign in.'); btn.disabled=false; btn.textContent='Create account'; tab('signin'); }
+  }catch(e){ authErr('Something went wrong — please try again.'); btn.disabled=false; btn.textContent='Create account'; }
+}
+async function forgot(){
+  const email=$('#signin-email').value.trim();
+  if(!email){ authErr('Enter your email first, then tap “Forgot password”.'); return; }
+  try{ await getSupabase().auth.resetPasswordForEmail(email, { redirectTo: window.location.origin+window.location.pathname }); authErr(null); alert('Password reset email sent to '+email); }
+  catch(e){ authErr('Could not send reset email.'); }
+}
+async function signOut(){
+  try{ await getSupabase().auth.signOut(); }catch(e){}
+  _user=null; _session=null;
+  $('#signin-btn').disabled=false; $('#signin-btn').textContent='Sign in'; $('#signin-pass').value='';
+  show('auth-screen');
+}
+
+async function pullData(uid){
+  const sb=getSupabase();
+  try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid); if(data) saveLocal(APIARY_KEY, data.map(mapApiary)); }catch(e){}
+  try{ const { data } = await sb.from('hives').select('*').eq('user_id', uid); if(data) saveLocal(HIVE_KEY, data.map(mapHive)); }catch(e){}
+  try{ const { data } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at',{ascending:false}).limit(500); if(data) saveLocal(INSP_KEY, data.map(mapInsp)); }catch(e){}
+}
+/* Row normalisers — mirror the app's pullFromSupabase mapping (DB snake_case -> local camelCase) */
+function mapApiary(a){ return { id:a.id, name:a.name, isShared:a.is_shared, sharedWith:a.shared_with, userId:a.user_id||null }; }
+function mapHive(h){
+  return { id:h.id, name:h.name, row:h.row, status:h.status, hiveType:h.hive_type, boxType:h.box_type,
+    broodBoxes:h.brood_boxes, supers:h.supers, queenStatus:h.queen_status, storesLevel:h.stores_level,
+    varroaLevel:h.varroa_level, healthScore:h.health_score, apiaryId:h.apiary_id, isHidden:h.is_hidden,
+    notes:h.notes, waxMoth:h.wax_moth, temper:h.temper, established:h.established||'', userId:h.user_id||null }; }
+function mapInsp(i){
+  return { id:i.id, hiveId:i.hive_id, inspectedAt:i.inspected_at?new Date(i.inspected_at).getTime():0,
+    inspectedBy:i.inspected_by, queenSeen:i.queen_seen, queenFrame:i.queen_frame, broodFrames:i.brood_frames,
+    storesLevel:i.stores_level, swarmRisk:i.swarm_risk, varroaLevel:i.varroa_level, temper:i.temper,
+    healthScore:i.health_score, notes:i.notes, framesBrood:i.frames_brood }; }
+async function onAuthSuccess(){
+  show('load-screen');
+  const uid=_user&&_user.id; if(uid){ await pullData(uid); }
+  initBackOffice(); show('app');
+}
+
+/* ============================ BACK-OFFICE ============================ */
+let _scope='all', _tab='dash';
+const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['plan','📋','Plan'],['export','📤','Export']];
+
+/* ---- data helpers (operate on normalised local cache) ---- */
+function activeHives(){ return loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-'))); }
+function scopedHives(){ const all=activeHives(); return _scope==='all'?all:all.filter(h=>h.apiaryId===_scope); }
+function inspsFor(hiveId){ return loadInspections().filter(i=>i.hiveId===hiveId).sort((a,b)=>b.inspectedAt-a.inspectedAt); }
+function apiaryName(id){ const a=loadApiaries().find(x=>x.id===id); return a?a.name:'—'; }
+/* computed health: prefer stored, else derive from latest inspection signals */
+function hiveHealth(h){
+  if(typeof h.healthScore==='number' && h.healthScore>0) return h.healthScore;
+  const latest=inspsFor(h.id)[0];
+  let score=70;
+  if(h.status==='dead') return 0;
+  if(latest){
+    if(latest.queenSeen) score+=10;
+    if(latest.varroaLevel==='High') score-=25; else if(latest.varroaLevel==='Med'||latest.varroaLevel==='Medium') score-=8;
+    if(typeof latest.broodFrames==='number'){ score += Math.min(15, Math.max(-15,(latest.broodFrames-5)*3)); }
+    if(latest.swarmRisk==='High') score-=10;
+  }
+  return Math.max(0,Math.min(100,Math.round(score)));
+}
+function avgHealth(list){ const a=list.filter(h=>h.status!=='dead'); if(!a.length) return 0; return Math.round(a.reduce((s,h)=>s+hiveHealth(h),0)/a.length); }
+function healthBand(s){ if(s>=80)return{bg:'#F4FAEA',bd:'#5C8A1E',tx:'#3B6D11',word:'good'}; if(s>=65)return{bg:'#FBEECF',bd:'#E0B062',tx:'#854F0B',word:'watch'}; return{bg:'#FCEBEB',bd:'#E89A9A',tx:'#A32D2D',word:'poor'}; }
+function daysSince(ms){ if(!ms) return null; return Math.round((Date.now()-ms)/86400000); }
+function lastInspDays(h){ const i=inspsFor(h.id)[0]; return i?daysSince(i.inspectedAt):null; }
+
+/* ---- init + nav ---- */
+function initBackOffice(){
+  const name=(_user&&_user.user_metadata&&(_user.user_metadata.full_name||_user.user_metadata.name))||(_user&&_user.email)||'Beekeeper';
+  $('#bo-username').textContent=name;
+  $('#bo-avatar').textContent=(name.split(' ').map(w=>w[0]).join('').slice(0,2)||'🐝').toUpperCase();
+  $('#bo-nav').innerHTML=NAV.map(n=>`<div class="bo-nav ${n[0]===_tab?'active':''}" onclick="HKWEB.tabTo('${n[0]}')"><span class="i">${n[1]}</span>${n[2]}</div>`).join('');
+  renderContent();
+}
+function tabTo(t){ _tab=t; closeDrawer(); $('#bo-nav').innerHTML=NAV.map(n=>`<div class="bo-nav ${n[0]===_tab?'active':''}" onclick="HKWEB.tabTo('${n[0]}')"><span class="i">${n[1]}</span>${n[2]}</div>`).join(''); renderContent(); }
+function cycleScope(){ const ids=['all'].concat(loadApiaries().map(a=>a.id)); const i=ids.indexOf(_scope); _scope=ids[(i+1)%ids.length]; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; renderContent(); }
+
+function renderContent(){
+  const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
+  $('#bo-title').textContent=titles[_tab][0]; $('#bo-sub').textContent=titles[_tab][1];
+  const c=$('#bo-content');
+  if(_tab==='dash') c.innerHTML=viewDashboard();
+  else if(_tab==='analytics') c.innerHTML=viewAnalytics();
+  else if(_tab==='hives') c.innerHTML='<div style="max-width:760px;">'+hiveTable()+'</div>';
+  else c.innerHTML=`<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">${NAV.find(n=>n[0]===_tab)[1]}</div><div class="serif" style="font-size:22px;font-weight:700;">${titles[_tab][0]}</div><div class="note" style="max-width:320px;margin-top:6px;">This section of the Desktop Companion is coming next. Dashboard and Analytics are live and reading your real data.</div></div>`;
+}
+function scopeSub(){ const h=scopedHives(); const aps=loadApiaries().length; return `${_scope==='all'?'All apiaries':apiaryName(_scope)} · ${h.length} hive${h.length!==1?'s':''}${_scope==='all'?' · '+aps+' apiar'+(aps!==1?'ies':'y'):''} · synced from your phone`; }
+
+/* ---- dashboard ---- */
+function viewDashboard(){
+  const h=scopedHives();
+  if(!h.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">🐝</div><div class="serif" style="font-size:22px;font-weight:700;">No hives yet</div><div class="note" style="max-width:340px;margin-top:6px;">Add hives in the app and they'll appear here for you to manage and analyse. Nothing to inspect here — that's the app's job.</div></div>`;
+  return `<div style="display:flex;gap:18px;flex-wrap:wrap;">
+    <div style="flex:1.5;min-width:320px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="font-size:14px;font-weight:800;">Hives <span style="color:var(--text-l);font-weight:600;">· click a row to edit</span></div></div>
+      ${hiveTable()}
+      <div style="margin:18px 0 10px;font-size:14px;font-weight:800;">Recent inspections <span style="color:var(--text-l);font-weight:600;">· check &amp; correct</span></div>
+      ${recentInspections()}
+    </div>
+    <div style="flex:1;min-width:260px;">
+      ${kpiTiles()}
+      ${colonyTrendMini()}
+      ${swarmCard()}
+    </div>
+  </div>`;
+}
+function hiveTable(){
+  const h=scopedHives().slice().sort((a,b)=>hiveHealth(a)-hiveHealth(b));
+  const rows=h.map(hv=>{
+    const sc=hiveHealth(hv), b=healthBand(sc), vc=hv.varroaLevel==='High'?'#A32D2D':(hv.varroaLevel==='Med'||hv.varroaLevel==='Medium'?'#854F0B':'#3B6D11');
+    const ld=lastInspDays(hv), lc=(ld!==null&&ld>14)?'#A32D2D':'#7A6A4F';
+    return `<tr class="click" onclick="HKWEB.openHive('${hv.id}')"><td style="font-weight:800;">${esc(hv.name||'(hive)')}</td><td style="color:var(--text-l);">${esc(apiaryName(hv.apiaryId))}</td><td><span class="pill" style="background:${b.bg};color:${b.tx};">${sc}</span></td><td style="color:${vc};font-weight:700;">${esc(hv.varroaLevel||'—')}</td><td style="color:${hv.status==='active'?'var(--green)':(hv.status==='dead'?'var(--red)':'var(--text-l)')};font-weight:700;">${esc(hv.status||'—')}</td><td style="color:${lc};font-weight:${(ld!==null&&ld>14)?700:400};">${ld!==null?ld+'d':'—'}</td><td style="color:#C4B896;">✎</td></tr>`;
+  }).join('');
+  return `<div class="tbl"><table><tr><th>Hive</th><th>Apiary</th><th>Health</th><th>Varroa</th><th>Status</th><th>Last</th><th></th></tr>${rows}</table></div>`;
+}
+function recentInspections(){
+  const hives=activeHives(); const byId={}; hives.forEach(h=>byId[h.id]=h);
+  const ins=loadInspections().filter(i=>byId[i.hiveId]).sort((a,b)=>b.inspectedAt-a.inspectedAt).slice(0,5);
+  if(!ins.length) return `<div class="card-box"><div class="note">No inspections recorded yet.</div></div>`;
+  return `<div class="tbl">${ins.map((r,i)=>{ const h=byId[r.hiveId]; const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):''; const summary=r.notes?esc(r.notes.slice(0,46))+(r.notes.length>46?'…':''):(r.queenSeen?'queenright':'queen not seen');
+    return `<div class="click" onclick="HKWEB.openHive('${r.hiveId}')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;${i<ins.length-1?'border-bottom:1px solid #F4EFE3;':''}cursor:pointer;"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:12px;color:var(--forest-m);"><b>${esc(h.name||'')}</b> · ${summary} <span style="color:var(--text-l);">· ${d}</span></div><span style="color:#C4B896;font-size:13px;">✎</span></div>`;
+  }).join('')}</div>`;
+}
+function kpiTiles(){
+  const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
+  const active=h.filter(x=>x.status==='active').length;
+  return `<div class="kpi"><div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Health</div><div class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;margin-top:3px;">${sc||'—'}</div></div>
+    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Active</div><div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${active}</div></div></div>`;
+}
+function colonyTrendMini(){
+  const h=scopedHives().slice().sort((a,b)=>hiveHealth(b)-hiveHealth(a)).slice(0,5);
+  if(!h.length) return '';
+  const bars=h.map(hv=>{ const sc=hiveHealth(hv),b=healthBand(sc); return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="width:74px;font-size:11px;font-weight:700;color:var(--forest-m);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(hv.name||'')}</div><div style="flex:1;height:14px;background:#F4EFE3;border-radius:5px;overflow:hidden;"><div style="width:${sc}%;height:100%;background:${b.tx};border-radius:5px;"></div></div><div style="width:26px;font-size:11px;font-weight:800;color:${b.tx};">${sc}</div></div>`; }).join('');
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:10px;">Colony health</div>${bars}</div>`;
+}
+function swarmCard(){
+  const risk=scopedHives().filter(h=>{ const i=inspsFor(h.id)[0]; return i&&i.swarmRisk==='High'; }).length;
+  return `<div class="card-box" style="background:#FBEECF;border-color:var(--honey-card-bd,#E6C277);display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">🔮</span><div style="flex:1;font-size:11px;font-weight:800;color:#633806;line-height:1.3;">${risk>0?risk+' colon'+(risk>1?'ies':'y')+' flagged at swarm risk':'No swarm-risk flags right now'}</div></div>`;
+}
+
+/* ---- analytics ---- */
+function viewAnalytics(){
+  const h=scopedHives(); if(!h.length) return `<div class="empty"><div class="note">No data to analyse yet — add hives and inspections in the app.</div></div>`;
+  // Colony strength always reflects the current scope. The cross-apiary ranking
+  // only makes sense across sites, so it's shown on "All apiaries" and hidden
+  // when a single apiary is selected.
+  return colonyStrength() + (_scope==='all' ? apiaryRanking() : '');
+}
+function colonyStrength(){
+  const h=scopedHives().filter(x=>x.status!=='dead').slice(0,6);
+  // build a per-hive brood series from inspections (oldest->newest), fallback to flat
+  const cols=['#639922','#C8730A','#A32D2D','#2A7A48','#854F0B','#4A1E7A'];
+  const w=560,ht=170; let grid=''; for(let g=0;g<4;g++){const gy=12+g*((ht-26)/3);grid+=`<line x1="0" y1="${gy.toFixed(0)}" x2="${w}" y2="${gy.toFixed(0)}" stroke="#F1EFE8"/>`;}
+  const lines=h.map((hv,idx)=>{
+    const ins=inspsFor(hv.id).slice().reverse().filter(i=>typeof i.broodFrames==='number');
+    const series=ins.length?ins.map(i=>i.broodFrames):[hv.broodFrames||3];
+    if(series.length<2) series.unshift(series[0]);
+    const col=cols[idx%cols.length]; let pts='';
+    series.forEach((v,i)=>{ const x=12+i*((w-24)/(series.length-1)); const y=ht-12-(Math.min(11,v)/11)*(ht-26); pts+=x.toFixed(0)+','+y.toFixed(0)+' '; });
+    return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }).join('');
+  const legend=h.map((hv,idx)=>`<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#5A4A30;margin-right:9px;"><span style="width:9px;height:9px;border-radius:50%;background:${cols[idx%cols.length]};"></span>${esc(hv.name||'')}</span>`).join('');
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:3px;">Colony strength · brood frames</div><div class="note" style="margin-bottom:8px;">${legend}</div><svg width="100%" height="${ht}" viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none" style="display:block;">${grid}${lines}</svg><div class="note" style="margin-top:6px;">Built from your inspection history — each line is a colony's brood-frame count over time.</div></div>`;
+}
+function apiaryRanking(){
+  const aps=loadApiaries();
+  if(aps.length<2) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:4px;">Apiary comparison</div><div class="note">Add a second apiary to compare performance across sites.</div></div>`;
+  const rows=aps.map(a=>{ const hv=activeHives().filter(x=>x.apiaryId===a.id); const health=avgHealth(hv); const varroaHigh=hv.filter(x=>x.varroaLevel==='High').length; return {name:a.name,health,hives:hv.length,varroaHigh}; })
+    .filter(r=>r.hives>0).sort((a,b)=>b.health-a.health);
+  if(!rows.length) return '';
+  const tr=rows.map((r,i)=>{ const b=healthBand(r.health); return `<tr><td style="padding:10px 8px;"><span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:${i===0?'#F4FAEA':'#F1EFE8'};border:1.5px solid ${i===0?'#5C8A1E':'#D8D3C5'};align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:700;color:${i===0?'#3B6D11':'#7A6A4F'};">${i+1}</span></td><td style="padding:10px 8px;font-size:12px;font-weight:800;">${esc(r.name)}${i===0?' <span style="font-size:8px;font-weight:800;color:#27500A;background:#EDF6DC;padding:1px 6px;border-radius:4px;">BEST</span>':''}</td><td style="padding:10px 8px;"><span class="pill" style="background:${b.bg};color:${b.tx};">${r.health||'—'}</span></td><td style="padding:10px 8px;font-size:12px;font-weight:700;">${r.hives}</td><td style="padding:10px 8px;font-size:11px;font-weight:700;color:${r.varroaHigh?'#A32D2D':'#3B6D11'};">${r.varroaHigh||'0'}</td></tr>`; }).join('');
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Which apiary is performing best?</div><div class="note" style="margin-bottom:11px;">Ranked by average colony health — varroa pressure shown alongside.</div><table><tr><th style="padding:0 8px 6px;">#</th><th style="padding:0 8px 6px;">Apiary</th><th style="padding:0 8px 6px;">Health</th><th style="padding:0 8px 6px;">Hives</th><th style="padding:0 8px 6px;">Varroa⚠</th></tr>${tr}</table></div>`;
+}
+
+/* ---- edit drawer ---- */
+function openHive(id){
+  const h=activeHives().find(x=>x.id===id); if(!h) return;
+  const sc=hiveHealth(h), b=healthBand(sc); const ins=inspsFor(id);
+  const list=ins.length?ins.map((r,i)=>{ const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'; const attn=(!r.queenSeen)||r.varroaLevel==='High'; return `<div onclick="HKWEB.openInsp('${id}',${i})" style="background:#fff;border:1px solid ${attn?'#E6C277':'var(--wax)'};border-radius:11px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:12px;font-weight:800;">${d}</div>${attn?'<span style="font-size:8px;font-weight:800;color:#791F1F;background:#FCEBEB;padding:2px 6px;border-radius:4px;">⚠ ATTENTION</span>':''}</div><div class="note" style="margin-top:3px;">${typeof r.broodFrames==='number'?r.broodFrames+' brood · ':''}${r.queenSeen?'queenright':'queen not seen'}${r.varroaLevel?' · varroa '+r.varroaLevel.toLowerCase():''}</div></div>`; }).join('') : '<div class="note">No inspections recorded for this hive yet.</div>';
+  $('#bo-drawer').innerHTML=`<div class="dr-head"><div style="flex:1;"><div class="t">${esc(h.name||'Hive')}</div><div class="s">${esc(apiaryName(h.apiaryId))}${h.established?' · est. '+esc(h.established):''}</div></div><span class="x" onclick="HKWEB.closeDrawer()">✕</span></div>
+    <div class="dr-body">
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Apiary</div><div class="inp">${esc(apiaryName(h.apiaryId))} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Status</div><div class="inp">${esc(h.status||'active')} <span style="color:#A85D08;">▾</span></div></div></div>
+      <div style="background:${b.bg};border:1px solid ${b.bd};border-radius:11px;padding:10px 12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;"><div class="serif" style="font-size:26px;font-weight:700;color:${b.tx};line-height:1;">${sc}</div><div style="flex:1;"><div style="font-size:11px;font-weight:800;color:var(--forest-m);">Current health · ${b.word}</div><div class="note">computed from latest inspection</div></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="lab" style="margin:0;">Inspection history · ${ins.length}</div></div>
+      ${list}
+    </div>`;
+  $('#bo-drawer').style.display='flex';
+}
+function openInsp(id,i){
+  const h=activeHives().find(x=>x.id===id); const r=inspsFor(id)[i]; if(!r) return;
+  const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const vc=r.varroaLevel==='High'?'#A32D2D':(r.varroaLevel==='Med'||r.varroaLevel==='Medium'?'#854F0B':'#3B6D11');
+  $('#bo-drawer').innerHTML=`<div class="dr-head"><span class="bk" onclick="HKWEB.openHive('${id}')">‹</span><div style="flex:1;"><div class="t">Inspection · ${d.replace(/ \d{4}$/,'')}</div><div class="s">${esc(h.name||'')} · recorded in the field</div></div><span class="x" onclick="HKWEB.closeDrawer()">✕</span></div>
+    <div class="dr-body">
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Date</div><div class="inp" style="justify-content:flex-start;">${d}</div></div><div style="flex:1;"><div class="lab">Brood frames</div><div class="inp" style="justify-content:flex-start;">${typeof r.broodFrames==='number'?r.broodFrames:'—'}</div></div></div>
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Queen seen</div><div class="inp" style="color:${r.queenSeen?'var(--text)':'#854F0B'};">${r.queenSeen?'Yes':'No'} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Varroa</div><div class="inp" style="color:${vc};">${esc(r.varroaLevel||'—')} <span style="color:#A85D08;">▾</span></div></div></div>
+      <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Swarm risk</div><div class="inp">${esc(r.swarmRisk||'—')} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Temperament</div><div class="inp">${esc(r.temper||'—')} <span style="color:#A85D08;">▾</span></div></div></div>
+      <div class="fld"><div class="lab">Notes</div><div class="inp" style="display:block;font-weight:400;line-height:1.4;min-height:48px;">${r.notes?esc(r.notes):'<span style="color:#B4A98A;">No notes</span>'}</div></div>
+      <div style="background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:9px 11px;font-size:10px;font-weight:700;color:#5F5E5A;line-height:1.4;">🕓 Recorded in the field. Edits here are saved as corrections, stamped “edited on web” — field history is preserved.</div>
+    </div>
+    <div class="dr-foot"><div class="dr-cancel" onclick="HKWEB.openHive('${id}')">Cancel</div><div class="dr-save" onclick="HKWEB.saveCorrection()">✓ Save correction</div></div>`;
+  $('#bo-drawer').style.display='flex';
+}
+function closeDrawer(){ const d=$('#bo-drawer'); if(d){ d.style.display='none'; } }
+function toast(msg){ const t=$('#bo-toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{ t.style.display='none'; },1600); }
+function saveCorrection(){ toast('Editing is read-only in this preview — write-back lands next build'); }
+function exportData(){ toast('Export (BeeBase / CSV) lands in a later build'); }
+function addHive(){ toast('Add hive lands in a later build — manage existing hives for now'); }
+
+function renderFoundation(){ /* superseded by initBackOffice */ }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+async function boot(){
+  $('#auth-stamp').textContent=BUILD_STAMP;
+  try{
+    const sb=getSupabase();
+    sb.auth.onAuthStateChange(function(event, session){
+      if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED') && session){ _session=session; _user=session.user; window.history.replaceState({},document.title,window.location.pathname); }
+    });
+    const { data } = await sb.auth.getSession();
+    if(data && data.session){ _session=data.session; _user=data.session.user; await onAuthSuccess(); return; }
+  }catch(e){}
+  show('auth-screen');
+  ['signin-email','signin-pass'].forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('keydown',ev=>{ if(ev.key==='Enter') signIn(); }); });
+  const p2=$('#signup-pass2'); if(p2) p2.addEventListener('keydown',ev=>{ if(ev.key==='Enter') signUp(); });
+}
+
+window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
+  tabTo, cycleScope, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
+boot();
+})();
+</script>
+</body>
+</html>
