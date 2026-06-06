@@ -372,7 +372,7 @@ function mapHive(h){
     varroaLevel:h.varroa_level, healthScore:h.health_score, apiaryId:h.apiary_id, isHidden:h.is_hidden,
     notes:h.notes, waxMoth:h.wax_moth, temper:h.temper, established:h.established||'', userId:h.user_id||null }; }
 function mapInsp(i){
-  return { id:i.id, hiveId:i.hive_id, inspectedAt:i.inspected_at?new Date(i.inspected_at).getTime():0,
+  return { id:i.id, hiveId:i.hive_id, apiaryId:i.apiary_id, inspectedAt:i.inspected_at?new Date(i.inspected_at).getTime():0,
     inspectedBy:i.inspected_by, queenSeen:i.queen_seen, queenFrame:i.queen_frame, broodFrames:i.brood_frames,
     storesLevel:i.stores_level, swarmRisk:i.swarm_risk, varroaLevel:i.varroa_level, temper:i.temper,
     healthScore:i.health_score, notes:i.notes, framesBrood:i.frames_brood }; }
@@ -660,14 +660,25 @@ async function saveCorrection(){
     temper:newVals.temper,
     notes:newVals.notes
   };
-  // include apiary_id if we can resolve it (keeps RLS/scoping consistent)
-  const hv=activeHives().find(x=>x.id===r.hiveId); if(hv&&hv.apiaryId) row.apiary_id=hv.apiaryId;
+  // apiary_id is REQUIRED for the "Apiary owner can update" RLS policy to match.
+  // Resolve from the hive, falling back to the inspection's own stored apiary.
+  const hv=activeHives().find(x=>x.id===r.hiveId);
+  const apId=(hv&&hv.apiaryId) || r.apiaryId || null;
+  if(apId) row.apiary_id=apId;
 
   try{
-    const { error } = await getSupabase().from('inspections').upsert([row], { onConflict:'id' });
+    const { data, error } = await getSupabase().from('inspections').upsert([row], { onConflict:'id' }).select();
     if(error){
       const perm=(error.code==='42501')||/row-level security|permission denied|violates row-level/i.test(error.message||'');
       toast(perm?'You don’t have permission to edit this record':'Save failed — '+(error.message||'try again'));
+      if(btn){ btn.textContent='✓ Save correction'; btn.style.pointerEvents=''; }
+      return;
+    }
+    // RLS can silently filter an upsert to zero rows and still return no error.
+    // If nothing came back, the write did NOT land — tell the truth instead of
+    // showing a false success.
+    if(!data || !data.length){
+      toast('Save blocked — the server didn’t accept the change (check you’re signed in)');
       if(btn){ btn.textContent='✓ Save correction'; btn.style.pointerEvents=''; }
       return;
     }
