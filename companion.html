@@ -489,14 +489,29 @@ function apiaryRanking(){
 }
 
 /* ---- edit drawer ---- */
+function latestBlock(r){
+  if(!r) return '';
+  const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const facts=[];
+  if(typeof r.broodFrames==='number') facts.push(r.broodFrames+' brood frames');
+  facts.push(r.queenSeen?'queen seen':'queen not seen');
+  if(r.varroaLevel) facts.push('varroa '+r.varroaLevel.toLowerCase());
+  if(r.swarmRisk && r.swarmRisk!=='Low') facts.push('swarm risk '+r.swarmRisk.toLowerCase());
+  return `<div style="background:#fff;border:1px solid var(--wax);border-radius:11px;padding:11px 13px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;"><div class="lab" style="margin:0;">Latest inspection</div><div style="font-size:11px;font-weight:700;color:var(--text-l);">${d}</div></div>
+    <div style="font-size:12px;font-weight:700;color:var(--forest-m);line-height:1.4;">${facts.join(' · ')}</div>
+    ${r.notes?`<div style="font-size:12px;color:var(--text-m);line-height:1.5;margin-top:6px;border-top:1px solid #F4EFE3;padding-top:6px;">${esc(r.notes)}</div>`:''}
+  </div>`;
+}
 function openHive(id){
   const h=activeHives().find(x=>x.id===id); if(!h) return;
   const sc=hiveHealth(h), b=healthBand(sc); const ins=inspsFor(id);
-  const list=ins.length?ins.map((r,i)=>{ const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'; const attn=(!r.queenSeen)||r.varroaLevel==='High'; return `<div onclick="HKWEB.openInsp('${id}',${i})" style="background:#fff;border:1px solid ${attn?'#E6C277':'var(--wax)'};border-radius:11px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:12px;font-weight:800;">${d}</div>${attn?'<span style="font-size:8px;font-weight:800;color:#791F1F;background:#FCEBEB;padding:2px 6px;border-radius:4px;">⚠ ATTENTION</span>':''}</div><div class="note" style="margin-top:3px;">${typeof r.broodFrames==='number'?r.broodFrames+' brood · ':''}${r.queenSeen?'queenright':'queen not seen'}${r.varroaLevel?' · varroa '+r.varroaLevel.toLowerCase():''}</div></div>`; }).join('') : '<div class="note">No inspections recorded for this hive yet.</div>';
+  const list=ins.length?ins.map((r,i)=>{ const d=r.inspectedAt?new Date(r.inspectedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'—'; const attn=(!r.queenSeen)||r.varroaLevel==='High'; const struct=`${typeof r.broodFrames==='number'?r.broodFrames+' brood · ':''}${r.queenSeen?'queenright':'queen not seen'}${r.varroaLevel?' · varroa '+r.varroaLevel.toLowerCase():''}`; const summary = r.notes ? esc(r.notes.slice(0,60))+(r.notes.length>60?'…':'') : struct; return `<div onclick="HKWEB.openInsp('${id}',${i})" style="background:#fff;border:1px solid ${attn?'#E6C277':'var(--wax)'};border-radius:11px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:12px;font-weight:800;">${d}</div>${attn?'<span style="font-size:8px;font-weight:800;color:#791F1F;background:#FCEBEB;padding:2px 6px;border-radius:4px;">⚠ ATTENTION</span>':''}</div><div class="note" style="margin-top:3px;">${summary}</div></div>`; }).join('') : '<div class="note">No inspections recorded for this hive yet.</div>';
   $('#bo-drawer').innerHTML=`<div class="dr-head"><div style="flex:1;"><div class="t">${esc(h.name||'Hive')}</div><div class="s">${esc(apiaryName(h.apiaryId))}${h.established?' · est. '+esc(h.established):''}</div></div><span class="x" onclick="HKWEB.closeDrawer()">✕</span></div>
     <div class="dr-body">
       <div class="fld" style="display:flex;gap:9px;"><div style="flex:1;"><div class="lab">Apiary</div><div class="inp">${esc(apiaryName(h.apiaryId))} <span style="color:#A85D08;">▾</span></div></div><div style="flex:1;"><div class="lab">Status</div><div class="inp">${esc(h.status||'active')} <span style="color:#A85D08;">▾</span></div></div></div>
       <div style="background:${b.bg};border:1px solid ${b.bd};border-radius:11px;padding:10px 12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;"><div class="serif" style="font-size:26px;font-weight:700;color:${b.tx};line-height:1;">${sc}</div><div style="flex:1;"><div style="font-size:11px;font-weight:800;color:var(--forest-m);">Current health · ${b.word}</div><div class="note">computed from latest inspection</div></div></div>
+      ${latestBlock(ins[0])}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><div class="lab" style="margin:0;">Inspection history · ${ins.length}</div></div>
       ${list}
     </div>`;
