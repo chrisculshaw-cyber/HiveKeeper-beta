@@ -317,12 +317,19 @@ async function forgot(){
 async function signOut(){
   try{ await getSupabase().auth.signOut(); }catch(e){}
   _user=null; _session=null;
+  // Wipe the local data cache so the next account on this browser can't briefly
+  // see the previous user's hives/inspections before their own pull completes.
+  // (The Supabase auth key is managed by the SDK and left to it.)
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); }catch(e){}
   $('#signin-btn').disabled=false; $('#signin-btn').textContent='Sign in'; $('#signin-pass').value='';
   show('auth-screen');
 }
 
 async function pullData(uid){
   const sb=getSupabase();
+  // Clear any stale cache first so a failed/partial pull can never surface a
+  // previous account's data. Each table below repopulates its own key.
+  try{ localStorage.removeItem(HIVE_KEY); localStorage.removeItem(INSP_KEY); localStorage.removeItem(APIARY_KEY); }catch(e){}
   try{ const { data } = await sb.from('apiaries').select('*').eq('user_id', uid); if(data) saveLocal(APIARY_KEY, data.map(mapApiary)); }catch(e){}
   try{ const { data } = await sb.from('hives').select('*').eq('user_id', uid); if(data) saveLocal(HIVE_KEY, data.map(mapHive)); }catch(e){}
   try{ const { data } = await sb.from('inspections').select('*').eq('user_id', uid).order('inspected_at',{ascending:false}).limit(500); if(data) saveLocal(INSP_KEY, data.map(mapInsp)); }catch(e){}
