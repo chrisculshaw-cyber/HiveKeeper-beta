@@ -442,6 +442,8 @@ function scopeMenuHtml(){
 function toggleScopeMenu(ev){ if(ev) ev.stopPropagation(); const m=$('#bo-scope-menu'); const open=!m.classList.contains('open'); if(open){ m.innerHTML=scopeMenuHtml(); m.classList.add('open'); $('#bo-scrim').classList.add('open'); } else { closeScopeMenu(); } }
 function closeScopeMenu(){ $('#bo-scope-menu').classList.remove('open'); $('#bo-scrim').classList.remove('open'); }
 function pickScope(id){ _scope=id; $('#bo-scope').textContent=(_scope==='all'?'All apiaries':apiaryName(_scope))+' ▾'; closeScopeMenu(); renderContent(); }
+function cycleSort(){ const o=['health','name','last']; _sortBy=o[(o.indexOf(_sortBy)+1)%o.length]; renderContent(); }
+function cycleFilter(){ const o=['all','attention']; _filterBy=o[(o.indexOf(_filterBy)+1)%o.length]; renderContent(); }
 
 function renderContent(){
   const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
@@ -460,26 +462,43 @@ function viewDashboard(){
   if(!h.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">🐝</div><div class="serif" style="font-size:22px;font-weight:700;">No hives yet</div><div class="note" style="max-width:340px;margin-top:6px;">Add hives in the app and they'll appear here for you to manage and analyse. Nothing to inspect here — that's the app's job.</div></div>`;
   return `<div style="display:flex;gap:18px;flex-wrap:wrap;">
     <div style="flex:1.5;min-width:320px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="font-size:14px;font-weight:800;">Hives <span style="color:var(--text-l);font-weight:600;">· click a row to edit</span></div></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div style="font-size:14px;font-weight:800;">Hives <span style="color:var(--text-l);font-weight:600;">· click a row to edit</span></div>${tableControls()}</div>
       ${hiveTable()}
       <div style="margin:18px 0 10px;font-size:14px;font-weight:800;">Recent inspections <span style="color:var(--text-l);font-weight:600;">· check &amp; correct</span></div>
       ${recentInspections()}
     </div>
     <div style="flex:1;min-width:260px;">
       ${kpiTiles()}
-      ${colonyTrendMini()}
+      ${trendChart()}
+      ${efficacyCard()}
       ${swarmCard()}
     </div>
   </div>`;
 }
+let _sortBy='health', _filterBy='all';
+function broodTrend(h){ const ins=inspsFor(h.id); if(ins.length<2) return null; const a=ins[0].broodFrames, b=ins[1].broodFrames; if(typeof a!=='number'||typeof b!=='number') return null; if(a>b) return 'up'; if(a<b) return 'down'; return 'flat'; }
+function latestBrood(h){ const i=inspsFor(h.id)[0]; return i&&typeof i.broodFrames==='number'?i.broodFrames:null; }
 function hiveTable(){
-  const h=scopedHives().slice().sort((a,b)=>hiveHealth(a)-hiveHealth(b));
+  let h=scopedHives().slice();
+  if(_filterBy==='attention') h=h.filter(x=>x.varroaLevel==='High' || (lastInspDays(x)!==null&&lastInspDays(x)>14) || hiveHealth(x)<65);
+  if(_sortBy==='health') h.sort((a,b)=>hiveHealth(a)-hiveHealth(b));
+  else if(_sortBy==='name') h.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+  else if(_sortBy==='last') h.sort((a,b)=>(lastInspDays(b)||0)-(lastInspDays(a)||0));
   const rows=h.map(hv=>{
     const sc=hiveHealth(hv), b=healthBand(sc), vc=hv.varroaLevel==='High'?'#A32D2D':(hv.varroaLevel==='Med'||hv.varroaLevel==='Medium'?'#854F0B':'#3B6D11');
     const ld=lastInspDays(hv), lc=(ld!==null&&ld>14)?'#A32D2D':'#7A6A4F';
-    return `<tr class="click" onclick="HKWEB.openHive('${hv.id}')"><td style="font-weight:800;">${esc(hv.name||'(hive)')}</td><td style="color:var(--text-l);">${esc(apiaryName(hv.apiaryId))}</td><td><span class="pill" style="background:${b.bg};color:${b.tx};">${sc}</span></td><td style="color:${vc};font-weight:700;">${esc(hv.varroaLevel||'—')}</td><td style="color:${hv.status==='active'?'var(--green)':(hv.status==='dead'?'var(--red)':'var(--text-l)')};font-weight:700;">${esc(hv.status||'—')}</td><td style="color:${lc};font-weight:${(ld!==null&&ld>14)?700:400};">${ld!==null?ld+'d':'—'}</td><td style="color:#C4B896;">✎</td></tr>`;
+    const bf=latestBrood(hv), tr=broodTrend(hv);
+    const arrow=tr==='up'?'▲':(tr==='down'?'▼':(tr==='flat'?'–':''));
+    const ac=tr==='up'?'#3B6D11':(tr==='down'?'#A32D2D':'#7A6A4F');
+    const broodCell=bf!==null?`${bf} <span style="color:${ac};">${arrow}</span>`:'—';
+    return `<tr class="click" onclick="HKWEB.openHive('${hv.id}')"><td style="font-weight:800;">${esc(hv.name||'(hive)')}</td><td style="color:var(--text-l);">${esc(apiaryName(hv.apiaryId))}</td><td><span class="pill" style="background:${b.bg};color:${b.tx};">${sc}</span></td><td style="font-weight:700;">${broodCell}</td><td style="color:${vc};font-weight:700;">${esc(hv.varroaLevel||'—')}</td><td style="color:${hv.status==='active'?'var(--green)':(hv.status==='dead'?'var(--red)':'var(--text-l)')};font-weight:700;">${esc(hv.status||'—')}</td><td style="color:${lc};font-weight:${(ld!==null&&ld>14)?700:400};">${ld!==null?ld+'d':'—'}</td><td style="color:#C4B896;">✎</td></tr>`;
   }).join('');
-  return `<div class="tbl"><table><tr><th>Hive</th><th>Apiary</th><th>Health</th><th>Varroa</th><th>Status</th><th>Last</th><th></th></tr>${rows}</table></div>`;
+  const sortLabel={health:'Health',name:'Name',last:'Last visit'}[_sortBy];
+  const filterLabel={all:'All',attention:'Needs attention'}[_filterBy];
+  return `<div class="tbl"><table><tr><th>Hive</th><th>Apiary</th><th>Health</th><th>Brood</th><th>Varroa</th><th>Status</th><th>Last</th><th></th></tr>${rows}</table><div style="padding:9px;text-align:center;font-size:11px;font-weight:800;color:#A85D08;border-top:1px solid #F4EFE3;">Showing ${h.length} hive${h.length!==1?'s':''}</div></div>`;
+}
+function tableControls(){
+  return `<div style="font-size:11px;font-weight:700;color:#A85D08;cursor:pointer;"><span onclick="HKWEB.cycleSort()">Sort: ${({health:'Health',name:'Name',last:'Last visit'})[_sortBy]} ▾</span> · <span onclick="HKWEB.cycleFilter()">Filter: ${({all:'All',attention:'Needs attention'})[_filterBy]} ▾</span></div>`;
 }
 function recentInspections(){
   const hives=activeHives(); const byId={}; hives.forEach(h=>byId[h.id]=h);
@@ -491,9 +510,24 @@ function recentInspections(){
 }
 function kpiTiles(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
-  const active=h.filter(x=>x.status==='active').length;
-  return `<div class="kpi"><div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Health</div><div class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;margin-top:3px;">${sc||'—'}</div></div>
-    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Active</div><div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${active}</div></div></div>`;
+  // Honey needs harvest records, which aren't synced into the companion yet.
+  const honey=null; // placeholder until harvest data is wired
+  return `<div class="kpi">
+    <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Op. health</div><div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span></div></div>
+    <div class="box" style="background:#fff;border:1px solid var(--wax);"><div style="font-size:10px;font-weight:800;color:var(--text-l);text-transform:uppercase;">Honey '26</div>${honey!==null?`<div class="serif" style="font-size:27px;font-weight:700;color:var(--text);line-height:1;margin-top:3px;">${honey}<span style="font-size:12px;color:var(--text-l);">kg</span></div>`:`<div class="note" style="margin-top:5px;">No harvest<br>data yet</div>`}</div>
+  </div>`;
+}
+function trendChart(){
+  // Operation health over 6 months — needs historical health snapshots, which the
+  // companion doesn't sync yet. Shown as a clearly-labelled placeholder per design.
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health · 6 months</div><div class="note" style="margin-bottom:10px;">Avg across all apiaries</div>
+    <div style="height:90px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">Trend builds as inspections<br>accumulate over the season</div></div></div>`;
+}
+function efficacyCard(){
+  // Treatment efficacy needs before/after varroa counts around a treatment — needs
+  // treatment records synced. Placeholder until wired.
+  return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:8px;">Treatment efficacy</div>
+    <div style="height:60px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">Shows varroa knockdown once<br>treatment records are synced</div></div></div>`;
 }
 function colonyTrendMini(){
   const h=scopedHives().slice().sort((a,b)=>hiveHealth(b)-hiveHealth(a)).slice(0,5);
@@ -609,7 +643,7 @@ async function boot(){
 }
 
 window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
-  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
+  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive };
 boot();
 })();
 </script>
