@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606b">
+<meta name="app-version" content="companion-20260606c">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -226,7 +226,8 @@ textarea.ed-inp{font-weight:400;}
       <div class="bo-logo"><div class="m">🐝</div><div class="n">HiveKeeper</div></div>
       <div class="bo-navlist" id="bo-nav"></div>
       <div class="bo-prof"><div class="box"><div class="av" id="bo-avatar">CC</div><div><div class="nm" id="bo-username">Beekeeper</div><div class="tier">Signed in</div></div></div>
-        <button class="bo-signout" onclick="HKWEB.signOut()">Sign out</button></div>
+        <button class="bo-signout" onclick="HKWEB.signOut()">Sign out</button>
+        <div id="bo-buildstamp" style="text-align:center;font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.35);margin-top:8px;letter-spacing:.02em;"></div></div>
     </div>
     <div class="bo-main">
       <div class="bo-head">
@@ -259,7 +260,7 @@ textarea.ed-inp{font-weight:400;}
 const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1';
-const BUILD_STAMP = '6 June 2026 companion build b';
+const BUILD_STAMP = '6 June 2026 companion build c';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -419,6 +420,7 @@ function initBackOffice(){
   const name=(_user&&_user.user_metadata&&(_user.user_metadata.full_name||_user.user_metadata.name))||(_user&&_user.email)||'Beekeeper';
   $('#bo-username').textContent=name;
   $('#bo-avatar').textContent=(name.split(' ').map(w=>w[0]).join('').slice(0,2)||'🐝').toUpperCase();
+  const bs=$('#bo-buildstamp'); if(bs) bs.textContent=BUILD_STAMP;
   $('#bo-nav').innerHTML=NAV.map(n=>`<div class="bo-nav ${n[0]===_tab?'active':''}" onclick="HKWEB.tabTo('${n[0]}')"><span class="i">${n[1]}</span>${n[2]}</div>`).join('');
   renderContent();
 }
