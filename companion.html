@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606u">
+<meta name="app-version" content="companion-20260606v">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,7 +262,7 @@ const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const COMPANION_AI_URL = 'https://companion-ai.chris-culshaw.workers.dev'; // AI overview proxy Worker (Supabase-auth gated)
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
-const BUILD_STAMP = '6 June 2026 companion build u';
+const BUILD_STAMP = '6 June 2026 companion build v';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -407,6 +407,7 @@ async function onAuthSuccess(){
 let _scope='all', _tab='dash', _harvestGroup='year', _treatPeriod='12mo', _colonyPeriod='all';
 let _aiBriefing=null, _aiUpdatedAt=0, _aiLoading=false, _aiError=null, _aiScope=null;
 let _dashEdit=false; // customiser edit mode
+let _report='season'; // selected report in Reports & export
 
 /* ---- dashboard card registry (HIV-203-style customiser) ----
  * Single source of truth for what can appear on the dashboard, default order,
@@ -438,7 +439,7 @@ function loadDashPref(){
 }
 function saveDashPref(p){ try{ localStorage.setItem(DASH_PREF_KEY, JSON.stringify(p)); }catch(e){} }
 
-const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['treatments','💧','Treatments'],['plan','📋','Plan'],['export','📤','Export']];
+const NAV=[['dash','📊','Dashboard'],['hives','🐝','Hives & apiaries'],['records','📖','Records'],['analytics','📈','Analytics'],['queens','👑','Queens'],['harvests','🪙','Harvests'],['treatments','💧','Treatments'],['plan','📋','Plan'],['reports','📑','Reports & export']];
 
 /* ---- data helpers (operate on normalised local cache) ---- */
 function activeHives(){
@@ -512,7 +513,7 @@ function setTreatPeriod(v){ _treatPeriod=v; renderContent(); }
 function cycleFilter(){ const o=['all','attention']; _filterBy=o[(o.indexOf(_filterBy)+1)%o.length]; renderContent(); }
 
 function renderContent(){
-  const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],treatments:['Treatments','Varroa control and medication history'],plan:['Plan','Inspection rounds and seasonal tasks'],export:['Export','BeeBase, NBU and CSV downloads']};
+  const titles={dash:['Manage your operation',scopeSub()],hives:['Hives & apiaries','Move, edit and reorganise your colonies'],records:['Records','Check & correct every inspection'],analytics:['Analytics','Trends, yield and comparison across your operation'],queens:['Queens','Lineage, marking and age'],harvests:['Harvests','Yield by hive, apiary and season'],treatments:['Treatments','Varroa control and medication history'],plan:['Plan','Inspection rounds and seasonal tasks'],reports:['Reports & export','Season summaries, per-apiary and per-hive reports, BeeBase/CSV downloads']};
   $('#bo-title').textContent=titles[_tab][0]; $('#bo-sub').textContent=titles[_tab][1];
   const c=$('#bo-content');
   if(_tab==='dash') c.innerHTML=viewDashboard();
@@ -520,6 +521,7 @@ function renderContent(){
   else if(_tab==='hives') c.innerHTML='<div style="max-width:760px;">'+hiveTable()+'</div>';
   else if(_tab==='harvests') c.innerHTML='<div style="max-width:820px;">'+viewHarvests()+'</div>';
   else if(_tab==='treatments') c.innerHTML='<div style="max-width:820px;">'+viewTreatments()+'</div>';
+  else if(_tab==='reports') c.innerHTML=viewReports();
   else c.innerHTML=`<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">${NAV.find(n=>n[0]===_tab)[1]}</div><div class="serif" style="font-size:22px;font-weight:700;">${titles[_tab][0]}</div><div class="note" style="max-width:320px;margin-top:6px;">This section of the Desktop Companion is coming next. Dashboard and Analytics are live and reading your real data.</div></div>`;
 }
 function scopeSub(){ const h=scopedHives(); const aps=liveApiaries().length; return `${_scope==='all'?'All apiaries':apiaryName(_scope)} · ${h.length} hive${h.length!==1?'s':''}${_scope==='all'?' · '+aps+' apiar'+(aps!==1?'ies':'y'):''} · synced from your phone`; }
@@ -701,9 +703,11 @@ function needsAttention(){
       <div style="flex:1;min-width:0;"><span style="font-size:12px;font-weight:800;color:${c.tx};">${a.label}</span>
       <div class="note" style="margin-top:1px;">${a.detail}</div></div></div>`;}).join('');
   return `<div class="card-box" style="border-color:#E6C98F;">
-    <div style="font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:7px;"><span>⚠️</span> Needs attention <span class="note" style="font-weight:600;">· ${_scope==='all'?'all apiaries':esc(apiaryName(_scope))}</span></div>
     <div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;">
-      <div style="flex:1;min-width:240px;">${rows}</div>
+      <div style="flex:1;min-width:240px;">
+        <div style="font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:7px;"><span>⚠️</span> Needs attention <span class="note" style="font-weight:600;">· ${_scope==='all'?'all apiaries':esc(apiaryName(_scope))}</span></div>
+        ${rows}
+      </div>
       <div style="flex:1;min-width:240px;border-left:1px solid #F1EAD8;padding-left:18px;">${opSnapshot()}</div>
     </div>
   </div>`;
@@ -726,7 +730,7 @@ function opSnapshot(){
   const treatYr=loadTreatments().filter(t=>ids[t.hiveId]&&t.treatedAt&&new Date(t.treatedAt).getFullYear()===yr).length;
   const row=(label,val,col)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid #F4EFE3;">
     <span class="note">${label}</span><span style="font-size:13px;font-weight:800;color:${col||'var(--forest)'};">${val}</span></div>`;
-  return `<div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">At a glance</div>
+  return `<div style="font-size:13px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:7px;"><span>📋</span> At a glance</div>
     ${row('Live colonies', colonies)}
     ${_scope==='all'?row('Apiaries', aps):''}
     ${row('Avg health', health?`${health} · ${hb.word}`:'—', hb.tx)}
@@ -1364,6 +1368,93 @@ async function saveCorrection(){
   toast('✓ Correction saved · stamped “edited on web”');
   openHive(_editHiveId);   // back to hive, now showing updated record + recomputed health
 }
+/* ============================ REPORTS & EXPORT ============================ */
+const REPORT_TYPES=[
+  ['season','📅','Season summary'],
+  ['apiary','📍','Per-apiary report'],
+  ['hive','🐝','Per-hive history'],
+  ['compliance','💊','Treatment / compliance record'],
+  ['export','📤','BeeBase / CSV export']
+];
+function viewReports(){
+  const menu=REPORT_TYPES.map(r=>`<div onclick="HKWEB.pickReport('${r[0]}')" style="display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:9px;cursor:pointer;margin-bottom:4px;font-size:13px;font-weight:${_report===r[0]?'800':'600'};color:${_report===r[0]?'var(--forest)':'var(--text-l)'};background:${_report===r[0]?'#FBF1DC':'transparent'};"><span>${r[1]}</span>${r[2]}</div>`).join('');
+  let body;
+  if(_report==='season') body=reportSeason();
+  else if(_report==='apiary') body=reportApiary();
+  else if(_report==='hive') body=reportHive();
+  else if(_report==='compliance') body=reportCompliance();
+  else body=reportExport();
+  return `<div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;">
+    <div style="flex:0 0 230px;min-width:200px;">
+      <div style="font-size:11px;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px;">Reports</div>
+      ${menu}
+    </div>
+    <div style="flex:1;min-width:340px;max-width:760px;">${body}</div>
+  </div>`;
+}
+function pickReport(r){ _report=r; renderContent(); }
+
+/* shared: a printable report shell with a Print/PDF button (uses browser print). */
+function reportShell(title, sub, inner){
+  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap;">
+    <div><div class="serif" style="font-size:22px;font-weight:700;color:var(--forest);">${esc(title)}</div><div class="note" style="margin-top:2px;">${sub}</div></div>
+    <button onclick="HKWEB.printReport()" style="font-family:inherit;font-size:12px;font-weight:700;color:#fff;background:var(--honey);border:none;border-radius:8px;padding:7px 14px;cursor:pointer;white-space:nowrap;">🖨 Print / PDF</button>
+  </div>
+  <div id="report-print">${inner}</div>`;
+}
+function printReport(){ window.print(); }
+
+function reportSeason(){
+  const yr=new Date().getFullYear();
+  const hives=scopedHives();
+  const scopeName=_scope==='all'?'all apiaries':apiaryName(_scope);
+  // colonies incl losses for the year
+  const hiddenApIds={}; loadApiaries().forEach(a=>{ if(isTestApiary(a)) hiddenApIds[a.id]=true; });
+  const allScoped=loadHives().filter(h=>!h.isHidden && !(h.id&&String(h.id).startsWith('demo-')) && !hiddenApIds[h.apiaryId] && (_scope==='all'||h.apiaryId===_scope));
+  const live=hives.length;
+  const lostThisYr=allScoped.filter(h=>({dead:1,empty:1,unclear:1})[h.status] && h.updatedAt && new Date(h.updatedAt).getFullYear()===yr).length;
+  // honey this year
+  const honeyYr=harvestData().filter(x=>new Date(x.harvestedAt).getFullYear()===yr);
+  const honeyKg=Math.round(honeyYr.reduce((s,x)=>s+(x.kg||0),0)*10)/10;
+  // treatments this year
+  const ids={}; hives.forEach(h=>ids[h.id]=1);
+  const treatYr=loadTreatments().filter(t=>ids[t.hiveId]&&t.treatedAt&&new Date(t.treatedAt).getFullYear()===yr);
+  const products={}; treatYr.forEach(t=>{ const p=t.product||'—'; products[p]=(products[p]||0)+1; });
+  // inspections this year
+  const inspYr=loadInspections().filter(i=>(_scope==='all'||i.apiaryId===_scope)&&i.inspectedAt&&new Date(i.inspectedAt).getFullYear()===yr).length;
+  const health=avgHealth(hives); const hb=healthBand(health);
+  const stat=(label,val,col)=>`<div style="background:#FAF6EC;border:1px solid var(--wax);border-radius:10px;padding:12px 14px;flex:1;min-width:120px;"><div class="note" style="margin-bottom:3px;">${label}</div><div class="serif" style="font-size:26px;font-weight:700;color:${col||'var(--forest)'};line-height:1;">${val}</div></div>`;
+  const prodRows=Object.keys(products).length?Object.entries(products).sort((a,b)=>b[1]-a[1]).map(([p,n])=>`<tr><td style="padding:6px 8px;font-size:12px;font-weight:700;">${esc(p)}</td><td style="padding:6px 8px;font-size:12px;text-align:right;">${n} application${n>1?'s':''}</td></tr>`).join(''):`<tr><td colspan="2" style="padding:6px 8px;" class="note">No treatments logged this year</td></tr>`;
+  const inner=`
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      ${stat('Live colonies', live)}
+      ${stat('Lost this year', lostThisYr, lostThisYr?'#A32D2D':'var(--forest)')}
+      ${stat('Honey '+yr, honeyKg?honeyKg+'kg':'—')}
+      ${stat('Avg health', health?health:'—', hb.tx)}
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+      ${stat('Inspections', inspYr)}
+      ${stat('Treatments', treatYr.length)}
+      ${stat('Harvests', honeyYr.length)}
+    </div>
+    <div style="font-size:13px;font-weight:800;margin-bottom:6px;">Treatments by product</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">${prodRows}</table>
+  `;
+  return reportShell(`${yr} season summary`, `${scopeName} · generated ${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`, inner);
+}
+function reportApiary(){ return reportShell('Per-apiary report','Coming next', `<div class="note">A full report for a single apiary — colonies, health, yield, treatments and inspection cadence for one site. Building next; the season summary is live now.</div>`); }
+function reportHive(){ return reportShell('Per-hive history','Coming next', `<div class="note">The complete record of one colony — every inspection, treatment and harvest, with health over time. Building after the per-apiary report.</div>`); }
+function reportCompliance(){ return reportShell('Treatment / compliance record','Coming next', `<div class="note">A formatted medicines log for inspection — product, dose, dates and affected hives. Building after the per-hive report.</div>`); }
+function reportExport(){
+  return reportShell('BeeBase / CSV export','Download your data', `
+    <div class="note" style="margin-bottom:14px;">Export your records for BeeBase / NBU returns or your own backup.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="HKWEB.exportData()" style="font-family:inherit;font-size:13px;font-weight:700;color:var(--forest);background:#FBF1DC;border:1px solid var(--wax);border-radius:9px;padding:11px 16px;cursor:pointer;">📤 Inspections CSV</button>
+      <button onclick="HKWEB.exportData()" style="font-family:inherit;font-size:13px;font-weight:700;color:var(--forest);background:#FBF1DC;border:1px solid var(--wax);border-radius:9px;padding:11px 16px;cursor:pointer;">🍯 Harvests CSV</button>
+      <button onclick="HKWEB.exportData()" style="font-family:inherit;font-size:13px;font-weight:700;color:var(--forest);background:#FBF1DC;border:1px solid var(--wax);border-radius:9px;padding:11px 16px;cursor:pointer;">💊 Treatments CSV</button>
+    </div>`);
+}
+
 function exportData(){ toast('Export (BeeBase / CSV) lands in a later build'); }
 function addHive(){ toast('Add hive lands in a later build — manage existing hives for now'); }
 
@@ -1386,7 +1477,7 @@ async function boot(){
 }
 
 window.HKWEB = { tab, toggleRemember, pwStrength, pwMatch, signIn, signUp, forgot, signOut,
-  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, setHarvestGroup, setTreatPeriod, setColonyPeriod, refreshAI, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive, toggleDashEdit, toggleCard };
+  tabTo, toggleScopeMenu, closeScopeMenu, pickScope, cycleSort, cycleFilter, setHarvestGroup, setTreatPeriod, setColonyPeriod, refreshAI, openHive, openInsp, closeDrawer, saveCorrection, exportData, addHive, toggleDashEdit, toggleCard, pickReport, printReport };
 boot();
 })();
 </script>
