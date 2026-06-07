@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="companion-20260606p">
+<meta name="app-version" content="companion-20260606s">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HiveKeeper — Desktop Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,7 +68,7 @@ button{font-family:inherit;cursor:pointer;border:none;}
 .bo-shell{display:flex;min-height:100vh;background:var(--cream);position:relative;}
 .bo-side{width:212px;background:var(--forest-m);flex-shrink:0;display:flex;flex-direction:column;padding:18px 0;}
 .bo-logo{padding:0 18px 18px;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.1);}
-.bo-logo .m{width:34px;height:34px;border-radius:9px;background:var(--honey-l);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.bo-logo .m{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .bo-logo .n{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:#fff;}
 .bo-navlist{padding:14px 12px;display:flex;flex-direction:column;gap:3px;}
 .bo-nav{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;color:rgba(255,255,255,.75);font-size:13px;font-weight:600;cursor:pointer;}
@@ -224,7 +224,7 @@ textarea.ed-inp{font-weight:400;}
 <div id="app">
   <div class="bo-shell">
     <div class="bo-side">
-      <div class="bo-logo"><div class="m">🐝</div><div class="n">HiveKeeper</div></div>
+      <div class="bo-logo"><div class="m"><img src="https://gethivekeeper.com/Logo.png" alt="HiveKeeper" style="width:100%;height:100%;object-fit:contain;"></div><div class="n">HiveKeeper</div></div>
       <div class="bo-navlist" id="bo-nav"></div>
       <div class="bo-prof"><div class="box"><div class="av" id="bo-avatar">CC</div><div><div class="nm" id="bo-username">Beekeeper</div><div class="tier">Signed in</div></div></div>
         <button class="bo-signout" onclick="HKWEB.signOut()">Sign out</button>
@@ -262,7 +262,7 @@ const SUPABASE_URL = 'https://hknauovhcfsfszyilnrw.supabase.co';
 const COMPANION_AI_URL = 'https://companion-ai.chris-culshaw.workers.dev'; // AI overview proxy Worker (Supabase-auth gated)
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhrbmF1b3ZoY2ZzZnN6eWlsbnJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Nzg5NDQsImV4cCI6MjA5MTE1NDk0NH0.91IpVcQjz5LG6yhAZFOYtPMVHMUGxUgp7V5sKCCnIAk';
 const HIVE_KEY='hk_hives_v2', INSP_KEY='hk_inspections_v2', APIARY_KEY='hk_apiaries_v1', HARVEST_KEY='hk_harvests_v1', TREATMENT_KEY='hk_treatments_v1';
-const BUILD_STAMP = '6 June 2026 companion build p';
+const BUILD_STAMP = '6 June 2026 companion build s';
 
 let _supabase=null, _user=null, _session=null, _remember=true;
 
@@ -412,15 +412,15 @@ let _dashEdit=false; // customiser edit mode
  * Single source of truth for what can appear on the dashboard, default order,
  * and how each renders. The customiser shows/hides + reorders these. */
 const DASH_CARDS = [
-  ['needs',   'Needs attention',  ()=>needsAttention()],
+  ['ai',      'AI overview',      ()=>aiOverview(),    true],
+  ['needs',   'Needs attention',  ()=>needsAttention(),true],
   ['health',  'Operation health', ()=>healthTile()],
   ['harvest', 'Honey harvest',    ()=>harvestGraph()],
   ['treat',   'Treatments applied',()=>treatmentGraph()],
   ['colony',  'Colonies over time',()=>colonyTimeline()],
   ['trend',   'Health trend',     ()=>trendChart()],
   ['swarm',   'Swarm risk',       ()=>swarmCard()],
-  ['forage',  'Forage & spray',   ()=>forageWidget()],
-  ['ai',      'AI overview',      ()=>aiOverview()]
+  ['forage',  'Forage & spray',   ()=>forageWidget()]
 ];
 const DASH_PREF_KEY='hk_dash_prefs_v1';
 const AI_CACHE_KEY='hk_ai_briefing_v1';
@@ -529,7 +529,7 @@ function viewDashboard(){
   const h=scopedHives();
   if(!h.length) return `<div class="empty"><div style="font-size:34px;opacity:.5;margin-bottom:12px;">🐝</div><div class="serif" style="font-size:22px;font-weight:700;">No hives yet</div><div class="note" style="max-width:340px;margin-top:6px;">Add hives in the app and they'll appear here for you to manage and analyse. Nothing to inspect here — that's the app's job.</div></div>`;
   const pref=loadDashPref();
-  const reg={}; DASH_CARDS.forEach(c=>reg[c[0]]={id:c[0],label:c[1],render:c[2]});
+  const reg={}; DASH_CARDS.forEach(c=>reg[c[0]]={id:c[0],label:c[1],render:c[2],full:!!c[3]});
   const bar=`<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
     <button onclick="HKWEB.toggleDashEdit()" style="font-family:inherit;font-size:12px;font-weight:700;color:${_dashEdit?'#fff':'var(--honey)'};background:${_dashEdit?'var(--honey)':'transparent'};border:1.5px solid var(--honey);border-radius:8px;padding:5px 13px;cursor:pointer;">${_dashEdit?'✓ Done':'⚙ Customise'}</button>
   </div>`;
@@ -537,7 +537,7 @@ function viewDashboard(){
   // normal render: visible cards in saved order, 2-per-row grid so charts aren't tiny
   const visible=pref.order.filter(id=>!pref.hidden.includes(id));
   if(!visible.length) return bar+`<div class="card-box"><div class="note">All cards are hidden. Tap <b>Customise</b> to choose what to show.</div></div>`;
-  const cards=visible.map(id=>`<div style="flex:1 1 calc(50% - 9px);min-width:320px;box-sizing:border-box;">${reg[id].render()}</div>`).join('');
+  const cards=visible.map(id=>{ const c=reg[id]; const basis=c.full?'flex:1 1 100%;':'flex:1 1 calc(50% - 9px);'; return `<div style="${basis}min-width:320px;box-sizing:border-box;">${c.render()}</div>`; }).join('');
   return bar+`<div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;">${cards}</div>`;
 }
 /* edit mode — list of all cards, drag handle + show/hide toggle */
@@ -741,8 +741,27 @@ function forageWidget(){
 
 function healthTile(){
   const h=scopedHives(); const sc=avgHealth(h); const b=healthBand(sc);
-  return `<div class="kpi" style="grid-template-columns:1fr;">
-    <div class="box" style="background:${b.bg};border:1px solid ${b.bd};"><div style="font-size:10px;font-weight:800;color:${b.tx};text-transform:uppercase;">Operation health</div><div style="display:flex;align-items:baseline;gap:6px;margin-top:3px;"><span class="serif" style="font-size:27px;font-weight:700;color:${b.tx};line-height:1;">${sc||'—'}</span><span style="font-size:11px;font-weight:700;color:${b.tx};text-transform:uppercase;">${b.word}</span></div></div>
+  // radial gauge — 270° arc, 0..100. Adds visual variety vs the bar/line charts.
+  const cx=90,cy=92,r=64, start=135, sweep=270; // degrees
+  const pol=(ang)=>{ const a=(ang-90)*Math.PI/180; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; };
+  const arc=(fromA,toA)=>{ const [x1,y1]=pol(fromA),[x2,y2]=pol(toA); const large=(toA-fromA)>180?1:0; return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`; };
+  const frac=Math.max(0,Math.min(100,sc))/100;
+  const trackEnd=start+sweep, valEnd=start+sweep*frac;
+  const col=b.bd;
+  // ticks at 0/25/50/75/100
+  let ticks='';
+  [0,25,50,75,100].forEach(t=>{ const ang=start+sweep*(t/100); const [ox,oy]=pol(ang); const a=(ang-90)*Math.PI/180; const ix=cx+(r-7)*Math.cos(a), iy=cy+(r-7)*Math.sin(a); ticks+=`<line x1="${ix.toFixed(1)}" y1="${iy.toFixed(1)}" x2="${ox.toFixed(1)}" y2="${oy.toFixed(1)}" stroke="#D8CFB8" stroke-width="1.5"/>`; });
+  return `<div class="card-box">
+    <div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health</div>
+    <div class="note" style="margin-bottom:4px;">${_scope==='all'?'Across all apiaries':esc(apiaryName(_scope))}</div>
+    <div style="display:flex;justify-content:center;">
+    <svg viewBox="0 0 180 150" style="width:100%;max-width:240px;height:150px;">
+      <path d="${arc(start,trackEnd)}" fill="none" stroke="#EFE8D6" stroke-width="13" stroke-linecap="round"/>
+      ${sc?`<path d="${arc(start,valEnd)}" fill="none" stroke="${col}" stroke-width="13" stroke-linecap="round"/>`:''}
+      ${ticks}
+      <text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-size="40" font-weight="700" fill="${b.tx}">${sc||'—'}</text>
+      <text x="${cx}" y="${cy+18}" text-anchor="middle" font-size="11" font-weight="800" fill="${b.tx}" style="text-transform:uppercase;letter-spacing:0.5px;">${b.word}</text>
+    </svg></div>
   </div>`;
 }
 /* ---- harvest graph (dashboard) — bars with visible grouping dropdown ---- */
@@ -807,17 +826,24 @@ function treatmentGraph(){
   list.forEach(t=>{ const k=new Date(t.treatedAt).toLocaleDateString('en-GB',{month:'short',year:'2-digit'}); if(!(k in buckets)){ buckets[k]=0; order.push(k);} buckets[k]++; });
   if(!months) order.sort((a,b)=>new Date('1 '+a)-new Date('1 '+b));
   const max=Math.max(...order.map(k=>buckets[k]))||1;
-  const W=260,H=84,pad=16; const n=order.length;
-  const bw=n?Math.min(34,(W-2*pad)/n*0.7):10;
-  const gap=n>1?((W-2*pad)-bw*n)/(n-1):0;
+  const W=440,H=130,padL=26,padR=12,padT=14,padB=22; const n=order.length;
+  const plotW=W-padL-padR;
+  const bw=n?Math.min(46,plotW/n*0.7):10;
+  const gap=n>1?(plotW-bw*n)/(n-1):0;
+  const baseY=H-padB;
   let bars='',lbls='';
   order.forEach((k,i)=>{
-    const v=buckets[k]; const bh=(v/max)*(H-pad-14); const x=pad+i*(bw+gap); const y=H-14-bh;
-    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,bh).toFixed(1)}" rx="2" fill="#9C6CC4"/>${v?`<text x="${(x+bw/2).toFixed(1)}" y="${(y-2).toFixed(1)}" font-size="8" fill="#6B4B8A" text-anchor="middle" font-weight="700">${v}</text>`:''}`;
-    if(n<=12) lbls+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-3}" font-size="7" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${k.split(' ')[0]}</text>`;
+    const v=buckets[k]; const bh=(v/max)*(H-padT-padB); const x=padL+i*(bw+gap); const y=baseY-bh;
+    bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,bh).toFixed(1)}" rx="2" fill="#9C6CC4"/>${v?`<text x="${(x+bw/2).toFixed(1)}" y="${(y-3).toFixed(1)}" font-size="9" fill="#6B4B8A" text-anchor="middle" font-weight="700">${v}</text>`:''}`;
+    if(n<=12) lbls+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-7}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${k.split(' ')[0]}</text>`;
   });
+  // axes
+  const axes=`<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <line x1="${padL}" y1="${baseY}" x2="${W-padR}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <text x="${padL-5}" y="${padT+4}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${max}</text>
+    <text x="${padL-5}" y="${baseY}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">0</text>`;
   const total=list.length;
-  return `<div class="card-box">${head}<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:84px;">${bars}${lbls}</svg><div style="margin-top:4px;padding-top:6px;border-top:1px solid #F4EFE3;display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text-l);">Total applied</span><span style="font-weight:800;">${total}</span></div></div>`;
+  return `<div class="card-box">${head}<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:130px;">${axes}${bars}${lbls}</svg><div style="margin-top:4px;padding-top:6px;border-top:1px solid #F4EFE3;display:flex;justify-content:space-between;font-size:11px;"><span style="color:var(--text-l);">Total applied</span><span style="font-weight:800;">${total}</span></div></div>`;
 }
 /* ---- AI operations overview (bottom-spanning briefing) ---- */
 function relativeTime(ms){
@@ -969,21 +995,30 @@ function colonyTimeline(){
   const cur=counts[counts.length-1];
   const totalLost=lost.reduce((s,x)=>s+x,0);
   // SVG line
-  const W=440,H=140,padX=24,padT=14,padB=24;
+  const W=440,H=150,padX=28,padT=16,padB=26;
   const maxC=Math.max(...counts,1);
-  const xs=i=>padX+(counts.length<=1?0:i*(W-2*padX)/(counts.length-1));
-  const ys=v=>H-padB-(v/maxC)*(H-padT-padB);
+  const baseY=H-padB;
+  const xs=i=>padX+(counts.length<=1?0:i*(W-padX-12)/(counts.length-1));
+  const ys=v=>baseY-(v/maxC)*(baseY-padT);
   let line='',area='',dots='',lbls='',lossMarks='';
   counts.forEach((v,i)=>{ const x=xs(i),y=ys(v); line+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="#C8730A"/>`;
-    if(counts.length<=14||i%2===0) lbls+=`<text x="${x.toFixed(1)}" y="${H-7}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${labels[i].split(' ')[0]}</text>`;
+    if(counts.length<=14||i%2===0) lbls+=`<text x="${x.toFixed(1)}" y="${H-9}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${labels[i].split(' ')[0]}</text>`;
     if(lost[i]>0) lossMarks+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="none" stroke="#B83228" stroke-width="1.5"/><text x="${x.toFixed(1)}" y="${(y-8).toFixed(1)}" font-size="8" fill="#B83228" text-anchor="middle" font-weight="800">-${lost[i]}</text>`;
   });
-  area=`M${xs(0).toFixed(1)} ${ys(0).toFixed(1)} `+counts.map((v,i)=>'L'+xs(i).toFixed(1)+' '+ys(v).toFixed(1)).join(' ')+` L${xs(counts.length-1).toFixed(1)} ${ys(0).toFixed(1)} Z`;
+  area=`M${xs(0).toFixed(1)} ${baseY.toFixed(1)} `+counts.map((v,i)=>'L'+xs(i).toFixed(1)+' '+ys(v).toFixed(1)).join(' ')+` L${xs(counts.length-1).toFixed(1)} ${baseY.toFixed(1)} Z`;
+  // axes + Y scale
+  const midC=Math.round(maxC/2);
+  const axes=`<line x1="${padX}" y1="${padT}" x2="${padX}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <line x1="${padX}" y1="${baseY}" x2="${W-12}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <text x="${padX-5}" y="${padT+3}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${maxC}</text>
+    ${midC&&midC!==maxC?`<text x="${padX-5}" y="${(ys(midC)+3).toFixed(1)}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${midC}</text>`:''}
+    <text x="${padX-5}" y="${baseY}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">0</text>`;
   const note = totalLost>0 ? `${cur} live now · ${totalLost} lost in period` : `${cur} live now`;
   return `<div class="card-box">${head}
     <div class="note" style="margin-bottom:6px;">${_scope==='all'?'Across all apiaries':esc(apiaryName(_scope))} · ${note}</div>
-    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:140px;">
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:150px;">
       <path d="${area}" fill="#FBEFD9" opacity="0.6"/>
+      ${axes}
       <path d="${line.trim()}" fill="none" stroke="#C8730A" stroke-width="2" stroke-linejoin="round"/>
       ${dots}${lossMarks}${lbls}
     </svg>
@@ -1044,16 +1079,25 @@ function trendChart(){
   const real=pts.filter(p=>p!=null);
   if(!real.length) return `<div class="card-box"><div style="font-size:13px;font-weight:800;margin-bottom:2px;">Operation health · 6 months</div><div class="note" style="margin-bottom:10px;">${_scope==='all'?'Avg across all apiaries':esc(apiaryName(_scope))}</div><div style="height:90px;display:flex;align-items:center;justify-content:center;background:#FAF6EC;border:1px dashed var(--wax);border-radius:10px;"><div class="note" style="text-align:center;">No inspections in<br>the last 6 months</div></div></div>`;
   // SVG line
-  const W=260,H=90,pad=18; const min=Math.min(...real), max=Math.max(...real);
+  const W=440,H=150,padL=28,padR=12,padT=16,padB=24; const min=Math.min(...real), max=Math.max(...real);
   const lo=Math.max(0,min-5), hi=Math.min(100,max+5), span=(hi-lo)||1;
-  const xs=i=>pad+(i*(W-2*pad)/5), ys=v=>H-pad-((v-lo)/span)*(H-2*pad);
+  const baseY=H-padB;
+  const xs=i=>padL+(i*(W-padL-padR)/5), ys=v=>baseY-((v-lo)/span)*(baseY-padT);
   let path='', dots='', prev=null;
-  pts.forEach((v,i)=>{ if(v==null) return; const x=xs(i),y=ys(v); path+=(prev===null?'M':'L')+x.toFixed(1)+' '+y.toFixed(1)+' '; prev=v; dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="#C8730A"/>`; });
+  pts.forEach((v,i)=>{ if(v==null) return; const x=xs(i),y=ys(v); path+=(prev===null?'M':'L')+x.toFixed(1)+' '+y.toFixed(1)+' '; prev=v; dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#C8730A"/>`; });
   const last=real[real.length-1], lb=healthBand(last);
-  const lbls=labels.map((l,i)=>`<text x="${xs(i).toFixed(1)}" y="${H-4}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${l}</text>`).join('');
+  const lbls=labels.map((l,i)=>`<text x="${xs(i).toFixed(1)}" y="${H-7}" font-size="8" fill="#9A8A6E" text-anchor="middle" font-family="DM Mono,monospace">${l}</text>`).join('');
+  // axes with Y scale (hi / mid / lo)
+  const mid=Math.round((lo+hi)/2);
+  const axes=`<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <line x1="${padL}" y1="${baseY}" x2="${W-padR}" y2="${baseY}" stroke="#D8CFB8" stroke-width="1"/>
+    <line x1="${padL}" y1="${ys(mid).toFixed(1)}" x2="${W-padR}" y2="${ys(mid).toFixed(1)}" stroke="#F1EFE8" stroke-width="1"/>
+    <text x="${padL-5}" y="${(padT+3)}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${Math.round(hi)}</text>
+    <text x="${padL-5}" y="${(ys(mid)+3).toFixed(1)}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${mid}</text>
+    <text x="${padL-5}" y="${baseY}" font-size="8" fill="#9A8A6E" text-anchor="end" font-family="DM Mono,monospace">${Math.round(lo)}</text>`;
   return `<div class="card-box"><div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2px;"><div style="font-size:13px;font-weight:800;">Operation health · 6 months</div><span class="pill" style="background:${lb.bg};color:${lb.tx};">${last}</span></div>
     <div class="note" style="margin-bottom:8px;">${_scope==='all'?'Avg across all apiaries':esc(apiaryName(_scope))} · derived from inspections</div>
-    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:90px;"><path d="${path.trim()}" fill="none" stroke="#C8730A" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${lbls}</svg></div>`;
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:150px;">${axes}<path d="${path.trim()}" fill="none" stroke="#C8730A" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}${lbls}</svg></div>`;
 }
 // Health for a specific inspection (same weighting as hiveHealth but for a given record)
 function healthFromInsp(h, latest){
