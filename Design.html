@@ -2,12 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="app-version" content="flow-20260607h">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="app-version" content="myday-20260608g-gh">
+<meta name="theme-color" content="#2F5740">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HiveKeeper">
+<meta name="description" content="HiveKeeper — UK apiary management. Sign in to see your hives, inspections and plan.">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==">
+<link rel="manifest" href='data:application/manifest+json,{"name":"HiveKeeper","short_name":"HiveKeeper","start_url":".","display":"standalone","background_color":"%23FDFBF6","theme_color":"%232F5740","orientation":"portrait"}'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<title>HiveKeeper · app shell</title>
+<title>HiveKeeper</title>
 <style>
   :root{
     --paper:#FDFBF6; --cream:#FAF6EE; --ink:#162B1F; --ink-soft:#3C4A40;
@@ -26,6 +34,13 @@
   .phone{width:390px;max-width:94vw;height:810px;background:var(--paper);border-radius:30px;overflow:hidden;
     box-shadow:0 16px 46px rgba(22,43,31,.24);border:1px solid rgba(22,43,31,.08);position:relative;display:flex;flex-direction:column;}
   .accent{height:5px;background:var(--honey-l);flex-shrink:0;}
+
+  /* full-screen app experience on phones */
+  @media (max-width:600px){
+    body{padding:0;background:var(--paper);min-height:100vh;min-height:100dvh;}
+    .intro,.ghhint{display:none !important;}
+    .phone{width:100vw;max-width:100vw;height:100vh;height:100dvh;border-radius:0;border:none;box-shadow:none;}
+  }
 
   /* persistent header */
   .hdr{background:var(--forest);padding:13px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative;z-index:16;}
@@ -88,6 +103,12 @@
   .map .pin{position:absolute;width:28px;height:28px;border-radius:50% 50% 50% 4px;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.22);border:2px solid #fff;}
   .map .pin span{transform:rotate(-45deg);font-family:'DM Mono';font-size:10px;font-weight:600;color:#fff;}
   .map .lbl{position:absolute;font-size:9px;color:#7d735c;font-style:italic;font-family:'Cormorant Garamond';}
+  .map-live{height:200px;}
+  .map .pin.tap{cursor:pointer;}
+  .map .pin .pn{transform:rotate(-45deg);font-size:11px;font-weight:800;color:#fff;}
+  .map-legend{display:flex;gap:12px;justify-content:center;margin:-6px 2px 14px;font-size:10px;font-weight:700;color:var(--muted);}
+  .map-legend span{display:inline-flex;align-items:center;gap:4px;}
+  .map-legend i{width:9px;height:9px;border-radius:50%;display:inline-block;}
   .hive{background:var(--cream);border:1px solid var(--line);border-radius:15px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);margin-bottom:8px;}
   .hive.hidden{opacity:.5;}
   .hnum{width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid var(--wax);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Cormorant Garamond';font-size:19px;font-weight:700;}
@@ -234,6 +255,18 @@
   <div class="phone">
     <div class="accent"></div>
 
+    <!-- LIVE LOGIN GATE -->
+    <div id="hk-login" style="display:none;position:absolute;inset:0;z-index:60;background:var(--paper);padding:34px 24px;flex-direction:column;justify-content:center;">
+      <div style="text-align:center;font-size:46px;margin-bottom:4px;">🐝</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:27px;font-weight:700;text-align:center;">HiveKeeper</div>
+      <div style="font-size:12px;color:var(--muted);text-align:center;margin:4px 0 8px;">Sign in to load your live data</div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#27500A;background:#EDF6DC;border:1px solid #A8D26B;padding:5px 12px;border-radius:30px;text-align:center;align-self:center;margin-bottom:20px;">🔒 Read-only · no changes saved</div>
+      <div id="hk-login-err" style="display:none;background:rgba(168,81,42,.08);border:1px solid rgba(168,81,42,.3);color:var(--copper);font-size:12px;font-weight:600;padding:11px 13px;border-radius:11px;margin-bottom:12px;line-height:1.4;"></div>
+      <div class="field"><label>Email</label><input id="hk-li-email" type="email" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input id="hk-li-pass" type="password" autocomplete="current-password"></div>
+      <button class="btn btn-moss" onclick="hkLogin()">Sign in &amp; load my data</button>
+    </div>
+
     <!-- PERSISTENT HEADER -->
     <div class="hdr">
       <div class="burger" onclick="hkBurger()"><span></span><span></span><span></span></div>
@@ -246,9 +279,12 @@
       <div onclick="hkCloseSwitcher()" style="position:absolute;inset:0;height:810px;background:rgba(20,30,22,.35);"></div>
       <div style="position:relative;background:var(--paper);border-radius:0 0 20px 20px;box-shadow:0 14px 30px rgba(0,0,0,.22);padding:11px 12px 13px;margin:0 6px;border:1px solid var(--line);border-top:none;">
         <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:2px 4px 9px;">Switch view</div>
+        <div id="hk-switcher-live" style="display:none;"></div>
+        <div id="hk-switcher-demo">
         <div onclick="hkPick('all')" style="display:flex;align-items:center;gap:11px;background:#F4FAEA;border:1.5px solid #8BBF4D;border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#fff;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-size:16px;font-weight:700;color:#3B6D11;">82</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">All apiaries</div><div style="font-size:10px;color:#5C8A1E;font-weight:700;">28 hives · 3 due · 2 alerts</div></div><span style="color:#3B6D11;font-size:17px;font-weight:800;">✓</span></div>
         <div onclick="hkPick('brig')" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#F4FAEA;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-size:16px;font-weight:700;color:#3B6D11;">78</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">Brigstock</div><div style="font-size:10px;color:#7A6A4F;font-weight:700;">12 hives · 2 due</div></div></div>
         <div onclick="hkPick('nene')" style="display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#F4FAEA;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-size:16px;font-weight:700;color:#3B6D11;">85</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">Nene Valley</div><div style="font-size:10px;color:#7A6A4F;font-weight:700;">6 hives · all caught up</div></div></div>
+        </div>
       </div>
     </div>
 
@@ -257,13 +293,14 @@
 
       <!-- HOME -->
       <div class="screen active" data-screen="home">
-        <div class="net"><span class="dot"></span> Saved · synced just now</div>
+        <div class="net" onclick="hkGo('sync')" style="cursor:pointer;"><span class="dot"></span> Saved · synced just now ›</div>
         <div class="pad" id="home-cards"></div>
       </div>
 
       <!-- APIARY -->
       <div class="screen" data-screen="apiary">
-        <div class="pad">
+        <div class="pad" id="apiary-live" style="display:none;"></div>
+        <div class="pad" id="apiary-demo">
           <div class="scrtitle">Brigstock</div>
           <div class="scrsub">12 hives · 2 due · walk order</div>
           <div class="map">
@@ -288,7 +325,8 @@
 
       <!-- INSPECT -->
       <div class="screen" data-screen="inspect">
-        <div class="pad">
+        <div class="pad" id="inspect-live" style="display:none;"></div>
+        <div class="pad" id="inspect-demo">
           <div class="scrtitle" style="font-size:22px;">Inspecting <span style="font-size:13px;color:var(--honey);">▾</span></div>
           <div class="scrsub">Brigstock · tap a hive, or talk</div>
           <div class="hivestrip">
@@ -335,7 +373,8 @@
 
       <!-- CALENDAR -->
       <div class="screen" data-screen="cal">
-        <div class="pad">
+        <div class="pad" id="cal-live" style="display:none;"></div>
+        <div class="pad" id="cal-demo">
           <div class="scrtitle">June 2026</div>
           <div class="scrsub">5 inspections due this week</div>
           <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px;" id="calgrid"></div>
@@ -362,8 +401,8 @@
             <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:12px;"><span class="chip">Clover</span><span class="chip">Blackberry</span><span class="chip">Lime</span><span class="chip">Field bean</span><span class="chip">Hawthorn</span></div>
           </div>
           <div class="alert" style="background:rgba(168,81,42,.07);border:1px solid rgba(168,81,42,.25);"><span style="font-size:18px;">🚜</span><div class="at"><div class="a-t" style="color:var(--copper);">Spray warning nearby</div><div class="a-s">Oilseed rape spraying reported 1.2 miles NE, planned tomorrow AM. Consider closing up early.</div></div></div>
-          <div class="alert" style="background:#EDF6DC;border:1px solid #A8D26B;"><span style="font-size:18px;">🐝</span><div class="at"><div class="a-t" style="color:#27500A;">Asian hornet watch</div><div class="a-s">No sightings in your area. Tap to report or check the latest map.</div></div></div>
-          <div style="background:rgba(255,255,255,.6);border:1.5px solid rgba(79,102,71,.25);border-radius:16px;padding:13px;text-align:center;font-size:13px;font-weight:700;color:var(--moss-d);">View the UK nectar calendar →</div>
+          <div class="alert" style="background:#EDF6DC;border:1px solid #A8D26B;cursor:pointer;" onclick="hkGo('hornet')"><span style="font-size:18px;">🐝</span><div class="at"><div class="a-t" style="color:#27500A;">Asian hornet watch</div><div class="a-s">No sightings in your area. Tap to identify or report a sighting ›</div></div></div>
+          <div onclick="hkGo('nectar')" style="background:rgba(255,255,255,.6);border:1.5px solid rgba(79,102,71,.25);border-radius:16px;padding:13px;text-align:center;font-size:13px;font-weight:700;color:var(--moss-d);cursor:pointer;">View the UK nectar calendar →</div>
           <div style="height:64px;"></div>
         </div>
       </div>
@@ -375,7 +414,8 @@
 
       <!-- HIVE DETAIL -->
       <div class="screen" data-screen="hive">
-        <div class="pad">
+        <div class="pad" id="hive-live" style="display:none;"></div>
+        <div class="pad" id="hive-demo">
           <span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo('apiary')">‹ Brigstock</span>
           <div class="hv-top" style="margin-top:8px;">
             <div><div class="scrtitle">Far Hedge</div><div class="scrsub">Hive 4 · Brigstock · est. 2023</div></div>
@@ -392,19 +432,24 @@
               <div class="box roof"></div><div class="box crown"></div><div class="box super"></div><div class="box super"></div><div class="box excl"></div><div class="box brood"></div><div class="box floor last"></div>
             </div>
             <div style="flex:1;">
-              <div class="si-t">Configuration</div>
+              <div class="si-t">Configuration <span style="float:right;font-size:11px;font-weight:700;color:var(--honey);cursor:pointer;">⌗ QR</span></div>
               <div class="si-r"><span>Brood</span><span>1 × National</span></div>
               <div class="si-r"><span>Supers</span><span>2 on</span></div>
               <div class="si-r"><span>Queen</span><span>2024 · marked green</span></div>
               <div class="si-r"><span>Temperament</span><span>Calm</span></div>
             </div>
           </div>
+          <div style="display:flex;gap:8px;margin-top:9px;">
+            <div onclick="hkGo('queenrearing')" style="flex:1;background:#fff;border:1px solid var(--wax);border-radius:12px;padding:9px;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;">👑 Queen heritage</div>
+            <div style="flex:1;background:#fff;border:1px solid var(--wax);border-radius:12px;padding:9px;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;">🗃 Edit stack</div>
+            <div style="flex:1;background:#fff;border:1px solid var(--wax);border-radius:12px;padding:9px;text-align:center;font-size:11.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;">📷 Photos</div>
+          </div>
           <button class="btn btn-moss" style="margin-top:14px;" onclick="hkGo('inspect')">🎙️ Inspect this hive</button>
           <div class="secrow" style="padding-top:14px;"><h2>Actions</h2><span class="edit">✎ Customise</span></div>
           <div class="hv-actions">
             <div class="hv-act" onclick="hkGo('hiveedit')"><span class="i">✎</span>Edit hive</div>
             <div class="hv-act"><span class="i">📋</span>Add task</div>
-            <div class="hv-act"><span class="i">🔀</span>Move / transfer</div>
+            <div class="hv-act" onclick="hkGo('movements')"><span class="i">🔀</span>Move / transfer</div>
           </div>
           <div class="secrow" style="padding-top:16px;cursor:pointer;" onclick="hkGo('inspections')"><h2>History</h2><span class="edit">View all ›</span></div>
           <div class="tl-item" onclick="hkGo('inspections')" style="cursor:pointer;"><div class="tl-dot">📝</div><div style="flex:1;"><div class="tl-t">Inspection</div><div class="tl-s">Queen seen, 6 frames brood, stores good, calm. Note: bring another super.</div></div><div class="tl-when">22d ›</div></div>
@@ -438,7 +483,8 @@
 
       <!-- PREVIOUS INSPECTIONS -->
       <div class="screen" data-screen="inspections">
-        <div class="pad">
+        <div class="pad" id="inspections-live" style="display:none;"></div>
+        <div class="pad" id="inspections-demo">
           <span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo('hive')">‹ Far Hedge</span>
           <div class="scrtitle" style="margin-top:8px;">Inspection history</div>
           <div class="scrsub">Hive 4 · 14 inspections</div>
@@ -468,6 +514,142 @@
         </div>
       </div>
 
+      <!-- HARVEST -->
+      <div class="screen" data-screen="harvest">
+        <div class="pad" id="harvest-body"></div>
+      </div>
+
+      <!-- TREATMENT -->
+      <div class="screen" data-screen="treatment">
+        <div class="pad" id="treatment-body"></div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="screen" data-screen="inventory">
+        <div class="pad" id="inv-body"></div>
+      </div>
+
+      <!-- MESSAGES / INVITES / SHARING -->
+      <div class="screen" data-screen="messages">
+        <div class="pad" id="messages-body"></div>
+      </div>
+
+      <!-- REFERRAL / FOUNDING -->
+      <div class="screen" data-screen="referral">
+        <div class="pad">
+          <div class="scrtitle">Refer a beekeeper</div>
+          <div class="scrsub">Founding Beekeeper rewards</div>
+          <div style="background:linear-gradient(135deg,var(--forest),#1c2d20);color:var(--cream);border-radius:16px;padding:18px;margin:14px 0;text-align:center;"><div style="font-size:30px;">🏅</div><div style="font-family:'Cormorant Garamond';font-size:20px;font-weight:700;margin-top:6px;">Founding Beekeeper</div><div style="font-size:11px;opacity:.8;margin-top:4px;">Thank you for being here early</div></div>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:var(--shadow);text-align:center;"><div style="font-size:12px;color:var(--muted);font-weight:600;">Your referral code</div><div style="font-family:'DM Mono';font-size:22px;font-weight:600;color:var(--honey);margin:6px 0;letter-spacing:2px;">CHRIS-BEE</div><div style="font-size:11px;color:var(--muted);">2 beekeepers referred · keep going for your end-of-year voucher</div></div>
+          <button class="btn btn-honey" style="margin-top:14px;">Share my code</button>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — referral tracking &amp; loyalty voucher to be built out.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- AI TOOLS (BETA) -->
+      <div class="screen" data-screen="ai">
+        <div class="pad">
+          <div class="scrtitle">AI tools <span style="font-size:11px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:2px 8px;border-radius:20px;vertical-align:middle;">BETA</span></div>
+          <div class="scrsub">Experimental · usage-capped</div>
+          <div class="hive" style="cursor:pointer;"><div class="hnum" style="font-size:16px;">👑</div><div class="hbody"><div class="nm">Queen Spotter</div><div class="meta">Find the queen in a photo · 3/month</div></div><span class="badge b-ok">try</span></div>
+          <div class="hive" style="cursor:pointer;"><div class="hnum" style="font-size:16px;">🔬</div><div class="hbody"><div class="nm">Varroa Counter</div><div class="meta">Count mites from a tray photo · 4/season</div></div><span class="badge b-ok">try</span></div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — the live AI tools open here; capped per beta limits.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- HORNET ID -->
+      <div class="screen" data-screen="hornet">
+        <div class="pad">
+          <span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo('forage')">‹ Forage</span>
+          <div class="scrtitle" style="margin-top:8px;">Asian Hornet ID</div>
+          <div class="scrsub">Spotted something? Check &amp; report</div>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);text-align:center;margin:14px 0;"><div style="font-size:40px;">🐝</div><div style="font-size:13px;font-weight:700;margin-top:8px;">Take or upload a photo</div><div style="font-size:11px;color:var(--muted);margin-top:3px;">We'll help you tell Asian hornet from native lookalikes</div></div>
+          <button class="btn btn-honey">📷 Identify a hornet</button>
+          <div style="margin-top:10px;background:rgba(168,81,42,.07);border:1px solid rgba(168,81,42,.25);border-radius:13px;padding:12px 14px;font-size:11.5px;color:#A8512A;line-height:1.5;">If confirmed Asian hornet, report to the official watch scheme immediately.</div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — hornet ID + reporting flow to be built out.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="screen" data-screen="settings">
+        <div class="pad">
+          <div class="scrtitle">Settings</div>
+          <div class="scrsub">Account &amp; preferences</div>
+          <div style="display:flex;align-items:center;gap:11px;background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow);margin:14px 0;"><div style="width:42px;height:42px;border-radius:50%;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond';font-size:18px;font-weight:700;">CC</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">Chris Culshaw</div><div style="font-size:11px;color:var(--muted);">chris.culshaw@gethivekeeper.com</div></div><span style="font-size:9px;font-weight:800;color:#27500A;background:#EDF6DC;padding:2px 8px;border-radius:20px;">PRO</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">🔔</div><div class="hbody"><div class="nm">Notifications</div><div class="meta">Inspection reminders, alerts</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">📍</div><div class="hbody"><div class="nm">National defaults</div><div class="meta">UK · National hive · BBKA calendar</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">💳</div><div class="hbody"><div class="nm">Subscription</div><div class="meta">Pro · renews annually</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">📤</div><div class="hbody"><div class="nm">Export &amp; backup</div><div class="meta">BeeBase / NBU, CSV</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive" onclick="hkGo('sync')" style="cursor:pointer;"><div class="hnum" style="font-size:14px;">🔄</div><div class="hbody"><div class="nm">Sync &amp; offline</div><div class="meta">Saved locally, synced to cloud</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — full settings (account, notifications, defaults, billing) to be built out.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- HELP / MANUAL -->
+      <div class="screen" data-screen="help">
+        <div class="pad">
+          <div class="scrtitle">Help &amp; manual</div>
+          <div class="scrsub">Guides, tips &amp; support</div>
+          <div style="display:flex;gap:8px;overflow-x:auto;padding:12px 0;"><span class="fchip on">Getting started</span><span class="fchip">Inspections</span><span class="fchip">Treatments</span><span class="fchip">Sharing</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">📖</div><div class="hbody"><div class="nm">Your first inspection</div><div class="meta">Voice capture, fields, saving</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">📖</div><div class="hbody"><div class="nm">Planning a round</div><div class="meta">Dates, walking order, follow-ups</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">📖</div><div class="hbody"><div class="nm">Sharing an apiary</div><div class="meta">Invites &amp; permissions</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div class="hive" onclick="hkOpenAsk()" style="cursor:pointer;"><div class="hnum" style="font-size:14px;">💬</div><div class="hbody"><div class="nm">Ask HiveKeeper</div><div class="meta">Beekeeping questions, answered</div></div><span style="color:#C9BCA0;">›</span></div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — full user manual &amp; help articles to be built out.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- NECTAR CALENDAR -->
+      <div class="screen" data-screen="nectar">
+        <div class="pad">
+          <span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo('forage')">‹ Forage</span>
+          <div class="scrtitle" style="margin-top:8px;">UK Nectar Calendar</div>
+          <div class="scrsub">What's in flow through the year</div>
+          <div style="margin-top:14px;">
+            <div class="hive"><div class="hnum" style="font-size:14px;">🌼</div><div class="hbody"><div class="nm">June — now</div><div class="meta">Clover, blackberry, lime, field bean, hawthorn</div></div><span class="badge b-ok">peak</span></div>
+            <div class="hive"><div class="hnum" style="font-size:14px;">🌳</div><div class="hbody"><div class="nm">July</div><div class="meta">Lime, rosebay willowherb, bramble</div></div></div>
+            <div class="hive"><div class="hnum" style="font-size:14px;">🌿</div><div class="hbody"><div class="nm">August</div><div class="meta">Heather, balsam, ivy starting</div></div></div>
+            <div class="hive"><div class="hnum" style="font-size:14px;">🍂</div><div class="hbody"><div class="nm">September</div><div class="meta">Ivy — the last big flow</div></div></div>
+          </div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — full 12-month UK nectar calendar to be built out. Regional guide — your own forage will vary.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+      <!-- QUEEN REARING -->
+      <div class="screen" data-screen="queenrearing">
+        <div class="pad" id="qr-body"></div>
+      </div>
+
+      <!-- RECENT MOVEMENTS -->
+      <div class="screen" data-screen="movements">
+        <div class="pad" id="mv-body"></div>
+      </div>
+
+      <!-- SYNC STATUS -->
+      <div class="screen" data-screen="sync">
+        <div class="pad">
+          <div class="scrtitle">Sync &amp; offline</div>
+          <div class="scrsub">Your data is safe</div>
+          <div style="background:#EDF6DC;border:1px solid #A8D26B;border-radius:16px;padding:18px;text-align:center;margin:14px 0;box-shadow:var(--shadow);"><div style="font-size:34px;">✅</div><div style="font-family:'Cormorant Garamond';font-size:20px;font-weight:700;color:#27500A;margin-top:6px;">All synced</div><div style="font-size:11px;color:#3B6D11;margin-top:3px;">Last synced just now · 28 hives up to date</div></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">💾</div><div class="hbody"><div class="nm">Saved on this device</div><div class="meta">Everything works offline — saves the moment you tap</div></div><span class="badge b-ok">on</span></div>
+          <div class="hive"><div class="hnum" style="font-size:14px;">☁️</div><div class="hbody"><div class="nm">Cloud backup</div><div class="meta">Syncs automatically when online</div></div><span class="badge b-ok">on</span></div>
+          <div style="margin-top:14px;background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;">🧪 Placeholder — sync detail, conflict handling &amp; offline queue to be built out.</div>
+          <div style="height:64px;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- REUSABLE BOTTOM SHEET (forms) -->
+    <div id="hk-sheet" style="display:none;position:absolute;inset:0;z-index:40;">
+      <div onclick="hkSheetClose()" style="position:absolute;inset:0;background:rgba(20,30,22,.5);"></div>
+      <div id="hk-sheet-card" style="position:absolute;left:0;right:0;bottom:0;background:var(--paper);border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.25);padding:18px 16px 22px;max-height:80%;overflow:auto;"></div>
     </div>
 
     <!-- PERSISTENT FLOATING BUTTONS -->
@@ -485,7 +667,24 @@
         <div onclick="hkOpenAsk()" style="background:#FBEBCF;border:1px solid #E0B062;border-radius:13px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:14px;"><span style="font-size:20px;">💬</span><div style="flex:1;"><div style="font-size:13px;font-weight:800;color:#633806;">Ask HiveKeeper</div><div style="font-size:10px;color:#A05E0A;margin-top:1px;">Beekeeping questions, answered</div></div></div>
         <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 2px 8px;">Go to</div>
         <div id="hk-menu-list"></div>
-        <div onclick="hkEdit()" style="margin-top:12px;background:var(--forest);border-radius:13px;padding:11px;text-align:center;font-size:12px;font-weight:800;color:#fff;cursor:pointer;">✎ Customise home &amp; menus</div>
+
+        <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:14px 2px 8px;">🧪 Beta features</div>
+        <div onclick="hkGo('ai');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">👑</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">Queen Spotter</span><span style="margin-left:auto;font-size:8px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:1px 6px;border-radius:4px;">BETA</span></div>
+        <div onclick="hkGo('ai');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">🔬</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">Varroa Counter</span><span style="margin-left:auto;font-size:8px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:1px 6px;border-radius:4px;">BETA</span></div>
+
+        <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:14px 2px 8px;">Account</div>
+        <div id="hk-row-referral" onclick="hkGo('referral');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">🎁</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">Refer a beekeeper</span></div>
+        <div onclick="hkGo('referral');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">🏅</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">Founding Beekeeper</span><span style="margin-left:auto;font-size:8px;font-weight:800;color:#27500A;background:#EDF6DC;padding:1px 6px;border-radius:4px;">MEMBER</span></div>
+        <div id="hk-row-sharing" onclick="hkGo('messages');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">✉️</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">Invites &amp; sharing</span></div>
+
+        <div onclick="hkEdit()" style="margin-top:14px;background:var(--forest);border-radius:13px;padding:11px;text-align:center;font-size:12px;font-weight:800;color:#fff;cursor:pointer;">✎ Customise home &amp; menus</div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <div onclick="hkGo('settings');hkBurger();" style="flex:1;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px;text-align:center;font-size:11px;font-weight:700;color:#2A3D30;cursor:pointer;">⚙️ Settings</div>
+          <div onclick="hkGo('help');hkBurger();" style="flex:1;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px;text-align:center;font-size:11px;font-weight:700;color:#2A3D30;cursor:pointer;">❔ Help</div>
+        </div>
+        <div style="margin-top:8px;background:#E8F5E9;border:1px solid #A8D26B;border-radius:11px;padding:10px;display:flex;align-items:center;gap:9px;cursor:pointer;"><span style="font-size:17px;">💬</span><div style="flex:1;"><div style="font-size:12px;font-weight:800;color:#1B5E20;">Join us on WhatsApp</div><div style="font-size:9px;color:#3B6D11;">Beta community &amp; support</div></div></div>
+        <div onclick="hkLogout()" style="margin-top:10px;text-align:center;padding:11px;border-top:1px solid var(--line);"><span style="font-size:12.5px;font-weight:700;color:var(--copper);cursor:pointer;">⎋ Sign out</span></div>
+        <div style="height:14px;"></div>
       </div>
     </div>
 
@@ -512,11 +711,12 @@
 
   </div>
 
-  <div class="hint">Tap the <b>bottom bar</b>, <b>floating buttons</b> (Apiary / Inspect) or the <b>burger</b> — every screen keeps the nav &amp; float. SOS &amp; Ask open as full modes.</div>
+  <div class="hint ghhint">Sign in with your HiveKeeper account to see your own hives. On a phone, tap <b>Share → Add to Home Screen</b> for the full-screen app. Read-only preview — nothing you do here changes your data.</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
-  var screens=['home','apiary','inspect','plan','cal','forage','customise','hive','hiveedit','inspections'];
+  var screens=['home','apiary','inspect','plan','cal','forage','customise','hive','hiveedit','inspections','harvest','treatment','inventory','messages','referral','ai','hornet','settings','help','nectar','queenrearing','movements','sync'];
   var navItems=[{id:'home',icon:'🏠',label:'Home'},{id:'cal',icon:'📅',label:'Calendar'},{id:'plan',hero:true,label:'Plan'},{id:'forage',icon:'🌿',label:'Forage'},{id:'sos',sos:true,label:'Help'}];
   var floatItems=[{id:'apiary',icon:'🐝',name:'Apiary'},{id:'inspect',icon:'✏️',name:'Inspect'}];
   var cur='home';
@@ -528,6 +728,12 @@
     renderNav();
     if(s==='plan') hkPlanTab(window._ptab||'plan');
     if(s==='cal') renderCal();
+    if(s==='inventory') renderInventory();
+    if(s==='harvest') renderHarvest();
+    if(s==='treatment') renderTreatment();
+    if(s==='queenrearing') renderQR();
+    if(s==='movements') renderMovements();
+    if(s==='messages') renderMessages();
     document.getElementById('hk-content').scrollTop=0;
   };
 
@@ -550,7 +756,7 @@
   }
 
   // ---- HOME cards (from the real design) ----
-  var scope={s:'82',l:'Operation health · good',f:'3 inspections due across Brigstock &amp; Manor Field'};
+  var scope={s:'82',l:'Operation health · good',f:'3 inspections due across Brigstock and Manor Field'};
   function cardHTML(id){
     if(id==='focus') return '<div class="card"><div style="background:#FFF0D4;border:1px solid #F0C775;border-radius:18px;padding:13px 15px;box-shadow:0 3px 12px rgba(200,115,10,.12);"><div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#A85D08;">Today\u2019s focus</div><div style="font-size:9px;font-weight:800;color:#A85D08;background:#FBE3B8;padding:2px 8px;border-radius:20px;">3 due</div></div><div style="font-size:15px;font-weight:800;line-height:1.3;margin-top:7px;color:#4A2A02;">'+scope.f+'</div><div onclick="hkGo(\'plan\')" style="background:linear-gradient(165deg,#E8A33D,#B8761A);border-radius:12px;padding:11px 0;text-align:center;font-size:13px;font-weight:800;color:#fff;margin-top:11px;cursor:pointer;box-shadow:var(--btn-honey);">Plan today\u2019s round \u2192</div></div></div>';
     if(id==='health') return '<div class="card"><div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:17px;padding:12px 14px;"><div style="display:flex;align-items:baseline;justify-content:space-between;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:\'Cormorant Garamond\';font-size:32px;font-weight:700;color:#3B6D11;line-height:1;">'+scope.s+'</div><div><div style="font-size:11px;font-weight:800;color:#2A3D30;">'+scope.l+'</div><div style="font-size:10px;font-weight:700;color:#5C8A1E;">\u25b2 up 6 this month</div></div></div><span style="font-size:10px;font-weight:800;color:#3B6D11;">Insights \u203a</span></div><div style="display:flex;gap:6px;margin-top:11px;"><div style="flex:1;background:#FCEBEB;border:1px solid #F0BCBC;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#A32D2D;">1</div><div style="font-size:8px;font-weight:800;color:#791F1F;text-transform:uppercase;">Varroa</div></div><div style="flex:1;background:#FBEECF;border:1px solid #E6C277;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#854F0B;">1</div><div style="font-size:8px;font-weight:800;color:#633806;text-transform:uppercase;">Swarm</div></div><div style="flex:1;background:#EDF6DC;border:1px solid #A8D26B;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#3B6D11;">23</div><div style="font-size:8px;font-weight:800;color:#27500A;text-transform:uppercase;">Queen\u2713</div></div><div style="flex:1;background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#5F5E5A;">2</div><div style="font-size:8px;font-weight:800;color:#444441;text-transform:uppercase;">Unclear</div></div></div></div></div>';
@@ -610,9 +816,53 @@
 
   // ---- SWITCHER ----
   var swOpen=false;
-  window.hkToggleSwitcher=function(){swOpen=!swOpen;document.getElementById('hk-switcher').style.display=swOpen?'block':'none';document.getElementById('hk-caret').style.transform=swOpen?'rotate(180deg)':'rotate(0)';};
+  window.hkToggleSwitcher=function(){swOpen=!swOpen;document.getElementById('hk-switcher').style.display=swOpen?'block':'none';document.getElementById('hk-caret').style.transform=swOpen?'rotate(180deg)':'rotate(0)';if(swOpen&&LIVE)hkRenderSwitcherLive();};
+  function hkRenderSwitcherLive(){
+    document.getElementById('hk-switcher-demo').style.display='none';
+    var box=document.getElementById('hk-switcher-live'); box.style.display='block';
+    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead';});
+    var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
+    var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):'—';
+    var h='';
+    var allSel=(curApiaryId===null);
+    h+='<div onclick="hkScopeHome(null)" style="display:flex;align-items:center;gap:11px;background:'+(allSel?'#F4FAEA':'#fff')+';border:'+(allSel?'1.5px solid #8BBF4D':'1px solid var(--line)')+';border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#fff;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:\'Cormorant Garamond\';font-size:16px;font-weight:700;color:#3B6D11;">'+avg+'</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">All apiaries</div><div style="font-size:10px;color:#5C8A1E;font-weight:700;">'+liveHives.length+' hives · '+LD.apiaries.length+' apiaries</div></div>'+(allSel?'<span style="color:#3B6D11;font-size:17px;font-weight:800;">✓</span>':'')+'</div>';
+    LD.apiaries.forEach(function(a){
+      var hives=LD.hives.filter(function(x){return x.apiary_id===a.id && !x.is_hidden && x.status!=='dead';});
+      var asc=hives.map(function(x){return x.health_score;}).filter(function(s){return typeof s==='number';});
+      var aavg=asc.length?Math.round(asc.reduce(function(p,q){return p+q;},0)/asc.length):'—';
+      var sel=(curApiaryId===a.id);
+      h+='<div onclick="hkScopeHome(\''+a.id+'\')" style="display:flex;align-items:center;gap:11px;background:'+(sel?'#F4FAEA':'#fff')+';border:'+(sel?'1.5px solid #8BBF4D':'1px solid var(--line)')+';border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#F4FAEA;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:\'Cormorant Garamond\';font-size:16px;font-weight:700;color:#3B6D11;">'+aavg+'</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">'+lesc(a.name)+'</div><div style="font-size:10px;color:#7A6A4F;font-weight:700;">'+hives.length+' hives</div></div>'+(sel?'<span style="color:#3B6D11;font-size:17px;font-weight:800;">✓</span>':'')+'</div>';
+    });
+    box.innerHTML=h;
+  }
+  // unified app-wide scope setter (null = all apiaries). Sticks across screens.
+  window.hkSetScope=function(apid,goHome){
+    curApiaryId=apid;
+    hkUpdateHeaderLive();
+    hkCloseSwitcher();
+    renderHomeLive();
+    if(goHome){ hkGo('home'); return; }
+    // if currently on apiary screen, refresh it
+    if(document.querySelector('[data-screen=apiary]').classList.contains('active')) renderApiaryLive();
+    refreshScopedScreens();
+  };
+  // picking from the header switcher takes you to that apiary's home
+  window.hkScopeHome=function(apid){ hkSetScope(apid,true); };
+  function hkUpdateHeaderLive(){
+    if(!LIVE) return;
+    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead';});
+    if(curApiaryId===null){
+      document.getElementById('hk-scope').innerHTML='All apiaries <span class="caret" id="hk-caret">▾</span>';
+      document.getElementById('hk-sub').textContent=liveHives.length+' hives · '+LD.apiaries.length+' apiaries';
+    } else {
+      var a=LD.apiaries.filter(function(x){return x.id===curApiaryId;})[0];
+      var n=liveHives.filter(function(h){return h.apiary_id===curApiaryId;}).length;
+      document.getElementById('hk-scope').innerHTML=lesc(a?a.name:'Apiary')+' <span class="caret" id="hk-caret">▾</span>';
+      document.getElementById('hk-sub').textContent=n+' hives';
+    }
+  }
   window.hkCloseSwitcher=function(){swOpen=false;document.getElementById('hk-switcher').style.display='none';document.getElementById('hk-caret').style.transform='rotate(0)';};
-  window.hkPick=function(k){var d={all:{nm:'All apiaries',sub:'28 hives · 3 apiaries',s:'82',l:'Operation health · good',f:'3 inspections due across Brigstock &amp; Manor Field'},brig:{nm:'Brigstock',sub:'12 hives',s:'78',l:'Brigstock · good',f:'2 inspections due at Brigstock'},nene:{nm:'Nene Valley',sub:'6 hives',s:'85',l:'Nene Valley · good',f:'No inspections due — all caught up'}}[k];document.getElementById('hk-scope').innerHTML=d.nm+' <span class="caret" id="hk-caret">▾</span>';document.getElementById('hk-sub').textContent=d.sub;scope={s:d.s,l:d.l,f:d.f};hkCloseSwitcher();document.getElementById('home-cards').innerHTML=homeHTML();};
+  window.hkPick=function(k){if(LIVE){return;}var d={all:{nm:'All apiaries',sub:'28 hives · 3 apiaries',s:'82',l:'Operation health · good',f:'3 inspections due across Brigstock and Manor Field'},brig:{nm:'Brigstock',sub:'12 hives',s:'78',l:'Brigstock · good',f:'2 inspections due at Brigstock'},nene:{nm:'Nene Valley',sub:'6 hives',s:'85',l:'Nene Valley · good',f:'No inspections due — all caught up'}}[k];document.getElementById('hk-scope').innerHTML=d.nm+' <span class="caret" id="hk-caret">▾</span>';document.getElementById('hk-sub').textContent=d.sub;scope={s:d.s,l:d.l,f:d.f};hkCloseSwitcher();document.getElementById('home-cards').innerHTML=homeHTML();};
 
   // ---- BURGER / ASK / SOS ----
   window.hkBurger=function(){var d=document.getElementById('hk-drawer');d.style.display=(d.style.display==='block')?'none':'block';};
@@ -621,7 +871,24 @@
   window.hkOpenSos=function(){document.getElementById('hk-sos').style.display='block';};
   window.hkCloseSos=function(){document.getElementById('hk-sos').style.display='none';};
 
-  function renderMenu(){var all=[['Home','🏠'],['Apiary','🐝'],['Inspect','✏️'],['Plan','📋'],['Calendar','📅'],['Forage','🌍'],['Insights','📈'],['Market','🛒']];var h='';all.forEach(function(a){h+='<div style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">'+a[1]+'</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">'+a[0]+'</span></div>';});document.getElementById('hk-menu-list').innerHTML=h;}
+  var menuItems=[
+    {id:'home',name:'Home',icon:'🏠',go:'home',pin:true,on:true},
+    {id:'apiary',name:'Apiary',icon:'🐝',go:'apiary',pin:true,on:true},
+    {id:'inspect',name:'Inspect',icon:'✏️',go:'inspect',pin:true,on:true},
+    {id:'plan',name:'Plan',icon:'📋',go:'plan',pin:true,on:true},
+    {id:'cal',name:'Calendar',icon:'📅',go:'cal',pin:true,on:true},
+    {id:'forage',name:'Forage',icon:'🌍',go:'forage',pin:false,on:true},
+    {id:'harvest',name:'Harvest',icon:'🍯',go:'harvest',pin:false,on:true},
+    {id:'treatment',name:'Treatment',icon:'💊',go:'treatment',pin:false,on:true},
+    {id:'inventory',name:'Inventory',icon:'📦',go:'inventory',pin:false,on:true},
+    {id:'queenrearing',name:'Queen rearing',icon:'👑',go:'queenrearing',pin:false,on:true},
+    {id:'insights',name:'Insights',icon:'📈',go:'home',pin:false,on:true}
+  ];
+  function renderMenu(){
+    var h='';
+    menuItems.forEach(function(a){ if(!a.on) return; h+='<div onclick="hkGo(\''+a.go+'\');hkBurger();" style="display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;"><span style="font-size:16px;">'+a.icon+'</span><span style="font-size:13px;font-weight:700;color:#2A3D30;">'+a.name+'</span></div>'; });
+    document.getElementById('hk-menu-list').innerHTML=h;
+  }
 
   // ---- CUSTOMISER ----
   var NAV_MAX=5, FLOAT_MAX=3;
@@ -639,12 +906,12 @@
     navItems=navEdit.filter(function(x){return x.on;}).map(function(x){return {id:x.id,icon:x.icon,label:(x.id==='sos'?'Help':x.name),hero:x.hero,sos:x.sos};});
     floatItems=floatEdit.map(function(x){return {id:x.id,icon:x.icon,name:x.name};});
     document.getElementById('home-cards').innerHTML=homeHTML();
-    renderNav(); renderFloat();
+    renderNav(); renderFloat(); renderMenu();
     hkGo('home');
   };
   window.hkDS=function(t,i){drag=i;dragType=t;};
   window.hkDrop=function(t,i){if(drag===null||dragType!==t)return;var arr=(t==='card')?cards:navEdit;if(t==='nav'&&arr[i].pin)return;var it=arr.splice(drag,1)[0];arr.splice(i,0,it);drag=null;renderEditor();};
-  window.hkTog=function(t,i){var arr=(t==='card')?cards:navEdit;if(t==='nav'&&arr[i].pin)return;if(t==='nav'&&!arr[i].on&&navOnCount()>=NAV_MAX)return;arr[i].on=!arr[i].on;renderEditor();};
+  window.hkTog=function(t,i){var arr=(t==='card')?cards:(t==='menu')?menuItems:navEdit;if((t==='nav'||t==='menu')&&arr[i].pin)return;if(t==='nav'&&!arr[i].on&&navOnCount()>=NAV_MAX)return;arr[i].on=!arr[i].on;renderEditor();};
   window.hkAddNav=function(id){if(navOnCount()>=NAV_MAX)return;var a=navAvail.filter(function(x){return x.id===id;})[0];navAvail=navAvail.filter(function(x){return x.id!==id;});navEdit.splice(navEdit.length-1,0,{id:a.id,name:a.name,icon:a.icon,pin:false,on:true});renderEditor();};
   window.hkAddFloat=function(id){if(floatEdit.length>=FLOAT_MAX)return;var a=floatAvail.filter(function(x){return x.id===id;})[0];floatAvail=floatAvail.filter(function(x){return x.id!==id;});floatEdit.push({id:a.id,name:a.name,icon:a.icon,sos:a.sos});renderEditor();};
   window.hkRemoveFloat=function(i){var it=floatEdit[i];if(it.core)return;floatEdit.splice(i,1);floatAvail.unshift({id:it.id,name:it.name,icon:it.icon,sos:it.sos});renderEditor();};
@@ -658,6 +925,9 @@
     h+='<div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:14px 2px 8px;">Bottom menu · '+nc+' of '+NAV_MAX+'</div>';
     navEdit.forEach(function(it,i){var canOn=it.on||nc<NAV_MAX;h+='<div draggable="'+(it.pin?'false':'true')+'" ondragstart="hkDS(\'nav\','+i+')" ondragover="event.preventDefault()" ondrop="hkDrop(\'nav\','+i+')" style="display:flex;align-items:center;gap:9px;background:'+(it.on?'#fff':'#F3F0E8')+';border:1px solid '+(it.on?'#C7E29A':'var(--line)')+';border-radius:12px;padding:9px 10px;margin-bottom:6px;opacity:'+(it.on?'1':'.6')+';"><span style="color:'+(it.pin?'#E0D8C4':'#B4B2A9')+';font-size:15px;letter-spacing:-2px;">⠿⠿</span>'+(it.pin?'<span style="width:22px;text-align:center;font-size:12px;">🔒</span>':'<button onclick="hkTog(\'nav\','+i+')" '+(canOn?'':'disabled')+' style="width:22px;height:22px;border-radius:50%;cursor:'+(canOn?'pointer':'not-allowed')+';background:'+(it.on?'#5C8A1E':'#fff')+';border:1.5px solid '+(it.on?'#5C8A1E':'#C4B896')+';color:'+(it.on?'#fff':(canOn?'#A85D08':'#D8D3C5'))+';font-size:11px;font-weight:800;padding:0;">'+(it.on?'✓':'+')+'</button>')+'<span style="font-size:15px;">'+(it.sos?'🆘':it.icon)+'</span><div style="flex:1;font-size:12px;font-weight:700;color:'+(it.on?'#1A1208':'#7A6A4F')+';">'+it.name+(it.pin?' <span style="font-size:8px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:1px 5px;border-radius:4px;">PINNED</span>':'')+(it.hero?' <span style="font-size:8px;font-weight:800;color:#C8730A;background:#FFF0D4;padding:1px 5px;border-radius:4px;">FEATURED</span>':'')+'</div></div>';});
     if(nc<NAV_MAX&&navAvail.length){h+='<div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:10px 2px 8px;">＋ Add to bottom menu</div>';navAvail.forEach(function(a){h+='<div onclick="hkAddNav(\''+a.id+'\')" style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:6px;cursor:pointer;"><span style="font-size:15px;">'+a.icon+'</span><div style="flex:1;font-size:12px;font-weight:700;color:#5A4A30;">'+a.name+'</div><span style="width:21px;height:21px;border-radius:50%;border:1.5px solid #C4B896;color:#A85D08;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">+</span></div>';});}
+    h+='<div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:16px 2px 8px;">Menu items</div>';
+    h+='<div style="font-size:11px;color:#8A7A60;font-weight:600;margin:0 2px 8px;line-height:1.4;">Choose which features show in your menu. Core items and beta tools always stay.</div>';
+    menuItems.forEach(function(it,i){h+='<div style="display:flex;align-items:center;gap:9px;background:'+(it.on?'#fff':'#F3F0E8')+';border:1px solid '+(it.on?'#C7E29A':'var(--line)')+';border-radius:12px;padding:9px 10px;margin-bottom:6px;opacity:'+(it.on?'1':'.6')+';">'+(it.pin?'<span style="width:22px;text-align:center;font-size:12px;">🔒</span>':'<button onclick="hkTog(\'menu\','+i+')" style="width:22px;height:22px;border-radius:50%;cursor:pointer;background:'+(it.on?'#5C8A1E':'#fff')+';border:1.5px solid '+(it.on?'#5C8A1E':'#C4B896')+';color:'+(it.on?'#fff':'#A85D08')+';font-size:11px;font-weight:800;padding:0;">'+(it.on?'✓':'+')+'</button>')+'<span style="font-size:15px;">'+it.icon+'</span><div style="flex:1;font-size:12px;font-weight:700;color:'+(it.on?'#1A1208':'#7A6A4F')+';">'+it.name+(it.pin?' <span style="font-size:8px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:1px 5px;border-radius:4px;">CORE</span>':'')+'</div></div>';});
     h+='<div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:16px 2px 8px;">Floating buttons · '+floatEdit.length+' of '+FLOAT_MAX+'</div>';
     floatEdit.forEach(function(it,i){h+='<div style="display:flex;align-items:center;gap:9px;background:#fff;border:1px solid '+(it.sos?'#E89A9A':'#C7E29A')+';border-radius:12px;padding:9px 10px;margin-bottom:6px;"><span style="font-size:15px;">'+(it.sos?'🆘':it.icon)+'</span><div style="flex:1;font-size:12px;font-weight:700;">'+it.name+(it.core?' <span style="font-size:8px;font-weight:800;color:#854F0B;background:#FBEBCF;padding:1px 5px;border-radius:4px;">CORE</span>':'')+'</div>'+(it.core?'':'<button onclick="hkRemoveFloat('+i+')" style="background:#FCEBEB;border:1px solid #E89A9A;border-radius:8px;color:#A32D2D;font-size:11px;font-weight:800;padding:5px 9px;cursor:pointer;">Remove</button>')+'</div>';});
     if(floatEdit.length<FLOAT_MAX&&floatAvail.length){floatAvail.forEach(function(a){h+='<div onclick="hkAddFloat(\''+a.id+'\')" style="display:flex;align-items:center;gap:9px;background:'+(a.sos?'#FFF6F5':'#fff')+';border:1px solid '+(a.sos?'#E89A9A':'var(--line)')+';border-radius:12px;padding:9px 10px;margin-bottom:6px;cursor:pointer;"><span style="font-size:15px;">'+(a.sos?'🆘':a.icon)+'</span><div style="flex:1;font-size:12px;font-weight:700;color:'+(a.sos?'#C8302C':'#5A4A30')+';">'+a.name+(a.sos?' <span style="font-size:8px;font-weight:800;color:#C8302C;background:#FCEBEB;padding:1px 5px;border-radius:4px;">SAFETY</span>':'')+'</div><span style="width:21px;height:21px;border-radius:50%;border:1.5px solid '+(a.sos?'#E89A9A':'#C4B896')+';color:'+(a.sos?'#C8302C':'#A85D08')+';font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;">+</span></div>';});}
@@ -665,9 +935,639 @@
     document.getElementById('cust-body').innerHTML=h;
   }
 
+  // ---- REUSABLE BOTTOM SHEET ----
+  window.hkSheet=function(html){document.getElementById('hk-sheet-card').innerHTML=html;document.getElementById('hk-sheet').style.display='block';};
+  window.hkSheetClose=function(){document.getElementById('hk-sheet').style.display='none';};
+  function field(label,id,val,type){return '<div class="field"><label>'+label+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+(val||'')+'"></div>';}
+
+  // ---- INVENTORY (full CRUD exemplar) ----
+  var LOW_THRESHOLD=5;
+  var inventory=[
+    {id:1,name:'National supers',qty:12,unit:'',loc:'Store shed',low:4},
+    {id:2,name:'Foundation sheets',qty:8,unit:'',loc:'Store shed',low:10},
+    {id:3,name:'Apivar strips',qty:2,unit:'packs',loc:'Brigstock',low:3}
+  ];
+  var invFilter='All';
+  var invSeq=4;
+  function invIsLow(it){return it.qty<=it.low;}
+  function renderInventory(){
+    var locs=['All'].concat(inventory.map(function(i){return i.loc;}).filter(function(v,i,a){return a.indexOf(v)===i;}));
+    var lowCount=inventory.filter(invIsLow).length;
+    var chips='';
+    locs.forEach(function(l){chips+='<span class="fchip'+(invFilter===l?' on':'')+'" onclick="hkInvFilter(\''+l.replace(/'/g,"")+'\')">'+l+'</span>';});
+    chips+='<span class="fchip'+(invFilter==='Low'?' on':'')+'" onclick="hkInvFilter(\'Low\')">Low stock'+(lowCount?' <span class="c">'+lowCount+'</span>':'')+'</span>';
+    var list=inventory.filter(function(it){return invFilter==='All'?true:invFilter==='Low'?invIsLow(it):it.loc===invFilter;});
+    var rows='';
+    if(!list.length){rows='<div style="text-align:center;color:var(--muted);font-size:13px;padding:24px 0;">Nothing here yet.</div>';}
+    list.forEach(function(it){
+      var low=invIsLow(it);
+      rows+='<div class="hive" style="align-items:stretch;"><div class="hnum" style="font-size:14px;">📦</div>'+
+        '<div class="hbody" onclick="hkInvEdit('+it.id+')" style="cursor:pointer;"><div class="nm">'+it.name+'</div><div class="meta">'+it.loc+(it.unit?' · '+it.unit:'')+(low?' · running low':'')+'</div>'+(low?'<span class="badge b-warn" style="margin-top:5px;display:inline-block;">low</span>':'')+'</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<button onclick="hkInvAdjust('+it.id+',-1)" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--wax);background:#fff;font-size:18px;font-weight:800;color:var(--copper);cursor:pointer;padding:0;line-height:1;">−</button>'+
+          '<div style="min-width:30px;text-align:center;font-family:\'Cormorant Garamond\',serif;font-size:26px;font-weight:700;color:'+(low?'#A8512A':'var(--ink)')+';line-height:1;">'+it.qty+'</div>'+
+          '<button onclick="hkInvAdjust('+it.id+',1)" style="width:32px;height:32px;border-radius:9px;border:1px solid var(--wax);background:#fff;font-size:18px;font-weight:800;color:var(--moss);cursor:pointer;padding:0;line-height:1;">+</button>'+
+        '</div></div>';
+    });
+    document.getElementById('inv-body').innerHTML=
+      '<div class="scrtitle">Inventory</div><div class="scrsub">Equipment &amp; stock · tap ± to consume or restock</div>'+
+      '<div style="display:flex;gap:8px;overflow-x:auto;padding:12px 0;">'+chips+'</div>'+
+      rows+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkInvAddForm()">＋ Add equipment</button>'+
+      '<div style="height:64px;"></div>';
+  }
+  window.hkInvFilter=function(f){invFilter=f;renderInventory();};
+  window.hkInvAdjust=function(id,delta){var it=inventory.filter(function(x){return x.id===id;})[0];if(!it)return;it.qty=Math.max(0,it.qty+delta);renderInventory();};
+  window.hkInvAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Add equipment</div>'+
+      field('Item name','inv-name','')+
+      '<div class="field"><div class="row2"><div><label>Quantity</label><input id="inv-qty" type="number" value="1"></div><div><label>Unit (optional)</label><input id="inv-unit" type="text" value=""></div></div></div>'+
+      field('Location','inv-loc','Store shed')+
+      '<div class="field"><label>Low-stock alert below</label><input id="inv-low" type="number" value="3"></div>'+
+      '<button class="btn btn-moss" onclick="hkInvSave()">Add to inventory</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkInvSave=function(){
+    var name=document.getElementById('inv-name').value.trim();if(!name){return;}
+    inventory.push({id:invSeq++,name:name,qty:parseInt(document.getElementById('inv-qty').value)||0,unit:document.getElementById('inv-unit').value.trim(),loc:document.getElementById('inv-loc').value.trim()||'Store shed',low:parseInt(document.getElementById('inv-low').value)||0});
+    hkSheetClose();renderInventory();
+  };
+  window.hkInvEdit=function(id){
+    var it=inventory.filter(function(x){return x.id===id;})[0];if(!it)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Edit item</div>'+
+      field('Item name','inv-name',it.name)+
+      '<div class="field"><div class="row2"><div><label>Quantity</label><input id="inv-qty" type="number" value="'+it.qty+'"></div><div><label>Unit</label><input id="inv-unit" type="text" value="'+it.unit+'"></div></div></div>'+
+      field('Location','inv-loc',it.loc)+
+      '<div class="field"><label>Low-stock alert below</label><input id="inv-low" type="number" value="'+it.low+'"></div>'+
+      '<button class="btn btn-moss" onclick="hkInvUpdate('+id+')">Save changes</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkInvDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Delete item</span></div>');
+  };
+  window.hkInvUpdate=function(id){var it=inventory.filter(function(x){return x.id===id;})[0];if(!it)return;
+    it.name=document.getElementById('inv-name').value.trim()||it.name;it.qty=parseInt(document.getElementById('inv-qty').value)||0;it.unit=document.getElementById('inv-unit').value.trim();it.loc=document.getElementById('inv-loc').value.trim()||it.loc;it.low=parseInt(document.getElementById('inv-low').value)||0;
+    hkSheetClose();renderInventory();};
+  window.hkInvDelete=function(id){inventory=inventory.filter(function(x){return x.id!==id;});hkSheetClose();renderInventory();};
+
+  // ---- HARVEST ----
+  var harvests=[
+    {id:1,name:'Spring honey · Far Hedge',kg:14.2,supers:2,month:'April',bottled:true},
+    {id:2,name:'Spring honey · Orchard',kg:11.8,supers:2,month:'May',bottled:false},
+    {id:3,name:'Early honey · Bottom Row',kg:15.0,supers:1,month:'May',bottled:true}
+  ];
+  var hvSeq=4;
+  function renderHarvest(){
+    var total=harvests.reduce(function(s,h){return s+h.kg;},0);
+    var stock=harvests.filter(function(h){return !h.bottled;}).reduce(function(s,h){return s+h.kg;},0);
+    var rows='';
+    harvests.forEach(function(h){
+      rows+='<div class="hive"><div class="hnum" style="font-size:15px;">🍯</div>'+
+        '<div class="hbody" onclick="hkHvEdit('+h.id+')" style="cursor:pointer;"><div class="nm">'+h.name+'</div><div class="meta">'+h.kg+' kg · '+h.supers+' super'+(h.supers!==1?'s':'')+' · '+h.month+'</div></div>'+
+        (h.bottled?'<span class="badge b-ok">bottled</span>':'<button onclick="hkHvBottle('+h.id+')" class="badge b-due" style="border:none;cursor:pointer;font-family:inherit;">to bottle ›</button>')+'</div>';
+    });
+    document.getElementById('harvest-body').innerHTML=
+      '<div class="scrtitle">Harvest</div><div class="scrsub">Yield, honey stock &amp; bottling</div>'+
+      '<div style="display:flex;gap:10px;margin:14px 0;"><div class="stat"><div class="sv">'+(Math.round(total*10)/10)+'<span style="font-size:13px;color:var(--muted);">kg</span></div><div class="sk">This year</div></div><div class="stat"><div class="sv">'+(Math.round(stock*10)/10)+'<span style="font-size:13px;color:var(--muted);">kg</span></div><div class="sk">To bottle</div></div><div class="stat"><div class="sv">'+harvests.length+'</div><div class="sk">Harvests</div></div></div>'+
+      rows+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkHvAddForm()">＋ Record a harvest</button><div style="height:64px;"></div>';
+  }
+  window.hkHvBottle=function(id){var h=harvests.filter(function(x){return x.id===id;})[0];if(h){h.bottled=true;renderHarvest();}};
+  window.hkHvAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Record a harvest</div>'+
+      field('Label (hive / type)','hv-name','')+
+      '<div class="field"><div class="row2"><div><label>Weight (kg)</label><input id="hv-kg" type="number" value="0"></div><div><label>Supers</label><input id="hv-sup" type="number" value="1"></div></div></div>'+
+      field('Month','hv-month','June')+
+      '<button class="btn btn-moss" onclick="hkHvSave()">Record harvest</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkHvSave=function(){var name=document.getElementById('hv-name').value.trim();if(!name)return;harvests.push({id:hvSeq++,name:name,kg:parseFloat(document.getElementById('hv-kg').value)||0,supers:parseInt(document.getElementById('hv-sup').value)||1,month:document.getElementById('hv-month').value.trim()||'—',bottled:false});hkSheetClose();renderHarvest();};
+  window.hkHvEdit=function(id){var h=harvests.filter(function(x){return x.id===id;})[0];if(!h)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Edit harvest</div>'+
+      field('Label','hv-name',h.name)+
+      '<div class="field"><div class="row2"><div><label>Weight (kg)</label><input id="hv-kg" type="number" value="'+h.kg+'"></div><div><label>Supers</label><input id="hv-sup" type="number" value="'+h.supers+'"></div></div></div>'+
+      field('Month','hv-month',h.month)+
+      '<button class="btn btn-moss" onclick="hkHvUpdate('+id+')">Save changes</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkHvDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Delete harvest</span></div>');
+  };
+  window.hkHvUpdate=function(id){var h=harvests.filter(function(x){return x.id===id;})[0];if(!h)return;h.name=document.getElementById('hv-name').value.trim()||h.name;h.kg=parseFloat(document.getElementById('hv-kg').value)||0;h.supers=parseInt(document.getElementById('hv-sup').value)||1;h.month=document.getElementById('hv-month').value.trim()||h.month;hkSheetClose();renderHarvest();};
+  window.hkHvDelete=function(id){harvests=harvests.filter(function(x){return x.id!==id;});hkSheetClose();renderHarvest();};
+
+  // ---- TREATMENT ----
+  var treatments=[
+    {id:1,product:'Apivar',hive:'Far Hedge',date:'March',note:'remove in 6 weeks',active:true},
+    {id:2,product:'Api-Bioxal',hive:'Orchard',date:'Jan',note:'oxalic winter trickle',active:false}
+  ];
+  var trSeq=3;
+  function renderTreatment(){
+    var rows='';
+    treatments.forEach(function(t){
+      rows+='<div class="hive"><div class="hnum" style="font-size:15px;">💊</div>'+
+        '<div class="hbody" onclick="hkTrEdit('+t.id+')" style="cursor:pointer;"><div class="nm">'+t.product+' · '+t.hive+'</div><div class="meta">Applied '+t.date+(t.note?' · '+t.note:'')+'</div></div>'+
+        (t.active?'<button onclick="hkTrRemove('+t.id+')" class="badge b-warn" style="border:none;cursor:pointer;font-family:inherit;">remove ›</button>':'<span class="badge b-ok">done</span>')+'</div>';
+    });
+    document.getElementById('treatment-body').innerHTML=
+      '<div class="scrtitle">Treatment</div><div class="scrsub">Varroa control &amp; medication log</div>'+
+      '<div style="margin-top:14px;"></div>'+rows+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkTrAddForm()">＋ Log a treatment</button>'+
+      '<div class="secrow" style="padding-top:16px;"><h2>Efficacy</h2></div>'+
+      '<div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow);font-size:12px;color:var(--ink-soft);line-height:1.5;">Pre/post mite-count efficacy and resistance flags appear here once varroa counts are logged.</div>'+
+      '<div style="height:64px;"></div>';
+  }
+  window.hkTrRemove=function(id){var t=treatments.filter(function(x){return x.id===id;})[0];if(t){t.active=false;t.note='removed';renderTreatment();}};
+  window.hkTrAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Log a treatment</div>'+
+      field('Product','tr-product','')+
+      field('Hive','tr-hive','Far Hedge')+
+      field('Applied (month)','tr-date','June')+
+      field('Note (optional)','tr-note','')+
+      '<button class="btn btn-moss" onclick="hkTrSave()">Log treatment</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkTrSave=function(){var p=document.getElementById('tr-product').value.trim();if(!p)return;treatments.unshift({id:trSeq++,product:p,hive:document.getElementById('tr-hive').value.trim()||'—',date:document.getElementById('tr-date').value.trim()||'—',note:document.getElementById('tr-note').value.trim(),active:true});hkSheetClose();renderTreatment();};
+  window.hkTrEdit=function(id){var t=treatments.filter(function(x){return x.id===id;})[0];if(!t)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Edit treatment</div>'+
+      field('Product','tr-product',t.product)+field('Hive','tr-hive',t.hive)+field('Applied','tr-date',t.date)+field('Note','tr-note',t.note)+
+      '<button class="btn btn-moss" onclick="hkTrUpdate('+id+')">Save changes</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkTrDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Delete</span></div>');
+  };
+  window.hkTrUpdate=function(id){var t=treatments.filter(function(x){return x.id===id;})[0];if(!t)return;t.product=document.getElementById('tr-product').value.trim()||t.product;t.hive=document.getElementById('tr-hive').value.trim()||t.hive;t.date=document.getElementById('tr-date').value.trim()||t.date;t.note=document.getElementById('tr-note').value.trim();hkSheetClose();renderTreatment();};
+  window.hkTrDelete=function(id){treatments=treatments.filter(function(x){return x.id!==id;});hkSheetClose();renderTreatment();};
+
+  // ---- QUEEN REARING ----
+  var qrBatches=[
+    {id:1,name:'Graft batch',date:'12 May',cells:8,stage:'capped',note:'emergence ~24 May'},
+    {id:2,name:'Mating nucs · R2',date:'May',cells:3,stage:'mating',note:'check laying'}
+  ];
+  var qrSeq=3, QR_STAGES=['grafted','capped','emerged','mating','laying'];
+  function qrBadge(st){return st==='laying'?'b-ok':(st==='mating'||st==='emerged')?'b-due':'b-warn';}
+  function renderQR(){
+    var rows='';
+    qrBatches.forEach(function(q){
+      rows+='<div class="hive"><div class="hnum" style="font-size:14px;">👑</div>'+
+        '<div class="hbody" onclick="hkQrEdit('+q.id+')" style="cursor:pointer;"><div class="nm">'+q.name+' · '+q.date+'</div><div class="meta">'+q.cells+' cells · '+q.note+'</div></div>'+
+        '<button onclick="hkQrAdvance('+q.id+')" class="badge '+qrBadge(q.stage)+'" style="border:none;cursor:pointer;font-family:inherit;">'+q.stage+' ›</button></div>';
+    });
+    document.getElementById('qr-body').innerHTML=
+      '<div class="scrtitle">Queen rearing</div><div class="scrsub">Grafts, cells &amp; mating · tap stage to advance</div>'+
+      '<div style="margin-top:14px;"></div>'+rows+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkQrAddForm()">＋ Start a rearing batch</button><div style="height:64px;"></div>';
+  }
+  window.hkQrAdvance=function(id){var q=qrBatches.filter(function(x){return x.id===id;})[0];if(!q)return;var i=QR_STAGES.indexOf(q.stage);if(i<QR_STAGES.length-1)q.stage=QR_STAGES[i+1];renderQR();};
+  window.hkQrAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Start a rearing batch</div>'+
+      field('Batch name','qr-name','')+
+      '<div class="field"><div class="row2"><div><label>Cells / grafts</label><input id="qr-cells" type="number" value="0"></div><div><label>Date</label><input id="qr-date" type="text" value="June"></div></div></div>'+
+      field('Note','qr-note','')+
+      '<button class="btn btn-moss" onclick="hkQrSave()">Start batch</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkQrSave=function(){var n=document.getElementById('qr-name').value.trim();if(!n)return;qrBatches.unshift({id:qrSeq++,name:n,date:document.getElementById('qr-date').value.trim()||'—',cells:parseInt(document.getElementById('qr-cells').value)||0,stage:'grafted',note:document.getElementById('qr-note').value.trim()});hkSheetClose();renderQR();};
+  window.hkQrEdit=function(id){var q=qrBatches.filter(function(x){return x.id===id;})[0];if(!q)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Edit batch</div>'+
+      field('Batch name','qr-name',q.name)+'<div class="field"><div class="row2"><div><label>Cells</label><input id="qr-cells" type="number" value="'+q.cells+'"></div><div><label>Date</label><input id="qr-date" type="text" value="'+q.date+'"></div></div></div>'+field('Note','qr-note',q.note)+
+      '<button class="btn btn-moss" onclick="hkQrUpdate('+id+')">Save changes</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkQrDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Delete batch</span></div>');
+  };
+  window.hkQrUpdate=function(id){var q=qrBatches.filter(function(x){return x.id===id;})[0];if(!q)return;q.name=document.getElementById('qr-name').value.trim()||q.name;q.cells=parseInt(document.getElementById('qr-cells').value)||0;q.date=document.getElementById('qr-date').value.trim()||q.date;q.note=document.getElementById('qr-note').value.trim();hkSheetClose();renderQR();};
+  window.hkQrDelete=function(id){qrBatches=qrBatches.filter(function(x){return x.id!==id;});hkSheetClose();renderQR();};
+
+  // ---- MOVEMENTS ----
+  var movements=[
+    {id:1,from:'Brigstock',to:'Manor Field',what:'Far Hedge',when:'Oct'},
+    {id:2,from:'Nuc',to:'Full hive',what:'Promoted to National box',when:'May'}
+  ];
+  var mvSeq=3;
+  function renderMovements(){
+    var rows='';
+    movements.forEach(function(m){
+      rows+='<div class="hive"><div class="hnum" style="font-size:14px;">🔀</div>'+
+        '<div class="hbody" onclick="hkMvEdit('+m.id+')" style="cursor:pointer;"><div class="nm">'+m.from+' → '+m.to+'</div><div class="meta">'+m.what+'</div></div>'+
+        '<span class="tl-when" style="font-size:11px;color:var(--muted);">'+m.when+'</span></div>';
+    });
+    document.getElementById('mv-body').innerHTML=
+      '<span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo(\'hive\')">‹ Far Hedge</span>'+
+      '<div class="scrtitle" style="margin-top:8px;">Move / transfer</div><div class="scrsub">Movement history &amp; new transfer</div>'+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkMvAddForm()">🔀 Move this hive</button>'+
+      '<div class="secrow" style="padding-top:16px;"><h2>Recent movements</h2></div>'+rows+'<div style="height:64px;"></div>';
+  }
+  window.hkMvAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Move / transfer</div>'+
+      field('What is moving','mv-what','Far Hedge')+
+      '<div class="field"><div class="row2"><div><label>From</label><input id="mv-from" type="text" value="Brigstock"></div><div><label>To</label><input id="mv-to" type="text" value=""></div></div></div>'+
+      field('When','mv-when','June')+
+      '<button class="btn btn-moss" onclick="hkMvSave()">Record move</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkMvSave=function(){var to=document.getElementById('mv-to').value.trim();if(!to)return;movements.unshift({id:mvSeq++,from:document.getElementById('mv-from').value.trim()||'—',to:to,what:document.getElementById('mv-what').value.trim()||'—',when:document.getElementById('mv-when').value.trim()||'—'});hkSheetClose();renderMovements();};
+  window.hkMvEdit=function(id){var m=movements.filter(function(x){return x.id===id;})[0];if(!m)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Edit movement</div>'+
+      field('What moved','mv-what',m.what)+'<div class="field"><div class="row2"><div><label>From</label><input id="mv-from" type="text" value="'+m.from+'"></div><div><label>To</label><input id="mv-to" type="text" value="'+m.to+'"></div></div></div>'+field('When','mv-when',m.when)+
+      '<button class="btn btn-moss" onclick="hkMvUpdate('+id+')">Save changes</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkMvDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Delete</span></div>');
+  };
+  window.hkMvUpdate=function(id){var m=movements.filter(function(x){return x.id===id;})[0];if(!m)return;m.what=document.getElementById('mv-what').value.trim()||m.what;m.from=document.getElementById('mv-from').value.trim()||m.from;m.to=document.getElementById('mv-to').value.trim()||m.to;m.when=document.getElementById('mv-when').value.trim()||m.when;hkSheetClose();renderMovements();};
+  window.hkMvDelete=function(id){movements=movements.filter(function(x){return x.id!==id;});hkSheetClose();renderMovements();};
+
+  // ---- MESSAGES / INVITES ----
+  var invites=[
+    {id:1,who:'Dave',detail:'Brigstock — can view & inspect',status:'active'},
+    {id:2,who:'Paul',detail:'Invite sent 2 days ago',status:'pending'}
+  ];
+  var invSeq2=3;
+  function renderMessages(){
+    var rows='';
+    invites.forEach(function(v){
+      var badge=v.status==='active'?'b-ok':v.status==='pending'?'b-due':'b-warn';
+      rows+='<div class="hive"><div class="hnum" style="font-size:14px;">'+(v.status==='active'?'👥':'✉️')+'</div>'+
+        '<div class="hbody" onclick="hkMsgEdit('+v.id+')" style="cursor:pointer;"><div class="nm">'+v.who+'</div><div class="meta">'+v.detail+'</div></div>'+
+        '<span class="badge '+badge+'">'+v.status+'</span></div>';
+    });
+    document.getElementById('messages-body').innerHTML=
+      '<div class="scrtitle">Invites &amp; sharing</div><div class="scrsub">Shared apiaries &amp; messages</div>'+
+      '<div style="margin-top:14px;"></div>'+rows+
+      '<button class="btn btn-honey" style="margin-top:14px;" onclick="hkMsgAddForm()">＋ Invite a beekeeper</button><div style="height:64px;"></div>';
+  }
+  window.hkMsgAddForm=function(){
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">Invite a beekeeper</div>'+
+      field('Name','msg-who','')+field('Email','msg-email','','email')+field('Apiary to share','msg-ap','Brigstock')+
+      '<button class="btn btn-moss" onclick="hkMsgSave()">Send invite</button>'+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkSheetClose()" style="font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;">Cancel</span></div>');
+  };
+  window.hkMsgSave=function(){var w=document.getElementById('msg-who').value.trim();if(!w)return;invites.push({id:invSeq2++,who:w,detail:'Invite to '+(document.getElementById('msg-ap').value.trim()||'apiary')+' · just sent',status:'pending'});hkSheetClose();renderMessages();};
+  window.hkMsgEdit=function(id){var v=invites.filter(function(x){return x.id===id;})[0];if(!v)return;
+    hkSheet('<div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-bottom:14px;">'+v.who+'</div>'+
+      '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px;">'+v.detail+'</div>'+
+      (v.status==='pending'?'<button class="btn btn-moss" onclick="hkMsgResend('+id+')">Resend invite</button>':'')+
+      '<div style="text-align:center;padding-top:12px;"><span onclick="hkMsgDelete('+id+')" style="font-size:13px;font-weight:700;color:var(--copper);cursor:pointer;">🗑 Remove access</span></div>');
+  };
+  window.hkMsgResend=function(id){hkSheetClose();renderMessages();};
+  window.hkMsgDelete=function(id){invites=invites.filter(function(x){return x.id!==id;});hkSheetClose();renderMessages();};
+
+  // ==== LIVE DATA LAYER (read-only) ====
+  var SUPA_URL='https://hknauovhcfsfszyilnrw.supabase.co';
+  var SUPA_KEY='sb_publishable_5GEEurL8vsVQnd2hY9f_pQ_MMi65O2o';
+  var sb=null, LIVE=false, LD={apiaries:[],hives:[],inspections:[]}, curApiaryId=null, curHiveId=null;
+  window.__setLive=function(d){ LD=d; LIVE=true; };
+  function lesc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function lago(s){if(!s)return 'never';var d=Math.floor((Date.now()-new Date(s).getTime())/86400000);return d===0?'today':d===1?'yesterday':d+' days ago';}
+  function ldate(s){if(!s)return '—';return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+  window.hkLogout=async function(){
+    try{ if(sb) await sb.auth.signOut(); }catch(e){}
+    LIVE=false; LD={apiaries:[],hives:[],inspections:[]}; curApiaryId=null; curHiveId=null; window._focusDismissed=false;
+    if(typeof hkBurger==='function'){ try{ hkBurger(); }catch(e){} }
+    // restore demo views
+    ['apiary','hive','inspections'].forEach(function(s){var d=document.getElementById(s+'-demo');if(d)d.style.display='block';var l=document.getElementById(s+'-live');if(l){l.style.display='none';l.innerHTML='';}});
+    document.getElementById('hk-switcher-demo').style.display='block';
+    var sl=document.getElementById('hk-switcher-live'); if(sl){sl.style.display='none';sl.innerHTML='';}
+    document.getElementById('hk-login-err').style.display='none';
+    document.getElementById('hk-li-email').value=''; document.getElementById('hk-li-pass').value='';
+    document.getElementById('hk-login').style.display='flex';
+  };
+  window.hkLogin=async function(){
+    var email=document.getElementById('hk-li-email').value.trim(), pass=document.getElementById('hk-li-pass').value;
+    var errEl=document.getElementById('hk-login-err');
+    if(!email||!pass){ errEl.style.display='block'; errEl.textContent='Enter email and password.'; return; }
+    errEl.style.display='none';
+    try{
+      var r=await sb.auth.signInWithPassword({email:email,password:pass});
+      if(r.error){ errEl.style.display='block'; errEl.textContent=r.error.message; return; }
+      await hkLoadLive();
+      document.getElementById('hk-login').style.display='none';
+    }catch(e){ errEl.style.display='block'; errEl.textContent='Sign-in failed: '+e.message; }
+  };
+
+  async function hkLoadLive(){
+    var ap=await sb.from('apiaries').select('id,name,location').order('name');
+    var hv=await sb.from('hives').select('id,name,num,apiary_id,status,health_score,varroa_level,swarm_risk,queen_status,brood_boxes,supers,box_type,temper,is_hidden,established,notes,cover_photo,updated_at').order('num');
+    var ins=await sb.from('inspections').select('id,hive_id,inspected_at,queen_seen,frames_brood,brood_frames,stores_level,varroa_level,temper,notes,next_inspection_notes,photo_urls').order('inspected_at',{ascending:false});
+    if(ap.error||hv.error||ins.error){ alert('Load failed: '+((ap.error||hv.error||ins.error).message)); return; }
+    // Meadowbrook display filter (DB untouched)
+    var hideIds={};
+    LD.apiaries=(ap.data||[]).filter(function(a){var h=/meadowbrook/i.test(a.name||'');if(h)hideIds[a.id]=true;return !h;});
+    LD.hives=(hv.data||[]).filter(function(h){return !hideIds[h.apiary_id];});
+    var keep={}; LD.hives.forEach(function(h){keep[h.id]=true;});
+    LD.inspections=(ins.data||[]).filter(function(i){return keep[i.hive_id];});
+    LIVE=true;
+    curApiaryId=null; // default: all apiaries, sticks until changed
+    hkUpdateHeaderLive();
+    renderHomeLive();
+    hkGo('home');
+  }
+
+  window.hkDismissFocus=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); window._focusDismissed=true; renderHomeLive(); };
+
+  // override home cards: full home page (Today's Focus, health, weather, activity, environment) with real scoped data
+  function renderHomeLive(){
+    if(!LIVE){ return; }
+    var inScope=function(h){ return curApiaryId===null ? true : h.apiary_id===curApiaryId; };
+    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead' && inScope(h);});
+    var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
+    var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):'—';
+    var apName=curApiaryId===null?null:(LD.apiaries.filter(function(a){return a.id===curApiaryId;})[0]||{name:'Apiary'}).name;
+    var liveHiveIds={}; liveHives.forEach(function(h){liveHiveIds[h.id]=true;});
+    var scopedInsp=LD.inspections.filter(function(i){return liveHiveIds[i.hive_id];});
+    // real breakdown counts
+    var swarmN=liveHives.filter(function(h){return h.swarm_risk&&h.swarm_risk!=='none';}).length;
+    var varroaN=liveHives.filter(function(h){return h.varroa_level && (''+h.varroa_level).toLowerCase()!=='none' && (''+h.varroa_level).toLowerCase()!=='low';}).length;
+    var lowN=liveHives.filter(function(h){return h.health_score!=null && h.health_score<50;}).length;
+    // queen-seen from latest inspection per hive
+    var queenOk=0; liveHives.forEach(function(h){var li=LD.inspections.filter(function(i){return i.hive_id===h.id;})[0]; if(li&&li.queen_seen) queenOk++;});
+    // due (7-day cadence)
+    var dueN=liveHives.filter(function(h){var li=LD.inspections.filter(function(i){return i.hive_id===h.id;})[0]; if(!li)return true; return Math.floor((Date.now()-new Date(li.inspected_at).getTime())/86400000)>=7;}).length;
+    var focusText = dueN ? (dueN+' hive'+(dueN>1?'s':'')+' due for inspection'+(apName?' at '+apName:'')) : ('All caught up'+(apName?' at '+apName:' across your apiaries'));
+    var healthLbl=(curApiaryId===null?'All apiaries':lesc(apName))+' · '+(avg>=70?'good':avg>=50?'fair':avg==='—'?'—':'needs care');
+
+    var h='';
+    // read-only ribbon
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 2px 10px;"><div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#27500A;">🔒 '+(curApiaryId===null?'All Apiaries':lesc(apName))+' · your live data</div><div style="font-size:9px;font-weight:800;color:#27500A;background:#EDF6DC;border:1px solid #A8D26B;padding:2px 8px;border-radius:20px;">READ-ONLY</div></div>';
+    // TODAY'S FOCUS (real) — dismissable
+    if(!window._focusDismissed){
+      h+='<div class="card"><div style="background:#FFF0D4;border:1px solid #F0C775;border-radius:18px;padding:13px 15px;box-shadow:0 3px 12px rgba(200,115,10,.12);position:relative;"><div onclick="hkDismissFocus(event)" style="position:absolute;top:9px;right:11px;width:22px;height:22px;border-radius:50%;background:rgba(168,93,8,.12);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#A85D08;cursor:pointer;line-height:1;">×</div><div style="display:flex;align-items:center;justify-content:space-between;padding-right:26px;"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#A85D08;">Today\u2019s focus</div>'+(dueN?'<div style="font-size:9px;font-weight:800;color:#A85D08;background:#FBE3B8;padding:2px 8px;border-radius:20px;">'+dueN+' due</div>':'')+'</div><div style="font-size:15px;font-weight:800;line-height:1.3;margin-top:7px;color:#4A2A02;">'+lesc(focusText)+'</div><div onclick="hkGo(\'plan\')" style="background:linear-gradient(165deg,#E8A33D,#B8761A);border-radius:12px;padding:11px 0;text-align:center;font-size:13px;font-weight:800;color:#fff;margin-top:11px;cursor:pointer;box-shadow:var(--btn-honey);">Plan today\u2019s round \u2192</div></div></div>';
+    }
+    // HEALTH (real, with breakdown)
+    h+='<div class="card"><div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:17px;padding:12px 14px;"><div style="display:flex;align-items:baseline;justify-content:space-between;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:\'Cormorant Garamond\';font-size:32px;font-weight:700;color:#3B6D11;line-height:1;">'+avg+'</div><div><div style="font-size:11px;font-weight:800;color:#2A3D30;">'+healthLbl+'</div><div style="font-size:10px;font-weight:700;color:#5C8A1E;">'+liveHives.length+' live hives</div></div></div><span onclick="hkGo(\'apiary\')" style="font-size:10px;font-weight:800;color:#3B6D11;cursor:pointer;">Hives \u203a</span></div><div style="display:flex;gap:6px;margin-top:11px;"><div style="flex:1;background:#FCEBEB;border:1px solid #F0BCBC;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#A32D2D;">'+varroaN+'</div><div style="font-size:8px;font-weight:800;color:#791F1F;text-transform:uppercase;">Varroa</div></div><div style="flex:1;background:#FBEECF;border:1px solid #E6C277;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#854F0B;">'+swarmN+'</div><div style="font-size:8px;font-weight:800;color:#633806;text-transform:uppercase;">Swarm</div></div><div style="flex:1;background:#EDF6DC;border:1px solid #A8D26B;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#3B6D11;">'+queenOk+'</div><div style="font-size:8px;font-weight:800;color:#27500A;text-transform:uppercase;">Queen\u2713</div></div><div style="flex:1;background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#5F5E5A;">'+lowN+'</div><div style="font-size:8px;font-weight:800;color:#444441;text-transform:uppercase;">Low</div></div></div></div></div>';
+    // WEATHER (illustrative) + ACTIVITY (real recent inspections) + ENVIRONMENT (illustrative)
+    h+=cardHTML('weather');
+    // recent activity from real inspections
+    var recent=scopedInsp.slice(0,2);
+    if(recent.length){
+      var rows='';
+      recent.forEach(function(i,idx){var hv=LD.hives.filter(function(x){return x.id===i.hive_id;})[0];var d=Math.floor((Date.now()-new Date(i.inspected_at).getTime())/86400000);rows+='<div style="display:flex;align-items:center;gap:9px;padding:7px 12px;'+(idx===0?'border-bottom:1px solid #F4EFE3;':'')+'"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:11px;font-weight:700;">'+lesc(hv?(hv.name||('Hive '+hv.num)):'Hive')+' inspected <span style="font-weight:500;color:#8A7A60;">· '+(d===0?'today':d+'d')+'</span></div></div>';});
+      h+='<div class="card"><div style="background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:var(--shadow);"><div style="padding:9px 12px 4px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Recent activity</div>'+rows+'</div></div>';
+    }
+    h+=cardHTML('env');
+    // honest weather note
+    h+='<div class="card"><div style="background:#F4EFE3;border:1px dashed var(--wax);border-radius:12px;padding:9px 12px;font-size:10.5px;color:#8A7A60;line-height:1.45;">Weather &amp; environment cards are illustrative — your hives, health, focus and recent activity above are live.</div></div>';
+    h+='<div style="height:64px;"></div>';
+    document.getElementById('home-cards').innerHTML=h;
+  }
+
+  // override apiary screen render when live
+  var _hkGo_inner=window.hkGo;
+  window.hkGo=function(s){
+    _hkGo_inner(s);
+    if(!LIVE) return;
+    if(s==='apiary') renderApiaryLive();
+    if(s==='hive') renderHiveLive();
+    if(s==='inspections') renderInspectionsLive();
+    if(s==='home') renderHomeLive();
+    if(s==='plan') renderPlanLive();
+    if(s==='cal') renderCalLive();
+    if(s==='inspect') renderInspectLive();
+  };
+  // also refresh these when scope changes
+  function refreshScopedScreens(){
+    if(!LIVE) return;
+    var active=document.querySelector('.screen.active');
+    if(!active) return;
+    var s=active.getAttribute('data-screen');
+    if(s==='plan') renderPlanLive();
+    if(s==='cal') renderCalLive();
+    if(s==='inspect') renderInspectLive();
+  }
+
+  function pinColour(hv){
+    if(hv.swarm_risk && hv.swarm_risk!=='none') return 'var(--honey)';
+    if(hv.health_score!=null && hv.health_score<50) return 'var(--copper)';
+    return 'var(--moss)';
+  }
+  function liveMap(hives, apName){
+    // Real map_x/map_y are all 0 (hives not placed), so auto-arrange in a tidy layout in our style.
+    var placed = hives.filter(function(h){return (+h.map_x)!==0 || (+h.map_y)!==0;});
+    var useReal = placed.length===hives.length && hives.length>0;
+    var pins='';
+    if(useReal){
+      var xs=hives.map(function(h){return +h.map_x;}), ys=hives.map(function(h){return +h.map_y;});
+      var minX=Math.min.apply(null,xs),maxX=Math.max.apply(null,xs),minY=Math.min.apply(null,ys),maxY=Math.max.apply(null,ys);
+      var rx=(maxX-minX)||1, ry=(maxY-minY)||1;
+      hives.forEach(function(h){
+        var px=8+((+h.map_x-minX)/rx)*84, py=12+((+h.map_y-minY)/ry)*72;
+        pins+='<div class="pin tap" onclick="hkOpenHive(\''+h.id+'\')" style="background:'+pinColour(h)+';top:'+py+'%;left:'+px+'%;"><span class="pn">'+(h.num||'')+'</span></div>';
+      });
+    } else {
+      // tidy auto-grid arrangement
+      var n=hives.length, cols=Math.ceil(Math.sqrt(n*1.6)), rows=Math.ceil(n/cols);
+      hives.forEach(function(h,i){
+        var c=i%cols, r=Math.floor(i/cols);
+        var px=10+(cols>1?(c/(cols-1)):0.5)*80, py=16+(rows>1?(r/(rows-1)):0.5)*66;
+        pins+='<div class="pin tap" onclick="hkOpenHive(\''+h.id+'\')" style="background:'+pinColour(h)+';top:'+py+'%;left:'+px+'%;"><span class="pn">'+(h.num||(i+1))+'</span></div>';
+      });
+    }
+    var legend='<div class="map-legend"><span><i style="background:var(--moss)"></i>Healthy</span><span><i style="background:var(--honey)"></i>Swarm risk</span><span><i style="background:var(--copper)"></i>Needs attention</span></div>';
+    var note=useReal?'':'<div class="lbl" style="bottom:7px;right:10px;">Auto-arranged · place hives on the map in-app</div>';
+    return '<div class="map map-live">'+
+      '<div class="road" style="top:62%;left:-10%;width:120%;height:8px;transform:rotate(-5deg);"></div>'+
+      '<div class="road" style="top:10%;left:30%;width:7px;height:90%;transform:rotate(9deg);"></div>'+
+      '<div class="lbl" style="top:8px;left:12px;">'+lesc(apName||'Apiary')+'</div>'+
+      pins+note+
+      '</div>'+legend;
+  }
+  function hiveRow(hv){
+    var insp=LD.inspections.filter(function(i){return i.hive_id===hv.id;});
+    var when=insp.length?lago(insp[0].inspected_at):'no inspections';
+    var badge=(hv.swarm_risk&&hv.swarm_risk!=='none')?'<span class="badge b-warn">swarm</span>':(hv.health_score!=null?'<span class="badge b-ok">'+hv.health_score+'</span>':'<span class="badge b-due">—</span>');
+    return '<div class="hive" onclick="hkOpenHive(\''+hv.id+'\')"><div class="hnum">'+(hv.num||'·')+'</div><div class="hbody"><div class="nm">'+lesc(hv.name||('Hive '+hv.num))+'</div><div class="meta">'+lesc(when)+(insp.length?' · '+insp.length+' inspections':'')+'</div></div>'+badge+'</div>';
+  }
+  function renderApiaryLive(){
+    document.getElementById('apiary-demo').style.display='none';
+    var liveEl=document.getElementById('apiary-live'); liveEl.style.display='block';
+    // chips: All + each apiary, driven by app-wide scope
+    var chips='<div style="display:flex;gap:7px;overflow-x:auto;padding:4px 0 12px;">';
+    chips+='<span onclick="hkSetScope(null)" style="flex-shrink:0;padding:7px 13px;border-radius:30px;font-size:12px;font-weight:700;cursor:pointer;background:'+(curApiaryId===null?'var(--ink)':'var(--cream)')+';color:'+(curApiaryId===null?'#fff':'var(--ink-soft)')+';border:1px solid '+(curApiaryId===null?'var(--ink)':'var(--line)')+';">All</span>';
+    LD.apiaries.forEach(function(a){var sel=(a.id===curApiaryId);chips+='<span onclick="hkSetScope(\''+a.id+'\')" style="flex-shrink:0;padding:7px 13px;border-radius:30px;font-size:12px;font-weight:700;cursor:pointer;background:'+(sel?'var(--ink)':'var(--cream)')+';color:'+(sel?'#fff':'var(--ink-soft)')+';border:1px solid '+(sel?'var(--ink)':'var(--line)')+';">'+lesc(a.name)+'</span>';});
+    chips+='</div>';
+    var h='';
+    if(curApiaryId===null){
+      // ALL apiaries: grouped by apiary
+      var totalHives=LD.hives.filter(function(x){return !x.is_hidden && x.status!=='dead';}).length;
+      h+='<div class="scrtitle">All apiaries</div><div class="scrsub">'+totalHives+' hives · '+LD.apiaries.length+' apiaries</div>'+chips;
+      LD.apiaries.forEach(function(a){
+        var hives=LD.hives.filter(function(x){return x.apiary_id===a.id && !x.is_hidden;}).sort(function(p,q){return (p.num||0)-(q.num||0);});
+        if(!hives.length) return;
+        h+='<div class="secrow" style="cursor:pointer;" onclick="hkSetScope(\''+a.id+'\')"><h2>'+lesc(a.name)+' · '+hives.length+'</h2><span class="edit">Focus ›</span></div>';
+        hives.forEach(function(hv){ h+=hiveRow(hv); });
+      });
+    } else {
+      var ap=LD.apiaries.filter(function(a){return a.id===curApiaryId;})[0];
+      if(!ap){ liveEl.innerHTML='<div class="scrtitle">Apiary</div><div class="scrsub">Not found.</div>'; return; }
+      var hives=LD.hives.filter(function(x){return x.apiary_id===ap.id && !x.is_hidden;}).sort(function(p,q){return (p.num||0)-(q.num||0);});
+      h+='<div class="scrtitle">'+lesc(ap.name)+'</div><div class="scrsub">'+hives.length+' hives'+(ap.location?' · '+lesc(ap.location):'')+'</div>'+chips;
+      if(hives.length) h+=liveMap(hives, ap.name);
+      h+='<div class="secrow"><h2>Your hives</h2></div>';
+      if(!hives.length) h+='<div class="scrsub" style="padding:10px 0;">No hives in this apiary.</div>';
+      hives.forEach(function(hv){ h+=hiveRow(hv); });
+    }
+    h+='<div style="height:64px;"></div>';
+    liveEl.innerHTML=h;
+  }
+  window.hkOpenHive=function(id){ curHiveId=id; hkGo('hive'); };
+
+  function renderHiveLive(){
+    document.getElementById('hive-demo').style.display='none';
+    var liveEl=document.getElementById('hive-live'); liveEl.style.display='block';
+    var hv=LD.hives.filter(function(x){return x.id===curHiveId;})[0];
+    if(!hv){ liveEl.innerHTML='<div class="scrsub">Select a hive.</div>'; return; }
+    var ap=LD.apiaries.filter(function(a){return a.id===hv.apiary_id;})[0];
+    var insp=LD.inspections.filter(function(i){return i.hive_id===hv.id;});
+    var last=insp[0];
+    var h='<span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo(\'apiary\')">‹ '+lesc(ap?ap.name:'Apiary')+'</span>';
+    h+='<div class="hv-top" style="margin-top:8px;"><div><div class="scrtitle">'+lesc(hv.name||('Hive '+hv.num))+'</div><div class="scrsub">Hive '+(hv.num||'')+(ap?' · '+lesc(ap.name):'')+(hv.established?' · est. '+new Date(hv.established).getFullYear():'')+'</div></div><div class="hv-score"><div class="n">'+(hv.health_score!=null?hv.health_score:'—')+'</div><div class="w">'+(hv.status||'active')+'</div></div></div>';
+    h+='<div class="state">'+
+       '<div class="st"><div class="ico">👑</div><div class="v">'+(last&&last.queen_seen!=null?(last.queen_seen?'Seen':'Not seen'):'—')+'</div><div class="k">Queen</div></div>'+
+       '<div class="st"><div class="ico">🥚</div><div class="v">'+(last&&(last.frames_brood!=null||last.brood_frames!=null)?((last.frames_brood!=null?last.frames_brood:last.brood_frames)+' fr'):'—')+'</div><div class="k">Brood</div></div>'+
+       '<div class="st"><div class="ico">🍯</div><div class="v">'+lesc(last&&last.stores_level?last.stores_level:'—')+'</div><div class="k">Stores</div></div>'+
+       '<div class="st"><div class="ico">📅</div><div class="v">'+(last?lago(last.inspected_at):'—')+'</div><div class="k">Last seen</div></div>'+
+       '</div>';
+    h+='<div class="stackwrap"><div class="stack"><div class="box roof"></div><div class="box crown"></div>'+(Array(hv.supers||0).fill('<div class="box super"></div>').join(''))+'<div class="box excl"></div><div class="box brood"></div><div class="box floor last"></div></div>'+
+       '<div style="flex:1;"><div class="si-t">Configuration</div><div class="si-r"><span>Brood</span><span>'+(hv.brood_boxes||1)+' × '+lesc(hv.box_type||'National')+'</span></div><div class="si-r"><span>Supers</span><span>'+(hv.supers||0)+' on</span></div><div class="si-r"><span>Queen</span><span>'+lesc(hv.queen_status||'—')+'</span></div><div class="si-r"><span>Temperament</span><span>'+lesc(hv.temper||'—')+'</span></div></div></div>';
+    // PHOTOS — cover + inspection photos (read-only)
+    var photos=[];
+    if(hv.cover_photo) photos.push(hv.cover_photo);
+    insp.forEach(function(i){ if(i.photo_urls&&i.photo_urls.length) i.photo_urls.forEach(function(u){if(u)photos.push(u);}); });
+    h+='<div class="secrow" style="padding-top:16px;"><h2>Photos'+(photos.length?' ('+photos.length+')':'')+'</h2></div>';
+    if(photos.length){
+      h+='<div style="display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;">';
+      photos.slice(0,12).forEach(function(u){ h+='<img src="'+lesc(u)+'" loading="lazy" style="width:96px;height:96px;flex-shrink:0;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--cream);" onerror="this.style.display=\'none\'">'; });
+      h+='</div>';
+    } else {
+      h+='<div style="background:var(--cream);border:1px dashed var(--wax);border-radius:14px;padding:18px;text-align:center;"><div style="font-size:24px;opacity:.5;">📷</div><div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:5px;">No photos yet</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px;">Photos you add to this hive or its inspections will show here</div></div>';
+    }
+    h+='<div class="secrow" style="padding-top:16px;cursor:pointer;" onclick="hkGo(\'inspections\')"><h2>History ('+insp.length+')</h2><span class="edit">View all ›</span></div>';
+    insp.slice(0,4).forEach(function(i){
+      var preview;
+      if(i.notes && i.notes.trim()){ preview = i.notes.trim().replace(/\s+/g,' '); if(preview.length>120) preview=preview.slice(0,120)+'…'; }
+      else { var bits=[]; if(i.queen_seen!=null)bits.push(i.queen_seen?'queen seen':'no queen'); if(i.stores_level)bits.push('stores '+i.stores_level); if(i.varroa_level)bits.push('varroa '+i.varroa_level); preview=bits.join(' · ')||'Inspection'; }
+      h+='<div class="tl-item" onclick="hkGo(\'inspections\')" style="cursor:pointer;"><div class="tl-dot">📝</div><div style="flex:1;"><div class="tl-t">'+ldate(i.inspected_at)+'</div><div class="tl-s" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">'+lesc(preview)+'</div></div><div class="tl-when">'+lago(i.inspected_at)+' ›</div></div>';
+    });
+    if(!insp.length) h+='<div class="scrsub" style="padding:8px 0;">No inspections recorded.</div>';
+    h+='<div style="height:64px;"></div>';
+    liveEl.innerHTML=h;
+  }
+
+  function renderInspectionsLive(){
+    document.getElementById('inspections-demo').style.display='none';
+    var liveEl=document.getElementById('inspections-live'); liveEl.style.display='block';
+    var hv=LD.hives.filter(function(x){return x.id===curHiveId;})[0];
+    var insp=hv?LD.inspections.filter(function(i){return i.hive_id===hv.id;}):[];
+    var h='<span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo(\'hive\')">‹ '+lesc(hv?(hv.name||('Hive '+hv.num)):'Hive')+'</span>';
+    h+='<div class="scrtitle" style="margin-top:8px;">Inspection history</div><div class="scrsub">'+(hv?lesc(hv.name||('Hive '+hv.num)):'')+' · '+insp.length+' inspections</div>';
+    h+='<div style="background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:10px 13px;font-size:11px;color:#854F0B;line-height:1.45;margin-top:12px;display:flex;gap:8px;align-items:flex-start;"><span style="font-size:14px;">🔒</span><div>Viewing only — inspections can\u2019t be edited at this point. This is a read-only preview of your live data.</div></div>';
+    h+='<div style="margin-top:12px;">';
+    insp.forEach(function(i){
+      var d=new Date(i.inspected_at);
+      var bits=[]; if(i.queen_seen!=null)bits.push(i.queen_seen?'👑 seen':'no queen'); if(i.stores_level)bits.push('stores '+i.stores_level); if(i.varroa_level)bits.push('varroa '+i.varroa_level); if(i.temper)bits.push(i.temper);
+      var preview;
+      if(i.notes && i.notes.trim()){ preview=i.notes.trim().replace(/\s+/g,' '); if(preview.length>160) preview=preview.slice(0,160)+'…'; }
+      else { preview=bits.join(' · ')||'Inspection'; }
+      var pics=(i.photo_urls&&i.photo_urls.length)?'<div style="display:flex;gap:6px;margin-top:8px;overflow-x:auto;">'+i.photo_urls.slice(0,5).map(function(u){return '<img src="'+lesc(u)+'" loading="lazy" style="width:64px;height:64px;flex-shrink:0;object-fit:cover;border-radius:9px;border:1px solid var(--line);" onerror="this.style.display=\'none\'">';}).join('')+'</div>':'';
+      h+='<div class="rec-card"><div class="rec-top" style="cursor:default;align-items:flex-start;"><div class="rec-date"><div class="d">'+d.getDate()+'</div><div class="m">'+d.toLocaleDateString('en-GB',{month:'short'})+'</div></div><div class="rec-mid"><div class="summ" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">'+lesc(preview)+'</div><div class="chips">'+bits.map(function(b){return '<span class="mc">'+lesc(b)+'</span>';}).join('')+'</div>'+pics+'</div></div></div>';
+    });
+    h+='</div>';
+    if(!insp.length) h+='<div class="scrsub">No inspections recorded for this hive.</div>';
+    h+='<div style="height:64px;"></div>';
+    liveEl.innerHTML=h;
+  }
+
+  // ---- scope helpers for Plan/Cal/Inspect ----
+  var DUE_DAYS=7; // brood-season inspection cadence
+  function scopedHives(){
+    return LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead' && (curApiaryId===null||h.apiary_id===curApiaryId);});
+  }
+  function lastInspFor(hid){ return LD.inspections.filter(function(i){return i.hive_id===hid;})[0]; }
+  function daysSince(s){ if(!s) return null; return Math.floor((Date.now()-new Date(s).getTime())/86400000); }
+  function scopeLabel(){ return curApiaryId===null?'All apiaries':((LD.apiaries.filter(function(a){return a.id===curApiaryId;})[0]||{name:'Apiary'}).name); }
+
+  function renderPlanLive(){
+    var body=document.getElementById('plan-body'); if(!body) return;
+    var hives=scopedHives();
+    // sort by overdue (most overdue first); hives never inspected count as very overdue
+    var enriched=hives.map(function(h){var li=lastInspFor(h.id);var d=li?daysSince(li.inspected_at):9999;return {h:h,li:li,d:d};});
+    enriched.sort(function(a,b){return b.d-a.d;});
+    var due=enriched.filter(function(e){return e.d>=DUE_DAYS;});
+    // follow-ups: inspections with next_inspection_notes and not done, within scope
+    var hiveIds={}; hives.forEach(function(h){hiveIds[h.id]=true;});
+    var followups=LD.inspections.filter(function(i){return hiveIds[i.hive_id] && i.next_inspection_notes && !i.next_inspection_notes_done_at;});
+    var h='';
+    h+='<div style="background:linear-gradient(135deg,var(--forest),#1c2d20);color:var(--cream);border-radius:16px;padding:15px 16px;margin:12px 0 14px;"><div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.7;font-weight:700;">Suggested visit · '+lesc(scopeLabel())+'</div><div style="font-family:\'Cormorant Garamond\';font-size:22px;font-weight:700;margin-top:4px;">'+(due.length?due.length+' hive'+(due.length>1?'s':'')+' to inspect':'All caught up')+'</div><div style="font-size:11px;opacity:.85;margin-top:3px;">'+(followups.length?followups.length+' follow-up'+(followups.length>1?'s':'')+' outstanding':'No outstanding follow-ups')+'</div></div>';
+    // stats
+    h+='<div style="display:flex;gap:8px;margin-bottom:14px;"><div class="stat"><div class="sv">'+due.length+'</div><div class="sk">Due</div></div><div class="stat"><div class="sv">'+followups.length+'</div><div class="sk">Follow-ups</div></div><div class="stat"><div class="sv">'+hives.length+'</div><div class="sk">Hives</div></div></div>';
+    if(followups.length){
+      h+='<div class="secrow"><h2>Outstanding from last visit</h2></div>';
+      followups.slice(0,6).forEach(function(i,idx){var hv=LD.hives.filter(function(x){return x.id===i.hive_id;})[0];h+='<div class="hive"><div class="hnum" style="font-size:13px;">'+(idx+1)+'</div><div class="hbody"><div class="nm">'+lesc(hv?(hv.name||('Hive '+hv.num)):'Hive')+'</div><div class="meta">'+lesc(i.next_inspection_notes.slice(0,70))+'</div></div></div>';});
+    }
+    h+='<div class="secrow"><h2>Suggested route'+(curApiaryId===null?'':' · '+lesc(scopeLabel()))+'</h2></div>';
+    if(!due.length) h+='<div class="scrsub" style="padding:8px 0;">Nothing due in this view — nice work.</div>';
+    due.slice(0,12).forEach(function(e){
+      var when=e.li?(e.d+' days ago'):'never inspected';
+      var badge=(e.h.swarm_risk&&e.h.swarm_risk!=='none')?'<span class="badge b-warn">swarm</span>':'<span class="badge b-due">due</span>';
+      h+='<div class="hive" onclick="hkOpenInspect(\''+e.h.id+'\')"><div class="hnum">'+(e.h.num||'·')+'</div><div class="hbody"><div class="nm">'+lesc(e.h.name||('Hive '+e.h.num))+'</div><div class="meta">Last seen '+when+'</div></div>'+badge+'</div>';
+    });
+    h+='<div style="height:64px;"></div>';
+    body.innerHTML=h;
+  }
+  window.hkOpenInspect=function(hid){ curHiveId=hid; hkGo('inspect'); };
+
+  function renderCalLive(){
+    document.getElementById('cal-demo').style.display='none';
+    var liveEl=document.getElementById('cal-live'); liveEl.style.display='block';
+    var hives=scopedHives();
+    var now=new Date(); var y=now.getFullYear(), m=now.getMonth();
+    var monthName=now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    // due day for each hive = lastInsp + DUE_DAYS (only if in current month)
+    var dueByDay={};
+    hives.forEach(function(h){var li=lastInspFor(h.id);if(!li)return;var due=new Date(li.inspected_at);due.setDate(due.getDate()+DUE_DAYS);if(due.getFullYear()===y&&due.getMonth()===m){var d=due.getDate();dueByDay[d]=(dueByDay[d]||0)+1;}});
+    var firstDay=new Date(y,m,1).getDay(); var daysInMonth=new Date(y,m+1,0).getDate(); var today=now.getDate();
+    var dueThisWeek=0; for(var dd=today;dd<today+7&&dd<=daysInMonth;dd++){dueThisWeek+=(dueByDay[dd]||0);}
+    var grid='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:14px;">';
+    var dows=['S','M','T','W','T','F','S']; dows.forEach(function(d){grid+='<div style="text-align:center;font-size:9px;font-weight:800;color:var(--muted);">'+d+'</div>';});
+    for(var i=0;i<firstDay;i++) grid+='<div></div>';
+    for(var day=1;day<=daysInMonth;day++){
+      var isToday=(day===today); var hasDue=dueByDay[day];
+      grid+='<div style="aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;position:relative;background:'+(isToday?'var(--forest)':'var(--cream)')+';color:'+(isToday?'#fff':'var(--ink)')+';border:1px solid '+(isToday?'var(--forest)':'var(--line)')+';">'+day+(hasDue?'<span style="width:5px;height:5px;border-radius:50%;background:'+(isToday?'#fff':'var(--honey)')+';margin-top:2px;"></span>':'')+'</div>';
+    }
+    grid+='</div>';
+    var h='<div class="scrtitle">'+monthName+'</div><div class="scrsub">'+dueThisWeek+' inspection'+(dueThisWeek!==1?'s':'')+' due this week · '+lesc(scopeLabel())+'</div>'+grid;
+    h+='<div style="display:flex;gap:16px;padding:13px 4px 4px;font-size:10px;color:var(--muted);font-weight:700;"><div style="display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--forest);"></span> Today</div><div style="display:flex;align-items:center;gap:6px;"><span style="width:7px;height:7px;border-radius:50%;background:var(--honey);"></span> Inspection due</div></div>';
+    // due soon list (overdue or due now)
+    var enriched=hives.map(function(hh){var li=lastInspFor(hh.id);return {h:hh,d:li?daysSince(li.inspected_at):9999,li:li};}).filter(function(e){return e.d>=DUE_DAYS;}).sort(function(a,b){return b.d-a.d;});
+    h+='<div class="secrow" style="padding-top:14px;"><h2>Due now</h2></div>';
+    if(!enriched.length) h+='<div class="scrsub" style="padding:6px 0;">Nothing due in this view.</div>';
+    enriched.slice(0,8).forEach(function(e){var ap=LD.apiaries.filter(function(a){return a.id===e.h.apiary_id;})[0];h+='<div class="hive" onclick="hkOpenInspect(\''+e.h.id+'\')"><div class="hnum">'+(e.h.num||'·')+'</div><div class="hbody"><div class="nm">'+lesc(e.h.name||('Hive '+e.h.num))+'</div><div class="meta">'+(ap?lesc(ap.name)+' · ':'')+(e.li?e.d+' days since last seen':'never inspected')+'</div></div><span class="badge b-due">due</span></div>';});
+    h+='<button class="btn btn-honey" style="margin-top:14px;" onclick="hkGo(\'plan\')">📋 Open the plan</button><div style="height:64px;"></div>';
+    liveEl.innerHTML=h;
+  }
+
+  function renderInspectLive(){
+    document.getElementById('inspect-demo').style.display='none';
+    var liveEl=document.getElementById('inspect-live'); liveEl.style.display='block';
+    var hives=scopedHives();
+    if(!hives.length){ liveEl.innerHTML='<div class="scrtitle">Inspect</div><div class="scrsub">No hives in this view.</div>'; return; }
+    // default to current hive if in scope, else most overdue
+    var enriched=hives.map(function(hh){var li=lastInspFor(hh.id);return {h:hh,d:li?daysSince(li.inspected_at):9999};}).sort(function(a,b){return b.d-a.d;});
+    var sel=curHiveId&&hives.filter(function(x){return x.id===curHiveId;}).length?curHiveId:enriched[0].h.id;
+    var strip='<div class="hivestrip">';
+    enriched.forEach(function(e){var on=(e.h.id===sel);var ago=e.d>=9999?'—':e.d+'d';strip+='<div class="hchip'+(on?' on':'')+'" onclick="hkInspectPick(\''+e.h.id+'\')">'+(e.h.num?e.h.num+' · ':'')+lesc(e.h.name||'Hive')+' <span class="mini">'+ago+'</span></div>';});
+    strip+='</div>';
+    var selHive=hives.filter(function(x){return x.id===sel;})[0];
+    var ap=LD.apiaries.filter(function(a){return a.id===selHive.apiary_id;})[0];
+    var h='<div class="scrtitle" style="font-size:22px;">Inspecting '+lesc(selHive.name||('Hive '+selHive.num))+'</div><div class="scrsub">'+lesc(ap?ap.name:scopeLabel())+' · tap a hive, or talk</div>'+strip;
+    h+='<div class="rec">🎙️</div><div class="rec-hint">Tap and tell me what you see</div><div class="rec-sub">"Queen seen, six frames of brood, stores good, calm."</div>';
+    h+='<div style="background:#FBF1DC;border:1px solid #E8D5A8;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#854F0B;line-height:1.5;margin-top:14px;">🧪 Voice capture is a mockup here — but the hive list above is your real '+lesc(scopeLabel())+' hives, ordered by most overdue.</div>';
+    h+='<div style="height:14px;"></div><button class="btn btn-moss" onclick="hkGo(\'home\')">Save &amp; next hive →</button><div style="height:64px;"></div>';
+    liveEl.innerHTML=h;
+  }
+  window.hkInspectPick=function(hid){ curHiveId=hid; renderInspectLive(); };
+
   // ---- INIT ----
   document.getElementById('home-cards').innerHTML=homeHTML();
   renderNav(); renderFloat(); renderMenu();
+  window.renderHomeLive=renderHomeLive; window.renderApiaryLive=renderApiaryLive; window.renderHiveLive=renderHiveLive; window.renderInspectionsLive=renderInspectionsLive;
+  document.getElementById('hk-login').style.display='flex';
+  if(window.supabase){
+    sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+    sb.auth.getSession().then(function(r){ if(r.data.session){ hkLoadLive(); } });
+  } else {
+    var ee=document.getElementById('hk-login-err'); ee.style.display='block'; ee.textContent='Could not load the sign-in library — please check your connection and reload.';
+  }
 })();
 </script>
 </body>
