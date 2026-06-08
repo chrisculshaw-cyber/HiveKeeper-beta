@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="design-20260608e">
+<meta name="app-version" content="design-20260608f">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1262,8 +1262,58 @@
   window.hkDismissFocus=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); window._focusDismissed=true; renderHomeLive(); };
 
   // override home cards: full home page (Today's Focus, health, weather, activity, environment) with real scoped data
+  // Distinct "All apiaries" overview — an operation portfolio, visually different from a single apiary's home.
+  function renderHomeOverview(){
+    var liveHives=LD.hives.filter(function(h){return isLiveHive(h);});
+    var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
+    var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):'—';
+    var dueTotal=liveHives.filter(function(h){var li=LD.inspections.filter(function(i){return i.hive_id===h.id;})[0]; if(!li)return true; return Math.floor((Date.now()-new Date(li.inspected_at).getTime())/86400000)>=7;}).length;
+    var alertTotal=liveHives.filter(function(h){return (h.swarm_risk&&h.swarm_risk!=='none')||(h.health_score!=null&&h.health_score<50);}).length;
+    var h='';
+    // distinct banner: dark forest, "operation overview" — clearly not a single apiary
+    h+='<div style="background:linear-gradient(150deg,#2F5740,#1c3527);border-radius:20px;padding:16px 17px;margin:4px 1px 14px;color:#F2EFE3;box-shadow:0 6px 20px rgba(22,43,31,.28);">'+
+       '<div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.7;">🗺 Whole operation · all apiaries</div><div style="font-size:9px;font-weight:800;background:rgba(255,255,255,.14);padding:2px 8px;border-radius:20px;">READ-ONLY</div></div>'+
+       '<div style="display:flex;align-items:flex-end;gap:12px;margin-top:12px;">'+
+         '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:40px;font-weight:700;line-height:.9;">'+LD.apiaries.length+'</div><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:3px;">Apiaries</div></div>'+
+         '<div style="width:1px;height:38px;background:rgba(255,255,255,.18);"></div>'+
+         '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:40px;font-weight:700;line-height:.9;">'+liveHives.length+'</div><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:3px;">Colonies</div></div>'+
+         '<div style="width:1px;height:38px;background:rgba(255,255,255,.18);"></div>'+
+         '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:40px;font-weight:700;line-height:.9;">'+avg+'</div><div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin-top:3px;">Avg health</div></div>'+
+       '</div>'+
+       '<div style="display:flex;gap:8px;margin-top:14px;">'+
+         '<div style="flex:1;background:rgba(232,163,61,.18);border:1px solid rgba(232,163,61,.4);border-radius:11px;padding:8px 10px;"><div style="font-size:15px;font-weight:800;color:#F0C775;">'+dueTotal+'</div><div style="font-size:9px;font-weight:700;opacity:.85;">due for inspection</div></div>'+
+         '<div style="flex:1;background:rgba(196,80,60,.18);border:1px solid rgba(196,80,60,.4);border-radius:11px;padding:8px 10px;"><div style="font-size:15px;font-weight:800;color:#E8A38D;">'+alertTotal+'</div><div style="font-size:9px;font-weight:700;opacity:.85;">need attention</div></div>'+
+       '</div>'+
+       '</div>';
+    // section label
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 3px 9px;"><div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);">Your apiaries</div><div style="font-size:10px;font-weight:700;color:var(--muted);">tap to open ›</div></div>';
+    // one card per apiary — distinct from per-hive rows
+    LD.apiaries.forEach(function(a){
+      var hs=liveHives.filter(function(x){return x.apiary_id===a.id;});
+      var asc=hs.map(function(x){return x.health_score;}).filter(function(s){return typeof s==='number';});
+      var aavg=asc.length?Math.round(asc.reduce(function(p,q){return p+q;},0)/asc.length):'—';
+      var aDue=hs.filter(function(x){var li=LD.inspections.filter(function(i){return i.hive_id===x.id;})[0]; if(!li)return true; return Math.floor((Date.now()-new Date(li.inspected_at).getTime())/86400000)>=7;}).length;
+      var aSwarm=hs.filter(function(x){return x.swarm_risk&&x.swarm_risk!=='none';}).length;
+      var ring = aavg==='—'?'#C9C2B0':(aavg>=70?'#5C8A1E':aavg>=50?'#C8870A':'#A8512A');
+      var tags='';
+      if(aDue) tags+='<span style="font-size:9px;font-weight:800;color:#854F0B;background:#FBE3B8;padding:2px 7px;border-radius:20px;">'+aDue+' due</span>';
+      if(aSwarm) tags+='<span style="font-size:9px;font-weight:800;color:#7A1F1F;background:#F6D6D0;padding:2px 7px;border-radius:20px;margin-left:5px;">'+aSwarm+' swarm</span>';
+      if(!tags) tags='<span style="font-size:9px;font-weight:800;color:#3B6D11;background:#EDF6DC;padding:2px 7px;border-radius:20px;">all caught up</span>';
+      h+='<div class="card" style="margin-bottom:9px;"><div onclick="hkScopeHome(\''+a.id+'\')" style="background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 13px;box-shadow:var(--shadow);display:flex;align-items:center;gap:13px;cursor:pointer;">'+
+         '<div style="width:46px;height:46px;border-radius:50%;border:3px solid '+ring+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:\'Cormorant Garamond\';font-size:18px;font-weight:700;color:'+ring+';">'+aavg+'</div>'+
+         '<div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+lesc(a.name)+'</div><div style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 5px;">'+hs.length+' '+(hs.length===1?'colony':'colonies')+(a.location?' · '+lesc(a.location):'')+'</div><div>'+tags+'</div></div>'+
+         '<span style="color:var(--honey);font-size:18px;font-weight:800;flex-shrink:0;">›</span>'+
+         '</div></div>';
+    });
+    if(!LD.apiaries.length) h+='<div class="scrsub" style="padding:10px 3px;">No apiaries on this account yet.</div>';
+    h+='<div class="card"><div style="background:#F4EFE3;border:1px dashed var(--wax);border-radius:12px;padding:9px 12px;font-size:10.5px;color:#8A7A60;line-height:1.45;">This is your whole-operation overview. Tap an apiary to see its hives, health and plan. All figures are your live data.</div></div>';
+    h+='<div style="height:64px;"></div>';
+    document.getElementById('home-cards').innerHTML=h;
+  }
+
   function renderHomeLive(){
     if(!LIVE){ return; }
+    if(curApiaryId===null){ renderHomeOverview(); return; }
     var inScope=function(h){ return curApiaryId===null ? true : h.apiary_id===curApiaryId; };
     var liveHives=LD.hives.filter(function(h){return isLiveHive(h) && inScope(h);});
     var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
