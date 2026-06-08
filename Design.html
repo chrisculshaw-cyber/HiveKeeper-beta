@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="design-20260608f">
+<meta name="app-version" content="design-20260608g">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1260,6 +1260,9 @@
   }
 
   window.hkDismissFocus=function(e){ if(e&&e.stopPropagation)e.stopPropagation(); window._focusDismissed=true; renderHomeLive(); };
+  // Home section visibility comes from the customiser `cards` config (user-toggleable).
+  // SPEC: in the real app these flags persist per-user (profiles.home_prefs jsonb) — see HIV ticket. Here they live in-session.
+  function homeSectionOn(id){ var c=cards.filter(function(x){return x.id===id;})[0]; return c?!!c.on:true; }
 
   // override home cards: full home page (Today's Focus, health, weather, activity, environment) with real scoped data
   // Distinct "All apiaries" overview — an operation portfolio, visually different from a single apiary's home.
@@ -1335,24 +1338,32 @@
     var h='';
     // read-only ribbon
     h+='<div style="display:flex;align-items:center;justify-content:space-between;margin:2px 2px 10px;"><div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#27500A;">🔒 '+(curApiaryId===null?'All Apiaries':lesc(apName))+' · your live data</div><div style="font-size:9px;font-weight:800;color:#27500A;background:#EDF6DC;border:1px solid #A8D26B;padding:2px 8px;border-radius:20px;">READ-ONLY</div></div>';
-    // TODAY'S FOCUS (real) — dismissable
-    if(!window._focusDismissed){
+    // TODAY'S FOCUS (real) — dismissable + toggleable
+    if(homeSectionOn('focus') && !window._focusDismissed){
       h+='<div class="card"><div style="background:#FFF0D4;border:1px solid #F0C775;border-radius:18px;padding:13px 15px;box-shadow:0 3px 12px rgba(200,115,10,.12);position:relative;"><div onclick="hkDismissFocus(event)" style="position:absolute;top:9px;right:11px;width:22px;height:22px;border-radius:50%;background:rgba(168,93,8,.12);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#A85D08;cursor:pointer;line-height:1;">×</div><div style="display:flex;align-items:center;justify-content:space-between;padding-right:26px;"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#A85D08;">Today\u2019s focus</div>'+(dueN?'<div style="font-size:9px;font-weight:800;color:#A85D08;background:#FBE3B8;padding:2px 8px;border-radius:20px;">'+dueN+' due</div>':'')+'</div><div style="font-size:15px;font-weight:800;line-height:1.3;margin-top:7px;color:#4A2A02;">'+lesc(focusText)+'</div><div onclick="hkGo(\'plan\')" style="background:linear-gradient(165deg,#E8A33D,#B8761A);border-radius:12px;padding:11px 0;text-align:center;font-size:13px;font-weight:800;color:#fff;margin-top:11px;cursor:pointer;box-shadow:var(--btn-honey);">Plan today\u2019s round \u2192</div></div></div>';
     }
-    // HEALTH (real, with breakdown)
+    // HEALTH (real, with breakdown) — toggleable
+    if(homeSectionOn('health')){
     h+='<div class="card"><div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:17px;padding:12px 14px;"><div style="display:flex;align-items:baseline;justify-content:space-between;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:\'Cormorant Garamond\';font-size:32px;font-weight:700;color:#3B6D11;line-height:1;">'+avg+'</div><div><div style="font-size:11px;font-weight:800;color:#2A3D30;">'+healthLbl+'</div><div style="font-size:10px;font-weight:700;color:#5C8A1E;">'+liveHives.length+' live colonies</div></div></div><span onclick="hkGo(\'apiary\')" style="font-size:10px;font-weight:800;color:#3B6D11;cursor:pointer;">Hives \u203a</span></div><div style="display:flex;gap:6px;margin-top:11px;"><div style="flex:1;background:#FCEBEB;border:1px solid #F0BCBC;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#A32D2D;">'+varroaN+'</div><div style="font-size:8px;font-weight:800;color:#791F1F;text-transform:uppercase;">Varroa</div></div><div style="flex:1;background:#FBEECF;border:1px solid #E6C277;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#854F0B;">'+swarmN+'</div><div style="font-size:8px;font-weight:800;color:#633806;text-transform:uppercase;">Swarm</div></div><div style="flex:1;background:#EDF6DC;border:1px solid #A8D26B;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#3B6D11;">'+queenOk+'</div><div style="font-size:8px;font-weight:800;color:#27500A;text-transform:uppercase;">Queen\u2713</div></div><div style="flex:1;background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#5F5E5A;">'+lowN+'</div><div style="font-size:8px;font-weight:800;color:#444441;text-transform:uppercase;">Low</div></div></div></div></div>';
-    // WEATHER (illustrative) + ACTIVITY (real recent inspections) + ENVIRONMENT (illustrative)
-    h+=cardHTML('weather');
-    // recent activity from real inspections
-    var recent=scopedInsp.slice(0,2);
-    if(recent.length){
-      var rows='';
-      recent.forEach(function(i,idx){var hv=LD.hives.filter(function(x){return x.id===i.hive_id;})[0];var d=Math.floor((Date.now()-new Date(i.inspected_at).getTime())/86400000);rows+='<div style="display:flex;align-items:center;gap:9px;padding:7px 12px;'+(idx===0?'border-bottom:1px solid #F4EFE3;':'')+'"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:11px;font-weight:700;">'+lesc(hv?(hv.name||('Hive '+hv.num)):'Hive')+' inspected <span style="font-weight:500;color:#8A7A60;">· '+(d===0?'today':d+'d')+'</span></div></div>';});
-      h+='<div class="card"><div style="background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:var(--shadow);"><div style="padding:9px 12px 4px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Recent activity</div>'+rows+'</div></div>';
     }
-    h+=cardHTML('env');
-    // honest weather note
-    h+='<div class="card"><div style="background:#F4EFE3;border:1px dashed var(--wax);border-radius:12px;padding:9px 12px;font-size:10.5px;color:#8A7A60;line-height:1.45;">Weather &amp; environment cards are illustrative — your hives, health, focus and recent activity above are live.</div></div>';
+    // WEATHER (illustrative) — toggleable
+    var showW=homeSectionOn('weather'), showE=homeSectionOn('env');
+    if(showW) h+=cardHTML('weather');
+    // recent activity from real inspections — toggleable
+    if(homeSectionOn('activity')){
+      var recent=scopedInsp.slice(0,2);
+      if(recent.length){
+        var rows='';
+        recent.forEach(function(i,idx){var hv=LD.hives.filter(function(x){return x.id===i.hive_id;})[0];var d=Math.floor((Date.now()-new Date(i.inspected_at).getTime())/86400000);rows+='<div style="display:flex;align-items:center;gap:9px;padding:7px 12px;'+(idx===0?'border-bottom:1px solid #F4EFE3;':'')+'"><span style="font-size:15px;">📝</span><div style="flex:1;font-size:11px;font-weight:700;">'+lesc(hv?(hv.name||('Hive '+hv.num)):'Hive')+' inspected <span style="font-weight:500;color:#8A7A60;">· '+(d===0?'today':d+'d')+'</span></div></div>';});
+        h+='<div class="card"><div style="background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:var(--shadow);"><div style="padding:9px 12px 4px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Recent activity</div>'+rows+'</div></div>';
+      }
+    }
+    // ENVIRONMENT (illustrative) — toggleable
+    if(showE) h+=cardHTML('env');
+    // honest note — only if an illustrative card is actually shown
+    if(showW||showE) h+='<div class="card"><div style="background:#F4EFE3;border:1px dashed var(--wax);border-radius:12px;padding:9px 12px;font-size:10.5px;color:#8A7A60;line-height:1.45;">Weather &amp; environment cards are illustrative — your hives, health, focus and recent activity are live.</div></div>';
+    // gentle pointer to customise (only when sections are hidden, so the screen never feels broken)
+    h+='<div onclick="hkEdit()" style="text-align:center;padding:10px;margin-top:2px;"><span style="font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;">⚙︎ Customise home screen</span></div>';
     h+='<div style="height:64px;"></div>';
     document.getElementById('home-cards').innerHTML=h;
   }
