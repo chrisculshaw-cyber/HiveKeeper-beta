@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="design-20260608b">
+<meta name="app-version" content="design-20260608c">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,7 +26,9 @@
     --shadow:0 2px 8px rgba(26,18,8,.05);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  body{background:var(--paper);font-family:'Syne',sans-serif;color:var(--ink);padding:0;margin:0;display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;}
+  html,body{height:100%;overflow:hidden;}
+  body{background:var(--paper);font-family:'Syne',sans-serif;color:var(--ink);padding:0;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    position:fixed;inset:0;width:100%;height:100%;overscroll-behavior:none;}
   /* intro logo + bottom hint are desktop-only chrome — hidden so the app fills the screen straight away */
   .intro,.ghhint,.hint{display:none !important;}
 
@@ -37,7 +39,7 @@
   /* on a wide screen, present as a centred phone-width app column (still full height, no frame) */
   @media (min-width:600px){
     body{background:#D9CFB8;}
-    .phone{width:430px;max-width:430px;box-shadow:0 16px 46px rgba(22,43,31,.24);}
+    .phone{width:430px;max-width:430px;height:92vh;height:92dvh;max-height:920px;border-radius:30px;overflow:hidden;box-shadow:0 16px 46px rgba(22,43,31,.24);}
   }
 
   /* persistent header */
@@ -274,7 +276,7 @@
 
     <!-- SWITCHER (drops under header) -->
     <div id="hk-switcher" style="display:none;position:absolute;left:0;right:0;top:78px;z-index:18;">
-      <div onclick="hkCloseSwitcher()" style="position:absolute;inset:0;height:810px;background:rgba(20,30,22,.35);"></div>
+      <div onclick="hkCloseSwitcher()" style="position:absolute;inset:0;background:rgba(20,30,22,.35);"></div>
       <div style="position:relative;background:var(--paper);border-radius:0 0 20px 20px;box-shadow:0 14px 30px rgba(0,0,0,.22);padding:11px 12px 13px;margin:0 6px;border:1px solid var(--line);border-top:none;">
         <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:2px 4px 9px;">Switch view</div>
         <div id="hk-switcher-live" style="display:none;"></div>
