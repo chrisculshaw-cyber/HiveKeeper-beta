@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="design-20260608g">
+<meta name="app-version" content="design-20260608h">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1432,7 +1432,10 @@
     var insp=LD.inspections.filter(function(i){return i.hive_id===hv.id;});
     var when=insp.length?lago(insp[0].inspected_at):'no inspections';
     var badge=(hv.swarm_risk&&hv.swarm_risk!=='none')?'<span class="badge b-warn">swarm</span>':(hv.health_score!=null?'<span class="badge b-ok">'+hv.health_score+'</span>':'<span class="badge b-due">—</span>');
-    return '<div class="hive" onclick="hkOpenHive(\''+hv.id+'\')"><div class="hnum">'+(hv.num||'·')+'</div><div class="hbody"><div class="nm">'+lesc(hv.name||('Hive '+hv.num))+'</div><div class="meta">'+lesc(when)+(insp.length?' · '+insp.length+' inspections':'')+'</div></div>'+badge+'</div>';
+    var lead = hv.cover_photo
+      ? '<div class="hthumb" style="position:relative;width:46px;height:46px;flex-shrink:0;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:var(--cream);"><img src="'+lesc(hv.cover_photo)+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.parentNode.innerHTML=\'<div class=&quot;hnum&quot;>'+(hv.num||'·')+'</div>\'"><span style="position:absolute;bottom:0;right:0;background:rgba(22,43,31,.78);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-top-left-radius:7px;">'+(hv.num||'·')+'</span></div>'
+      : '<div class="hnum">'+(hv.num||'·')+'</div>';
+    return '<div class="hive" onclick="hkOpenHive(\''+hv.id+'\')">'+lead+'<div class="hbody"><div class="nm">'+lesc(hv.name||('Hive '+hv.num))+'</div><div class="meta">'+lesc(when)+(insp.length?' · '+insp.length+' inspections':'')+'</div></div>'+badge+'</div>';
   }
   function renderApiaryLive(){
     document.getElementById('apiary-demo').style.display='none';
@@ -1477,6 +1480,7 @@
     var insp=LD.inspections.filter(function(i){return i.hive_id===hv.id;});
     var last=insp[0];
     var h='<span style="font-size:13px;font-weight:700;color:var(--honey);cursor:pointer;" onclick="hkGo(\'apiary\')">‹ '+lesc(ap?ap.name:'Apiary')+'</span>';
+    if(hv.cover_photo){ h+='<div style="margin:10px 0 2px;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);"><img src="'+lesc(hv.cover_photo)+'" loading="lazy" style="width:100%;height:170px;object-fit:cover;display:block;background:var(--cream);" onerror="this.parentNode.style.display=\'none\'"></div>'; }
     h+='<div class="hv-top" style="margin-top:8px;"><div><div class="scrtitle">'+lesc(hv.name||('Hive '+hv.num))+'</div><div class="scrsub">Hive '+(hv.num||'')+(ap?' · '+lesc(ap.name):'')+(hv.established?' · est. '+new Date(hv.established).getFullYear():'')+'</div></div><div class="hv-score"><div class="n">'+(hv.health_score!=null?hv.health_score:'—')+'</div><div class="w">'+(hv.status||'active')+'</div></div></div>';
     h+='<div class="state">'+
        '<div class="st"><div class="ico">👑</div><div class="v">'+(last&&last.queen_seen!=null?(last.queen_seen?'Seen':'Not seen'):'—')+'</div><div class="k">Queen</div></div>'+
@@ -1487,17 +1491,16 @@
     h+='<button class="btn btn-moss" style="margin-top:14px;" onclick="hkOpenInspect(\''+hv.id+'\')">🎙️ Start inspection</button>';
     h+='<div class="stackwrap"><div class="stack"><div class="box roof"></div><div class="box crown"></div>'+(Array(hv.supers||0).fill('<div class="box super"></div>').join(''))+'<div class="box excl"></div><div class="box brood"></div><div class="box floor last"></div></div>'+
        '<div style="flex:1;"><div class="si-t">Configuration</div><div class="si-r"><span>Brood</span><span>'+(hv.brood_boxes||1)+' × '+lesc(hv.box_type||'National')+'</span></div><div class="si-r"><span>Supers</span><span>'+(hv.supers||0)+' on</span></div><div class="si-r"><span>Queen</span><span>'+lesc(hv.queen_status||'—')+'</span></div><div class="si-r"><span>Temperament</span><span>'+lesc(hv.temper||'—')+'</span></div></div></div>';
-    // PHOTOS — cover + inspection photos (read-only)
+    // PHOTOS — inspection photos (cover is shown as the hero above)
     var photos=[];
-    if(hv.cover_photo) photos.push(hv.cover_photo);
     insp.forEach(function(i){ if(i.photo_urls&&i.photo_urls.length) i.photo_urls.forEach(function(u){if(u)photos.push(u);}); });
-    h+='<div class="secrow" style="padding-top:16px;"><h2>Photos'+(photos.length?' ('+photos.length+')':'')+'</h2></div>';
+    h+='<div class="secrow" style="padding-top:16px;"><h2>Inspection photos'+(photos.length?' ('+photos.length+')':'')+'</h2></div>';
     if(photos.length){
       h+='<div style="display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;">';
       photos.slice(0,12).forEach(function(u){ h+='<img src="'+lesc(u)+'" loading="lazy" style="width:96px;height:96px;flex-shrink:0;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:var(--cream);" onerror="this.style.display=\'none\'">'; });
       h+='</div>';
     } else {
-      h+='<div style="background:var(--cream);border:1px dashed var(--wax);border-radius:14px;padding:18px;text-align:center;"><div style="font-size:24px;opacity:.5;">📷</div><div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:5px;">No photos yet</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px;">Photos you add to this hive or its inspections will show here</div></div>';
+      h+='<div style="background:var(--cream);border:1px dashed var(--wax);border-radius:14px;padding:18px;text-align:center;"><div style="font-size:24px;opacity:.5;">📷</div><div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:5px;">No inspection photos yet</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px;">Photos you add during inspections will show here</div></div>';
     }
     h+='<div class="secrow" style="padding-top:16px;cursor:pointer;" onclick="hkGo(\'inspections\')"><h2>History ('+insp.length+')</h2><span class="edit">View all ›</span></div>';
     insp.slice(0,4).forEach(function(i){
