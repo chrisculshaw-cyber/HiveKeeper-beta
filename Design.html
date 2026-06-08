@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="design-20260608c">
+<meta name="app-version" content="design-20260608e">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -265,6 +265,7 @@
       <div class="field"><label>Email</label><input id="hk-li-email" type="email" autocomplete="username"></div>
       <div class="field"><label>Password</label><input id="hk-li-pass" type="password" autocomplete="current-password"></div>
       <button class="btn btn-moss" onclick="hkLogin()">Sign in &amp; load my data</button>
+      <div id="hk-build" style="text-align:center;font-size:10px;font-weight:600;color:var(--muted);margin-top:18px;letter-spacing:.04em;"></div>
     </div>
 
     <!-- PERSISTENT HEADER -->
@@ -1422,6 +1423,7 @@
        '<div class="st"><div class="ico">🍯</div><div class="v">'+lesc(last&&last.stores_level?last.stores_level:'—')+'</div><div class="k">Stores</div></div>'+
        '<div class="st"><div class="ico">📅</div><div class="v">'+(last?lago(last.inspected_at):'—')+'</div><div class="k">Last seen</div></div>'+
        '</div>';
+    h+='<button class="btn btn-moss" style="margin-top:14px;" onclick="hkOpenInspect(\''+hv.id+'\')">🎙️ Start inspection</button>';
     h+='<div class="stackwrap"><div class="stack"><div class="box roof"></div><div class="box crown"></div>'+(Array(hv.supers||0).fill('<div class="box super"></div>').join(''))+'<div class="box excl"></div><div class="box brood"></div><div class="box floor last"></div></div>'+
        '<div style="flex:1;"><div class="si-t">Configuration</div><div class="si-r"><span>Brood</span><span>'+(hv.brood_boxes||1)+' × '+lesc(hv.box_type||'National')+'</span></div><div class="si-r"><span>Supers</span><span>'+(hv.supers||0)+' on</span></div><div class="si-r"><span>Queen</span><span>'+lesc(hv.queen_status||'—')+'</span></div><div class="si-r"><span>Temperament</span><span>'+lesc(hv.temper||'—')+'</span></div></div></div>';
     // PHOTOS — cover + inspection photos (read-only)
@@ -1509,7 +1511,13 @@
     h+='<div style="height:64px;"></div>';
     body.innerHTML=h;
   }
-  window.hkOpenInspect=function(hid){ curHiveId=hid; hkGo('inspect'); };
+  window.hkOpenInspect=function(hid){
+    curHiveId=hid;
+    // make sure this hive is in the current inspect scope; if scoped to another apiary, widen to its apiary
+    var hv=LD.hives.filter(function(x){return x.id===hid;})[0];
+    if(hv && curApiaryId!==null && hv.apiary_id!==curApiaryId){ curApiaryId=hv.apiary_id; hkUpdateHeaderLive(); }
+    hkGo('inspect');
+  };
 
   function renderCalLive(){
     document.getElementById('cal-demo').style.display='none';
@@ -1567,6 +1575,7 @@
   renderNav(); renderFloat(); renderMenu();
   window.renderHomeLive=renderHomeLive; window.renderApiaryLive=renderApiaryLive; window.renderHiveLive=renderHiveLive; window.renderInspectionsLive=renderInspectionsLive;
   document.getElementById('hk-login').style.display='flex';
+  (function(){var m=document.querySelector('meta[name=app-version]');var bn=document.getElementById('hk-build');if(m&&bn)bn.textContent='Build '+m.getAttribute('content');})();
   if(window.supabase){
     sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
     sb.auth.getSession().then(function(r){ if(r.data.session){ hkLoadLive(); } });
