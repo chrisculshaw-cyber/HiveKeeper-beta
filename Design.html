@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="app-version" content="myday-20260608g-gh">
+<meta name="app-version" content="design-20260608b">
 <meta name="theme-color" content="#2F5740">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -26,20 +26,18 @@
     --shadow:0 2px 8px rgba(26,18,8,.05);
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  body{background:#D9CFB8;font-family:'Syne',sans-serif;color:var(--ink);padding:28px 12px 50px;display:flex;flex-direction:column;align-items:center;}
-  .intro{text-align:center;max-width:540px;margin-bottom:22px;}
-  .intro h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:30px;letter-spacing:-.5px;}
-  .intro p{font-size:13px;color:#5d5444;line-height:1.6;margin-top:7px;}
+  body{background:var(--paper);font-family:'Syne',sans-serif;color:var(--ink);padding:0;margin:0;display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh;}
+  /* intro logo + bottom hint are desktop-only chrome — hidden so the app fills the screen straight away */
+  .intro,.ghhint,.hint{display:none !important;}
 
-  .phone{width:390px;max-width:94vw;height:810px;background:var(--paper);border-radius:30px;overflow:hidden;
-    box-shadow:0 16px 46px rgba(22,43,31,.24);border:1px solid rgba(22,43,31,.08);position:relative;display:flex;flex-direction:column;}
+  .phone{width:100vw;max-width:100vw;height:100vh;height:100dvh;background:var(--paper);overflow:hidden;
+    border-radius:0;border:none;box-shadow:none;position:relative;display:flex;flex-direction:column;}
   .accent{height:5px;background:var(--honey-l);flex-shrink:0;}
 
-  /* full-screen app experience on phones */
-  @media (max-width:600px){
-    body{padding:0;background:var(--paper);min-height:100vh;min-height:100dvh;}
-    .intro,.ghhint{display:none !important;}
-    .phone{width:100vw;max-width:100vw;height:100vh;height:100dvh;border-radius:0;border:none;box-shadow:none;}
+  /* on a wide screen, present as a centred phone-width app column (still full height, no frame) */
+  @media (min-width:600px){
+    body{background:#D9CFB8;}
+    .phone{width:430px;max-width:430px;box-shadow:0 16px 46px rgba(22,43,31,.24);}
   }
 
   /* persistent header */
@@ -820,14 +818,14 @@
   function hkRenderSwitcherLive(){
     document.getElementById('hk-switcher-demo').style.display='none';
     var box=document.getElementById('hk-switcher-live'); box.style.display='block';
-    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead';});
+    var liveHives=LD.hives.filter(function(h){return isLiveHive(h);});
     var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
     var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):'—';
     var h='';
     var allSel=(curApiaryId===null);
     h+='<div onclick="hkScopeHome(null)" style="display:flex;align-items:center;gap:11px;background:'+(allSel?'#F4FAEA':'#fff')+';border:'+(allSel?'1.5px solid #8BBF4D':'1px solid var(--line)')+';border-radius:14px;padding:10px 12px;margin-bottom:7px;cursor:pointer;"><div style="width:40px;height:40px;border-radius:50%;background:#fff;border:2.5px solid #5C8A1E;display:flex;align-items:center;justify-content:center;font-family:\'Cormorant Garamond\';font-size:16px;font-weight:700;color:#3B6D11;">'+avg+'</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">All apiaries</div><div style="font-size:10px;color:#5C8A1E;font-weight:700;">'+liveHives.length+' hives · '+LD.apiaries.length+' apiaries</div></div>'+(allSel?'<span style="color:#3B6D11;font-size:17px;font-weight:800;">✓</span>':'')+'</div>';
     LD.apiaries.forEach(function(a){
-      var hives=LD.hives.filter(function(x){return x.apiary_id===a.id && !x.is_hidden && x.status!=='dead';});
+      var hives=LD.hives.filter(function(x){return x.apiary_id===a.id && isLiveHive(x);});
       var asc=hives.map(function(x){return x.health_score;}).filter(function(s){return typeof s==='number';});
       var aavg=asc.length?Math.round(asc.reduce(function(p,q){return p+q;},0)/asc.length):'—';
       var sel=(curApiaryId===a.id);
@@ -850,7 +848,7 @@
   window.hkScopeHome=function(apid){ hkSetScope(apid,true); };
   function hkUpdateHeaderLive(){
     if(!LIVE) return;
-    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead';});
+    var liveHives=LD.hives.filter(function(h){return isLiveHive(h);});
     if(curApiaryId===null){
       document.getElementById('hk-scope').innerHTML='All apiaries <span class="caret" id="hk-caret">▾</span>';
       document.getElementById('hk-sub').textContent=liveHives.length+' hives · '+LD.apiaries.length+' apiaries';
@@ -1205,8 +1203,18 @@
   var SUPA_URL='https://hknauovhcfsfszyilnrw.supabase.co';
   var SUPA_KEY='sb_publishable_5GEEurL8vsVQnd2hY9f_pQ_MMi65O2o';
   var sb=null, LIVE=false, LD={apiaries:[],hives:[],inspections:[]}, curApiaryId=null, curHiveId=null;
-  window.__setLive=function(d){ LD=d; LIVE=true; };
+  // Meadowbrook display filter — hides test apiaries from view. Display-only; database is untouched.
+  function applyDataFilter(apiaries, hives, inspections){
+    var hideIds={};
+    LD.apiaries=(apiaries||[]).filter(function(a){var h=/meadowbrook/i.test(a.name||'');if(h)hideIds[a.id]=true;return !h;});
+    LD.hives=(hives||[]).filter(function(h){return !hideIds[h.apiary_id];});
+    var keepHive={}; LD.hives.forEach(function(h){keepHive[h.id]=true;});
+    LD.inspections=(inspections||[]).filter(function(i){return keepHive[i.hive_id];});
+  }
+  window.__setLive=function(d){ applyDataFilter(d.apiaries, d.hives, d.inspections); LIVE=true; };
   function lesc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  // A "live colony" = a real, occupied hive: not hidden, not dead, not an empty box.
+  function isLiveHive(h){ var s=(h.status||'').toLowerCase(); return !h.is_hidden && s!=='dead' && s!=='empty'; }
   function lago(s){if(!s)return 'never';var d=Math.floor((Date.now()-new Date(s).getTime())/86400000);return d===0?'today':d===1?'yesterday':d+' days ago';}
   function ldate(s){if(!s)return '—';return new Date(s).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 
@@ -1240,12 +1248,7 @@
     var hv=await sb.from('hives').select('id,name,num,apiary_id,status,health_score,varroa_level,swarm_risk,queen_status,brood_boxes,supers,box_type,temper,is_hidden,established,notes,cover_photo,updated_at').order('num');
     var ins=await sb.from('inspections').select('id,hive_id,inspected_at,queen_seen,frames_brood,brood_frames,stores_level,varroa_level,temper,notes,next_inspection_notes,photo_urls').order('inspected_at',{ascending:false});
     if(ap.error||hv.error||ins.error){ alert('Load failed: '+((ap.error||hv.error||ins.error).message)); return; }
-    // Meadowbrook display filter (DB untouched)
-    var hideIds={};
-    LD.apiaries=(ap.data||[]).filter(function(a){var h=/meadowbrook/i.test(a.name||'');if(h)hideIds[a.id]=true;return !h;});
-    LD.hives=(hv.data||[]).filter(function(h){return !hideIds[h.apiary_id];});
-    var keep={}; LD.hives.forEach(function(h){keep[h.id]=true;});
-    LD.inspections=(ins.data||[]).filter(function(i){return keep[i.hive_id];});
+    applyDataFilter(ap.data||[], hv.data||[], ins.data||[]);
     LIVE=true;
     curApiaryId=null; // default: all apiaries, sticks until changed
     hkUpdateHeaderLive();
@@ -1259,7 +1262,7 @@
   function renderHomeLive(){
     if(!LIVE){ return; }
     var inScope=function(h){ return curApiaryId===null ? true : h.apiary_id===curApiaryId; };
-    var liveHives=LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead' && inScope(h);});
+    var liveHives=LD.hives.filter(function(h){return isLiveHive(h) && inScope(h);});
     var scores=liveHives.map(function(h){return h.health_score;}).filter(function(s){return typeof s==='number';});
     var avg=scores.length?Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length):'—';
     var apName=curApiaryId===null?null:(LD.apiaries.filter(function(a){return a.id===curApiaryId;})[0]||{name:'Apiary'}).name;
@@ -1284,7 +1287,7 @@
       h+='<div class="card"><div style="background:#FFF0D4;border:1px solid #F0C775;border-radius:18px;padding:13px 15px;box-shadow:0 3px 12px rgba(200,115,10,.12);position:relative;"><div onclick="hkDismissFocus(event)" style="position:absolute;top:9px;right:11px;width:22px;height:22px;border-radius:50%;background:rgba(168,93,8,.12);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#A85D08;cursor:pointer;line-height:1;">×</div><div style="display:flex;align-items:center;justify-content:space-between;padding-right:26px;"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#A85D08;">Today\u2019s focus</div>'+(dueN?'<div style="font-size:9px;font-weight:800;color:#A85D08;background:#FBE3B8;padding:2px 8px;border-radius:20px;">'+dueN+' due</div>':'')+'</div><div style="font-size:15px;font-weight:800;line-height:1.3;margin-top:7px;color:#4A2A02;">'+lesc(focusText)+'</div><div onclick="hkGo(\'plan\')" style="background:linear-gradient(165deg,#E8A33D,#B8761A);border-radius:12px;padding:11px 0;text-align:center;font-size:13px;font-weight:800;color:#fff;margin-top:11px;cursor:pointer;box-shadow:var(--btn-honey);">Plan today\u2019s round \u2192</div></div></div>';
     }
     // HEALTH (real, with breakdown)
-    h+='<div class="card"><div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:17px;padding:12px 14px;"><div style="display:flex;align-items:baseline;justify-content:space-between;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:\'Cormorant Garamond\';font-size:32px;font-weight:700;color:#3B6D11;line-height:1;">'+avg+'</div><div><div style="font-size:11px;font-weight:800;color:#2A3D30;">'+healthLbl+'</div><div style="font-size:10px;font-weight:700;color:#5C8A1E;">'+liveHives.length+' live hives</div></div></div><span onclick="hkGo(\'apiary\')" style="font-size:10px;font-weight:800;color:#3B6D11;cursor:pointer;">Hives \u203a</span></div><div style="display:flex;gap:6px;margin-top:11px;"><div style="flex:1;background:#FCEBEB;border:1px solid #F0BCBC;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#A32D2D;">'+varroaN+'</div><div style="font-size:8px;font-weight:800;color:#791F1F;text-transform:uppercase;">Varroa</div></div><div style="flex:1;background:#FBEECF;border:1px solid #E6C277;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#854F0B;">'+swarmN+'</div><div style="font-size:8px;font-weight:800;color:#633806;text-transform:uppercase;">Swarm</div></div><div style="flex:1;background:#EDF6DC;border:1px solid #A8D26B;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#3B6D11;">'+queenOk+'</div><div style="font-size:8px;font-weight:800;color:#27500A;text-transform:uppercase;">Queen\u2713</div></div><div style="flex:1;background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#5F5E5A;">'+lowN+'</div><div style="font-size:8px;font-weight:800;color:#444441;text-transform:uppercase;">Low</div></div></div></div></div>';
+    h+='<div class="card"><div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:17px;padding:12px 14px;"><div style="display:flex;align-items:baseline;justify-content:space-between;"><div style="display:flex;align-items:baseline;gap:8px;"><div style="font-family:\'Cormorant Garamond\';font-size:32px;font-weight:700;color:#3B6D11;line-height:1;">'+avg+'</div><div><div style="font-size:11px;font-weight:800;color:#2A3D30;">'+healthLbl+'</div><div style="font-size:10px;font-weight:700;color:#5C8A1E;">'+liveHives.length+' live colonies</div></div></div><span onclick="hkGo(\'apiary\')" style="font-size:10px;font-weight:800;color:#3B6D11;cursor:pointer;">Hives \u203a</span></div><div style="display:flex;gap:6px;margin-top:11px;"><div style="flex:1;background:#FCEBEB;border:1px solid #F0BCBC;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#A32D2D;">'+varroaN+'</div><div style="font-size:8px;font-weight:800;color:#791F1F;text-transform:uppercase;">Varroa</div></div><div style="flex:1;background:#FBEECF;border:1px solid #E6C277;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#854F0B;">'+swarmN+'</div><div style="font-size:8px;font-weight:800;color:#633806;text-transform:uppercase;">Swarm</div></div><div style="flex:1;background:#EDF6DC;border:1px solid #A8D26B;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#3B6D11;">'+queenOk+'</div><div style="font-size:8px;font-weight:800;color:#27500A;text-transform:uppercase;">Queen\u2713</div></div><div style="flex:1;background:#F1EFE8;border:1px solid #D8D3C5;border-radius:10px;padding:6px;text-align:center;"><div style="font-family:\'Cormorant Garamond\';font-size:17px;font-weight:700;color:#5F5E5A;">'+lowN+'</div><div style="font-size:8px;font-weight:800;color:#444441;text-transform:uppercase;">Low</div></div></div></div></div>';
     // WEATHER (illustrative) + ACTIVITY (real recent inspections) + ENVIRONMENT (illustrative)
     h+=cardHTML('weather');
     // recent activity from real inspections
@@ -1378,7 +1381,7 @@
     var h='';
     if(curApiaryId===null){
       // ALL apiaries: grouped by apiary
-      var totalHives=LD.hives.filter(function(x){return !x.is_hidden && x.status!=='dead';}).length;
+      var totalHives=LD.hives.filter(function(x){return isLiveHive(x);}).length;
       h+='<div class="scrtitle">All apiaries</div><div class="scrsub">'+totalHives+' hives · '+LD.apiaries.length+' apiaries</div>'+chips;
       LD.apiaries.forEach(function(a){
         var hives=LD.hives.filter(function(x){return x.apiary_id===a.id && !x.is_hidden;}).sort(function(p,q){return (p.num||0)-(q.num||0);});
@@ -1470,7 +1473,7 @@
   // ---- scope helpers for Plan/Cal/Inspect ----
   var DUE_DAYS=7; // brood-season inspection cadence
   function scopedHives(){
-    return LD.hives.filter(function(h){return !h.is_hidden && h.status!=='dead' && (curApiaryId===null||h.apiary_id===curApiaryId);});
+    return LD.hives.filter(function(h){return isLiveHive(h) && (curApiaryId===null||h.apiary_id===curApiaryId);});
   }
   function lastInspFor(hid){ return LD.inspections.filter(function(i){return i.hive_id===hid;})[0]; }
   function daysSince(s){ if(!s) return null; return Math.floor((Date.now()-new Date(s).getTime())/86400000); }
