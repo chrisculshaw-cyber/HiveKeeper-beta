@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260611k">
+  <meta name="app-version" content="20260611l">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2898,38 +2898,29 @@ input[type="checkbox"].hk-chk:checked::after {
          pill in the middle is the killer beekeeper signal, colour-coded
          green (good)/amber (marginal)/red (don't fly). Same data, no new APIs. -->
     <div class="section-head" style="margin-top:4px;"><div class="section-title">Weather &amp; wind</div></div>
-    <div id="weather-strip" style="margin:0 20px;background:var(--cream);border-radius:16px;border:1px solid var(--wax);overflow:hidden;position:relative;">
-      <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('flying-day')" title="What's a flying day?">?</span>
-      <!-- TOP ROW: icon + temp + condition + location -->
-      <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
-        <div style="font-size:42px;line-height:1;flex-shrink:0;" id="weather-icon">📡</div>
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
-            <div id="weather-temp-big" style="font-size:28px;font-weight:700;color:var(--text);line-height:1;letter-spacing:-0.02em;">--°</div>
-            <div id="weather-condition" style="font-size:13px;color:var(--text-l);font-weight:600;">Loading…</div>
-          </div>
-          <div onclick="openLocationSetting()" style="font-size:11px;color:var(--text-l);margin-top:4px;display:flex;align-items:center;gap:4px;cursor:pointer;" title="Change location">
-            <span style="opacity:0.6;">📍</span>
-            <span id="weather-location-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">My Location</span>
-            <span id="weather-updated" style="margin-left:auto;font-size:10px;opacity:0.6;flex-shrink:0;"></span>
-          </div>
+    <div id="weather-strip" style="margin:0 20px;display:flex;gap:7px;">
+      <!-- CARD 1: Weather (icon + temp + condition + flying pill). Location + legacy IDs kept here (hidden where needed) so data binding is unchanged. -->
+      <div style="flex:1.2;background:var(--white);border:1px solid var(--wax);border-radius:15px;padding:10px 9px;box-shadow:var(--shadow);position:relative;">
+        <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('flying-day')" title="What's a flying day?">?</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:22px;line-height:1;" id="weather-icon">📡</span>
+          <span id="weather-temp-big" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--text);line-height:1;">--°</span>
         </div>
-        <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;flex-shrink:0;align-self:flex-start;">CACHED</div>
+        <div id="weather-condition" style="font-size:10px;color:var(--text-l);font-weight:600;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Loading…</div>
+        <div id="weather-flying-pill" style="display:inline-block;margin-top:7px;background:#E8F3E0;color:#2D5016;border-radius:999px;padding:2px 8px;font-size:9px;font-weight:800;">🐝 Loading</div>
+        <!-- location + updated + offline kept (hidden) so existing render code still binds without error -->
+        <div onclick="openLocationSetting()" style="display:none;"><span id="weather-location-name">My Location</span><span id="weather-updated"></span></div>
+        <div id="weather-offline-badge" style="display:none;">CACHED</div>
       </div>
-      <!-- BOTTOM ROW: 3 stat tiles -->
-      <div style="display:flex;border-top:1px solid var(--wax);background:var(--white);">
-        <div style="flex:1;padding:10px 6px;text-align:center;">
-          <div id="weather-wind-val" style="font-size:14px;font-weight:700;color:var(--text);">🌬 --</div>
-          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Wind</div>
-        </div>
-        <div style="flex:1.5;padding:8px 6px;text-align:center;border-left:1px solid var(--wax);border-right:1px solid var(--wax);">
-          <div id="weather-flying-pill" style="display:inline-block;background:#E8F3E0;color:#2D5016;border-radius:12px;padding:4px 10px;font-size:11px;font-weight:700;">🐝 Loading</div>
-          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:4px;">To inspect</div>
-        </div>
-        <div style="flex:1;padding:10px 6px;text-align:center;">
-          <div id="weather-pollen-val" style="font-size:14px;font-weight:700;color:var(--text);">🌿 --</div>
-          <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Pollen</div>
-        </div>
+      <!-- CARD 2: Wind -->
+      <div style="flex:1;background:var(--white);border:1px solid var(--wax);border-radius:15px;padding:10px 9px;box-shadow:var(--shadow);text-align:center;display:flex;flex-direction:column;justify-content:center;">
+        <div id="weather-wind-val" style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--text);">🌬 --</div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:5px;">Wind</div>
+      </div>
+      <!-- CARD 3: Pollen -->
+      <div style="flex:1;background:var(--white);border:1px solid var(--wax);border-radius:15px;padding:10px 9px;box-shadow:var(--shadow);text-align:center;display:flex;flex-direction:column;justify-content:center;">
+        <div id="weather-pollen-val" style="font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:var(--text);">🌿 --</div>
+        <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:5px;">Pollen</div>
       </div>
       <!-- Hidden legacy IDs for backwards compat with any code path that still references them -->
       <div style="display:none;">
@@ -2937,19 +2928,10 @@ input[type="checkbox"].hk-chk:checked::after {
         <span id="weather-sub"></span>
         <span id="weather-temp"></span>
         <span id="weather-desc"></span>
-      </div>
-      <!-- 5 May 2026 Phase 4ce-5m — Expandable 7-day forecast.
-           Tapping the footer reveals an inline forecast (no modal) and rotates
-           the arrow. Mirrors the AH Watch pattern. Uses the same threshold
-           logic as flyingConditions() so verdicts genuinely agree across views. -->
-      <div onclick="toggleHomeForecast()" id="weather-forecast-toggle" style="border-top:1px solid var(--wax);padding:10px 14px;background:var(--cream);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;color:var(--forest);">
-        <span id="weather-forecast-toggle-label">See the 7-day forecast</span>
-        <span id="weather-forecast-arrow" style="font-size:11px;transition:transform .2s ease;">&#9660;</span>
-      </div>
-      <div id="weather-forecast-body" style="display:none;border-top:1px solid var(--wax);background:var(--white);">
-        <div id="weather-forecast-rows" style="padding:6px 0;">
-          <div style="text-align:center;padding:14px;font-size:12px;color:var(--text-l);">Loading forecast...</div>
-        </div>
+        <span id="weather-forecast-toggle"></span>
+        <span id="weather-forecast-toggle-label"></span>
+        <span id="weather-forecast-arrow"></span>
+        <div id="weather-forecast-body"><div id="weather-forecast-rows"></div></div>
       </div>
     </div>
     <!-- 11 June 2026 build g — Recent activity card (HIV-250). Additive; renderHomeRecentActivity() injects here. Last few inspections in scope. -->
@@ -35559,7 +35541,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '11 June 2026 build k';
+var HIVEKEEPER_BUILD = '11 June 2026 build l';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
