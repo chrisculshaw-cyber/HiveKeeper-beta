@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260611d">
+  <meta name="app-version" content="20260611f">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2669,8 +2669,10 @@ input[type="checkbox"].hk-chk:checked::after {
           </script>
         </div>
       </div>
-      <!-- STATS GRID -->
-      <div class="stats-grid" id="dash-stats"></div>
+      <!-- STATS GRID — 11 June 2026 build e (HIV-250): hidden. Superseded by the
+           Colony health card on the home. Container kept (renderDashboard still
+           writes into it harmlessly) so the change is minimal + reversible. -->
+      <div class="stats-grid" id="dash-stats" style="display:none;"></div>
     </div>
 
     <!-- SETUP INCOMPLETE BANNER -->
@@ -2727,7 +2729,8 @@ input[type="checkbox"].hk-chk:checked::after {
          Bottom row: 3 stat tiles for Wind / To inspect / Pollen — the flying-day
          pill in the middle is the killer beekeeper signal, colour-coded
          green (good)/amber (marginal)/red (don't fly). Same data, no new APIs. -->
-    <div id="weather-strip" style="margin:10px 20px 0;background:var(--white);border-radius:var(--rs);border:1px solid var(--wax);box-shadow:var(--shadow);overflow:hidden;position:relative;">
+    <div class="section-head" style="margin-top:4px;"><div class="section-title">Weather &amp; wind</div></div>
+    <div id="weather-strip" style="margin:0 20px;background:var(--cream);border-radius:16px;border:1px solid var(--wax);overflow:hidden;position:relative;">
       <span class="help-icon help-icon-corner" onclick="event.stopPropagation();showHelp('flying-day')" title="What's a flying day?">?</span>
       <!-- TOP ROW: icon + temp + condition + location -->
       <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;">
@@ -2746,7 +2749,7 @@ input[type="checkbox"].hk-chk:checked::after {
         <div id="weather-offline-badge" style="display:none;background:#FFF3E0;border:1px solid #FFB74D;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;color:#E65100;flex-shrink:0;align-self:flex-start;">CACHED</div>
       </div>
       <!-- BOTTOM ROW: 3 stat tiles -->
-      <div style="display:flex;border-top:1px solid var(--wax);background:var(--cream);">
+      <div style="display:flex;border-top:1px solid var(--wax);background:var(--white);">
         <div style="flex:1;padding:10px 6px;text-align:center;">
           <div id="weather-wind-val" style="font-size:14px;font-weight:700;color:var(--text);">🌬 --</div>
           <div style="font-size:9px;font-weight:800;letter-spacing:0.06em;color:var(--text-l);text-transform:uppercase;margin-top:3px;">Wind</div>
@@ -7492,7 +7495,7 @@ function renderTodaysFocus() {
 
     var html = ''
       + '<div class="section-head" style="margin-top:4px;"><div class="section-title">Today\u2019s focus</div></div>'
-      + '<div style="background:' + (accent ? '#FFF0D4' : '#F4FAEA') + ';border:1px solid ' + (accent ? '#F0C775' : '#8BBF4D') + ';border-radius:16px;padding:14px 16px;">'
+      + '<div style="margin:0 20px;background:' + (accent ? '#FFF0D4' : '#F4FAEA') + ';border:1px solid ' + (accent ? '#F0C775' : '#8BBF4D') + ';border-radius:16px;padding:14px 16px;">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">'
       + '<div style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:' + (accent ? '#A85D08' : '#3B6D11') + ';">' + (accent ? 'Due now' : 'On track') + '</div>'
       + (accent ? '<div style="font-size:9px;font-weight:800;color:#A85D08;background:#FBE3B8;padding:2px 8px;border-radius:20px;">' + dueCount + ' due</div>' : '')
@@ -7573,7 +7576,7 @@ function renderHomeHealthCard() {
 
     var html = ''
       + '<div class="section-head" style="margin-top:4px;"><div class="section-title">Colony health</div></div>'
-      + '<div style="background:#F4FAEA;border:1px solid #8BBF4D;border-radius:16px;padding:12px 14px;">'
+      + '<div style="margin:0 20px;background:#F4FAEA;border:1px solid #8BBF4D;border-radius:16px;padding:12px 14px;">'
       + '<div style="display:flex;align-items:baseline;justify-content:space-between;">'
       + '<div style="display:flex;align-items:baseline;gap:8px;">'
       + '<div style="font-family:\'Cormorant Garamond\',serif;font-size:32px;font-weight:700;color:' + colour + ';line-height:1;">' + avg + '</div>'
@@ -35422,7 +35425,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '11 June 2026 build d';
+var HIVEKEEPER_BUILD = '11 June 2026 build f';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
