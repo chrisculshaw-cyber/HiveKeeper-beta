@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260611z">
+  <meta name="app-version" content="20260611ab">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2914,7 +2914,9 @@ input[type="checkbox"].hk-chk:checked::after {
          and added little; the inventory dashboard surfaces real value here.
          Includes section heading, then the dashboard card (renders into
          #home-inventory-dashboard) and low-stock alert below. -->
-    <div class="section-head" style="margin-top:4px;"><div class="section-title">Equipment &amp; Honey</div><button class="section-action" onclick="goTo('s-inventory')">Manage →</button></div>
+    <div class="section-head" style="margin-top:4px;"><div class="section-title">Equipment</div><button class="section-action" onclick="goTo('s-inventory')">Manage →</button></div>
+    <!-- 11 June 2026 build ab — Equipment tiles (Harvest-style). renderHomeEquipment() fills this. -->
+    <div id="home-equipment-card" style="display:none;"></div>
     <div id="home-inventory-dashboard" style="display:none;"></div>
     <div id="home-low-stock-banner" style="display:none;"></div>
     <!-- Phase 4cf-01a hotfix4 · 20 May 2026 — Queen rearing as its own
@@ -7131,17 +7133,30 @@ function toggleBurger() {
         if (picUrl) {
           avEl.innerHTML = '<img src="' + picUrl + '" alt="Profile photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">';
         } else {
+          // No cached pic yet (common right after a fresh login). Show initials
+          // now, and kick off the server probe — it calls _updateBurgerAvatar()
+          // when it resolves, so the photo appears without the user reopening.
           var parts = nm.trim().split(/\s+/);
           var initials = (parts[0] ? parts[0][0] : '') + (parts.length > 1 ? parts[parts.length-1][0] : '');
           avEl.textContent = (initials || 'HK').toUpperCase();
+          try { if (typeof refreshProfilePicFromServer === 'function') refreshProfilePicFromServer(); } catch(e) {}
         }
       }
       var tierEl = document.getElementById('hk-drawer-tier');
       if (tierEl) {
+        // 11 June 2026 build ab — use the canonical getUserTier() (same source as
+        // the plan badge) so Founding Beekeepers show correctly instead of "free".
         var t = '';
-        try { t = (typeof userTier !== 'undefined' && userTier) ? userTier : (localStorage.getItem('hk_tier') || ''); } catch(e) {}
-        var label = t ? (t.charAt(0).toUpperCase() + t.slice(1)) : 'HiveKeeper';
-        tierEl.textContent = '\uD83D\uDC1D ' + label;
+        try { t = (typeof getUserTier === 'function') ? getUserTier() : (localStorage.getItem('hk_tier') || ''); } catch(e) {}
+        var tierLabels = {
+          founder: '\uD83C\uDFC5 Founding Beekeeper',
+          trial: '\uD83D\uDC1D Pro (trial)',
+          pro: '\uD83D\uDC1D Pro',
+          commercial: '\uD83D\uDC1D Commercial',
+          beta: '\uD83D\uDC1D Beta',
+          free: '\uD83D\uDC1D Free'
+        };
+        tierEl.textContent = tierLabels[t] || '\uD83D\uDC1D HiveKeeper';
       }
       // Messages badge mirror
       var srcBadge = document.getElementById('messages-badge');
@@ -7245,6 +7260,8 @@ function goTo(id){
     try { renderHomeEnvironment(); } catch(e) {}
     // 11 June 2026 build u — Harvest tiles (HIV-250)
     try { renderHomeHarvest(); } catch(e) {}
+    // 11 June 2026 build ab — Equipment tiles (HIV-250)
+    try { renderHomeEquipment(); } catch(e) {}
   }
   if(id==='s-apiary'){ window._editModeActive = false; renderApiary(); /* Claude in Chrome diagnostic 22 May 2026: header content occasionally doesn't paint on Android WebView after screen entry. DOM is correct, but the compositor misses paint. Force a layout+paint flush via rAF + getBoundingClientRect — same pipeline scroll uses to fix the symptom organically. */ requestAnimationFrame(function(){ try { document.body.getBoundingClientRect(); var _hw = document.querySelector('#s-apiary .screen-header-wrap'); if (_hw) _hw.getBoundingClientRect(); } catch(e){} }); try { applyApiaryViewMode(); } catch(e) {} setTimeout(function(){ try{ initLeafletMap(); }catch(e){console.error('Map init error:',e);} }, 400); setTimeout(function(){ try{ if(_leafletMap) _leafletMap.invalidateSize(); }catch(e){} }, 700); setTimeout(function(){ _redrawMapTiles(); }, 850); setTimeout(function(){ _scrollNudgeApiary(); }, 950); setTimeout(function(){ _logMapContainerState('s-apiary entry +1100ms'); }, 1100); setTimeout(function(){ _verifyTilesLoaded('s-apiary entry +2500ms'); }, 2500); setTimeout(function(){ _forcePageRepaint(); }, 3000); setTimeout(function(){ try{ if(typeof loadMapBearing === 'function') loadMapBearing(); }catch(e){} }, 800); setTimeout(function(){ try{ setMapInteractive(false); var mec=document.getElementById('map-edit-controls'); if(mec) mec.style.display='none'; var mrc=document.getElementById('map-rotation-controls'); if(mrc) mrc.style.display='none'; }catch(e){} }, 900); setTimeout(function(){ try{
     // OFFLINE-AWARE MAP LOAD (24 April 2026)
@@ -7994,6 +8011,48 @@ function renderHomeHarvest() {
   }
 }
 
+// \u2550\u2550\u2550 HOME EQUIPMENT TILES (11 June 2026 build ab, HIV-250) \u2550\u2550\u2550
+// Harvest-style tiles for the Equipment section: Items (distinct types),
+// Total (sum of all quantities), Low stock (count needing reorder). Taps to
+// the inventory screen. Hidden when no equipment logged. Read-only.
+function renderHomeEquipment() {
+  var el = document.getElementById('home-equipment-card');
+  if (!el) return;
+  try {
+    function etile(onclick, bg, brd, icon, label, value, valColour, labColour) {
+      return '<div onclick="' + onclick + '" style="flex:1;min-width:0;background:' + bg + ';border:1px solid ' + brd + ';border-radius:14px;padding:12px 10px;cursor:pointer;text-align:center;">'
+        + '<div style="font-size:20px;line-height:1;">' + icon + '</div>'
+        + '<div style="font-size:11px;font-weight:800;color:' + labColour + ';margin-top:6px;letter-spacing:.02em;">' + label + '</div>'
+        + '<div style="font-size:13px;font-weight:700;color:' + valColour + ';margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + value + '</div></div>';
+    }
+
+    var equipment = (typeof loadEquipment === 'function') ? loadEquipment() : [];
+    if (!equipment.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+
+    var distinct = equipment.length;
+    var totalQty = equipment.reduce(function(s, it){ return s + (typeof it.quantity === 'number' ? it.quantity : 0); }, 0);
+    var lowStock = (typeof getLowStockItems === 'function') ? getLowStockItems().length : 0;
+
+    var go = "goTo('s-inventory')";
+    // Forest/sage palette to distinguish equipment from the honey-gold Harvest tiles.
+    var eqBg = '#EDF1E6', eqBrd = '#C5D4A8', eqLab = '#3B5323', eqCol = '#4A6B2A';
+    var lowBg = lowStock > 0 ? '#FBEAD6' : eqBg;
+    var lowBrd = lowStock > 0 ? '#E6B277' : eqBrd;
+    var lowLab = lowStock > 0 ? '#854F0B' : eqLab;
+    var lowCol = lowStock > 0 ? '#A05E0A' : eqCol;
+
+    el.innerHTML = '<div style="margin:0 20px;display:flex;gap:7px;">'
+      + etile(go, eqBg, eqBrd, '\uD83D\uDCE6', 'Items', String(distinct), eqCol, eqLab)
+      + etile(go, eqBg, eqBrd, '\uD83E\uDDF0', 'Total', String(totalQty), eqCol, eqLab)
+      + etile(go, lowBg, lowBrd, (lowStock > 0 ? '\u26A0\uFE0F' : '\u2713'), 'Low stock', String(lowStock), lowCol, lowLab)
+      + '</div>';
+    el.style.display = 'block';
+  } catch (e) {
+    try { el.style.display = 'none'; el.innerHTML = ''; } catch (e2) {}
+    console.warn('renderHomeEquipment failed:', e);
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 20 May 2026 Phase 4ce-14v — Session review for batch inspections.
 // Tracks inspections saved this visit. Shows a review banner on the
@@ -8551,7 +8610,19 @@ async function refreshProfilePicFromServer() {
     }
     try { renderHomeAvatar(); } catch(_) {}
     try { renderSettingsAvatar(); } catch(_) {}
+    try { _updateBurgerAvatar(); } catch(_) {}
   } catch(_) { /* network/auth blip; keep current cache */ }
+}
+
+// 11 June 2026 build ab — update the burger drawer avatar from the cached pic
+// (called after the profile-pic probe resolves, and on drawer open).
+function _updateBurgerAvatar() {
+  var avEl = document.getElementById('hk-drawer-avatar');
+  if (!avEl) return;
+  var picUrl = (typeof getProfilePicUrl === 'function') ? getProfilePicUrl() : null;
+  if (picUrl) {
+    avEl.innerHTML = '<img src="' + picUrl + '" alt="Profile photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">';
+  }
 }
 
 // 7 May 2026 Phase 4ce-13t — In-app messages.
@@ -10429,6 +10500,12 @@ function saveHoneyPricing() {
 function renderHomeDashboard() {
   var el = document.getElementById('home-inventory-dashboard');
   if (!el) return;
+  // 11 June 2026 build ab — superseded by renderHomeEquipment() (Harvest-style
+  // Equipment tiles). Keep this container permanently hidden so we don't show
+  // the old equipment line AND the new tiles. Logic below is left intact (dead)
+  // for safety / easy revert.
+  el.style.display = 'none'; el.innerHTML = '';
+  return;
 
   var honeyTotals = (typeof getTotalHoneyStock === 'function') ? getTotalHoneyStock() : { jars: 0, kg: 0 };
   var honeyValue = (typeof getHoneyStockValue === 'function') ? getHoneyStockValue() : { value: 0, pricedJars: 0, unpricedJars: 0, unpricedSizes: [] };
@@ -18245,9 +18322,12 @@ window.HK.UpdateCheck = (function() {
       // hosts that support it (most static hosts); on hosts that don\'t,
       // we get 200 with the full body, which still contains the meta tag
       // near the top (~2MB total, but rare).
-      var url = window.location.pathname.replace(/\/$/, '') + '/?cb=' + Date.now();
-      // If pathname is just "/", use "/?cb=..."
-      if (window.location.pathname === '/') url = '/?cb=' + Date.now();
+      // 11 June 2026 build aa — FIX: appending '/?cb=' inserted a trailing slash
+      // after '.html' (-> /hivekeeper-beta1.html/?cb=...), which 404s and kills
+      // the update-check entirely. Append the cache-buster directly to the path
+      // with a proper separator instead, so both /file.html and / work.
+      var _p = window.location.pathname || '/';
+      var url = _p + (_p.indexOf('?') === -1 ? '?' : '&') + 'cb=' + Date.now();
       fetch(url, {
         cache: 'no-store',
         headers: { 'Range': 'bytes=0-4095' }
@@ -27813,6 +27893,8 @@ function switchApiary(id) {
   try { renderHomeEnvironment(); } catch(e) {}
   // 11 June 2026 build u — refresh Harvest tiles (HIV-250)
   try { renderHomeHarvest(); } catch(e) {}
+  // 11 June 2026 build ab — refresh Equipment tiles (HIV-250)
+  try { renderHomeEquipment(); } catch(e) {}
   showToast('Switched to ' + (apiary ? apiary.name : 'apiary'));
 }
 
@@ -35859,7 +35941,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '11 June 2026 build z';
+var HIVEKEEPER_BUILD = '11 June 2026 build ab';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
