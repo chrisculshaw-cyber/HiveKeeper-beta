@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260617l">
+  <meta name="app-version" content="20260617m">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -434,14 +434,27 @@ label{font-size:11px;font-weight:700;color:var(--text-l);text-transform:uppercas
    The scanner element sweeps left↔right continuously; we only RUN the
    animation (and raise opacity) while someone is speaking, via the
    .kitt-active class toggled by _kittActive(). */
-@keyframes kitt-sweep{
-  0%{left:0;}
-  50%{left:calc(100% - 64px);}
-  100%{left:0;}
+/* 17 June 2026 build m (HIV-200 / voice) — vertical VU equalizer bars (KITT/
+   Knight-Rider style, per the reference image: stacked columns rising/falling).
+   Bars bounce with a per-bar delay (--d) for the equalizer ripple. Animation
+   only RUNS while #kitt-bar has .kitt-active (someone speaking); idle bars sit
+   short and dim. _kittActive() toggles the class from the TTS + onresult hooks. */
+#kitt-bar .vu-bar{
+  display:inline-block;width:5px;height:5px;border-radius:2px;
+  background:linear-gradient(180deg,#FFD27A,#E8960C);
+  box-shadow:0 0 8px rgba(232,150,12,0.5);
+  transform-origin:bottom;
+  transition:height .15s ease;
 }
-#kitt-scanner{animation:kitt-sweep 1.1s ease-in-out infinite;animation-play-state:paused;}
+@keyframes vu-bounce{
+  0%,100%{height:5px;}
+  50%{height:44px;}
+}
 #kitt-bar.kitt-active{opacity:1;}
-#kitt-bar.kitt-active #kitt-scanner{animation-play-state:running;}
+#kitt-bar.kitt-active .vu-bar{
+  animation:vu-bounce 0.6s ease-in-out infinite;
+  animation-delay:calc(var(--d) * -0.11s);
+}
 .rail-save-spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:rail-save-spinner 0.7s linear infinite}
 /* 7 May 2026 Phase 4ce-13q — Disable browser-native pull-to-refresh.
    Earlier 4ce-13p attempt only set overscroll-behavior on body, which
@@ -5732,8 +5745,8 @@ input[type="checkbox"].hk-chk:checked::after {
     <div id="handsfree-hive" style="margin-top:18px;font-family:'Cormorant Garamond',Georgia,serif;font-size:48px;line-height:1.05;font-weight:600;text-align:center;color:#FBF8F1;">—</div>
 
     <!-- KITT scanner bar -->
-    <div id="kitt-bar" style="margin-top:40px;width:100%;max-width:340px;height:14px;border-radius:8px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative;opacity:0.4;transition:opacity 0.2s;">
-      <div id="kitt-scanner" style="position:absolute;top:0;left:0;height:100%;width:64px;border-radius:8px;background:linear-gradient(90deg,rgba(232,150,12,0) 0%,#E8960C 50%,rgba(232,150,12,0) 100%);box-shadow:0 0 16px 2px rgba(232,150,12,0.7);"></div>
+    <div id="kitt-bar" style="margin-top:40px;width:100%;max-width:340px;height:48px;display:flex;align-items:flex-end;justify-content:center;gap:4px;opacity:0.4;transition:opacity 0.2s;">
+      <span class="vu-bar" style="--d:0"></span><span class="vu-bar" style="--d:1"></span><span class="vu-bar" style="--d:2"></span><span class="vu-bar" style="--d:3"></span><span class="vu-bar" style="--d:4"></span><span class="vu-bar" style="--d:5"></span><span class="vu-bar" style="--d:6"></span><span class="vu-bar" style="--d:7"></span><span class="vu-bar" style="--d:8"></span><span class="vu-bar" style="--d:9"></span><span class="vu-bar" style="--d:10"></span><span class="vu-bar" style="--d:11"></span><span class="vu-bar" style="--d:12"></span><span class="vu-bar" style="--d:13"></span>
     </div>
 
     <div id="handsfree-instruction" style="margin-top:40px;font-family:Syne,sans-serif;font-size:21px;font-weight:600;line-height:1.4;text-align:center;color:#F4E4C8;max-width:300px;"></div>
@@ -16093,12 +16106,12 @@ function openWakeLockIntro() {
 // input here as the source of truth.
 function dismissWakeLockIntro() {
   try {
-    var cb = document.getElementById('wake-intro-dontshow-cb');
-    if (cb && cb.checked) {
-      localStorage.setItem('hk_wake_lock_intro_suppress', '1');
-    } else {
-      localStorage.removeItem('hk_wake_lock_intro_suppress');
-    }
+    // 17 June 2026 build m — one acknowledgement is enough. "Got it" now ALWAYS
+    // suppresses permanently regardless of the checkbox. The per-session +
+    // checkbox approach was re-showing the modal on every Inspect entry under
+    // the Median wrapper (sessionStorage isn't reliable across in-app nav). The
+    // user asked to see it once, acknowledge, and never again — so honour that.
+    localStorage.setItem('hk_wake_lock_intro_suppress', '1');
   } catch(e) {}
   try { closeModalEl('modal-wake-lock-intro'); } catch(e) {}
 }
@@ -36463,7 +36476,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '17 June 2026 build l';
+var HIVEKEEPER_BUILD = '17 June 2026 build m';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -40449,18 +40462,20 @@ function endVoiceInspection(opts) {
   try { clearTimeout(_voiceInspection.silenceTimer); } catch (e) {}
   _voiceInspection.silenceTimer = null;
   _updateInspectionBanner();
-  // 25 May 2026 build g — restore normal active-mode timer (the inspecting
-  // mode suppressed it). If voice mode is still active, this gives the user
-  // 10 seconds of follow-up commands before dropping back to passive.
-  try {
-    if (_voiceCmd.active && typeof _resetActiveModeTimer === 'function') {
-      _resetActiveModeTimer();
-    }
-    if (typeof _updateIndicatorMode === 'function') _updateIndicatorMode();
-  } catch (e) {}
+  // 17 June 2026 build m (HIV-200 / voice) — ending a hands-free inspection
+  // should FULLY shut the voice engine down, not drop to passive wake-listening.
+  // Previously this restored the active-mode timer, leaving _voiceCmd running so
+  // "Say hivekeeper" kept appearing on every screen and the mic stayed live
+  // after the keeper was done. Now: speak a short acknowledgement, then stop
+  // voice commands entirely once it has played (deferred so TTS isn't cut off).
   if (!opts.silent) {
-    voiceFeedback(opts.complete ? 'All hives done' : 'Inspection ended');
+    voiceFeedback(opts.complete ? 'Inspection complete' : 'Inspection ended');
   }
+  setTimeout(function() {
+    try { if (typeof stopVoiceCommands === 'function') stopVoiceCommands(); } catch (e) {}
+    try { if (typeof hideVoiceIndicator === 'function') hideVoiceIndicator(); } catch (e) {}
+    try { if (typeof _updateIndicatorMode === 'function') _updateIndicatorMode(); } catch (e) {}
+  }, 1800);
   // 17 June 2026 build i (HIV-200 / voice) — reset rail button to idle.
   try { if (typeof renderRailVoice === 'function') renderRailVoice(); } catch (e) {}
   // 17 June 2026 build l — tear down the hands-free overlay + beep loop.
@@ -40859,6 +40874,12 @@ function _advanceToNextHive() {
   }
   _voiceInspection.currentHive = nextHive;
   _voiceInspection.state = 'awaiting_description';
+  // 17 June 2026 build m (HIV-200 / voice) — beep the instant the next hive is
+  // picked, BEFORE the spoken "Next: …" prompt. That prompt goes through a
+  // Worker TTS fetch + playback round-trip which lags on poor signal, leaving a
+  // silent gap where the keeper doesn't know the app has advanced. The
+  // immediate beep closes that gap.
+  try { _voiceReadyBeep(); } catch (e) {}
   _updateInspectionBanner();
 
   // 25 May 2026 build g — sync inspect form to the next hive. Same call
