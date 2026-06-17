@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260617h">
+  <meta name="app-version" content="20260617i">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -5673,6 +5673,23 @@ input[type="checkbox"].hk-chk:checked::after {
       <div class="side-rail-label">Inspect</div>
     </button>
 
+    <!-- 17 June 2026 build i (HIV-200 / voice) — Hands-free button in the rail.
+         Wires the EXISTING startVoiceInspection() engine to a tappable
+         affordance on the Inspect screen. Previously voice inspection could
+         only be started by a voice command; there was no button path. Tap to
+         start; the session ends on the "end inspection" keyword or when the
+         hive queue is saved through (engine unchanged). Sits above rail-save
+         so the verbs read top-to-bottom: navigate (Apiary/Inspect), then
+         capture (Hands-free), then commit (Save). Visibility driven by
+         renderRailVoice(): hidden off s-inspect; idle 🎤 when not listening;
+         active 🔴 "Listening…" while a session runs. Tapping while active
+         re-announces the current hive (harmless), it does NOT stop — stop is
+         keyword-only by design. -->
+    <button class="side-rail-btn" id="rail-voice" onclick="railVoiceTap()" style="display:none;background:rgba(255,255,255,0.08);border-radius:10px;padding:6px 4px;transition:background 0.3s, opacity 0.3s;" aria-label="Start hands-free inspection">
+      <div class="side-rail-icon" id="rail-voice-icon">🎤</div>
+      <div class="side-rail-label" id="rail-voice-label">Hands-free</div>
+    </button>
+
     <!-- 7 May 2026 Phase 4ce-13m — Save in the rail.
          Reported by Davey: voice-only inspections sometimes don't get saved
          because the save button is at the bottom of a long form. Putting
@@ -7242,6 +7259,8 @@ function goTo(id){
   currentScreen = id;
   // 7 May 2026 Phase 4ce-13m — refresh rail-save visibility on screen change
   try { if (typeof renderRailSave === 'function') renderRailSave(); } catch(e) {}
+  // 17 June 2026 build i (HIV-200 / voice) — refresh rail Hands-free visibility too.
+  try { if (typeof renderRailVoice === 'function') renderRailVoice(); } catch(e) {}
   if(screenHistory[screenHistory.length-1] !== id) screenHistory.push(id);
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === id));
   // Push state to intercept browser back button
@@ -36411,7 +36430,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '17 June 2026 build h';
+var HIVEKEEPER_BUILD = '17 June 2026 build i';
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -40157,6 +40176,56 @@ var _voiceInspection = {
 var _VOICE_INSPECTION_SILENCE_DESCRIPTION_MS = 2000;
 var _VOICE_INSPECTION_SILENCE_FOLLOWUP_MS = 1500;
 
+// 17 June 2026 build i (HIV-200 / voice) — rail Hands-free button glue.
+// railVoiceTap(): the button's only job is to START a hands-free inspection.
+// If a session is already running, re-announce the current hive (useful if the
+// keeper missed the prompt) — it deliberately does NOT stop the session, since
+// stopping is keyword-only ("end inspection") by design. renderRailVoice():
+// shows the button on s-inspect only and reflects idle vs listening state.
+// The voice engine itself (startVoiceInspection/endVoiceInspection/
+// handleInspectionUtterance) is untouched.
+function railVoiceTap() {
+  try {
+    if (_voiceInspection && _voiceInspection.active) {
+      // Already inspecting — re-announce current hive rather than start/stop.
+      var h = _voiceInspection.currentHive;
+      if (h && typeof voiceFeedback === 'function') {
+        voiceFeedback('Listening. Describe ' + (h.name || 'this hive') + '.');
+      }
+      return;
+    }
+    if (typeof startVoiceInspection === 'function') {
+      startVoiceInspection();
+    }
+  } catch (e) {
+    console.warn('[railVoiceTap] failed:', e);
+  }
+  if (typeof renderRailVoice === 'function') renderRailVoice();
+}
+
+function renderRailVoice() {
+  var btn = document.getElementById('rail-voice');
+  if (!btn) return;
+  var icon = document.getElementById('rail-voice-icon');
+  var label = document.getElementById('rail-voice-label');
+  // Only on the Inspect screen.
+  if (typeof currentScreen !== 'undefined' && currentScreen !== 's-inspect') {
+    btn.style.display = 'none';
+    return;
+  }
+  btn.style.display = 'block';
+  var active = !!(_voiceInspection && _voiceInspection.active);
+  if (active) {
+    if (icon) icon.textContent = '\uD83D\uDD34'; // red circle
+    if (label) label.textContent = 'Listening\u2026';
+    btn.setAttribute('aria-label', 'Voice inspection listening');
+  } else {
+    if (icon) icon.textContent = '\uD83C\uDFA4'; // mic
+    if (label) label.textContent = 'Hands-free';
+    btn.setAttribute('aria-label', 'Start hands-free inspection');
+  }
+}
+
 function startVoiceInspection() {
   if (_voiceInspection.active) {
     voiceFeedback('Already inspecting');
@@ -40230,6 +40299,8 @@ function startVoiceInspection() {
   _voiceInspection.state = 'awaiting_description';
   _voiceInspection.lastUtteranceAt = Date.now();
   _setInspectionStateLabel('Listening… describe ' + queue[0].name);
+  // 17 June 2026 build i (HIV-200 / voice) — flip rail button to Listening.
+  try { if (typeof renderRailVoice === 'function') renderRailVoice(); } catch (e) {}
 }
 
 function endVoiceInspection(opts) {
@@ -40252,6 +40323,8 @@ function endVoiceInspection(opts) {
   if (!opts.silent) {
     voiceFeedback(opts.complete ? 'All hives done' : 'Inspection ended');
   }
+  // 17 June 2026 build i (HIV-200 / voice) — reset rail button to idle.
+  try { if (typeof renderRailVoice === 'function') renderRailVoice(); } catch (e) {}
 }
 
 function _updateInspectionBanner() {
