@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260622k">
+  <meta name="app-version" content="20260623a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -7722,19 +7722,30 @@ function renderHiveStrip() {
 // canonical render order (see HIV-201 step-0 audit comment). `on` is the
 // default visibility intent (true = part of the default briefing).
 var HOME_CARDS = [
-  { id: 'community-spray',  name: 'Spray alerts',      icon: '\u26A0\uFE0F', tier: 'all', on: true,  order: 10,  render: function(){ return (typeof renderHomeCommunitySprayAlert === 'function') && renderHomeCommunitySprayAlert(); } },
-  { id: 'quarantine',       name: 'Quarantine',        icon: '\u23F3',       tier: 'all', on: true,  order: 20,  render: function(){ return (typeof renderHomeQuarantineBanner === 'function') && renderHomeQuarantineBanner(); } },
-  { id: 'todays-focus',     name: "Today's focus",     icon: '\uD83C\uDFAF', tier: 'all', on: true,  order: 30,  render: function(){ return (typeof renderTodaysFocus === 'function') && renderTodaysFocus(); } },
-  { id: 'health',           name: 'Colony health',     icon: '\uD83D\uDC1D', tier: 'all', on: true,  order: 40,  render: function(){ return (typeof renderHomeHealthCard === 'function') && renderHomeHealthCard(); } },
-  { id: 'recent-activity',  name: 'Recent activity',   icon: '\uD83D\uDD52', tier: 'all', on: true,  order: 50,  render: function(){ return (typeof renderHomeRecentActivity === 'function') && renderHomeRecentActivity(); } },
-  { id: 'environment',      name: 'Environment (UK)',  icon: '\uD83C\uDF3F', tier: 'all', on: true,  order: 60,  render: function(){ return (typeof renderHomeEnvironment === 'function') && renderHomeEnvironment(); } },
-  { id: 'harvest',          name: 'Harvest',           icon: '\uD83C\uDF6F', tier: 'all', on: true,  order: 70,  render: function(){ return (typeof renderHomeHarvest === 'function') && renderHomeHarvest(); } },
-  { id: 'equipment',        name: 'Equipment',         icon: '\uD83D\uDCE6', tier: 'all', on: true,  order: 80,  render: function(){ return (typeof renderHomeEquipment === 'function') && renderHomeEquipment(); } },
-  { id: 'low-stock',        name: 'Low stock',         icon: '\u26A0\uFE0F', tier: 'all', on: true,  order: 90,  render: function(){ return (typeof renderHomeLowStockBanner === 'function') && renderHomeLowStockBanner(); } },
-  { id: 'queen-rearing',    name: 'Queen rearing',     icon: '\uD83D\uDC51', tier: 'pro', on: true,  order: 100, render: function(){ return (typeof renderHomeQueenRearingBanner === 'function') && renderHomeQueenRearingBanner(); } },
-  { id: 'treatment-efficacy', name: 'Varroa & treatments', icon: '\uD83D\uDC9C', tier: 'pro', on: true, order: 110, render: function(){ return (typeof renderHomeTreatmentEfficacyBanner === 'function') && renderHomeTreatmentEfficacyBanner(); } },
-  { id: 'next-inspection',  name: 'Next inspection',   icon: '\uD83D\uDCDD', tier: 'all', on: true,  order: 120, render: function(){ return (typeof renderHomeNextInspection === 'function') && renderHomeNextInspection(); } },
-  { id: 'jobs',             name: 'Jobs to do',        icon: '\u2713',       tier: 'all', on: true,  order: 130, render: function(){ return (typeof renderHomeJobs === 'function') && renderHomeJobs(); } }
+  // 23 June 2026 build a (HIV-201 reconciliation) — order renumbered to the
+  // EXACT live s-home dispatch sequence; forage-conditions, swarm-risk and
+  // inventory-dashboard added (were rendered live but missing here). Step 10.
+  // customisable:false marks always-on system banners (data-conditional show/
+  // hide) that should NOT appear in the user customiser. treatment-efficacy is
+  // retained but flagged inPrimaryDispatch:false — it is NOT in the main s-home
+  // render loop (it refreshes via treatment-screen + post-sync paths), so the
+  // registry loop must not call it or it would double-render.
+  { id: 'low-stock',          name: 'Low stock',           icon: '\\u26A0\\uFE0F', tier: 'all', on: true, order: 10,  customisable: false, render: function(){ return (typeof renderHomeLowStockBanner === 'function') && renderHomeLowStockBanner(); } },
+  { id: 'queen-rearing',      name: 'Queen rearing',       icon: '\\uD83D\\uDC51', tier: 'pro', on: true, order: 20,  customisable: false, render: function(){ return (typeof renderHomeQueenRearingBanner === 'function') && renderHomeQueenRearingBanner(); } },
+  { id: 'quarantine',         name: 'Quarantine',          icon: '\\u23F3',       tier: 'all', on: true, order: 30,  customisable: false, render: function(){ return (typeof renderHomeQuarantineBanner === 'function') && renderHomeQuarantineBanner(); } },
+  { id: 'forage-conditions',  name: 'Forage & conditions', icon: '\\uD83C\\uDF3C', tier: 'all', on: true, order: 40,  customisable: true,  render: function(){ return (typeof renderForageConditions === 'function') && renderForageConditions(); } },
+  { id: 'swarm-risk',         name: 'Swarm risk',          icon: '\\uD83D\\uDC1D', tier: 'all', on: true, order: 50,  customisable: true,  render: function(){ try { return (window.HK && window.HK.SwarmRisk) ? window.HK.SwarmRisk.render() : false; } catch(e){ return false; } } },
+  { id: 'community-spray',    name: 'Spray alerts',        icon: '\\u26A0\\uFE0F', tier: 'all', on: true, order: 60,  customisable: false, render: function(){ return (typeof renderHomeCommunitySprayAlert === 'function') && renderHomeCommunitySprayAlert(); } },
+  { id: 'inventory-dashboard',name: 'Inventory & honey',   icon: '\\uD83D\\uDCE6', tier: 'all', on: true, order: 70,  customisable: false, render: function(){ return (typeof renderHomeDashboard === 'function') && renderHomeDashboard(); } },
+  { id: 'todays-focus',       name: "Today's focus",       icon: '\\uD83C\\uDFAF', tier: 'all', on: true, order: 80,  customisable: true,  render: function(){ return (typeof renderTodaysFocus === 'function') && renderTodaysFocus(); } },
+  { id: 'health',             name: 'Colony health',       icon: '\\uD83D\\uDC1D', tier: 'all', on: true, order: 90,  customisable: true,  render: function(){ return (typeof renderHomeHealthCard === 'function') && renderHomeHealthCard(); } },
+  { id: 'jobs',               name: 'Jobs to do',          icon: '\\u2713',       tier: 'all', on: true, order: 100, customisable: true,  render: function(){ return (typeof renderHomeJobs === 'function') && renderHomeJobs(); } },
+  { id: 'next-inspection',    name: 'Next inspection',     icon: '\\uD83D\\uDCDD', tier: 'all', on: true, order: 110, customisable: true,  render: function(){ return (typeof renderHomeNextInspection === 'function') && renderHomeNextInspection(); } },
+  { id: 'recent-activity',    name: 'Recent activity',     icon: '\\uD83D\\uDD52', tier: 'all', on: true, order: 120, customisable: true,  render: function(){ return (typeof renderHomeRecentActivity === 'function') && renderHomeRecentActivity(); } },
+  { id: 'environment',        name: 'Environment (UK)',    icon: '\\uD83C\\uDF3F', tier: 'all', on: true, order: 130, customisable: true,  render: function(){ return (typeof renderHomeEnvironment === 'function') && renderHomeEnvironment(); } },
+  { id: 'harvest',            name: 'Harvest',             icon: '\\uD83C\\uDF6F', tier: 'all', on: true, order: 140, customisable: true,  render: function(){ return (typeof renderHomeHarvest === 'function') && renderHomeHarvest(); } },
+  { id: 'equipment',          name: 'Equipment',           icon: '\\uD83D\\uDCE6', tier: 'all', on: true, order: 150, customisable: true,  render: function(){ return (typeof renderHomeEquipment === 'function') && renderHomeEquipment(); } },
+  { id: 'treatment-efficacy', name: 'Varroa & treatments', icon: '\\uD83D\\uDC9C', tier: 'pro', on: true, order: 999, customisable: true, inPrimaryDispatch: false, render: function(){ return (typeof renderHomeTreatmentEfficacyBanner === 'function') && renderHomeTreatmentEfficacyBanner(); } }
 ];
 
 // Return the cards that should render, in order. (Inert helper — the future
@@ -7742,7 +7753,7 @@ var HOME_CARDS = [
 // reflects the static defaults above.)
 function getActiveHomeCards() {
   return HOME_CARDS
-    .filter(function(c){ return c.on; })
+    .filter(function(c){ return c.on && c.inPrimaryDispatch !== false; })
     .slice()
     .sort(function(a, b){ return a.order - b.order; });
 }
@@ -36736,7 +36747,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '22 June 2026 build k';
+var HIVEKEEPER_BUILD = '23 June 2026 build a';
 // 22 June 2026 build k — hide all sync status UI (home banner + toasts).
 // Background sync/queue/retry logic is unaffected; only visible surfaces are
 // suppressed. Set to false to bring the sync messaging back.
