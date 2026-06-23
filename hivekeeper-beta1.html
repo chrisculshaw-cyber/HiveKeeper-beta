@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260622j">
+  <meta name="app-version" content="20260622k">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -6857,7 +6857,7 @@ function saveInspections(i){
         });
       }
     });
-    showToast('📵 Saved offline — will sync when online');
+    _syncToast('📵 Saved offline — will sync when online');
   } else {
     pushInspections().catch(function(){});
   }
@@ -36736,7 +36736,18 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '22 June 2026 build j';
+var HIVEKEEPER_BUILD = '22 June 2026 build k';
+// 22 June 2026 build k — hide all sync status UI (home banner + toasts).
+// Background sync/queue/retry logic is unaffected; only visible surfaces are
+// suppressed. Set to false to bring the sync messaging back.
+window._HIDE_SYNC_UI = true;
+// Sync-status toast wrapper: silent when sync UI is hidden, otherwise a normal
+// toast. Used for all sync/queue/permission notifications so one flag controls
+// the lot. (genuine non-sync errors should still use showToast directly.)
+function _syncToast(msg) {
+  if (window._HIDE_SYNC_UI !== false) return;
+  try { showToast(msg); } catch (e) {}
+}
 
 // 30 April 2026 Phase 4bq — helper to extract just the timestamp + phase
 // number from the rich HIVEKEEPER_BUILD string. The full constant retains
@@ -37812,7 +37823,7 @@ async function pushHives() {
     // permission errors honestly so the keeper knows the change didn't save.
     var _perm = (error.code === '42501') || /row-level security|permission denied|violates row-level/i.test(error.message || '');
     if (_perm) {
-      showToast('You don\u2019t have permission to change hives in this shared apiary');
+      _syncToast('You don\u2019t have permission to change hives in this shared apiary');
     } else {
       showToast('A hive couldn\u2019t sync just now — we\u2019ll try again shortly');
       rows.forEach(function(r){ try { queueOfflineSave('hives', r); } catch(e) {} });
@@ -37892,7 +37903,7 @@ async function pushInspections() {
     // HIV-149 (1 June 2026) — surface RLS permission rejections honestly (see pushHives).
     var _permI = (error.code === '42501') || /row-level security|permission denied|violates row-level/i.test(error.message || '');
     if (_permI) {
-      showToast('You don\u2019t have permission to add inspections in this shared apiary');
+      _syncToast('You don\u2019t have permission to add inspections in this shared apiary');
       return;
     }
     showToast('Cloud backup will retry shortly \u2014 your inspection is safe on your phone');
@@ -38907,7 +38918,7 @@ saveInspections = function(inspections) {
     // hands-free overlay already confirms the save ("Hive saved" spoken).
     var _inVoice = false;
     try { _inVoice = (typeof _voiceInspection !== 'undefined' && _voiceInspection && (_voiceInspection.active || _voiceInspection.armed)); } catch (e) {}
-    if (!_inVoice) showToast('📵 Saved offline — will sync when back online');
+    if (!_inVoice) _syncToast('📵 Saved offline — will sync when back online');
   } else {
     pushInspections().catch(function(){});
   }
@@ -44479,7 +44490,7 @@ async function syncToCloud(table, record, options) {
           _lastSyncErrorToastAt = now;
           try {
             if (typeof showToast === 'function') {
-              showToast("Some changes couldn't sync. We'll retry automatically.");
+              _syncToast("Some changes couldn't sync. We'll retry automatically.");
             }
           } catch(e) {}
         }
@@ -46097,6 +46108,11 @@ async function syncStatusManualSync() {
 function updateHomeSyncIndicator() {
   var el = document.getElementById('sync-status');
   if (!el) return;
+  // 22 June 2026 build k — sync UI hidden. Single-account users found the sync
+  // banners/toasts misleading (esp. the "shared apiary" wording). The queue and
+  // retry logic still run silently in the background; only the visible surfaces
+  // are suppressed. Flip _HIDE_SYNC_UI to false to restore them.
+  if (window._HIDE_SYNC_UI !== false) { el.style.display = 'none'; return; }
   var summary = getSyncStatusSummary();
   if (summary.failed > 0) {
     el.style.display = 'block';
