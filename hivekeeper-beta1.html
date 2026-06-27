@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260623h">
+  <meta name="app-version" content="20260623i">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -7844,6 +7844,10 @@ function _tierDoneCount(tier) {
 }
 function _isTierUnlocked(index) {
   if (index === 0) return true;
+  // 23 June build i — Pro/Commercial/founding/trial users get all tiers open
+  // (the gating is pedagogical guidance, but paying users have earned the run
+  // of the library). Free users still progress tier by tier.
+  try { if (typeof userHasPaidEntitlement === 'function' && userHasPaidEntitlement()) return true; } catch(e) {}
   var prev = LEARN_TIERS[index - 1];
   return _tierDoneCount(prev) >= prev.videos.length;
 }
@@ -7915,11 +7919,38 @@ function renderLearn() {
   body.innerHTML = html;
 }
 
+// 23 June build i — playthrough gate. Uses the YouTube IFrame API to require
+// the viewer to actually watch at least half the video before "Mark as watched"
+// enables. Can't prove human attention (nothing can), but makes skipping cost
+// as much effort as watching. Already-watched videos skip the gate.
+var _ytApiReady = false;
+var _ytApiLoading = false;
+var _learnPlayer = null;
+var _learnProgressTimer = null;
+
+function _ensureYTApi(cb) {
+  if (_ytApiReady && window.YT && window.YT.Player) { cb(); return; }
+  // Register/extend the global ready callback.
+  var prev = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function() {
+    _ytApiReady = true;
+    if (typeof prev === 'function') { try { prev(); } catch(e) {} }
+    cb();
+  };
+  if (window.YT && window.YT.Player) { _ytApiReady = true; cb(); return; }
+  if (_ytApiLoading) return; // a load is already in flight; our callback will fire
+  _ytApiLoading = true;
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
 function playLearnVideo(videoId) {
   var v = null;
   LEARN_TIERS.forEach(function(t){ t.videos.forEach(function(x){ if (x.video === videoId) v = x; }); });
   var title = v ? v.title : 'Video';
-  var watched = _learnCompleted.has(videoId);
+  var alreadyWatched = _learnCompleted.has(videoId);
+
   var host = document.createElement('div');
   host.id = 'learn-player-host';
   host.innerHTML =
@@ -7930,17 +7961,84 @@ function playLearnVideo(videoId) {
     +     '<div onclick="_closeLearnPlayer()" style="font-size:22px;color:var(--text-l);cursor:pointer;line-height:1;">\u00D7</div>'
     +   '</div>'
     +   '<div style="position:relative;width:100%;padding-bottom:56.25%;height:0;background:#000;">'
-    +     '<iframe src="https://www.youtube.com/embed/' + videoId + '?rel=0" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>'
+    +     '<div id="learn-yt-player" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>'
     +   '</div>'
     +   '<div style="padding:14px 16px 20px;">'
     +     '<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;">Video by Stewart Spinks, The Norfolk Honey Company. <a href="https://www.youtube.com/watch?v=' + videoId + '" target="_blank" rel="noopener" style="color:var(--forest);">Watch on YouTube</a></div>'
-    +     '<button onclick="markLearnVideoDone(\'' + videoId + '\')" id="learn-mark-btn" style="width:100%;background:' + (watched ? '#9E9E9E' : 'var(--forest)') + ';color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">' + (watched ? '\u2713 Watched' : 'Mark as watched') + '</button>'
+    +     '<div id="learn-watch-hint" style="font-size:11px;color:var(--text-l);text-align:center;margin-bottom:8px;min-height:14px;">' + (alreadyWatched ? '' : 'Watch at least halfway to mark this complete') + '</div>'
+    +     '<button onclick="markLearnVideoDone(\'' + videoId + '\')" id="learn-mark-btn" ' + (alreadyWatched ? '' : 'disabled') + ' style="width:100%;background:' + (alreadyWatched ? '#9E9E9E' : '#C9C0AE') + ';color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:' + (alreadyWatched ? 'pointer' : 'not-allowed') + ';">' + (alreadyWatched ? '\u2713 Watched' : 'Mark as watched') + '</button>'
     +   '</div>'
     + '</div></div>';
   document.body.appendChild(host);
+
+  if (alreadyWatched) return; // no gating needed; button already active
+
+  // Build the IFrame-API player and watch progress.
+  _ensureYTApi(function() {
+    try {
+      _learnPlayer = new YT.Player('learn-yt-player', {
+        videoId: videoId,
+        playerVars: { rel: 0, playsinline: 1 },
+        events: {
+          onReady: function() { _startLearnProgressWatch(); },
+          onStateChange: function(e) {
+            // If the video ends, count it regardless of the halfway poll.
+            if (e.data === YT.PlayerState.ENDED) _enableLearnMarkButton();
+          }
+        }
+      });
+    } catch(err) {
+      // API failed — fall back to a plain embed + enable the button (graceful).
+      console.warn('[learn] YT API failed, fallback:', err);
+      var holder = document.getElementById('learn-yt-player');
+      if (holder) holder.innerHTML = '<iframe src="https://www.youtube.com/embed/' + videoId + '?rel=0" style="width:100%;height:100%;border:0;" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+      _enableLearnMarkButton();
+    }
+  });
+}
+
+function _startLearnProgressWatch() {
+  if (_learnProgressTimer) clearInterval(_learnProgressTimer);
+  _learnProgressTimer = setInterval(function() {
+    try {
+      if (!_learnPlayer || typeof _learnPlayer.getCurrentTime !== 'function') return;
+      var cur = _learnPlayer.getCurrentTime() || 0;
+      var dur = _learnPlayer.getDuration() || 0;
+      if (dur > 0) {
+        var pct = cur / dur;
+        var hint = document.getElementById('learn-watch-hint');
+        if (pct >= 0.5) {
+          _enableLearnMarkButton();
+        } else if (hint) {
+          var remain = Math.max(0, Math.ceil((dur * 0.5) - cur));
+          hint.textContent = 'Keep watching \u2014 ' + _fmtSecs(remain) + ' until you can mark complete';
+        }
+      }
+    } catch(e) {}
+  }, 1000);
+}
+
+function _fmtSecs(s) {
+  var m = Math.floor(s / 60), ss = Math.floor(s % 60);
+  return m + ':' + (ss < 10 ? '0' : '') + ss;
+}
+
+function _enableLearnMarkButton() {
+  if (_learnProgressTimer) { clearInterval(_learnProgressTimer); _learnProgressTimer = null; }
+  var btn = document.getElementById('learn-mark-btn');
+  var hint = document.getElementById('learn-watch-hint');
+  if (btn) {
+    btn.disabled = false;
+    btn.style.background = 'var(--forest)';
+    btn.style.cursor = 'pointer';
+  }
+  if (hint) hint.textContent = '\u2713 You can now mark this complete';
 }
 
 function _closeLearnPlayer() {
+  if (_learnProgressTimer) { clearInterval(_learnProgressTimer); _learnProgressTimer = null; }
+  try { if (_learnPlayer && _learnPlayer.destroy) _learnPlayer.destroy(); } catch(e) {}
+  _learnPlayer = null;
   var host = document.getElementById('learn-player-host');
   if (host && host.parentNode) host.parentNode.removeChild(host);
 }
@@ -37060,7 +37158,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '23 June 2026 build h';
+var HIVEKEEPER_BUILD = '23 June 2026 build i';
 // 22 June 2026 build k — hide all sync status UI (home banner + toasts).
 // Background sync/queue/retry logic is unaffected; only visible surfaces are
 // suppressed. Set to false to bring the sync messaging back.
