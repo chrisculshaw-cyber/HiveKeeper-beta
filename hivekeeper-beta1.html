@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260623i">
+  <meta name="app-version" content="20260627a">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -33849,20 +33849,18 @@ async function authSignUp() {
   authLoading(true);
   try {
     const sb = getSupabase();
+    // 27 June — signup_choice via metadata (see handleSignUp). Post-signup
+    // upsert ran as anon (no session) and was RLS-blocked, so it never saved.
+    var _choice2 = (window._signupChoice === 'free') ? 'free' : 'trial';
     const { data, error } = await sb.auth.signUp({
       email: email,
       password: password,
-      options: { data: { name: name } }
+      options: { data: { name: name, signup_choice: _choice2 } }
     });
 
     if (error) { authError(error.message); authLoading(false); return; }
 
-    if (data.user) {
-      var _choice2 = (window._signupChoice === 'free') ? 'free' : 'trial';
-      var _row2 = { id: data.user.id, name: name, email: email, signup_choice: _choice2 };
-      if (_choice2 === 'free') { _row2.trial_ends_at = null; }
-      await sb.from('profiles').upsert(_row2);
-    }
+    // signup_choice + trial handled server-side by handle_new_user() trigger.
 
     authLoading(false);
 
@@ -34523,7 +34521,13 @@ function handleSignUp() {
   if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
 
   var sb = getSupabase();
-  sb.auth.signUp({ email: email, password: password, options: { data: { name: name } } })
+  // 27 June — pass signup_choice via auth METADATA, not a post-signup upsert.
+  // The profile is created server-side by the on_auth_user_created trigger; a
+  // client upsert right after signUp runs as anon (no session yet) and is
+  // silently blocked by RLS, so the choice never landed. handle_new_user() now
+  // reads signup_choice from metadata. Default 'trial'.
+  var _choice = (window._signupChoice === 'free') ? 'free' : 'trial';
+  sb.auth.signUp({ email: email, password: password, options: { data: { name: name, signup_choice: _choice } } })
     .then(function(result) {
       if (btn) { btn.disabled = false; btn.textContent = 'Create account'; }
       if (result.error) {
@@ -34538,16 +34542,7 @@ function handleSignUp() {
         }
         errEl.textContent = friendly; errEl.style.display = 'block'; return;
       }
-      // Update profile with name + signup choice (23 June — trial/free signal).
-      // Default 'trial' (people convert on experienced Pro value); 'free' = they
-      // actively declined the trial = strong hobbyist signal. If 'free', clear
-      // the server-granted trial so they start on Free immediately.
-      if (result.data && result.data.user) {
-        var _choice = (window._signupChoice === 'free') ? 'free' : 'trial';
-        var _profileRow = { id: result.data.user.id, name: name, email: email, signup_choice: _choice };
-        if (_choice === 'free') { _profileRow.trial_ends_at = null; }
-        sb.from('profiles').upsert(_profileRow);
-      }
+      // signup_choice now set by the trigger from metadata. Nothing to upsert here.
       if (result.data && result.data.session) {
         onAuthSuccess();
       } else {
@@ -37158,7 +37153,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '23 June 2026 build i';
+var HIVEKEEPER_BUILD = '27 June 2026 build a';
 // 22 June 2026 build k — hide all sync status UI (home banner + toasts).
 // Background sync/queue/retry logic is unaffected; only visible surfaces are
 // suppressed. Set to false to bring the sync messaging back.
