@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260627d">
+  <meta name="app-version" content="20260627e">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -33627,7 +33627,14 @@ async function onAuthSuccess() {
           localStorage.setItem('hk_trial_welcome_seen', '1');
           window._hkFirstTrialView = true;
         }
-        var context = inTrial ? 'welcome_back' : 'trial_expired';
+        // 27 June — three states, not two. Someone who chose Free at signup
+        // never had a trial, so "trial expired" is wrong for them. Detect
+        // never-had-a-trial (no stored trial date) and welcome them to Free.
+        var _hadTrial = !!localStorage.getItem('hk_trial_ends_at');
+        var context;
+        if (inTrial) context = 'welcome_back';
+        else if (!_hadTrial) context = 'welcome_free';
+        else context = 'trial_expired';
         openPricingModal(context);
         return;
       }
@@ -37207,7 +37214,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '27 June 2026 build d';
+var HIVEKEEPER_BUILD = '27 June 2026 build e';
 // 22 June 2026 build k — hide all sync status UI (home banner + toasts).
 // Background sync/queue/retry logic is unaffected; only visible surfaces are
 // suppressed. Set to false to bring the sync messaging back.
@@ -40513,7 +40520,8 @@ function openPricingModal(highlightTier) {
     trial_banner: "You're on Pro while you try HiveKeeper — keep everything you're using by staying on Pro.",
     trial_expired: "Your 14-day Pro trial has ended. You're now on the Free plan — your apiaries and inspections stay safe. Pro adds multiple apiaries, unlimited hives, sharing, AI features, and more.",
     welcome_back: "While you try HiveKeeper, you're on Pro — and you've got " + (typeof trialDaysLeft === 'function' ? trialDaysLeft() : 14) + " day" + ((typeof trialDaysLeft === 'function' && trialDaysLeft() === 1) ? '' : 's') + " left of your trial. Here's what you get on each plan.",
-    welcome_first: "Welcome to HiveKeeper! Your 14-day Pro trial has started — every feature unlocked while you try it. Here's what you get on each plan, so you can decide what suits you."
+    welcome_first: "Welcome to HiveKeeper! Your 14-day Pro trial has started — every feature unlocked while you try it. Here's what you get on each plan, so you can decide what suits you.",
+    welcome_free: "Welcome to HiveKeeper! You're on the Free plan — 3 hives, your essential records, Asian Hornet alerts and offline use, always free. Here's what each plan offers, so you can upgrade whenever it suits you."
   };
   // Auto-promote welcome_back to welcome_first if the user has never seen the trial modal before
   if (highlightTier === 'welcome_back' && window._hkFirstTrialView) {
@@ -49431,7 +49439,15 @@ function isInTrial() {
   if (typeof isFoundingBeekeeper === 'function' && isFoundingBeekeeper()) return false;
   var tier = localStorage.getItem('hk_tier') || _userTier || '';
   if (tier === 'pro' || tier === 'commercial') return false;
-  var end = getTrialEndDate();
+  // 27 June — a user with no real trial end date (e.g. chose Free at signup,
+  // trial_ends_at is null) is NOT in a trial. Previously isInTrial relied on
+  // getTrialEndDate(), whose fallback FABRICATES start+14d when no date is
+  // stored — wrongly showing "Pro on us for 14 days" to free-choosers.
+  // Require an actual stored trial date before treating them as on trial.
+  var stored = localStorage.getItem('hk_trial_ends_at');
+  if (!stored) return false;
+  var end = new Date(stored);
+  if (isNaN(end.getTime())) return false;
   return Date.now() < end.getTime();
 }
 
