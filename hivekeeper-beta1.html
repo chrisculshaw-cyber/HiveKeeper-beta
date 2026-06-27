@@ -6,7 +6,7 @@
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=" type="image/svg+xml">
   <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSIjRjVBNjIzIi8+CiAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzYiIHJ4PSIxNCIgcnk9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxyZWN0IHg9IjIyIiB5PSIyOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjUiIHJ4PSIyIiBmaWxsPSIjMzMzIi8+CiAgPHJlY3QgeD0iMjIiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iNSIgcng9IjIiIGZpbGw9IiMzMzMiLz4KICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMCIgcng9IjkiIHJ5PSIxMCIgZmlsbD0iI0Y1QTYyMyIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIyNiIgcng9IjEwIiByeT0iNiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDIwIDI2KSIvPgogIDxlbGxpcHNlIGN4PSI0NCIgY3k9IjI2IiByeD0iMTAiIHJ5PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCA0NCAyNikiLz4KICA8Y2lyY2xlIGN4PSIyOCIgY3k9IjE4IiByPSIyIiBmaWxsPSIjMzMzIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSIxOCIgcj0iMiIgZmlsbD0iIzMzMyIvPgo8L3N2Zz4=">
 <meta charset="UTF-8">
-  <meta name="app-version" content="20260623e">
+  <meta name="app-version" content="20260623g">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="description" content="HiveKeeper — Smart beekeeping app with voice inspections, AI alerts, varroa tracking and cloud sync. gethivekeeper.com">
 <meta property="og:title" content="HiveKeeper">
@@ -2501,6 +2501,17 @@ input[type="checkbox"].hk-chk:checked::after {
       </div>
       <input id="signup-password-confirm" type="password" placeholder="Confirm password" autocomplete="new-password" oninput="validatePasswordMatch()" onkeydown="if(event.key==='Enter')handleSignUp()" style="width:100%;padding:14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--rs);background:rgba(255,255,255,.06);color:white;font-size:15px;margin-bottom:6px;box-sizing:border-box;">
       <div id="signup-password-match" style="font-size:11px;min-height:16px;margin-bottom:14px;padding:0 2px;"></div>
+            <div id="signup-choice-wrap" style="margin-bottom:14px;">
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-bottom:8px;padding:0 2px;">Choose how to start:</div>
+        <div onclick="setSignupChoice('trial')" id="choice-trial" class="hk-signup-choice" style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid #F4D03F;border-radius:10px;margin-bottom:8px;cursor:pointer;background:rgba(244,208,63,.12);">
+          <div class="choice-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid #F4D03F;background:#F4D03F;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#3A2C00;font-size:11px;font-weight:900;">&#x2713;</div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:white;">Try Pro free for 14 days</div><div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.5;">Up to 50 hives, unlimited voice inspections &amp; AI photo checks, full history, reports &amp; BeeBase export. No card needed — reverts to Free after 14 days.</div></div>
+        </div>
+        <div onclick="setSignupChoice('free')" id="choice-free" class="hk-signup-choice" style="display:flex;align-items:center;gap:10px;padding:12px;border:2px solid rgba(255,255,255,.15);border-radius:10px;cursor:pointer;background:transparent;">
+          <div class="choice-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:transparent;flex-shrink:0;"></div>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.85);">Just the free version</div><div style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.5;">3 hives, 1 apiary, 3 voice + 3 AI photo checks a month. Asian Hornet alerts &amp; offline use always included. Upgrade anytime.</div></div>
+        </div>
+      </div>
       <button id="signup-btn" onclick="handleSignUp()" class="hk-auth-honey-btn" style="width:100%;padding:15px;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;color:white;cursor:pointer;letter-spacing:.04em;">Create account</button>
     </div>
   </div>
@@ -7850,9 +7861,22 @@ function renderLearn() {
   if (lbl) lbl.textContent = done + ' of ' + LEARN_TOTAL_VIDEOS + ' complete' + (done >= LEARN_TOTAL_VIDEOS ? ' \u{1F389}' : '');
 
   var html = '';
-  html += '<div style="font-size:13px;color:var(--text-l);line-height:1.5;margin-bottom:16px;">'
-    + 'A beginner beekeeping course, with video tutorials by <strong>Stewart Spinks</strong> of The Norfolk Honey Company. '
-    + 'Work through the tiers to earn your certificate, or jump to any video you like.</div>';
+  html += '<div style="background:var(--cream);border:1px solid var(--wax);border-radius:12px;padding:16px;margin-bottom:18px;">'
+    + '<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:8px;">\u{1F393} Beekeeping Basics</div>'
+    + '<div style="font-size:13px;color:var(--text-l);line-height:1.6;margin-bottom:10px;">'
+    + 'A free beginner course taught by <strong>Stewart Spinks</strong> of The Norfolk Honey Company, one of the UK\u2019s most respected beekeeping teachers. '
+    + 'It takes you from understanding how a colony works, through the beekeeping year, to keeping your bees healthy.</div>'
+    + '<div style="font-size:12px;color:var(--text-l);line-height:1.6;">'
+    + '<div style="margin-bottom:4px;"><strong>How it works:</strong></div>'
+    + '\u2022 Tap any video to watch it, then tap <em>Mark as watched</em> when you\u2019re done.<br>'
+    + '\u2022 Work through the four tiers in order \u2014 finish one to unlock the next.<br>'
+    + '\u2022 Your progress is saved automatically, even offline.<br>'
+    + '\u2022 Complete all ' + LEARN_TOTAL_VIDEOS + ' videos to earn your <strong>certificate</strong>.'
+    + '</div></div>';
+  html += '<div style="font-size:12px;color:var(--text-l);line-height:1.5;margin-bottom:14px;padding:0 2px;">'
+    + 'New to beekeeping? Start at the top with <strong>Understanding bees</strong>. '
+    + 'Already keeping bees? Every video stays open \u2014 jump to whatever you need.</div>';
+
 
   if (done >= LEARN_TOTAL_VIDEOS) {
     html += '<div style="background:linear-gradient(135deg,#C8730A,#9BC27B);border-radius:14px;padding:18px;margin-bottom:18px;text-align:center;color:#fff;">'
@@ -7877,8 +7901,8 @@ function renderLearn() {
     html += '<div style="font-size:11px;color:var(--text-l);margin-bottom:8px;">' + tier.subtitle + '</div>';
     tier.videos.forEach(function(v) {
       var watched = _learnCompleted.has(v.video);
-      var onclick = unlocked ? ('playLearnVideo(' + JSON.stringify(v.video) + ')')
-                             : ('showToast(' + JSON.stringify('Finish the previous tier first') + ')');
+      var onclick = unlocked ? ("playLearnVideo('" + v.video + "')")
+                             : ("showToast('Finish the previous tier first')");
       html += '<div onclick="' + onclick + '" '
         + 'style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--wax);border-radius:10px;margin-bottom:6px;cursor:pointer;background:' + (watched ? 'rgba(45,90,61,0.05)' : '#fff') + ';">'
         + '<div style="width:22px;height:22px;flex-shrink:0;border-radius:50%;border:2px solid ' + (watched ? '#2a6448' : '#C9C0AE') + ';background:' + (watched ? '#2a6448' : '#fff') + ';display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900;">' + (watched ? '\u2713' : (unlocked ? '\u25B6' : '\u{1F512}')) + '</div>'
@@ -7909,7 +7933,7 @@ function playLearnVideo(videoId) {
     +   '</div>'
     +   '<div style="padding:14px 16px 20px;">'
     +     '<div style="font-size:11px;color:var(--text-l);margin-bottom:10px;">Video by Stewart Spinks, The Norfolk Honey Company. <a href="https://www.youtube.com/watch?v=' + videoId + '" target="_blank" rel="noopener" style="color:var(--forest);">Watch on YouTube</a></div>'
-    +     '<button onclick="markLearnVideoDone(' + JSON.stringify(videoId) + ')" id="learn-mark-btn" style="width:100%;background:' + (watched ? '#9E9E9E' : 'var(--forest)') + ';color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">' + (watched ? '\u2713 Watched' : 'Mark as watched') + '</button>'
+    +     '<button onclick="markLearnVideoDone(\'' + videoId + '\')" id="learn-mark-btn" style="width:100%;background:' + (watched ? '#9E9E9E' : 'var(--forest)') + ';color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">' + (watched ? '\u2713 Watched' : 'Mark as watched') + '</button>'
     +   '</div>'
     + '</div></div>';
   document.body.appendChild(host);
@@ -33735,7 +33759,10 @@ async function authSignUp() {
     if (error) { authError(error.message); authLoading(false); return; }
 
     if (data.user) {
-      await sb.from('profiles').upsert({ id: data.user.id, name: name, email: email });
+      var _choice2 = (window._signupChoice === 'free') ? 'free' : 'trial';
+      var _row2 = { id: data.user.id, name: name, email: email, signup_choice: _choice2 };
+      if (_choice2 === 'free') { _row2.trial_ends_at = null; }
+      await sb.from('profiles').upsert(_row2);
     }
 
     authLoading(false);
@@ -34363,6 +34390,24 @@ function validatePasswordMatch() {
   }
 }
 
+// 23 June — signup trial/free choice. Default 'trial' (Pro exposure drives
+// conversion); 'free' = active hobbyist signal. Toggles the two pills visually.
+window._signupChoice = 'trial';
+function setSignupChoice(choice) {
+  window._signupChoice = (choice === 'free') ? 'free' : 'trial';
+  var t = document.getElementById('choice-trial');
+  var f = document.getElementById('choice-free');
+  if (!t || !f) return;
+  var isTrial = window._signupChoice === 'trial';
+  var td = t.querySelector('.choice-dot'), fd = f.querySelector('.choice-dot');
+  t.style.borderColor = isTrial ? '#F4D03F' : 'rgba(255,255,255,.15)';
+  t.style.background = isTrial ? 'rgba(244,208,63,.12)' : 'transparent';
+  if (td) { td.style.background = isTrial ? '#F4D03F' : 'transparent'; td.style.borderColor = isTrial ? '#F4D03F' : 'rgba(255,255,255,.3)'; td.innerHTML = isTrial ? '\u2713' : ''; }
+  f.style.borderColor = !isTrial ? '#F4D03F' : 'rgba(255,255,255,.15)';
+  f.style.background = !isTrial ? 'rgba(244,208,63,.12)' : 'transparent';
+  if (fd) { fd.style.background = !isTrial ? '#F4D03F' : 'transparent'; fd.style.borderColor = !isTrial ? '#F4D03F' : 'rgba(255,255,255,.3)'; fd.innerHTML = !isTrial ? '\u2713' : ''; }
+}
+
 function handleSignUp() {
   var name = document.getElementById('signup-name').value.trim();
   var email = document.getElementById('signup-email').value.trim();
@@ -34394,9 +34439,15 @@ function handleSignUp() {
         }
         errEl.textContent = friendly; errEl.style.display = 'block'; return;
       }
-      // Update profile with name
+      // Update profile with name + signup choice (23 June — trial/free signal).
+      // Default 'trial' (people convert on experienced Pro value); 'free' = they
+      // actively declined the trial = strong hobbyist signal. If 'free', clear
+      // the server-granted trial so they start on Free immediately.
       if (result.data && result.data.user) {
-        sb.from('profiles').upsert({ id: result.data.user.id, name: name, email: email });
+        var _choice = (window._signupChoice === 'free') ? 'free' : 'trial';
+        var _profileRow = { id: result.data.user.id, name: name, email: email, signup_choice: _choice };
+        if (_choice === 'free') { _profileRow.trial_ends_at = null; }
+        sb.from('profiles').upsert(_profileRow);
       }
       if (result.data && result.data.session) {
         onAuthSuccess();
@@ -37008,7 +37059,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-var HIVEKEEPER_BUILD = '23 June 2026 build e';
+var HIVEKEEPER_BUILD = '23 June 2026 build g';
 // 22 June 2026 build k — hide all sync status UI (home banner + toasts).
 // Background sync/queue/retry logic is unaffected; only visible surfaces are
 // suppressed. Set to false to bring the sync messaging back.
